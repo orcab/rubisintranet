@@ -1,1 +1,0 @@
-perl plan_de_vente.pl >> plan_de_vente.log
