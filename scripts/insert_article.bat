@@ -1,1 +1,0 @@
-perl insert_article.pl >> insert_article.log
