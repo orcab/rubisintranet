@@ -26,7 +26,7 @@ class PDF extends FPDF
 		$this->Cell(0,1,isset($PLAN_DE_VENTE[$row['ACTIV']]) ? $PLAN_DE_VENTE[$row['ACTIV']] : $titre_page  ,0,0,'L');
 
 		//Saut de ligne
-		$this->Ln(10);
+		$this->Ln(8);
 	}
 
 
@@ -116,7 +116,119 @@ class PDF extends FPDF
             $x2*$this->k, ($h-$y2)*$this->k, $x3*$this->k, ($h-$y3)*$this->k));
     }
 
-}
+
+	var $widths;
+	var $aligns;
+
+	function SetWidths($w)
+	{
+		//Tableau des largeurs de colonnes
+		$this->widths=$w;
+	}
+
+	function SetAligns($a)
+	{
+		//Tableau des alignements de colonnes
+		$this->aligns=$a;
+	}
+
+	function Row($param,$nb_ligne = 1)
+	{
+		
+		$data = array();
+		for($i=0 ; $i<sizeof($param) ; $i++)
+			$data[] = isset($param[$i]['text']) ? $param[$i]['text'] : '';
+
+		//Calcule la hauteur de la ligne
+	/*	$nb=0;
+		for($i=0;$i<count($data);$i++)
+			$nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
+		$h=5*$nb;
+	*/
+
+		// la hauteur est spécifié dans l'appel de la fonction. Defaut=1
+		$h = 5 * $nb_ligne ;
+
+		//Effectue un saut de page si nécessaire
+		$this->CheckPageBreak($h);
+
+		//Dessine les cellules
+		for($i=0;$i<count($data);$i++) {
+			$a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L'; // gere l'align
+
+			$this->SetFont( isset($param[$i]['font-family'])?$param[$i]['font-family']:'',
+							isset($param[$i]['font-style'])?$param[$i]['font-style']:'',
+							isset($param[$i]['font-size'])?$param[$i]['font-size']:'');
+			if (isset($param[$i]['font-color']))	$this->SetTextColor($param[$i]['font-color'][0],$param[$i]['font-color'][1],$param[$i]['font-color'][2]);
+			if (isset($param[$i]['text-align']))	$a = $param[$i]['text-align'];
+			
+			$w=$this->widths[$i];
+			
+			//Sauve la position courante
+			$x=$this->GetX();
+			$y=$this->GetY();
+			//Dessine le cadre
+			$this->Rect($x,$y,$w,$h);
+
+			// dessine le cadre extérieur
+		/*	if ($i==0)	// uniquement pour la premiere cellule trace la ligne gauche
+				$this->Line($x,$y,$x,$y+$h);
+
+			// pour toutes les cellules, on trace la ligne dessu et dessous
+			$this->Line($x,$y,$x+$w,$y); // dessus
+			$this->Line($x,$y+$h,$x+$w,$y+$h); // dessous
+
+			if ($i==count($data)-1) // pour la derniere case, on trace la bordure droite
+				$this->Line($x+$w,$y,$x+$w,$y+$h);
+		*/
+
+			//Imprime le texte
+			$this->MultiCell($w,5,$data[$i],0,$a,0);
+			//Repositionne à droite
+			$this->SetXY($x+$w,$y);
+		}
+		//Va à la ligne
+		$this->Ln($h);
+	}
+
+	function CheckPageBreak($h)
+	{
+		//Si la hauteur h provoque un débordement, saut de page manuel
+		if($this->GetY() + $h + 8 > $this->PageBreakTrigger)
+			$this->AddPage($this->CurOrientation);
+	}
+
+	function NbLines($w,$txt)
+	{
+		//Calcule le nombre de lignes qu'occupe un MultiCell de largeur w
+		$cw=&$this->CurrentFont['cw'];
+		if($w==0) $w=$this->w-$this->rMargin-$this->x;
+		$wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+		$s=str_replace("\r",'',$txt);
+		$nb=strlen($s);
+		if($nb>0 and $s[$nb-1]=="\n") $nb--;
+		$sep=-1; $i=0; $j=0; $l=0; $nl=1;
+		while($i<$nb)
+		{
+			$c=$s[$i];
+			if($c=="\n") {
+				$i++; $sep=-1; $j=$i; $l=0; $nl++;
+				continue;
+			}
+			if($c==' ') $sep=$i;
+			$l+=$cw[$c];
+			if($l>$wmax) {
+				if($sep==-1) {
+					if($i==$j) $i++;
+				} else $i=$sep+1;
+				$sep=-1; $j=$i; $l=0; $nl++;
+			}
+			else $i++;
+		}
+		return $nl;
+	}
+} // fin overload
+
 
 $c = 0 ;
 define('RED_PAGE',$c++);				define('GREEN_PAGE',$c++);				define('BLUE_PAGE',$c++); // haut de page
@@ -143,8 +255,6 @@ function html2rgb($rgb) {
 			$style[] = 0;
 		}
 	}
-
 	return $style;
 }
-
 ?>

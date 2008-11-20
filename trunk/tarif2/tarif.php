@@ -12,14 +12,13 @@ $PRINT_PAGE_NUMBER  = true;
 $PRINT_EDITION_DATE = true;
 
 define('FONT_SIZE_CODE',8);
-define('FONT_SIZE_REF',8);
+define('FONT_SIZE_REF',7);
 define('FONT_SIZE_PRIX',8);
 define('FONT_SIZE_DESIGNATION',7);
 define('WIDTH_CODE',20);
 define('WIDTH_DESIGNATION',70);
 define('WIDTH_REF',20);
 define('WIDTH_PRIX',15);
-define('HEIGHT_ARTICLE',6);
 
 define('PAGE_WIDTH',210);
 define('PAGE_HEIGHT',297);
@@ -85,6 +84,10 @@ if	(isset($_POST['pdv']) && $_POST['pdv'])
 $condition	= array();
 $condition[]= "ETARE=''"; // non suspendu
 $condition[]= "DIAA1='OUI'"; // la case édité sur tarif est cochée
+
+//$condition[]= "ARTICLE.NOART='01001298'"; // pour les test sur les kits
+
+
 if ($pdv)
 	$condition[] = "CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) like '$pdv%'";
 
@@ -95,7 +98,8 @@ $condition = join(' and ',$condition);
 select	
 		ARTICLE.NOART,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,
 		CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) as CHEMIN,
-		REFFO,PVEN1
+		REFFO,PVEN1,
+		CDKIT
 from	
 		${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 			left outer join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
@@ -112,14 +116,11 @@ EOT;
 $loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
 
-/*$row = odbc_fetch_array($res,0);
-$style = html2rgb($PAGE_DE_GARDE[$row['ACTIV']][STYLE]);*/
-
 
 // creation de l'objet
 $pdf=new PDF();
 $pdf->SetDisplayMode('fullpage','two');
-
+$pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_REF,WIDTH_PRIX)); // a sortir de la boucle quand tout marchera bien
 
 // on passe sur chaque article
 $last_img_bottom = 0;
@@ -127,10 +128,10 @@ $old_pdvente = '';
 $old_activite= '';
 $lien = 1 ;
 while($row = odbc_fetch_array($res)) {
-	$row['CHEMIN'] = ereg_replace('[ \.]*$','',$row['CHEMIN']);
-	$row['NOART'] = trim($row['NOART']);
-
-	//print_r($row);
+	$row['CHEMIN']	= ereg_replace('[ \.]*$','',$row['CHEMIN']);
+	$row['NOART']	= trim($row['NOART']);
+	$row['DESI1']	= trim($row['DESI1']);
+	$$row['REFFO']	= trim($row['REFFO']);
 
 	$style = html2rgb($PAGE_DE_GARDE[$row['ACTIV']][STYLE]);
 
@@ -164,7 +165,8 @@ while($row = odbc_fetch_array($res)) {
 			$last_img_bottom = 0;
 		}
 		else
-			$pdf->Ln(10); // pas de saut de page mais juste un décalage de 1cm
+			if ($old_activite) // pour evité de faire un décalage trop grand la premiere fois
+				$pdf->Ln(8); // pas de saut de page mais juste un décalage de 1cm
 
 
 		// permet de gérer les eventuel saut de page si l'image dépasse
@@ -299,55 +301,78 @@ while($row = odbc_fetch_array($res)) {
 
 	// couleur de fond pour les articles
 	$pdf->SetFillColor($style[RED_BACKGROUND_ARTICLE],$style[GREEN_BACKGROUND_ARTICLE],$style[BLUE_BACKGROUND_ARTICLE]);
-
-	// CODE ARTICLE
 	$pdf->SetTextColor($style[RED_ARTICLE],$style[GREEN_ARTICLE],$style[BLUE_ARTICLE]);
+		
+	// CODE ARTICLE
 	if ($electromenager) {
 		$pdf->SetFont('helvetica','B',FONT_SIZE_CODE - 1);
-		$pdf->Cell(WIDTH_CODE,HEIGHT_ARTICLE,trim($row['code_article']).'.'.sprintf('%05s',round(isset($_GET['px_coop']) && $_GET['px_coop']==1 ? $row['px_coop_ht']:$row['px_adh_ht'])),"L$bordure",0,'L',1);
-	} else {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_CODE);
-		$pdf->Cell(WIDTH_CODE,HEIGHT_ARTICLE,$row['NOART'],"L$bordure",0,'L',1);
+		$pdf->Cell(WIDTH_CODE,6,trim($row['code_article']).'.'.sprintf('%05s',round(isset($_GET['px_coop']) && $_GET['px_coop']==1 ? $row['px_coop_ht']:$row['px_adh_ht'])),"L$bordure",0,'L',1);
 	}
 	
-	// DESIGNATION
-	/*$designation = preg_replace("/[\n\r].+?$/",'',$row['DESI1']) ;
-	$designation = preg_replace("/ +/"," ",trim($designation)) ;*/
-	$designation = trim($row['DESI1']);
-	$pdf->SetFont('helvetica','',FONT_SIZE_DESIGNATION);
-	$font_redux = 0;
-	while ($pdf->GetStringWidth($designation) > WIDTH_DESIGNATION && (FONT_SIZE_DESIGNATION - $font_redux) > 0) {
-		$pdf->SetFont('helvetica','',FONT_SIZE_DESIGNATION - ++$font_redux);
-	}
-	$pdf->Cell(WIDTH_DESIGNATION,HEIGHT_ARTICLE,$designation,$bordure,0,'L',1);
-	
-	// on revient à la police precédente
-	if ($font_redux) {
-		$pdf->SetFont('helvetica','',FONT_SIZE_DESIGNATION); $font_redux = 0;
-	}
-
 	// REFERENCE
 	if ($electromenager) {
 		$pdf->SetFont('helvetica','',FONT_SIZE_REF - 1);
-	} else {
-		$pdf->SetFont('helvetica','',FONT_SIZE_REF);
 	}
 	$lien_vers_ref = $pdf->AddLink();
-	$pdf->Cell(WIDTH_REF,HEIGHT_ARTICLE,$row['REFFO'],$bordure,0,'L',1, $pdf->SetLink($lien_vers_ref) );
-	$REFERENCE[trim($row['REFFO']) ? trim($row['REFFO']) : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
-	$CODE_MCS[trim($row['NOART'])] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
+	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
+	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
 
 	// PRIX
-	$pdf->SetTextColor($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]);
 	$eco_taxe = '';
 	if ($electromenager) {
 		$pdf->SetFont('helvetica','B',FONT_SIZE_PRIX - 1);
 		$tmp = str_replace('.00','',$row['px_eco_ttc']);
 		$eco_taxe = $tmp > 0 ? "($tmp)" : '';
-	} else {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_PRIX);
 	}
-	$pdf->Cell(WIDTH_PRIX,HEIGHT_ARTICLE,sprintf('%01.2f',$row['PVEN1']).$eco_taxe,"R$bordure",0,'R',1);
+
+
+	
+	$noart			= $row['NOART']; // deja trimé avant
+	$designation	= $row['DESI1'];
+	$ref			= $row['REFFO'];
+	$prix			= sprintf('%01.2f',$row['PVEN1']);
+	$kit			= 0 ;
+
+	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
+		// on va chercher le détail des article composants
+$sql = <<<EOT
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1
+from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
+					on DETAIL_KIT.NOART=ARTICLE_FOURNISSEUR.NOART
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
+					on DETAIL_KIT.NOART=ARTICLE.NOART
+where		NOKIT='$row[NOART]'
+EOT;
+
+		$noart			.= "\n";
+		$designation	.= "\nKit composé de :";
+		$ref			.= "\n";
+		$prix			.= "\n";
+		
+		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
+		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
+			$noart			.= "\n".trim($row_kit['NOART']);
+			$designation	.= "\n".trim($row_kit['DESI1']).' x'.sprintf('%d',$row_kit['NUCOM']);
+			$ref			.= "\n".trim($row_kit['REFFO']);
+			$kit++;
+		}
+	}
+
+	// on imprime la ligne
+	// code_article,designation,ref,prix
+	$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+							array('text' => $noart			, 'font-style' => 'B'	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_CODE ),
+							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_DESIGNATION),
+							array('text' => $ref			,													'font-size' => FONT_SIZE_REF),
+							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R')
+				),
+			$kit ? $kit+2 : 1 // nombre de ligne
+	);
+
+	$font_redux = 0; // on réinitilise la taille de la police pour la désignation
+
+
 
 
 	// GESTION DES IMAGES
@@ -372,15 +397,13 @@ while($row = odbc_fetch_array($res)) {
 			$pdf->Ln($last_max_height + 5);
 		}
 	}
-	$pdf->Ln();
 
-	// trace une ligne sous l'article
-	$pdf->Line($pdf->GetX(),$pdf->GetY(),$pdf->GetX() + WIDTH_CODE + WIDTH_DESIGNATION + WIDTH_REF + WIDTH_PRIX,$pdf->GetY());
 
 	// on affect la categ en cours de traitement
 	$old_pdvente = $pdvente ;
 	$old_activite = $row['ACTIV'];
 	$old_style = $style;
+	$kit = 0; // supression des kit en mémoire
 }
 
 $titre_page = '';
