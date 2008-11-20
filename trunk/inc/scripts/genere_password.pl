@@ -1,0 +1,1 @@
+print substr(uc(crypt('texier',reverse(time))),0,8);
