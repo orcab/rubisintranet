@@ -1,0 +1,34 @@
+
+Warning: mysql_connect(): Can't connect to MySQL server on 'localhost' (10061) in C:\easyphp\www\intranet\outils\edi\send_document.php on line 7
+Impossible de se connecter à MySQL
+Notice: Undefined variable: html in C:\easyphp\www\intranet\outils\edi\send_document.php on line 74
+
+Warning: Invalid text/html type value, on class SMTP::html() in C:\easyphp\www\intranet\inc\xpm2\smtp.php on line 543
+
+Notice: Undefined variable: html in C:\easyphp\www\intranet\outils\edi\send_document.php on line 74
+
+Warning: Invalid text/html type value, on class SMTP::html() in C:\easyphp\www\intranet\inc\xpm2\smtp.php on line 543
+
+Warning: Invalid text/html value, on class SMTP::html() in C:\easyphp\www\intranet\inc\xpm2\smtp.php on line 542
+
+Warning: Invalid text/html value, on class SMTP::html() in C:\easyphp\www\intranet\inc\xpm2\smtp.php on line 542
+
+Warning: sizeof() expects at least 1 parameter, 0 given in C:\easyphp\www\intranet\outils\edi\BL.php on line 6
+
+Notice: Undefined variable: jour_envoi_precedent in C:\easyphp\www\intranet\outils\edi\BL.php on line 16
+$jour_envoi_precedent=''
+
+Notice: Undefined index:  REMOTE_ADDR in C:\easyphp\www\intranet\inc\config.php on line 64
+
+Notice: Undefined index:  REMOTE_ADDR in C:\easyphp\www\intranet\inc\config.php on line 64
+
+Notice: Undefined index:  REMOTE_ADDR in C:\easyphp\www\intranet\inc\config.php on line 64
+[2008-11-19 17:28:08] [SEND] LE GUILLANT DANIEL : BL
+
+Parse error: parse error, unexpected T_STRING in C:\easyphp\www\intranet\inc\config.php on line 65
+[2008-11-19 17:30:29] [SEND] LE GUILLANT DANIEL : BL
+[2008-11-19 17:37:04] [SEND] LE GUILLANT DANIEL : BL
+[2008-11-19 17:38:30] [SEND] LE GUILLANT DANIEL : BL
+[2008-11-19 17:40:28] [SEND] LE GUILLANT DANIEL : AR
+[2008-11-19 17:40:31] [SEND] LE GUILLANT DANIEL : BL
+[2008-11-19 17:40:40] [SEND] LE GUILLANT DANIEL : RELIQUAT

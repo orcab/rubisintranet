@@ -1,0 +1,1 @@
+perl insert_artisan.pl >> insert_artisan.log
