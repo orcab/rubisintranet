@@ -12,7 +12,6 @@ define('PEUT_MODIFIER_ARTICLE',		1 << 4);	$PEUT_MODIFIER_ARTICLE		= PEUT_MODIFIE
 define('PEUT_MODIFIER_UTILISATEUR', 1 << 5);	$PEUT_MODIFIER_UTILISATEUR	= PEUT_MODIFIER_UTILISATEUR ;
 define('PEUT_CHANGER_EDI',			1 << 6);	$PEUT_CHANGER_EDI			= PEUT_CHANGER_EDI ;
 
-
 // anomalie --> gestion des poles
 define('POLE_LOGISTIQUE'	,1 << 0);
 define('POLE_COMMERCE'		,1 << 1);
@@ -20,15 +19,6 @@ define('POLE_EXPOSITION'	,1 << 2);
 define('POLE_ADMINISTRATIF'	,1 << 3);
 define('POLE_INFORMATIQUE'	,1 << 4);
 define('POLE_AUTRE'			,1 << 5);
-
-// définition des chef de pole
-$chefs_de_pole = array();
-$chefs_de_pole[POLE_LOGISTIQUE ]	= array('email'=>'claude.kergosien@coopmcs.com',	'nom'=>'Claude Kergosien' ) ;
-$chefs_de_pole[POLE_COMMERCE]		= array('email'=>'nicolas.bonnin@coopmcs.com',		'nom'=>'Nicolas Bonnin' ) ;
-$chefs_de_pole[POLE_EXPOSITION]		= array('email'=>'nicolas.bonnin@coopmcs.com',		'nom'=>'Nicolas Bonnin' ) ;
-$chefs_de_pole[POLE_ADMINISTRATIF]	= array('email'=>'ghislaine.bellec@coopmcs.com',	'nom'=>'Ghislaine Bellec' ) ;
-$chefs_de_pole[POLE_INFORMATIQUE]	= array('email'=>'benjamin.poulain@coopmcs.com',	'nom'=>'Benjamin Poulain' ) ;
-$chefs_de_pole[POLE_AUTRE]			= array('email'=>'xavier.ledoussal@coopmcs.com',	'nom'=>'Xavier Le Doussal' ) ;
 
 // telmps maximum en second dans lequel une anomalie peut etre modifié ou suprimée
 define('MAX_TIME_ANOMALIE_DELETION', 3600 * 24 ); // 24h
