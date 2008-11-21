@@ -105,7 +105,7 @@ EOT;
 	$mail = new SMTP;
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
-	foreach ($chefs_de_pole as $p=>$chef)
+	foreach ($CHEFS_DE_POLE as $p=>$chef)
 		if ($row_anomalie['pole'] & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajour de destinataire");
 	$mail->From(e('email',mysql_fetch_array(mysql_query("SELECT email FROM employe WHERE prenom='$_POST[commentaire_createur]'"))));
 	$mail->Html($html);

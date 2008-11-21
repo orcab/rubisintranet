@@ -5,17 +5,17 @@ use Mysql;
 use Win32::ODBC;
 use Data::Dumper;
 use strict ;
-use Config::IniFiles;
 use POSIX qw(strftime);
+require 'Phpconst2perlconst.pm';
+use Phpconst2perlconst ;
 $| = 1; # active le flush direct
 
 print print_time()."START\n";
 
-my $cfg = new Config::IniFiles( -file => "config.ini" );
-
+my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
 
 #connexion a loginor pour recuperer les infos
-my $loginor = new Win32::ODBC('DSN='.$cfg->val('RUBIS','DSN').';UID='.$cfg->val('RUBIS','USER').';PWD='.$cfg->val('RUBIS','PASS').';') or die "Ne peux pas se connecter à rubis";
+my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 print print_time()."Select des articles actifs ...";
 my $sql = <<EOT;
 select	A.NOART as CODE_ARTICLE,
@@ -39,8 +39,8 @@ EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
 
-my $dbh = Mysql->connect($cfg->val('MYSQL','HOST'),$cfg->val('MYSQL','BASE'),$cfg->val('MYSQL','USER'),$cfg->val('MYSQL','PASS')) or die "Peux pas se connecter a la base";
-$dbh->selectdb($cfg->val('MYSQL','BASE')) or die "Peux pas selectionner la base";
+my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_USER},$cfg->{MYSQL_PASS}) or die "Peux pas se connecter a mysql";
+$mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
 $dbh->query("TRUNCATE TABLE article;");

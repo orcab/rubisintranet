@@ -5,16 +5,14 @@ use Mysql;
 use Win32::ODBC;
 use Data::Dumper;
 use strict ;
-use Config::IniFiles;
 use POSIX qw(strftime);
+require 'Phpconst2perlconst.pm';
+use Phpconst2perlconst ;
 $| = 1; # active le flush direct
 
 print print_time()."START\n";
 
-my $cfg = new Config::IniFiles( -file => "config.ini" );
-
-
-my $loginor = new Win32::ODBC('DSN='.$cfg->val('RUBIS','DSN').';UID='.$cfg->val('RUBIS','USER').';PWD='.$cfg->val('RUBIS','PASS').';') or die "Ne peux pas se connecter à rubis";
+my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 print print_time()."Select des familles actives ...";
 my $sql = <<EOT;
 select		AFCNI,AFCAC,AFCFA,AFCSF,AFCCH,AFCSC,ACFLI
@@ -27,8 +25,8 @@ print " ok\n";
 
 
 print print_time()."Insertion du plan de vente dans la base ... ";
-my $dbh = Mysql->connect($cfg->val('MYSQL','HOST'),$cfg->val('MYSQL','BASE'),$cfg->val('MYSQL','USER'),$cfg->val('MYSQL','PASS')) or die "Peux pas se connecter a la base";
-$dbh->selectdb($cfg->val('MYSQL','BASE')) or die "Peux pas selectionner la base";
+my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_USER},$cfg->{MYSQL_PASS}) or die "Peux pas se connecter a mysql";
+$mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 
 # drop table

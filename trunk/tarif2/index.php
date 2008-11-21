@@ -59,7 +59,7 @@ function update_path(selecteur) {
 
 <center>
 	<form method="post" name="tarif" action="tarif.php">
-		<select name="pdv" size="30" onchange="update_path(this);">
+		<select name="pdv" size="20" onchange="update_path(this);">
 			<option style="text-align:center;font-size:1.2em;">&gt;&gt; Global &lt;&lt;</option>
 <?
 				$sql = <<<EOT
@@ -73,6 +73,10 @@ EOT;
 <?				} ?>
 		</select><br/>
 		<div id="path">&nbsp;</div>
+		<div style="text-align:left;width:30%;"><label for="index_ref"><input type="checkbox" name="index_ref" /> Ajouter l'index des références fabriquant</label></div>
+		<div style="text-align:left;width:30%;"><label for="index_code"><input type="checkbox" name="index_code" /> Ajouter l'index des codes <?=SOCIETE?></label></div>
+		<div style="text-align:left;width:30%;"><label for="sommaire"><input type="checkbox" name="sommaire" /> Ajouter le sommaire</label></div>
+		<div style="text-align:left;width:30%;"><label for="equipe"><input type="checkbox" name="equipe" /> Ajouter l'&eacute;quipe</label></div> <br/>
 		<input type="submit" class="button valider pdf" value="Editer en PDF"/>
 		<div style="font-size:0.8em;">(attention certaine activit&eacute; peuvent demander un temps de traitement tr&egrave;s long)</div>
 	</form>

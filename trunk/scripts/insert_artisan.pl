@@ -4,22 +4,23 @@ use Data::Dumper;
 use Win32::ODBC;
 use Mysql ;
 use strict ;
-use Config::IniFiles;
 use POSIX qw(strftime);
+require 'Phpconst2perlconst.pm';
+use Phpconst2perlconst ;
 
 print print_time()."START\n";
 
-my $cfg = new Config::IniFiles( -file => "config.ini" );
+my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
 
-my $loginor = new Win32::ODBC('DSN='.$cfg->val('RUBIS','DSN').';UID='.$cfg->val('RUBIS','USER').';PWD='.$cfg->val('RUBIS','PASS').';') or die "Ne peux pas se connecter à rubis";
+my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 
 print print_time()."Select des artisans actif ...";
 $loginor->Sql("select NOCLI,NOMCL,COMC1 from AFAGESTCOM.ACLIENP1 where CATCL='1' and ETCLE<>'S'"); # regarde les artisans actif
 print "OK\n";
 
 
-my $mysql = Mysql->connect($cfg->val('MYSQL','HOST'),$cfg->val('MYSQL','BASE'),$cfg->val('MYSQL','USER'),$cfg->val('MYSQL','PASS')) or die "Peux pas se connecter a mysql";
-$mysql->selectdb($cfg->val('MYSQL','BASE')) or die "Peux pas selectionner la base mysql";
+my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_USER},$cfg->{MYSQL_PASS}) or die "Peux pas se connecter a mysql";
+$mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
 $mysql->query("TRUNCATE TABLE artisan;");
