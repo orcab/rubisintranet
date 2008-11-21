@@ -70,6 +70,11 @@ define('JOUR_MAX_RELANCE_DEVIS',30) ; // apres 10 jours on relance le devis
 if (isset($_SERVER['REMOTE_ADDR']))
 	define('PEUX_AFFICHER_PRIX_NET_EXPO', $_SERVER['REMOTE_ADDR']=='addr_ip1' || $_SERVER['REMOTE_ADDR']=='addr_ip2' || $_SERVER['REMOTE_ADDR']=='addr_ip13');
 
+// acces au server FTP gérant les rendez-vous de salle expo
+define('FTP_RDV_HOST','adr_ip');	// l'ip du serveur gérant les fichier ics pour les rendez-vous.
+define('FTP_RDV_USER','');			// un utlisateur avec les droits de lecture
+define('FTP_RDV_PASS','');			// son mot de passe
+
 
 
 include_once('constant.php');

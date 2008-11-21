@@ -1,10 +1,10 @@
 <?
 
 include('../inc/config.php');
-include('iCalParser/ical-parser-class.php');
-include ('../inc/jpgraph/src/jpgraph.php');
-include ('../inc/jpgraph/src/jpgraph_line.php');
-include ('../inc/jpgraph/src/jpgraph_bar.php');
+include('../inc/iCalParser/ical-parser-class.php');
+include('../inc/jpgraph/src/jpgraph.php');
+include('../inc/jpgraph/src/jpgraph_line.php');
+include('../inc/jpgraph/src/jpgraph_bar.php');
 
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
@@ -86,10 +86,10 @@ foreach($cmd_rubis as $vals)
 
 // chargement des données rdv et visite
 $cumul = array('RDV' => array() , 'VISITE' => array() );
-$ftp = ftp_connect('10.211.14.6');
+$ftp = ftp_connect(FTP_RDV_HOST);
 
 // Identification avec un nom d'utilisateur et un mot de passe
-$login_result = ftp_login($ftp, 'calr', 'calr');
+$login_result = ftp_login($ftp, FTP_RDV_USER, FTP_RDV_PASS);
 // Vérification de la connexion
 if ((!$ftp) || (!$login_result)) die("La connexion FTP a échoué !");
 
