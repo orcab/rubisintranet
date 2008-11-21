@@ -6,21 +6,11 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 
 if ($_GET['what'] == 'complette_via_ref' && isset($_GET['val'])) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR
 	$res = mysql_query("SELECT * FROM devis_article WHERE ref_fournisseur LIKE '".trim(mysql_escape_string(strtoupper($_GET['val'])))."' LIMIT 0,1");
-	
-//	$from_loginor = FALSE ;
-//	if (!mysql_num_rows($res)) { // l'article n'a pas été en devis, on va chercher dans loginor
-//		$res = mysql_query("SELECT * FROM article WHERE ref_fournisseur LIKE '".trim(mysql_escape_string(strtoupper($_GET['val'])))."' OR ref_fournisseur_condensee LIKE '%".trim(mysql_escape_string(strtoupper($_GET['val'])))."%' LIMIT 0,1");
-//		$from_loginor = TRUE ;
-//	}
-
-	//echo print_r(mysql_fetch_array($res));
-	
+		
 	if (mysql_num_rows($res)) {
 		$row = mysql_fetch_array($res);
 		
 		$row['designation'] = ereg_replace("[\n\r]","{CR}",$row['designation']);
-//		if ($from_loginor)	$prix = $row['prix_net'] * COEF_PRIX_PUBLIC ;
-//		else				$prix = $row['puht'] ;
 		$prix = $row['prix_public_ht'] - ($row['prix_public_ht'] * $row['remise'] / 100) ;
 
 		$json  = "[" ;

@@ -408,17 +408,25 @@ EOT;
 
 $titre_page = '';
 
-include('index_des_references_fabriquant.php');
-include('index_des_references_mcs.php');
+
 
 // PAGE SUPPLEMENTAIRE
-if ($electromenager)
-	include('table_des_matieres_electromenager.php');
-else
-	include('table_des_matieres.php');
+if (isset($_POST['index_ref']) && $_POST['index_ref']) // index des références fabriquant
+	include('index_des_references_fabriquant.php');
+
+if (isset($_POST['index_code']) && $_POST['index_code']) // index des code interne de la société
+	include('index_des_codes.php');
+
+if (isset($_POST['sommaire']) && $_POST['sommaire']) // le sommaire
+	if ($electromenager)
+		include('table_des_matieres_electromenager.php');
+	else
+		include('table_des_matieres.php');
 
 
-include('equipe.php');
+// EQUIPE + ORGANIGRAMME
+if (isset($_POST['equipe']) && $_POST['equipe'])  // on rajoute les page contactes et organigramme à la fin du tarif (pour une édition complette par exemple)
+	include('equipe.php');
 
 
 // envoi du fichier au client

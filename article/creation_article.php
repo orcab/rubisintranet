@@ -10,7 +10,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 	$mail = new SMTP;
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
-	$mail->AddTo('benjamin.poulain@coopmcs.com', "Benjamin Poulain") or die("Erreur d'ajour de destinataire");
 	$to = explode('/',$_POST['to']);
 	$mail->AddTo($to[0], $to[1]) or die("Erreur d'ajour de destinataire");
 	$mail->From($_POST['from']);
@@ -286,8 +285,9 @@ function check_ref_fournisseur() {
 <tr><th class="label" style="color:red;font-weight:bold;">Envoyer à :</th>
 <td class="valeur">
 <select name="to" style="color:red;">
-		<option value="emilie.lenouail@coopmcs.com/Emilie Le Nouail">Emilie</option>
-<!--		<option value="rachel.kerzulec@coopmcs.com/Rachel Kerzulec">Rachel</option>-->
+<?		foreach ($CREATION_ARTICLE as $tmp) { ?>
+			<option value="<?=$tmp['email']?>/<?=$tmp['nom']?>"><?=$tmp['nom']?></option>
+<?		} ?>
 </select><br><br></td></tr>
 
 <tr><th class="label">De la part de :</th>

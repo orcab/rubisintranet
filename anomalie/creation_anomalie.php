@@ -27,7 +27,7 @@ if ($id) { // mode modificaiton, on récupere les infos de l'anomalie
 
 	// vérifiie s'il l'on est un responsable
 	$emails_chefs_de_pole = array();
-	foreach ($chefs_de_pole as $p=>$chef)
+	foreach ($CHEFS_DE_POLE as $p=>$chef)
 		if ($row_anomalie['pole'] & $p) $emails_chefs_de_pole[] = "email='$chef[email]'";
 
 	// on recherche les ip des chefs de pole
@@ -82,7 +82,7 @@ EOT;
 	$mail = new SMTP;
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
-	foreach ($chefs_de_pole as $p=>$chef)
+	foreach ($CHEFS_DE_POLE as $p=>$chef)
 		if ($pole & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajour de destinataire");
 	$mail->From(e('email',mysql_fetch_array(mysql_query("SELECT email FROM employe WHERE prenom='$_POST[createur]'"))));
 	$mail->Html($html);
