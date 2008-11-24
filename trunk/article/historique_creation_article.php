@@ -79,6 +79,9 @@ function creer_article(id) {
 </head>
 <body>
 
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <table>
 <tr>
 <td style="width:65%;vertical-align:top;">

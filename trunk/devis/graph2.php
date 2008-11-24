@@ -18,6 +18,7 @@ define('DEVIS',2);
 define('TAUX',3);
 define('RDV',4);
 define('VISITE',5);
+define('PROSPECT',6);
 
 //chargement des données
 // calcul du taux de devis/cmd de la salle
@@ -104,7 +105,7 @@ foreach (array('expo_archive.ics','expo.ics') as $fichier) {
 		//print_r($events);
 
 		foreach ($events as $e) {
-			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
+			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE|PROSPECT)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
 				//on traite le rdv ou visite
 				$type = strtoupper($regs[1]);
 
@@ -131,6 +132,11 @@ foreach (array('expo_archive.ics','expo.ics') as $fichier) {
 						$cmd_rubis[$date][VISITE] += 1;
 					else
 						$cmd_rubis[$date][VISITE] = 1;
+				} elseif ($type == 'PROSPECT') {
+					if (isset($cmd_rubis[$date][PROSPECT]))
+						$cmd_rubis[$date][PROSPECT] += 1;
+					else
+						$cmd_rubis[$date][PROSPECT] = 1;
 				}
 
 			}
@@ -158,6 +164,10 @@ foreach($cmd_rubis as $vals)
 $data_VISITE = array();
 foreach($cmd_rubis as $vals)
 	$data_VISITE[] = isset($vals[VISITE]) ? $vals[VISITE] : 0;
+
+$data_PROSPECT = array();
+foreach($cmd_rubis as $vals)
+	$data_PROSPECT[] = isset($vals[PROSPECT]) ? $vals[PROSPECT] : 0;
 
 
 
@@ -193,13 +203,14 @@ $bar_cmd	= new BarPlot($data_COMMANDE);
 $bar_devis	= new BarPlot($data_DEVIS);
 $bar_rdv	= new BarPlot($data_RDV);
 $bar_vis	= new BarPlot($data_VISITE);
+$bar_pro	= new BarPlot($data_PROSPECT);
 $line_ca	= new LinePlot($data_MONTANT_COMMANDE);
 $line_taux	= new LinePlot($data_TAUX);
 
 
 // Create the grouped bar plot
 $acc_cmd_devis		= new AccBarPlot(array($bar_cmd,$bar_devis));
-$acc_rdv_vis		= new AccBarPlot(array($bar_rdv,$bar_vis));
+$acc_rdv_vis		= new AccBarPlot(array($bar_rdv,$bar_vis,$bar_pro));
 $group_bar_cmd_rdv  = new GroupBarPlot (array($acc_cmd_devis ,$acc_rdv_vis));
 
 $group_bar_cmd_rdv->SetWidth(0.75);
@@ -242,6 +253,14 @@ $bar_vis->value->SetColor('#003300');
 $bar_vis->value->SetFormat('%d');
 $bar_vis->value->SetFont( FF_FONT1, FS_BOLD); 
 $bar_vis->value->Show();
+
+// Create the prospect bar
+$bar_pro->SetFillColor('lightgreen');
+$bar_pro->SetLegend('PROSPECT');
+$bar_pro->value->SetColor('#006600'); 
+$bar_pro->value->SetFormat('%d');
+$bar_pro->value->SetFont( FF_FONT1, FS_BOLD); 
+$bar_pro->value->Show();
 
 // Create the CA line
 $line_ca->SetColor('blue');

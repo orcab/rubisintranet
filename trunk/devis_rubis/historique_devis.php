@@ -185,11 +185,13 @@ function envoi_formulaire(l_action) {
 </head>
 <body>
 
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <!-- DECLARATION DU FORMULAIRE PRINCIPALE -->
 <form name="historique_devis" action="historique_devis.php" method="POST">
 <input type="hidden" name="action" value="">
 <input type="hidden" name="NOBON" value="">
-
 
 <!-- boite de dialogue pour la relance client -->
 <div id="relance">
