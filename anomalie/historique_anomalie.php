@@ -14,33 +14,33 @@ while ($row = mysql_fetch_array($res))
 	$employe[] = $row['prenom'];
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
-if (!isset($_SESSION['filtre_date_inf']))	$_SESSION['filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-1,date('d'),date('Y')));
-if (!isset($_SESSION['filtre_date_sup']))	$_SESSION['filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')  ,date('d'),date('Y')));
-if (!isset($_SESSION['filtre_adherent']))	$_SESSION['filtre_adherent']	= '';
-if (!isset($_SESSION['filtre_fournisseur']))$_SESSION['filtre_fournisseur']	= '';
-if (!isset($_SESSION['filtre_createur']))	$_SESSION['filtre_createur']	= '';
-if (!isset($_SESSION['filtre_numero']))		$_SESSION['filtre_numero']		= '';
-if (!isset($_SESSION['filtre_evolution']))	$_SESSION['filtre_evolution']	= '';
-if (!isset($_SESSION['filtre_classement'])) $_SESSION['filtre_classement'] = 'date_creation DESC';
-if (!isset($_SESSION['filtre_logistique']))		$_SESSION['filtre_logistique']		= TRUE;
-if (!isset($_SESSION['filtre_commerce']))		$_SESSION['filtre_commerce']		= TRUE;
-if (!isset($_SESSION['filtre_exposition']))		$_SESSION['filtre_exposition']		= TRUE;
-if (!isset($_SESSION['filtre_administratif']))	$_SESSION['filtre_administratif']	= TRUE;
-if (!isset($_SESSION['filtre_informatique']))	$_SESSION['filtre_informatique']	= TRUE;
-if (!isset($_SESSION['filtre_autre']))			$_SESSION['filtre_autre']			= TRUE;
-if (!isset($_SESSION['filtre_etat_a_traiter']))	$_SESSION['filtre_etat_a_traiter']	= TRUE;
-if (!isset($_SESSION['filtre_etat_en_cours']))	$_SESSION['filtre_etat_en_cours']	= TRUE;
-if (!isset($_SESSION['filtre_etat_cloture']))	$_SESSION['filtre_etat_cloture']	= FALSE;
+if (!isset($_SESSION['anomalie_filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-1,date('d'),date('Y')));
+if (!isset($_SESSION['anomalie_filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')  ,date('d'),date('Y')));
+if (!isset($_SESSION['anomalie_filtre_adherent']))	$_SESSION['anomalie_filtre_adherent']	= '';
+if (!isset($_SESSION['anomalie_filtre_fournisseur']))$_SESSION['anomalie_filtre_fournisseur']	= '';
+if (!isset($_SESSION['anomalie_filtre_createur']))	$_SESSION['anomalie_filtre_createur']	= '';
+if (!isset($_SESSION['anomalie_filtre_numero']))		$_SESSION['anomalie_filtre_numero']		= '';
+if (!isset($_SESSION['anomalie_filtre_evolution']))	$_SESSION['anomalie_filtre_evolution']	= '';
+if (!isset($_SESSION['anomalie_filtre_classement'])) $_SESSION['anomalie_filtre_classement'] = 'date_creation DESC';
+if (!isset($_SESSION['anomalie_filtre_logistique']))		$_SESSION['anomalie_filtre_logistique']		= TRUE;
+if (!isset($_SESSION['anomalie_filtre_commerce']))		$_SESSION['anomalie_filtre_commerce']		= TRUE;
+if (!isset($_SESSION['anomalie_filtre_exposition']))		$_SESSION['anomalie_filtre_exposition']		= TRUE;
+if (!isset($_SESSION['anomalie_filtre_administratif']))	$_SESSION['anomalie_filtre_administratif']	= TRUE;
+if (!isset($_SESSION['anomalie_filtre_informatique']))	$_SESSION['anomalie_filtre_informatique']	= TRUE;
+if (!isset($_SESSION['anomalie_filtre_autre']))			$_SESSION['anomalie_filtre_autre']			= TRUE;
+if (!isset($_SESSION['anomalie_filtre_etat_a_traiter']))	$_SESSION['anomalie_filtre_etat_a_traiter']	= TRUE;
+if (!isset($_SESSION['anomalie_filtre_etat_en_cours']))	$_SESSION['anomalie_filtre_etat_en_cours']	= TRUE;
+if (!isset($_SESSION['anomalie_filtre_etat_cloture']))	$_SESSION['anomalie_filtre_etat_cloture']	= FALSE;
 
 
-if (isset($_POST['filtre_date_inf']))	$_SESSION['filtre_date_inf']	= $_POST['filtre_date_inf'];
-if (isset($_POST['filtre_date_sup']))	$_SESSION['filtre_date_sup']	= $_POST['filtre_date_sup'];
-if (isset($_POST['filtre_adherent']))	$_SESSION['filtre_adherent']	= $_POST['filtre_adherent'];
-if (isset($_POST['filtre_fournisseur']))$_SESSION['filtre_fournisseur']	= $_POST['filtre_fournisseur'];
-if (isset($_POST['filtre_createur']))	$_SESSION['filtre_createur']	= $_POST['filtre_createur'];
-if (isset($_POST['filtre_numero']))		$_SESSION['filtre_numero']		= $_POST['filtre_numero'];
-if (isset($_POST['filtre_evolution']))	$_SESSION['filtre_evolution']	= $_POST['filtre_evolution'];
-if (isset($_GET['filtre_classement']))	$_SESSION['filtre_classement']  = $_GET['filtre_classement'];
+if (isset($_POST['filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $_POST['filtre_date_inf'];
+if (isset($_POST['filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $_POST['filtre_date_sup'];
+if (isset($_POST['filtre_adherent']))	$_SESSION['anomalie_filtre_adherent']	= $_POST['filtre_adherent'];
+if (isset($_POST['filtre_fournisseur']))$_SESSION['anomalie_filtre_fournisseur']	= $_POST['filtre_fournisseur'];
+if (isset($_POST['filtre_createur']))	$_SESSION['anomalie_filtre_createur']	= $_POST['filtre_createur'];
+if (isset($_POST['filtre_numero']))		$_SESSION['anomalie_filtre_numero']		= $_POST['filtre_numero'];
+if (isset($_POST['filtre_evolution']))	$_SESSION['anomalie_filtre_evolution']	= $_POST['filtre_evolution'];
+if (isset($_GET['filtre_classement']))	$_SESSION['anomalie_filtre_classement']  = $_GET['filtre_classement'];
 
 if (isset($_SERVER['HTTP_REFERER']) && eregi('historique_anomalie.php',$_SERVER['HTTP_REFERER'])) { // si on vient d'une recherche, on modifie les coches
 	if (isset($_POST['action']) && $_POST['action']=='saisie_commentaire'	||	// ne rien faire si l'on vient de saisir un commentaire
@@ -48,15 +48,15 @@ if (isset($_SERVER['HTTP_REFERER']) && eregi('historique_anomalie.php',$_SERVER[
 		isset($_GET['filtre_classement']))										// ne rien faire si l'on vient de changer le classement
 		{ }
 	else {
-		$_SESSION['filtre_logistique']		= isset($_POST['filtre_logistique']);
-		$_SESSION['filtre_commerce']		= isset($_POST['filtre_commerce']);
-		$_SESSION['filtre_exposition']		= isset($_POST['filtre_exposition']);
-		$_SESSION['filtre_administratif']	= isset($_POST['filtre_administratif']);
-		$_SESSION['filtre_informatique']	= isset($_POST['filtre_informatique']);
-		$_SESSION['filtre_autre']			= isset($_POST['filtre_autre']);
-		$_SESSION['filtre_etat_a_traiter']	= isset($_POST['filtre_etat_a_traiter']);
-		$_SESSION['filtre_etat_en_cours']	= isset($_POST['filtre_etat_en_cours']);
-		$_SESSION['filtre_etat_cloture']	= isset($_POST['filtre_etat_cloture']);
+		$_SESSION['anomalie_filtre_logistique']		= isset($_POST['filtre_logistique']);
+		$_SESSION['anomalie_filtre_commerce']		= isset($_POST['filtre_commerce']);
+		$_SESSION['anomalie_filtre_exposition']		= isset($_POST['filtre_exposition']);
+		$_SESSION['anomalie_filtre_administratif']	= isset($_POST['filtre_administratif']);
+		$_SESSION['anomalie_filtre_informatique']	= isset($_POST['filtre_informatique']);
+		$_SESSION['anomalie_filtre_autre']			= isset($_POST['filtre_autre']);
+		$_SESSION['anomalie_filtre_etat_a_traiter']	= isset($_POST['filtre_etat_a_traiter']);
+		$_SESSION['anomalie_filtre_etat_en_cours']	= isset($_POST['filtre_etat_en_cours']);
+		$_SESSION['anomalie_filtre_etat_cloture']	= isset($_POST['filtre_etat_cloture']);
 	}
 }
 
@@ -127,16 +127,16 @@ table#historique-anomalie { border-collapse:collapse; }
 
 table#historique-anomalie td { border:solid 1px grey; padding:3px;font-size:0.8em; vertical-align:top;}
 
-table#historique-anomalie th.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-anomalie th.<?=e(0,explode(' ',$_SESSION['anomalie_filtre_classement']))?> {
 	border-top:solid 2px black;
 }
 
-table#historique-anomalie th.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?>,  table#historique-anomalie td.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-anomalie th.<?=e(0,explode(' ',$_SESSION['anomalie_filtre_classement']))?>,  table#historique-anomalie td.<?=e(0,explode(' ',$_SESSION['anomalie_filtre_classement']))?> {
 	border-left:solid 2px black;
 	border-right:solid 2px black;
 }
 
-table#historique-anomalie td.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-anomalie td.<?=e(0,explode(' ',$_SESSION['anomalie_filtre_classement']))?> {
 	background-color:#D0D0D0;
 }
 
@@ -254,6 +254,9 @@ function envoi_formulaire(l_action) {
 </head>
 <body>
 
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <!-- DECLARATION DU FORMULAIRE PRINCIPALE -->
 <form name="historique_anomalie" action="historique_anomalie.php" method="POST">
 <input type="hidden" name="action" value="">
@@ -328,7 +331,7 @@ function envoi_formulaire(l_action) {
 			<tr>
 				<td>Date de départ</td>
 				<td>
-					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['filtre_date_inf']?>" size="8">
+					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['anomalie_filtre_date_inf']?>" size="8">
 					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
@@ -336,20 +339,20 @@ function envoi_formulaire(l_action) {
 						  inputField	: 'filtre_date_inf',         // ID of the input field
 						  ifFormat		: '%d/%m/%Y',    // the date format
 						  button		: 'trigger_inf',       // ID of the button
-						  date			: '<?=$_SESSION['filtre_date_inf']?>',
+						  date			: '<?=$_SESSION['anomalie_filtre_date_inf']?>',
 						  firstDay 	: 1
 						}
 					  );
 					</script>
 				</td>
 				<td style="padding-left:2em;">Adhérent</td>
-				<td><input type="text" name="filtre_adherent" value="<?=$_SESSION['filtre_adherent']?>" size="8"></td>
+				<td><input type="text" name="filtre_adherent" value="<?=$_SESSION['anomalie_filtre_adherent']?>" size="8"></td>
 				<td style="padding-left:2em;">Créateur</td>
 				<td>
 					<select name="filtre_createur">
-							<option value=""<?=$_SESSION['filtre_createur']==''?' selected':''?>>TOUS</option>
+							<option value=""<?=$_SESSION['anomalie_filtre_createur']==''?' selected':''?>>TOUS</option>
 <?						foreach ($employe as $val) { ?>
-							<option value="<?=$val?>"<?=$_SESSION['filtre_createur']==$val ? ' selected':''?>><?=$val?></option>
+							<option value="<?=$val?>"<?=$_SESSION['anomalie_filtre_createur']==$val ? ' selected':''?>><?=$val?></option>
 <?						} ?>
 					</select>
 				</td>
@@ -358,7 +361,7 @@ function envoi_formulaire(l_action) {
 			<tr>
 				<td>Date de fin</td>
 				<td>
-					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['filtre_date_sup']?>" size="8">
+					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['anomalie_filtre_date_sup']?>" size="8">
 					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
@@ -366,31 +369,31 @@ function envoi_formulaire(l_action) {
 							inputField	: 'filtre_date_sup',         // ID of the input field
 							ifFormat	: '%d/%m/%Y',    // the date format
 							button		: 'trigger_sup',       // ID of the button
-							date		: '<?=$_SESSION['filtre_date_sup']?>',
+							date		: '<?=$_SESSION['anomalie_filtre_date_sup']?>',
 							firstDay 	: 1
 						}
 					  );
 					</script>
 				</td>
 				<td style="text-align:right;">Fournisseur</td>
-				<td><input type="text" name="filtre_fournisseur" value="<?=$_SESSION['filtre_fournisseur']?>" size="8"></td>
+				<td><input type="text" name="filtre_fournisseur" value="<?=$_SESSION['anomalie_filtre_fournisseur']?>" size="8"></td>
 				<td style="text-align:right;">Numéro</td>
-				<td style="text-align:left;"><input type="text" name="filtre_numero" value="<?=$_SESSION['filtre_numero']?>" size="8"></td>
+				<td style="text-align:left;"><input type="text" name="filtre_numero" value="<?=$_SESSION['anomalie_filtre_numero']?>" size="8"></td>
 			</tr>
 			<tr>
 				<td colspan="7">
-					<input type="checkbox" id="filtre_logistique" name="filtre_logistique" <?=$_SESSION['filtre_logistique'] ? 'checked="on"':''?>/><label for="filtre_logistique">Logistique</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_commerce" name="filtre_commerce" <?=$_SESSION['filtre_commerce'] ? 'checked="on"':''?>/><label for="filtre_commerce">Commerce</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_exposition" name="filtre_exposition" <?=$_SESSION['filtre_exposition'] ? 'checked="on"':''?>/><label for="filtre_exposition">Exposition</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_administratif" name="filtre_administratif" <?=$_SESSION['filtre_administratif'] ? 'checked="on"':''?>/><label for="filtre_administratif">Administratif</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_informatique" name="filtre_informatique" <?=$_SESSION['filtre_informatique'] ? 'checked="on"':''?>/><label for="filtre_informatique">Informatique</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_autre" name="filtre_autre" <?=$_SESSION['filtre_autre'] ? 'checked="on"':''?>/><label for="filtre_autre">Autre</label>
+					<input type="checkbox" id="filtre_logistique" name="filtre_logistique" <?=$_SESSION['anomalie_filtre_logistique'] ? 'checked="on"':''?>/><label for="filtre_logistique">Logistique</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_commerce" name="filtre_commerce" <?=$_SESSION['anomalie_filtre_commerce'] ? 'checked="on"':''?>/><label for="filtre_commerce">Commerce</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_exposition" name="filtre_exposition" <?=$_SESSION['anomalie_filtre_exposition'] ? 'checked="on"':''?>/><label for="filtre_exposition">Exposition</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_administratif" name="filtre_administratif" <?=$_SESSION['anomalie_filtre_administratif'] ? 'checked="on"':''?>/><label for="filtre_administratif">Administratif</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_informatique" name="filtre_informatique" <?=$_SESSION['anomalie_filtre_informatique'] ? 'checked="on"':''?>/><label for="filtre_informatique">Informatique</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_autre" name="filtre_autre" <?=$_SESSION['anomalie_filtre_autre'] ? 'checked="on"':''?>/><label for="filtre_autre">Autre</label>
 				</td>
 			<tr>
 				<td colspan="7">
-					<input type="checkbox" id="filtre_etat_a_traiter" name="filtre_etat_a_traiter" <?=$_SESSION['filtre_etat_a_traiter'] ? 'checked="on"':''?>/><label for="filtre_etat_a_traiter">A traiter</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_etat_en_cours" name="filtre_etat_en_cours" <?=$_SESSION['filtre_etat_en_cours'] ? 'checked="on"':''?>/><label for="filtre_etat_en_cours">En cours</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_etat_cloture" name="filtre_etat_cloture" <?=$_SESSION['filtre_etat_cloture'] ? 'checked="on"':''?>/><label for="filtre_etat_cloture">Cloturé</label>
+					<input type="checkbox" id="filtre_etat_a_traiter" name="filtre_etat_a_traiter" <?=$_SESSION['anomalie_filtre_etat_a_traiter'] ? 'checked="on"':''?>/><label for="filtre_etat_a_traiter">A traiter</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_etat_en_cours" name="filtre_etat_en_cours" <?=$_SESSION['anomalie_filtre_etat_en_cours'] ? 'checked="on"':''?>/><label for="filtre_etat_en_cours">En cours</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="checkbox" id="filtre_etat_cloture" name="filtre_etat_cloture" <?=$_SESSION['anomalie_filtre_etat_cloture'] ? 'checked="on"':''?>/><label for="filtre_etat_cloture">Cloturé</label>
 				</td>
 			</tr>
 		</table>
@@ -411,23 +414,23 @@ function envoi_formulaire(l_action) {
 <?
 	$where = array() ;
 	
-	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['filtre_date_inf'])));
-	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['filtre_date_sup'])));
+	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['anomalie_filtre_date_inf'])));
+	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['anomalie_filtre_date_sup'])));
 
-	if ($_SESSION['filtre_date_inf'] && $_SESSION['filtre_date_inf'] != 'Aucune') $where[] = "date_creation >= '$date_inf_formater 00:00:00'" ;
-	if ($_SESSION['filtre_date_sup'] && $_SESSION['filtre_date_sup'] != 'Aucune') $where[] = "date_creation <= '$date_sup_formater 23:59:59'" ;
-	if ($_SESSION['filtre_adherent'])	$where[] = "artisan like '%".strtoupper(mysql_escape_string($_SESSION['filtre_adherent']))."%'" ;
-	if ($_SESSION['filtre_createur'])	$where[] = "createur='"	.strtoupper(mysql_escape_string($_SESSION['filtre_createur']))."'" ;
-	if ($_SESSION['filtre_fournisseur'])$where[] = "fournisseur like '%".strtoupper(mysql_escape_string($_SESSION['filtre_fournisseur']))."%'" ;
-	if ($_SESSION['filtre_numero'])		$where[] = "id='".strtoupper(trim(mysql_escape_string($_SESSION['filtre_numero'])))."'" ;
+	if ($_SESSION['anomalie_filtre_date_inf'] && $_SESSION['anomalie_filtre_date_inf'] != 'Aucune') $where[] = "date_creation >= '$date_inf_formater 00:00:00'" ;
+	if ($_SESSION['anomalie_filtre_date_sup'] && $_SESSION['anomalie_filtre_date_sup'] != 'Aucune') $where[] = "date_creation <= '$date_sup_formater 23:59:59'" ;
+	if ($_SESSION['anomalie_filtre_adherent'])	$where[] = "artisan like '%".strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_adherent']))."%'" ;
+	if ($_SESSION['anomalie_filtre_createur'])	$where[] = "createur='"	.strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_createur']))."'" ;
+	if ($_SESSION['anomalie_filtre_fournisseur'])$where[] = "fournisseur like '%".strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_fournisseur']))."%'" ;
+	if ($_SESSION['anomalie_filtre_numero'])		$where[] = "id='".strtoupper(trim(mysql_escape_string($_SESSION['anomalie_filtre_numero'])))."'" ;
 
 	$pole = array();
-	if ($_SESSION['filtre_logistique'])		$pole[] = '(pole & '.POLE_LOGISTIQUE.	' = '.POLE_LOGISTIQUE.')';
-	if ($_SESSION['filtre_commerce'])		$pole[] = '(pole & '.POLE_COMMERCE.		' = '.POLE_COMMERCE.')';
-	if ($_SESSION['filtre_exposition'])		$pole[] = '(pole & '.POLE_EXPOSITION.	' = '.POLE_EXPOSITION.')';
-	if ($_SESSION['filtre_administratif'])	$pole[] = '(pole & '.POLE_ADMINISTRATIF.' = '.POLE_ADMINISTRATIF.')';
-	if ($_SESSION['filtre_informatique'])	$pole[] = '(pole & '.POLE_INFORMATIQUE.	' = '.POLE_INFORMATIQUE.')';
-	if ($_SESSION['filtre_autre'])			$pole[] = '(pole & '.POLE_AUTRE.		' = '.POLE_AUTRE.')';
+	if ($_SESSION['anomalie_filtre_logistique'])	$pole[] = '(pole & '.POLE_LOGISTIQUE.	'='.POLE_LOGISTIQUE.')';
+	if ($_SESSION['anomalie_filtre_commerce'])		$pole[] = '(pole & '.POLE_COMMERCE.		'='.POLE_COMMERCE.')';
+	if ($_SESSION['anomalie_filtre_exposition'])	$pole[] = '(pole & '.POLE_EXPOSITION.	'='.POLE_EXPOSITION.')';
+	if ($_SESSION['anomalie_filtre_administratif'])	$pole[] = '(pole & '.POLE_ADMINISTRATIF.'='.POLE_ADMINISTRATIF.')';
+	if ($_SESSION['anomalie_filtre_informatique'])	$pole[] = '(pole & '.POLE_INFORMATIQUE.	'='.POLE_INFORMATIQUE.')';
+	if ($_SESSION['anomalie_filtre_autre'])			$pole[] = '(pole & '.POLE_AUTRE.		'='.POLE_AUTRE.')';
 
 	if (sizeof($pole)>0) // au moins un pole de coché
 		$where[] = '('.join(' or ',$pole).')';
@@ -435,9 +438,9 @@ function envoi_formulaire(l_action) {
 		$where[] = "pole<0";
 
 	$etat = array();
-	if ($_SESSION['filtre_etat_a_traiter'])	$etat[] = 'evolution=0';
-	if ($_SESSION['filtre_etat_en_cours'])	$etat[] = 'evolution=1';
-	if ($_SESSION['filtre_etat_cloture'])	$etat[] = 'evolution=2';
+	if ($_SESSION['anomalie_filtre_etat_a_traiter'])	$etat[] = 'evolution=0';
+	if ($_SESSION['anomalie_filtre_etat_en_cours'])	$etat[] = 'evolution=1';
+	if ($_SESSION['anomalie_filtre_etat_cloture'])	$etat[] = 'evolution=2';
 
 	if (sizeof($etat)>0) // au moins un pole de coché
 		$where[] = '('.join(' or ',$etat).')';
@@ -451,7 +454,7 @@ function envoi_formulaire(l_action) {
 //print_r($_SESSION);
 //print_r($_GET);
 
-	$ordre = $_SESSION['filtre_classement'];
+	$ordre = $_SESSION['anomalie_filtre_classement'];
 
 	$sql = <<<EOT
 select *,DATE_FORMAT(date_creation,'%d %M %Y') AS date_creation_formatee, DATE_FORMAT(date_creation,'%w') AS jour_creation, DATE_FORMAT(date_cloture,'%d %M %Y') AS date_cloture_formatee

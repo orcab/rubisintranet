@@ -133,15 +133,13 @@ EOT;
 			$mail->Relay(SMTP_SERVEUR);
 			//$mail->AddTo('benjamin.poulain@coopmcs.com', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
 			$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-			$mail->From('benjamin.poulain@coopmcs.com');			
+			$mail->From('benjamin.poulain@coopmcs.com');
 
 			$mail->Html($html);
 			$sent = $mail->Send($titre);
 			echo now()." [SEND] $row[nom] : $type_doc\n";
 		}
-
 	} // foreach type de document
-
 } // fin while artisan
 
 

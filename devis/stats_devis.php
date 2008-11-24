@@ -1,7 +1,7 @@
 <?php
 
 include('../inc/config.php');
-include('iCalParser/ical-parser-class.php');
+include('../inc/iCalParser/ical-parser-class.php');
 require_once 'Spreadsheet/Excel/Writer.php';
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
@@ -11,16 +11,17 @@ $i=0;
 define('COL_DATE',$i++);
 define('COL_RDV',$i++);
 define('COL_VISITE',$i++);
+define('COL_PROSPECT',$i++);
 define('COL_DEVIS_REALISE',$i++);
 define('COL_CMD_REALISE',$i++);
 define('COL_RATIO',$i++);
 define('COL_MT_CMD',$i++);
 
-$cumul = array('RDV' => array() , 'VISITE' => array() );
-$ftp = ftp_connect('10.211.14.6');
+$cumul = array('RDV' => array() , 'VISITE' => array(),'PROSPECT' => array() );
+$ftp = ftp_connect(FTP_RDV_HOST);
 
 // Identification avec un nom d'utilisateur et un mot de passe
-$login_result = ftp_login($ftp, 'calr', 'calr');
+$login_result = ftp_login($ftp, FTP_RDV_USER, FTP_RDV_PASS);
 // Vérification de la connexion
 if ((!$ftp) || (!$login_result)) die("La connexion FTP a échoué !");
 
@@ -33,7 +34,7 @@ foreach (array('expo_archive.ics','expo.ics') as $fichier) {
 		$events = $ical->iCalDecoder($fichier);
 		
 		foreach ($events as $e) {
-			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
+			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE|PROSPECT)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
 				//on traite le rdv ou visite
 				$type = strtoupper($regs[1]);
 
@@ -64,7 +65,6 @@ foreach (array('expo_archive.ics','expo.ics') as $fichier) {
 ftp_close($ftp);
 
 
-
 // Creating a workbook
 $workbook = new Spreadsheet_Excel_Writer();
 
@@ -83,6 +83,7 @@ $format_pourcentage->setNumFormat('0.0%');
 // La premiere ligne
 $worksheet->write(0,COL_RDV,			'RDV',$format_title);
 $worksheet->write(0,COL_VISITE, 		'VISITE',$format_title);
+$worksheet->write(0,COL_PROSPECT, 		'PROSPECT',$format_title);
 $worksheet->write(0,COL_DEVIS_REALISE,	'Devis réalisé',$format_title);
 $worksheet->write(0,COL_CMD_REALISE,	'Cmd passée',$format_title);
 $worksheet->write(0,COL_RATIO,			'Ratio devis/cmd %',$format_title);
@@ -146,6 +147,9 @@ while($row = mysql_fetch_array($res)) {
 	if (isset($cumul['VISITE'][$row['date_formater_ical']])) {
 		$worksheet->write( $i, COL_VISITE, $cumul['VISITE'][$row['date_formater_ical']],$format_cell);
 	}
+	if (isset($cumul['PROSPECT'][$row['date_formater_ical']])) {
+		$worksheet->write( $i, COL_PROSPECT, $cumul['PROSPECT'][$row['date_formater_ical']],$format_cell);
+	}
 
 	$old_year = $row['annee'];
 	$i++;
@@ -163,6 +167,8 @@ $formula = '' ; foreach ($ligne_annee as $ligne) $formula .= excel_column(COL_RD
 $worksheet->writeFormula(	$i, COL_RDV,	"=SUM($formula)",$format_title) ;
 $formula = '' ; foreach ($ligne_annee as $ligne) $formula .= excel_column(COL_VISITE).($ligne+1).';' ; $formula = ereg_replace(';+$','',$formula);
 $worksheet->writeFormula(	$i, COL_VISITE,	"=SUM($formula)",$format_title) ;
+$formula = '' ; foreach ($ligne_annee as $ligne) $formula .= excel_column(COL_PROSPECT).($ligne+1).';' ; $formula = ereg_replace(';+$','',$formula);
+$worksheet->writeFormula(	$i, COL_PROSPECT,"=SUM($formula)",$format_title) ;
 $formula = '' ; foreach ($ligne_annee as $ligne) $formula .= excel_column(COL_DEVIS_REALISE).($ligne+1).';' ; $formula = ereg_replace(';+$','',$formula);
 $worksheet->writeFormula(	$i, COL_DEVIS_REALISE,	"=SUM($formula)",$format_title) ;
 $formula = '' ; foreach ($ligne_annee as $ligne) $formula .= excel_column(COL_CMD_REALISE).($ligne+1).';' ; $formula = ereg_replace(';+$','',$formula);
@@ -186,10 +192,11 @@ function write_total_ligne($annee) {
 	$worksheet->write(		 $i,COL_DATE,			"Total $annee",$format_title);
 	$worksheet->writeFormula($i,COL_RDV,			'=SUM('.excel_column(COL_RDV).$last_ligne.				':'.excel_column(COL_RDV).$i.')' ,$format_title);
 	$worksheet->writeFormula($i,COL_VISITE,			'=SUM('.excel_column(COL_VISITE).$last_ligne.			':'.excel_column(COL_VISITE).$i.')' ,$format_title);
+	$worksheet->writeFormula($i,COL_PROSPECT,		'=SUM('.excel_column(COL_PROSPECT).$last_ligne.			':'.excel_column(COL_PROSPECT).$i.')' ,$format_title);
 	$worksheet->writeFormula($i,COL_DEVIS_REALISE,	'=SUM('.excel_column(COL_DEVIS_REALISE).$last_ligne.	':'.excel_column(COL_DEVIS_REALISE).$i.')' ,$format_title);
 	$worksheet->writeFormula($i,COL_CMD_REALISE,	'=SUM('.excel_column(COL_CMD_REALISE).$last_ligne.		':'.excel_column(COL_CMD_REALISE).$i.')' ,$format_title);
 	$worksheet->writeFormula($i,COL_MT_CMD,			'=SUM('.excel_column(COL_MT_CMD).$last_ligne.			':'.excel_column(COL_MT_CMD).$i.')' ,$format_title);
-	$worksheet->writeFormula($i, COL_RATIO,			'='.excel_column(COL_CMD_REALISE).($i+1).'/'.excel_column(COL_DEVIS_REALISE).($i+1) ,$format_pourcentage);
+	$worksheet->writeFormula($i,COL_RATIO,			'='.excel_column(COL_CMD_REALISE).($i+1).'/'.excel_column(COL_DEVIS_REALISE).($i+1) ,$format_pourcentage);
 
 	$i++;
 	$last_ligne = $i+1 ;

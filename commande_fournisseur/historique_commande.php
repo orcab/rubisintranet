@@ -183,6 +183,9 @@ function envoi_formulaire(l_action) {
 </head>
 <body>
 
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <!-- DECLARATION DU FORMULAIRE PRINCIPALE -->
 <form name="historique_commande" action="historique_commande.php" method="POST">
 <input type="hidden" name="action" value="">

@@ -17,43 +17,43 @@ $message  = '' ;
 
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
-if (!isset($_SESSION['filtre_date_inf']))			$_SESSION['filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-2,date('d'),date('Y')));
-if (!isset($_SESSION['filtre_date_sup']))			$_SESSION['filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
-if (!isset($_SESSION['filtre_ville']))				$_SESSION['filtre_ville']		= '';
-if (!isset($_SESSION['filtre_montant_devis']))		$_SESSION['filtre_montant_devis']	= 0;
-if (!isset($_SESSION['filtre_montant_cmd']))		$_SESSION['filtre_montant_cmd']		= 0;
-if (!isset($_SESSION['filtre_signe_montant_cmd']))	$_SESSION['filtre_signe_montant_cmd']	= '>=';
-if (!isset($_SESSION['filtre_classement']))			$_SESSION['filtre_classement']	= 'date DESC';
-if (!isset($_SESSION['filtre_representant']))		$_SESSION['filtre_representant'] = '';
-if (!isset($_SESSION['filtre_numero_devis']))		$_SESSION['filtre_numero_devis'] = '';
-if (!isset($_SESSION['filtre_numero_cmd']))			$_SESSION['filtre_numero_cmd'] = '';
-if (!isset($_SESSION['filtre_client']))				$_SESSION['filtre_client'] = '';
-if (!isset($_SESSION['filtre_artisan']))			$_SESSION['filtre_artisan'] = '';
-if (!isset($_SESSION['filtre_jour_relance']))		$_SESSION['filtre_jour_relance'] = JOUR_MAX_RELANCE_DEVIS ;
-if (!isset($_SESSION['filtre_relance']))			$_SESSION['filtre_relance'] = FALSE ;
-if (!isset($_SESSION['filtre_commande']))			$_SESSION['filtre_commande'] = 'devis_cde' ;
-if (!isset($_SESSION['filtre_article']))			$_SESSION['filtre_article'] = '' ;
+if (!isset($_SESSION['devis_expo_filtre_date_inf']))			$_SESSION['devis_expo_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-2,date('d'),date('Y')));
+if (!isset($_SESSION['devis_expo_filtre_date_sup']))			$_SESSION['devis_expo_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
+if (!isset($_SESSION['devis_expo_filtre_ville']))				$_SESSION['devis_expo_filtre_ville']		= '';
+if (!isset($_SESSION['devis_expo_filtre_montant_devis']))		$_SESSION['devis_expo_filtre_montant_devis']	= 0;
+if (!isset($_SESSION['devis_expo_filtre_montant_cmd']))		$_SESSION['devis_expo_filtre_montant_cmd']		= 0;
+if (!isset($_SESSION['devis_expo_filtre_signe_montant_cmd']))	$_SESSION['devis_expo_filtre_signe_montant_cmd']	= '>=';
+if (!isset($_SESSION['devis_expo_filtre_classement']))			$_SESSION['devis_expo_filtre_classement']	= 'date DESC';
+if (!isset($_SESSION['devis_expo_filtre_representant']))		$_SESSION['devis_expo_filtre_representant'] = '';
+if (!isset($_SESSION['devis_expo_filtre_numero_devis']))		$_SESSION['devis_expo_filtre_numero_devis'] = '';
+if (!isset($_SESSION['devis_expo_filtre_numero_cmd']))			$_SESSION['devis_expo_filtre_numero_cmd'] = '';
+if (!isset($_SESSION['devis_expo_filtre_client']))				$_SESSION['devis_expo_filtre_client'] = '';
+if (!isset($_SESSION['devis_expo_filtre_artisan']))			$_SESSION['devis_expo_filtre_artisan'] = '';
+if (!isset($_SESSION['devis_expo_filtre_jour_relance']))		$_SESSION['devis_expo_filtre_jour_relance'] = JOUR_MAX_RELANCE_DEVIS ;
+if (!isset($_SESSION['devis_expo_filtre_relance']))			$_SESSION['devis_expo_filtre_relance'] = FALSE ;
+if (!isset($_SESSION['devis_expo_filtre_commande']))			$_SESSION['devis_expo_filtre_commande'] = 'devis_cde' ;
+if (!isset($_SESSION['devis_expo_filtre_article']))			$_SESSION['devis_expo_filtre_article'] = '' ;
 
-if (isset($_POST['filtre_date_inf']))			$_SESSION['filtre_date_inf']			= $_POST['filtre_date_inf'];
-if (isset($_POST['filtre_date_sup']))			$_SESSION['filtre_date_sup']			= $_POST['filtre_date_sup'];
-if (isset($_POST['filtre_ville']))				$_SESSION['filtre_ville']				= $_POST['filtre_ville'];
-if (isset($_POST['filtre_montant_cmd']))		$_SESSION['filtre_montant_cmd']			= $_POST['filtre_montant_cmd'];
-if (isset($_POST['filtre_signe_montant_devis']))$_SESSION['filtre_signe_montant_devis'] = $_POST['filtre_signe_montant_devis'];
-if (isset($_POST['filtre_signe_montant_cmd']))	$_SESSION['filtre_signe_montant_cmd']	= $_POST['filtre_signe_montant_cmd'];
-if (isset($_POST['filtre_numero_devis']))		$_SESSION['filtre_numero_devis']		= $_POST['filtre_numero_devis'];
-if (isset($_POST['filtre_numero_cmd']))			$_SESSION['filtre_numero_cmd']			= $_POST['filtre_numero_cmd'];
-if (isset($_GET['filtre_classement']))			$_SESSION['filtre_classement']			= $_GET['filtre_classement'];
-if (isset($_POST['filtre_representant']))		$_SESSION['filtre_representant']		= $_POST['filtre_representant'];
-if (isset($_POST['filtre_client']))				$_SESSION['filtre_client']				= $_POST['filtre_client'];
-if (isset($_POST['filtre_artisan']))			$_SESSION['filtre_artisan']				= $_POST['filtre_artisan'];
-if (isset($_POST['filtre_jour_relance']))		$_SESSION['filtre_jour_relance']		= $_POST['filtre_jour_relance'];
-if (isset($_POST['filtre_commande']))			$_SESSION['filtre_commande']			= $_POST['filtre_commande'];
-if (isset($_POST['filtre_article']))			$_SESSION['filtre_article']				= $_POST['filtre_article'];
+if (isset($_POST['filtre_date_inf']))			$_SESSION['devis_expo_filtre_date_inf']			= $_POST['filtre_date_inf'];
+if (isset($_POST['filtre_date_sup']))			$_SESSION['devis_expo_filtre_date_sup']			= $_POST['filtre_date_sup'];
+if (isset($_POST['filtre_ville']))				$_SESSION['devis_expo_filtre_ville']				= $_POST['filtre_ville'];
+if (isset($_POST['filtre_montant_cmd']))		$_SESSION['devis_expo_filtre_montant_cmd']			= $_POST['filtre_montant_cmd'];
+if (isset($_POST['filtre_signe_montant_devis']))$_SESSION['devis_expo_filtre_signe_montant_devis'] = $_POST['filtre_signe_montant_devis'];
+if (isset($_POST['filtre_signe_montant_cmd']))	$_SESSION['devis_expo_filtre_signe_montant_cmd']	= $_POST['filtre_signe_montant_cmd'];
+if (isset($_POST['filtre_numero_devis']))		$_SESSION['devis_expo_filtre_numero_devis']		= $_POST['filtre_numero_devis'];
+if (isset($_POST['filtre_numero_cmd']))			$_SESSION['devis_expo_filtre_numero_cmd']			= $_POST['filtre_numero_cmd'];
+if (isset($_GET['filtre_classement']))			$_SESSION['devis_expo_filtre_classement']			= $_GET['filtre_classement'];
+if (isset($_POST['filtre_representant']))		$_SESSION['devis_expo_filtre_representant']		= $_POST['filtre_representant'];
+if (isset($_POST['filtre_client']))				$_SESSION['devis_expo_filtre_client']				= $_POST['filtre_client'];
+if (isset($_POST['filtre_artisan']))			$_SESSION['devis_expo_filtre_artisan']				= $_POST['filtre_artisan'];
+if (isset($_POST['filtre_jour_relance']))		$_SESSION['devis_expo_filtre_jour_relance']		= $_POST['filtre_jour_relance'];
+if (isset($_POST['filtre_commande']))			$_SESSION['devis_expo_filtre_commande']			= $_POST['filtre_commande'];
+if (isset($_POST['filtre_article']))			$_SESSION['devis_expo_filtre_article']				= $_POST['filtre_article'];
 
 if (isset($_POST['filtre_relance']))
-	$_SESSION['filtre_relance'] = TRUE ;
+	$_SESSION['devis_expo_filtre_relance'] = TRUE ;
 elseif (isset($_POST['action']) && !$_POST['action'])
-	$_SESSION['filtre_relance'] = FALSE ;
+	$_SESSION['devis_expo_filtre_relance'] = FALSE ;
 
 
 if(isset($_GET['action']) && $_GET['action']=='delete' && isset($_GET['id']) && $_GET['id']) { // mode delete
@@ -123,16 +123,16 @@ table#recherche td {
 	.hide_when_print { display:none; }
 }
 
-table#historique-devis th.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-devis th.<?=e(0,explode(' ',$_SESSION['devis_expo_filtre_classement']))?> {
 	border-top:solid 2px black;
 }
 
-table#historique-devis th.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?>,  table#historique-devis td.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-devis th.<?=e(0,explode(' ',$_SESSION['devis_expo_filtre_classement']))?>,  table#historique-devis td.<?=e(0,explode(' ',$_SESSION['devis_expo_filtre_classement']))?> {
 	border-left:solid 2px black;
 	border-right:solid 2px black;
 }
 
-table#historique-devis td.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-devis td.<?=e(0,explode(' ',$_SESSION['devis_expo_filtre_classement']))?> {
 	background-color:#D0D0D0;
 }
 
@@ -261,6 +261,9 @@ function calcul_cmd_rubis(id) {
 </head>
 <body>
 
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <form name="historique_devis" action="historique_devis.php" method="POST">
 <input type="hidden" name="action" value="">
 <input type="hidden" name="id" value="">
@@ -346,7 +349,7 @@ function calcul_cmd_rubis(id) {
 			<tr>
 				<td>Date de départ</td>
 				<td>
-					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['filtre_date_inf']?>" size="8">
+					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['devis_expo_filtre_date_inf']?>" size="8">
 					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_devis.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
@@ -354,31 +357,31 @@ function calcul_cmd_rubis(id) {
 						  inputField	: 'filtre_date_inf',         // ID of the input field
 						  ifFormat		: '%d/%m/%Y',    // the date format
 						  button		: 'trigger_inf',       // ID of the button
-						  date			: '<?=$_SESSION['filtre_date_inf']?>',
+						  date			: '<?=$_SESSION['devis_expo_filtre_date_inf']?>',
 						  firstDay 	: 1
 						}
 					  );
 					</script>
 				</td>
 				<td style="padding-left:2em;text-align:right;">Artisan</td>
-				<td><input type="text" name="filtre_artisan" value="<?=$_SESSION['filtre_artisan']?>" size="8"></td>
+				<td><input type="text" name="filtre_artisan" value="<?=$_SESSION['devis_expo_filtre_artisan']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;">Représentant</td>
-				<td><input type="text" name="filtre_representant" value="<?=$_SESSION['filtre_representant']?>" size="8"></td>
+				<td><input type="text" name="filtre_representant" value="<?=$_SESSION['devis_expo_filtre_representant']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;">N° CMD</td>
-				<td ><input type="text" name="filtre_numero_cmd" value="<?=$_SESSION['filtre_numero_cmd']?>" size="8"></td>
+				<td ><input type="text" name="filtre_numero_cmd" value="<?=$_SESSION['devis_expo_filtre_numero_cmd']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;" nowrap>Montant CMD
 					<select name="filtre_signe_montant_cmd">
-						<option value=">="<?=$_SESSION['filtre_signe_montant_cmd']=='>=' ? ' selected':''?>>supérieur à</option>
-						<option value="<="<?=$_SESSION['filtre_signe_montant_cmd']=='<=' ? ' selected':''?>>inférieur à</option>
+						<option value=">="<?=$_SESSION['devis_expo_filtre_signe_montant_cmd']=='>=' ? ' selected':''?>>supérieur à</option>
+						<option value="<="<?=$_SESSION['devis_expo_filtre_signe_montant_cmd']=='<=' ? ' selected':''?>>inférieur à</option>
 					</select></td>
-				<td nowrap><input type="text" name="filtre_montant_cmd" value="<?=$_SESSION['filtre_montant_cmd'] ? $_SESSION['filtre_montant_cmd']:'0' ?>" size="3">&euro;</td>
+				<td nowrap><input type="text" name="filtre_montant_cmd" value="<?=$_SESSION['devis_expo_filtre_montant_cmd'] ? $_SESSION['devis_expo_filtre_montant_cmd']:'0' ?>" size="3">&euro;</td>
 
 				<td><input type="submit" class="button divers" style="background-image:url(gfx/application_form_magnify.png);" value="Filtrer"></td>
 			</tr>
 			<tr>
 				<td>Date de fin</td>
 				<td>
-					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['filtre_date_sup']?>" size="8">
+					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['devis_expo_filtre_date_sup']?>" size="8">
 					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_devis.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
@@ -386,36 +389,36 @@ function calcul_cmd_rubis(id) {
 							inputField	: 'filtre_date_sup',         // ID of the input field
 							ifFormat	: '%d/%m/%Y',    // the date format
 							button		: 'trigger_sup',       // ID of the button
-							date		: '<?=$_SESSION['filtre_date_sup']?>',
+							date		: '<?=$_SESSION['devis_expo_filtre_date_sup']?>',
 							firstDay 	: 1
 						}
 					  );
 					</script>
 				</td>
 				<td style="padding-left:2em;text-align:right;">Client</td>
-				<td><input type="text" name="filtre_client" value="<?=$_SESSION['filtre_client']?>" size="8"></td>
+				<td><input type="text" name="filtre_client" value="<?=$_SESSION['devis_expo_filtre_client']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;">Ville</td>
-				<td><input type="text" name="filtre_ville" value="<?=$_SESSION['filtre_ville']?>" size="8"></td>
+				<td><input type="text" name="filtre_ville" value="<?=$_SESSION['devis_expo_filtre_ville']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;">N° Devis</td>
-				<td><input type="text" name="filtre_numero_devis" value="<?=$_SESSION['filtre_numero_devis']?>" size="8"></td>
-				<td style="padding-left:2em;text-align:right;" nowrap>Article <input type="text" name="filtre_article" value="<?=$_SESSION['filtre_article']?>" size="8" /></td>
+				<td><input type="text" name="filtre_numero_devis" value="<?=$_SESSION['devis_expo_filtre_numero_devis']?>" size="8"></td>
+				<td style="padding-left:2em;text-align:right;" nowrap>Article <input type="text" name="filtre_article" value="<?=$_SESSION['devis_expo_filtre_article']?>" size="8" /></td>
 				<td nowrap></td>
 			</tr>
 
 			<tr>
 				<td>Jour sans relance</td>
-				<td><input type="text" name="filtre_jour_relance" value="<?=$_SESSION['filtre_jour_relance']?>" size="1"></td>
+				<td><input type="text" name="filtre_jour_relance" value="<?=$_SESSION['devis_expo_filtre_jour_relance']?>" size="1"></td>
 				<td style="text-align:right;"><label for="filtre_relance">Afficher uniquement les relances : </label></td>
-				<td><input id="filtre_relance" type="checkbox" name="filtre_relance" value="on"<?=$_SESSION['filtre_relance'] ? ' checked':''?>></td>
+				<td><input id="filtre_relance" type="checkbox" name="filtre_relance" value="on"<?=$_SESSION['devis_expo_filtre_relance'] ? ' checked':''?>></td>
 				<td></td>
 				<td></td>
 				<td></td>
 				<td></td>
 				<td>
 					<select name="filtre_commande">
-						<option value="devis"<?=$_SESSION['filtre_commande']=='devis'?' selected':''?>>Afficher uniquement devis</option>
-						<option value="cde"<?=$_SESSION['filtre_commande']=='cde'?' selected':''?>>Afficher uniquement cde</option>
-						<option value="devis_cde"<?=$_SESSION['filtre_commande']=='devis_cde'?' selected':''?>>Afficher cde + devis</option>		
+						<option value="devis"<?=$_SESSION['devis_expo_filtre_commande']=='devis'?' selected':''?>>Afficher uniquement devis</option>
+						<option value="cde"<?=$_SESSION['devis_expo_filtre_commande']=='cde'?' selected':''?>>Afficher uniquement cde</option>
+						<option value="devis_cde"<?=$_SESSION['devis_expo_filtre_commande']=='devis_cde'?' selected':''?>>Afficher cde + devis</option>		
 					</select>
 				</td>
 			</tr>
@@ -445,30 +448,30 @@ function calcul_cmd_rubis(id) {
 	$where = array() ;
 	$tables = array('devis') ;
 	
-	if ($_SESSION['filtre_article']) {
+	if ($_SESSION['devis_expo_filtre_article']) {
 		$tables[] = 'devis_ligne'; // on rajoute la table des ligne de devis à la recherche
 		$where[] = "devis.id = devis_ligne.id_devis";
-		$where[] = "(ref_fournisseur LIKE '%".mysql_escape_string($_SESSION['filtre_article'])."%' OR designation LIKE '%".mysql_escape_string($_SESSION['filtre_article'])."%')";
+		$where[] = "(ref_fournisseur LIKE '%".mysql_escape_string($_SESSION['devis_expo_filtre_article'])."%' OR designation LIKE '%".mysql_escape_string($_SESSION['devis_expo_filtre_article'])."%')";
 	}
 
 
-	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['filtre_date_inf'])));
-	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['filtre_date_sup'])));
+	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['devis_expo_filtre_date_inf'])));
+	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['devis_expo_filtre_date_sup'])));
 	
-	if ($_SESSION['filtre_date_inf'] && $_SESSION['filtre_date_inf'] != 'Aucune') $where[] = "`date` >= '$date_inf_formater 00:00:00'" ;
-	if ($_SESSION['filtre_date_sup'] && $_SESSION['filtre_date_sup'] != 'Aucune') $where[] = "`date` <= '$date_sup_formater 23:59:59'" ;
-	if ($_SESSION['filtre_representant'])	$where[] = "representant LIKE '%".	mysql_escape_string($_SESSION['filtre_representant'])."%'";
-	if ($_SESSION['filtre_artisan'])		$where[] = "artisan LIKE '%".		mysql_escape_string($_SESSION['filtre_artisan'])."%'";
-	if ($_SESSION['filtre_client'])			$where[] = "nom_client LIKE '%".	mysql_escape_string($_SESSION['filtre_client'])."%'";
-	if ($_SESSION['filtre_ville'])			$where[] = "ville_client LIKE '%".	mysql_escape_string($_SESSION['filtre_ville'])."%'";
-	if ($_SESSION['filtre_numero_cmd'])		$where[] = "num_cmd_rubis LIKE '%".	mysql_escape_string($_SESSION['filtre_numero_cmd'])."%'";
-	if ($_SESSION['filtre_numero_devis'])	$where[] = "id = '".				mysql_escape_string($_SESSION['filtre_numero_devis'])."'";
-	if ($_SESSION['filtre_montant_cmd'] > 0) $where[] = "mtht_cmd_rubis $_SESSION[filtre_signe_montant_cmd] $_SESSION[filtre_montant_cmd]" ;
+	if ($_SESSION['devis_expo_filtre_date_inf'] && $_SESSION['devis_expo_filtre_date_inf'] != 'Aucune') $where[] = "`date` >= '$date_inf_formater 00:00:00'" ;
+	if ($_SESSION['devis_expo_filtre_date_sup'] && $_SESSION['devis_expo_filtre_date_sup'] != 'Aucune') $where[] = "`date` <= '$date_sup_formater 23:59:59'" ;
+	if ($_SESSION['devis_expo_filtre_representant'])	$where[] = "representant LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_representant'])."%'";
+	if ($_SESSION['devis_expo_filtre_artisan'])		$where[] = "artisan LIKE '%".		mysql_escape_string($_SESSION['devis_expo_filtre_artisan'])."%'";
+	if ($_SESSION['devis_expo_filtre_client'])			$where[] = "nom_client LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_client'])."%'";
+	if ($_SESSION['devis_expo_filtre_ville'])			$where[] = "ville_client LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_ville'])."%'";
+	if ($_SESSION['devis_expo_filtre_numero_cmd'])		$where[] = "num_cmd_rubis LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_numero_cmd'])."%'";
+	if ($_SESSION['devis_expo_filtre_numero_devis'])	$where[] = "id = '".				mysql_escape_string($_SESSION['devis_expo_filtre_numero_devis'])."'";
+	if ($_SESSION['devis_expo_filtre_montant_cmd'] > 0) $where[] = "mtht_cmd_rubis $_SESSION[devis_expo_filtre_signe_montant_cmd] $_SESSION[devis_expo_filtre_montant_cmd]" ;
 
 
-	if		($_SESSION['filtre_commande'] == 'devis')
+	if		($_SESSION['devis_expo_filtre_commande'] == 'devis')
 		$where[] = "(num_cmd_rubis IS NULL OR num_cmd_rubis='')";
-	elseif	($_SESSION['filtre_commande'] == 'cde')
+	elseif	($_SESSION['devis_expo_filtre_commande'] == 'cde')
 		$where[] = "NOT (num_cmd_rubis IS NULL OR num_cmd_rubis='') AND num_cmd_rubis<>'ANNULE' AND num_cmd_rubis<>'SUSPENDU'";
 
 	if ($where)
@@ -476,12 +479,12 @@ function calcul_cmd_rubis(id) {
 	else
 		$where = '';
 
-	if		($_SESSION['filtre_classement'] == 'DATE DESC')
+	if		($_SESSION['devis_expo_filtre_classement'] == 'DATE DESC')
 		$ordre = "`date` DESC";
-	elseif	($_SESSION['filtre_classement'] == 'DATE ASC')
+	elseif	($_SESSION['devis_expo_filtre_classement'] == 'DATE ASC')
 		$ordre = "`date` ASC";
 	else
-		$ordre = $_SESSION['filtre_classement'];
+		$ordre = $_SESSION['devis_expo_filtre_classement'];
 
 
 	$tables = join(',',$tables);
@@ -514,11 +517,11 @@ EOT;
 	
 	while($row = mysql_fetch_array($res)) {
 		// on n'affiche pas le devis si l'on a demandé que les relances client
-		if ($_SESSION['filtre_relance']) {
+		if ($_SESSION['devis_expo_filtre_relance']) {
 			if (!strtoupper(trim($row['num_cmd_rubis']))) {
 				// le devis a été relance et a depasssé la date limite OU le devis n'a jamais été relancé et la date est dépassé
-				if ($row['nb_relance'] && $row['datediff_relance'] >= $_SESSION['filtre_jour_relance']) { 
-				} elseif (!$row['nb_relance'] && $row['datediff_devis'] >= $_SESSION['filtre_jour_relance']) {					
+				if ($row['nb_relance'] && $row['datediff_relance'] >= $_SESSION['devis_expo_filtre_jour_relance']) { 
+				} elseif (!$row['nb_relance'] && $row['datediff_devis'] >= $_SESSION['devis_expo_filtre_jour_relance']) {					
 				} else {
 					continue;
 				}
@@ -568,9 +571,9 @@ EOT;
 										$jour_sans_relance = 0 ;
 										if (!strtoupper(trim($row['num_cmd_rubis']))) {
 											// le devis a été relance et a depasssé la date limite OU le devis n'a jamais été relancé et la date est dépassé
-											if ($row['nb_relance'] && $row['datediff_relance'] >= $_SESSION['filtre_jour_relance']) {
+											if ($row['nb_relance'] && $row['datediff_relance'] >= $_SESSION['devis_expo_filtre_jour_relance']) {
 												echo 'yellow' ; $jour_sans_relance = $row['datediff_relance'] ;
-											} elseif (!$row['nb_relance'] && $row['datediff_devis'] >= $_SESSION['filtre_jour_relance']) {
+											} elseif (!$row['nb_relance'] && $row['datediff_devis'] >= $_SESSION['devis_expo_filtre_jour_relance']) {
 												echo 'yellow'; $jour_sans_relance = $row['datediff_devis'] ;
 											} else {
 												echo 'white' ;

@@ -54,7 +54,11 @@ function update_path(selecteur) {
 </script>
 
 </head>
-<body style="margin:0px;padding:0px;">
+<body style="margin-left:0px;margin-right:0px;padding:0px;">
+
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Edition du catalogue papier</div>
 
 <center>
