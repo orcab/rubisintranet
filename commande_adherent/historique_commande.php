@@ -18,29 +18,29 @@ $vendeurs['LN'] = 'Jean René';
 $vendeurs['MAR'] = 'Marc';
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
-if (!isset($_SESSION['filtre_date_inf']))	$_SESSION['filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-0,date('Y')));
-if (!isset($_SESSION['filtre_date_sup']))	$_SESSION['filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
-if (!isset($_SESSION['filtre_adherent']))	$_SESSION['filtre_adherent']	= '';
-if (!isset($_SESSION['filtre_reference']))	$_SESSION['filtre_reference']	= '';
-if (!isset($_SESSION['filtre_vendeur']))	$_SESSION['filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
-if (!isset($_SESSION['filtre_numero']))		$_SESSION['filtre_numero']		= '';
-if (!isset($_SESSION['filtre_montant']))	$_SESSION['filtre_montant']		= 0;
-if (!isset($_SESSION['filtre_signe_montant']))	$_SESSION['filtre_signe_montant'] = '>=';
-if (!isset($_SESSION['filtre_classement'])) $_SESSION['filtre_classement']	= 'NOBON DESC';
-if (!isset($_SESSION['filtre_article']))	$_SESSION['filtre_article']		= '';
-if (!isset($_SESSION['filtre_type_cde']))	$_SESSION['filtre_type_cde']	= '';
+if (!isset($_SESSION['cde_adh_filtre_date_inf']))	$_SESSION['cde_adh_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-0,date('Y')));
+if (!isset($_SESSION['cde_adh_filtre_date_sup']))	$_SESSION['cde_adh_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
+if (!isset($_SESSION['cde_adh_filtre_adherent']))	$_SESSION['cde_adh_filtre_adherent']	= '';
+if (!isset($_SESSION['cde_adh_filtre_reference']))	$_SESSION['cde_adh_filtre_reference']	= '';
+if (!isset($_SESSION['cde_adh_filtre_vendeur']))	$_SESSION['cde_adh_filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
+if (!isset($_SESSION['cde_adh_filtre_numero']))		$_SESSION['cde_adh_filtre_numero']		= '';
+if (!isset($_SESSION['cde_adh_filtre_montant']))	$_SESSION['cde_adh_filtre_montant']		= 0;
+if (!isset($_SESSION['cde_adh_filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_montant'] = '>=';
+if (!isset($_SESSION['cde_adh_filtre_classement'])) $_SESSION['cde_adh_filtre_classement']	= 'NOBON DESC';
+if (!isset($_SESSION['cde_adh_filtre_article']))	$_SESSION['cde_adh_filtre_article']		= '';
+if (!isset($_SESSION['cde_adh_filtre_type_cde']))	$_SESSION['cde_adh_filtre_type_cde']	= '';
 
-if (isset($_POST['filtre_date_inf']))	$_SESSION['filtre_date_inf']	= $_POST['filtre_date_inf'];
-if (isset($_POST['filtre_date_sup']))	$_SESSION['filtre_date_sup']	= $_POST['filtre_date_sup'];
-if (isset($_POST['filtre_adherent']))	$_SESSION['filtre_adherent']	= $_POST['filtre_adherent'];
-if (isset($_POST['filtre_reference']))	$_SESSION['filtre_reference']	= $_POST['filtre_reference'];
-if (isset($_POST['filtre_vendeur']))	$_SESSION['filtre_vendeur']		= $_POST['filtre_vendeur'];
-if (isset($_POST['filtre_numero']))		$_SESSION['filtre_numero']		= $_POST['filtre_numero'];
-if (isset($_POST['filtre_montant']))	$_SESSION['filtre_montant']		= $_POST['filtre_montant'];
-if (isset($_POST['filtre_signe_montant']))	$_SESSION['filtre_signe_montant'] = $_POST['filtre_signe_montant'];
-if (isset($_GET['filtre_classement']))	$_SESSION['filtre_classement']  = $_GET['filtre_classement'];
-if (isset($_POST['filtre_article']))	$_SESSION['filtre_article']		= $_POST['filtre_article'];
-if (isset($_POST['filtre_type_cde']))	$_SESSION['filtre_type_cde']	= $_POST['filtre_type_cde'];
+if (isset($_POST['filtre_date_inf']))	$_SESSION['cde_adh_filtre_date_inf']	= $_POST['filtre_date_inf'];
+if (isset($_POST['filtre_date_sup']))	$_SESSION['cde_adh_filtre_date_sup']	= $_POST['filtre_date_sup'];
+if (isset($_POST['filtre_adherent']))	$_SESSION['cde_adh_filtre_adherent']	= $_POST['filtre_adherent'];
+if (isset($_POST['filtre_reference']))	$_SESSION['cde_adh_filtre_reference']	= $_POST['filtre_reference'];
+if (isset($_POST['filtre_vendeur']))	$_SESSION['cde_adh_filtre_vendeur']		= $_POST['filtre_vendeur'];
+if (isset($_POST['filtre_numero']))		$_SESSION['cde_adh_filtre_numero']		= $_POST['filtre_numero'];
+if (isset($_POST['filtre_montant']))	$_SESSION['cde_adh_filtre_montant']		= $_POST['filtre_montant'];
+if (isset($_POST['filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_montant'] = $_POST['filtre_signe_montant'];
+if (isset($_GET['filtre_classement']))	$_SESSION['cde_adh_filtre_classement']  = $_GET['filtre_classement'];
+if (isset($_POST['filtre_article']))	$_SESSION['cde_adh_filtre_article']		= $_POST['filtre_article'];
+if (isset($_POST['filtre_type_cde']))	$_SESSION['cde_adh_filtre_type_cde']	= $_POST['filtre_type_cde'];
 
 
 // ACTION A FAIRE
@@ -71,16 +71,16 @@ table#historique-commande { border-collapse:collapse; }
 
 table#historique-commande td { border:solid 1px grey; padding:3px;font-size:0.8em;}
 
-table#historique-commande th.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-commande th.<?=e(0,explode(' ',$_SESSION['cde_adh_filtre_classement']))?> {
 	border-top:solid 2px black;
 }
 
-table#historique-commande th.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?>,  table#historique-commande td.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-commande th.<?=e(0,explode(' ',$_SESSION['cde_adh_filtre_classement']))?>,  table#historique-commande td.<?=e(0,explode(' ',$_SESSION['cde_adh_filtre_classement']))?> {
 	border-left:solid 2px black;
 	border-right:solid 2px black;
 }
 
-table#historique-commande td.<?=e(0,explode(' ',$_SESSION['filtre_classement']))?> {
+table#historique-commande td.<?=e(0,explode(' ',$_SESSION['cde_adh_filtre_classement']))?> {
 	background-color:#D0D0D0;
 }
 
@@ -256,7 +256,7 @@ function envoi_formulaire(l_action) {
 			<tr>
 				<td>Date de départ</td>
 				<td>
-					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['filtre_date_inf']?>" size="8">
+					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['cde_adh_filtre_date_inf']?>" size="8">
 					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
@@ -264,24 +264,24 @@ function envoi_formulaire(l_action) {
 						  inputField	: 'filtre_date_inf',         // ID of the input field
 						  ifFormat		: '%d/%m/%Y',    // the date format
 						  button		: 'trigger_inf',       // ID of the button
-						  date			: '<?=$_SESSION['filtre_date_inf']?>',
+						  date			: '<?=$_SESSION['cde_adh_filtre_date_inf']?>',
 						  firstDay 	: 1
 						}
 					  );
 					</script>
 				</td>
 				<td style="padding-left:1em;">Adhérent</td>
-				<td><input type="text" name="filtre_adherent" value="<?=$_SESSION['filtre_adherent']?>" size="8"></td>
+				<td><input type="text" name="filtre_adherent" value="<?=$_SESSION['cde_adh_filtre_adherent']?>" size="8"></td>
 				<td style="padding-left:1em;">Montant
 					<select name="filtre_signe_montant">
-						<option value=">="<?=$_SESSION['filtre_signe_montant']=='>=' ? ' selected':''?>>supérieur à</option>
-						<option value="<="<?=$_SESSION['filtre_signe_montant']=='<=' ? ' selected':''?>>inférieur à</option>
+						<option value=">="<?=$_SESSION['cde_adh_filtre_signe_montant']=='>=' ? ' selected':''?>>supérieur à</option>
+						<option value="<="<?=$_SESSION['cde_adh_filtre_signe_montant']=='<=' ? ' selected':''?>>inférieur à</option>
 					</select></td>
-				<td><input type="text" name="filtre_montant" value="<?=$_SESSION['filtre_montant'] ? $_SESSION['filtre_montant']:'0' ?>" size="3">&euro;</td>
+				<td><input type="text" name="filtre_montant" value="<?=$_SESSION['cde_adh_filtre_montant'] ? $_SESSION['cde_adh_filtre_montant']:'0' ?>" size="3">&euro;</td>
 				<td>
 					<select name="filtre_type_cde">
-						<option value=""<?=$_SESSION['filtre_type_cde']==''							?' selected':''?>>Tous types de cde</option>
-						<option value="cde_en_cours"<?=$_SESSION['filtre_type_cde']=='cde_en_cours'	?' selected':''?>>Cde en reliquats</option>
+						<option value=""<?=$_SESSION['cde_adh_filtre_type_cde']==''							?' selected':''?>>Tous types de cde</option>
+						<option value="cde_en_cours"<?=$_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours'	?' selected':''?>>Cde en reliquats</option>
 					</select>
 				</td>
 				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(gfx/application_form_magnify.png);" value="Filtrer"></td>
@@ -289,7 +289,7 @@ function envoi_formulaire(l_action) {
 			<tr>
 				<td>Date de fin</td>
 				<td>
-					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['filtre_date_sup']?>" size="8">
+					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['cde_adh_filtre_date_sup']?>" size="8">
 					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
@@ -297,7 +297,7 @@ function envoi_formulaire(l_action) {
 							inputField	: 'filtre_date_sup',         // ID of the input field
 							ifFormat	: '%d/%m/%Y',    // the date format
 							button		: 'trigger_sup',       // ID of the button
-							date		: '<?=$_SESSION['filtre_date_sup']?>',
+							date		: '<?=$_SESSION['cde_adh_filtre_date_sup']?>',
 							firstDay 	: 1
 						}
 					  );
@@ -306,15 +306,15 @@ function envoi_formulaire(l_action) {
 				<td style="text-align:right;">Vendeur</td>
 				<td>
 					<select name="filtre_vendeur">
-							<option value=""<?=$_SESSION['filtre_vendeur']==''?' selected':''?>>TOUS</option>
+							<option value=""<?=$_SESSION['cde_adh_filtre_vendeur']==''?' selected':''?>>TOUS</option>
 <?						while (list($key, $val) = each($vendeurs)) { ?>
-							<option value="<?=$key?>"<?=$_SESSION['filtre_vendeur']==$key ? ' selected':''?>><?=$val?></option>
+							<option value="<?=$key?>"<?=$_SESSION['cde_adh_filtre_vendeur']==$key ? ' selected':''?>><?=$val?></option>
 <?						} ?>
 					</select>
 				</td>
-				<td style="text-align:right;">Référence <input type="text" name="filtre_reference" value="<?=$_SESSION['filtre_reference']?>" size="8"></td>
-				<td style="text-align:right;padding-left:1em;">N° Cde <input type="text" name="filtre_numero" value="<?=$_SESSION['filtre_numero']?>" size="8"></td>
-				<td style="padding-left:1em;">Code Article <input type="text" name="filtre_article" value="<?=$_SESSION['filtre_article']?>" size="8"></td>
+				<td style="text-align:right;">Référence <input type="text" name="filtre_reference" value="<?=$_SESSION['cde_adh_filtre_reference']?>" size="8"></td>
+				<td style="text-align:right;padding-left:1em;">N° Cde <input type="text" name="filtre_numero" value="<?=$_SESSION['cde_adh_filtre_numero']?>" size="8"></td>
+				<td style="padding-left:1em;">Code Article <input type="text" name="filtre_article" value="<?=$_SESSION['cde_adh_filtre_article']?>" size="8"></td>
 				<td></td>
 			</tr>
 		</table>
@@ -335,33 +335,33 @@ function envoi_formulaire(l_action) {
 	$where = array() ;
 	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE");
 	
-	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['filtre_date_inf'])));
-	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['filtre_date_sup'])));
+	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_inf'])));
+	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_sup'])));
 	
-	if ($_SESSION['filtre_date_inf'] && $_SESSION['filtre_date_inf'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) >= '$date_inf_formater'" ;
-	if ($_SESSION['filtre_date_sup'] && $_SESSION['filtre_date_sup'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) <= '$date_sup_formater'" ;
-	if ($_SESSION['filtre_adherent'])	$where[] = "NOMSB like '%".strtoupper(mysql_escape_string($_SESSION['filtre_adherent']))."%'" ;
-	if ($_SESSION['filtre_vendeur'])	$where[] = "LIVSB='".strtoupper(mysql_escape_string($_SESSION['filtre_vendeur']))."'" ;
-	if ($_SESSION['filtre_reference'])	$where[] = "RFCSB like '%".strtoupper(mysql_escape_string($_SESSION['filtre_reference']))."%'" ;
-	if ($_SESSION['filtre_numero'])		$where[] = "CDE_ENTETE.NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['filtre_numero'])))."%'" ;
+	if ($_SESSION['cde_adh_filtre_date_inf'] && $_SESSION['cde_adh_filtre_date_inf'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) >= '$date_inf_formater'" ;
+	if ($_SESSION['cde_adh_filtre_date_sup'] && $_SESSION['cde_adh_filtre_date_sup'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) <= '$date_sup_formater'" ;
+	if ($_SESSION['cde_adh_filtre_adherent'])	$where[] = "NOMSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_adherent']))."%'" ;
+	if ($_SESSION['cde_adh_filtre_vendeur'])	$where[] = "LIVSB='".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_vendeur']))."'" ;
+	if ($_SESSION['cde_adh_filtre_reference'])	$where[] = "RFCSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_reference']))."%'" ;
+	if ($_SESSION['cde_adh_filtre_numero'])		$where[] = "CDE_ENTETE.NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_numero'])))."%'" ;
 
-	$where[] = "MONTBT $_SESSION[filtre_signe_montant] $_SESSION[filtre_montant]" ;
+	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] $_SESSION[cde_adh_filtre_montant]" ;
 	$where[] = 'NBLIG > 0' ;
 	$where[] = "ETSEE = ''" ; // commande non annulée
 	$where[] = "CDE_ENTETE.AGENC = '$LOGINOR_AGENCE'" ; // uniquement pour l'agence en cours
 
 	// gere les recherche sur article et type de commande
-	if ($_SESSION['filtre_article'] || $_SESSION['filtre_type_cde']) {
+	if ($_SESSION['cde_adh_filtre_article'] || $_SESSION['cde_adh_filtre_type_cde']) {
 		$tables[] = "${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 CDE_DETAIL"; // on rajoute la table détail
 		$where[]  = "CDE_ENTETE.NOBON=CDE_DETAIL.NOBON"; // liaison naturel entre detail et entete
 
 		// code article présent dans la cde
-		if ($_SESSION['filtre_article'])
-			$where[]  = "CDE_DETAIL.CODAR='".strtoupper(trim(mysql_escape_string($_SESSION['filtre_article'])))."'";
+		if ($_SESSION['cde_adh_filtre_article'])
+			$where[]  = "CDE_DETAIL.CODAR='".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_article'])))."'";
 
 		// reliquat ou livrées
-		if ($_SESSION['filtre_type_cde'])
-			$where[]  = "(CDE_DETAIL.TRAIT='".($_SESSION['filtre_type_cde']=='cde_en_cours'?'R':'F')."' AND ". // article non receptioné
+		if ($_SESSION['cde_adh_filtre_type_cde'])
+			$where[]  = "(CDE_DETAIL.TRAIT='".($_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours'?'R':'F')."' AND ". // article non receptioné
 						"CDE_DETAIL.PROFI='1' AND ". // un article et pas un commentaire
 						"CDE_DETAIL.ETSBE='')" ; // Une ligne non annulée
 	}
@@ -371,12 +371,12 @@ function envoi_formulaire(l_action) {
 //print_r($_SESSION);
 //print_r($_GET);
 
-	if		($_SESSION['filtre_classement'] == 'DATE DESC')
+	if		($_SESSION['cde_adh_filtre_classement'] == 'DATE DESC')
 		$ordre = 'DTBOS DESC, DTBOA DESC, DTBOM DESC, DTBOJ DESC';
-	elseif	($_SESSION['filtre_classement'] == 'DATE ASC')
+	elseif	($_SESSION['cde_adh_filtre_classement'] == 'DATE ASC')
 		$ordre = 'DTBOS ASC, DTBOA ASC, DTBOM ASC, DTBOJ ASC';
 	else
-		$ordre = $_SESSION['filtre_classement'];
+		$ordre = $_SESSION['cde_adh_filtre_classement'];
 
 	$tables = join(',',$tables);
 
