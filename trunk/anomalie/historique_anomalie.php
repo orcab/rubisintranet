@@ -300,9 +300,9 @@ function envoi_formulaire(l_action) {
 		<td>
 			<select name="commentaire_humeur" size="1">
 				<option style="padding-left:30px;height:20px;" value="0" selected>Indifférent</option>
-				<option style="padding-left:30px;height:20px;background:white url(gfx/weather-clear.png) no-repeat left;" value="1">Content</option>
-				<option style="padding-left:30px;height:20px;background:white url(gfx/weather-few-clouds.png) no-repeat left;" value="2">Mausade</option>
-				<option style="padding-left:30px;height:20px;background:white url(gfx/weather-storm.png) no-repeat left;" value="3">Enervé</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-clear.png) no-repeat left;" value="1">Content</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-few-clouds.png) no-repeat left;" value="2">Mausade</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-storm.png) no-repeat left;" value="3">Enervé</option>
 			</select>
 		</td>
 	</tr>
@@ -332,7 +332,7 @@ function envoi_formulaire(l_action) {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['anomalie_filtre_date_inf']?>" size="8">
-					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_inf.value='';">
+					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -356,13 +356,13 @@ function envoi_formulaire(l_action) {
 <?						} ?>
 					</select>
 				</td>
-				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(gfx/application_form_magnify.png);" value="Filtrer"></td>
+				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"></td>
 			</tr>
 			<tr>
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['anomalie_filtre_date_sup']?>" size="8">
-					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_sup.value='';">
+					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
 						{
@@ -400,15 +400,15 @@ function envoi_formulaire(l_action) {
 
 	</caption>
 	<tr>
-		<th class="id">N°<br><a href="historique_anomalie.php?filtre_classement=id ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=id DESC"><img src="gfx/desc.png"></a></th>
-		<th class="date_creation">Date création<br><a href="historique_anomalie.php?filtre_classement=date_creation ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=date_creation DESC"><img src="gfx/desc.png"></a></th>
-		<th class="createur">Createur<br><a href="historique_anomalie.php?filtre_classement=createur ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=createur DESC"><img src="gfx/desc.png"></a></th>
-		<th class="artisan">Adhérent<br><a href="historique_anomalie.php?filtre_classement=artisan ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=artisan DESC"><img src="gfx/desc.png"></a></th>
-		<th class="fournisseur">Fournisseur<br><a href="historique_anomalie.php?filtre_classement=fournisseur ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=fournisseur DESC"><img src="gfx/desc.png"></a></th>
-		<th class="pole">Pole<br><a href="historique_anomalie.php?filtre_classement=pole ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=pole DESC"><img src="gfx/desc.png"></a></th>
-		<th class="evolution">Etat<br><a href="historique_anomalie.php?filtre_classement=evolution ASC"><img src="gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=evolution DESC"><img src="gfx/desc.png"></a></th>
+		<th class="id">N°<br><a href="historique_anomalie.php?filtre_classement=id ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=id DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="date_creation">Date création<br><a href="historique_anomalie.php?filtre_classement=date_creation ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=date_creation DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="createur">Createur<br><a href="historique_anomalie.php?filtre_classement=createur ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=createur DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="artisan">Adhérent<br><a href="historique_anomalie.php?filtre_classement=artisan ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=artisan DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="fournisseur">Fournisseur<br><a href="historique_anomalie.php?filtre_classement=fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=fournisseur DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="pole">Pole<br><a href="historique_anomalie.php?filtre_classement=pole ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=pole DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="evolution">Etat<br><a href="historique_anomalie.php?filtre_classement=evolution ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=evolution DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="responsabilite">Responsabilité</th>
-		<th>Commentaire<br><input name="button_affiche_commentaire" type="button" class="button divers" style="background-image:url(gfx/comments.png);" value="Afficher" onclick="liste_toute_commentaire();"></th>
+		<th>Commentaire<br><input name="button_affiche_commentaire" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_commentaire();"></th>
 		<th>Edit</th>
 	</tr>
 <?
@@ -487,22 +487,22 @@ if (DEBUG)
 		?></td><!-- pole -->
 		<td class="evolution" style="text-align:left;" nowrap><?
 															switch($row['evolution']) {
-																case 0: echo '<img src="gfx/feu_red.png" /> A traiter'; break ;
-																case 1: echo '<img src="gfx/feu_yellow.png" /> En cours'; break ;
-																case 2: echo "<img src=\"gfx/feu_green.png\" /> Cloturée<br/>Le $row[date_cloture_formatee]"; break ;
+																case 0: echo '<img src="/intranet/gfx/feu_red.png" /> A traiter'; break ;
+																case 1: echo '<img src="/intranet/gfx/feu_yellow.png" /> En cours'; break ;
+																case 2: echo "<img src=\"/intranet/gfx/feu_green.png\" /> Cloturée<br/>Le $row[date_cloture_formatee]"; break ;
 															} ?></td><!-- etat -->
 		<td class="responsabilite" style="text-align:left;"><?
 				switch($row['resp_coop']) {	case 0: break ;
-											case 1: echo '<img src="gfx/feu_yellow.png" /> <strong>Coop</strong> partiellement<br>'; break ;
-											case 2: echo '<img src="gfx/feu_red.png" /> <strong>Coop complétement</strong><br>'; break ;
+											case 1: echo '<img src="/intranet/gfx/feu_yellow.png" /> <strong>Coop</strong> partiellement<br>'; break ;
+											case 2: echo '<img src="/intranet/gfx/feu_red.png" /> <strong>Coop complétement</strong><br>'; break ;
 										}
 				switch($row['resp_adh']) {	case 0: break ;
-											case 1: echo '<img src="gfx/feu_yellow.png" /> <strong>Adhérent</strong> partiellement<br>'; break ;
-											case 2: echo '<img src="gfx/feu_red.png" /> <strong>Adhérent</strong> complétement<br>'; break ;
+											case 1: echo '<img src="/intranet/gfx/feu_yellow.png" /> <strong>Adhérent</strong> partiellement<br>'; break ;
+											case 2: echo '<img src="/intranet/gfx/feu_red.png" /> <strong>Adhérent</strong> complétement<br>'; break ;
 										}
 				switch($row['resp_four']) {	case 0: break ;
-											case 1: echo '<img src="gfx/feu_yellow.png" /> <strong>Fournisseur</strong> partiellement<br>'; break ;
-											case 2: echo '<img src="gfx/feu_red.png" /> <strong>Fournisseur</strong> complétement<br>'; break ;
+											case 1: echo '<img src="/intranet/gfx/feu_yellow.png" /> <strong>Fournisseur</strong> partiellement<br>'; break ;
+											case 2: echo '<img src="/intranet/gfx/feu_red.png" /> <strong>Fournisseur</strong> complétement<br>'; break ;
 										}
 			
 		?></td><!-- responsabilité -->
@@ -510,15 +510,15 @@ if (DEBUG)
 <?			
 			$nb_commentaire = e('nb_commentaire',mysql_fetch_array(mysql_query("SELECT count(id) as nb_commentaire FROM anomalie_commentaire WHERE id_anomalie='$row[id]'  AND supprime=0"))); ?>
 			
-				<a class="hide_when_print" href="javascript:liste_commentaire('<?=$row['id']?>');" style="border:none;"><img src="gfx/list.gif" alt="Liste des commentaires" title="Liste des commentaires" align="top"></a><span style="font-size:1.2em;color:green;font-weight:bold;"><?=$nb_commentaire ? $nb_commentaire : '' ?></span>
+				<a class="hide_when_print" href="javascript:liste_commentaire('<?=$row['id']?>');" style="border:none;"><img src="/intranet/gfx/list.gif" alt="Liste des commentaires" title="Liste des commentaires" align="top"></a><span style="font-size:1.2em;color:green;font-weight:bold;"><?=$nb_commentaire ? $nb_commentaire : '' ?></span>
 
 			<br><a href="javascript:commentaire_anomalie('<?=$row['id']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td style="text-align:center;"><a href="creation_anomalie.php?id=<?=$row['id']?>"><img src="gfx/edit.gif" alt="Modification" /></a></td>
+		<td style="text-align:center;"><a href="creation_anomalie.php?id=<?=$row['id']?>"><img src="/intranet/gfx/edit.gif" alt="Modification" /></a></td>
 	</tr>
 
 			<tr style="display:none;" id="commentaire_anomalie_<?=$row['id']?>">
-				<td><img src="gfx/return.jpg"></td>
+				<td><img src="/intranet/gfx/return.jpg"></td>
 				<td colspan="13" valign="top" style="padding:0px;">
 					<div style="background:#F0F0F0;padding:3px;"><strong style="text-decoration:underline;">Problème rencontré :</strong><br><?=$row['probleme']?></div>
 <?		// ON AFFICHE LES commentaire POUR CETTE anomalie
@@ -536,18 +536,18 @@ if (DEBUG)
 	<?								switch ($row_commentaire['humeur']) {
 										case 0: ?>&nbsp;<?
 											break;
-										case 1: ?><img src="gfx/weather-clear.png"><?
+										case 1: ?><img src="/intranet/gfx/weather-clear.png"><?
 											break;
-										case 2: ?><img src="gfx/weather-few-clouds.png"><?
+										case 2: ?><img src="/intranet/gfx/weather-few-clouds.png"><?
 											break;
-										case 3: ?><img src="gfx/weather-storm.png"><?
+										case 3: ?><img src="/intranet/gfx/weather-storm.png"><?
 											break;
 									}
 									
 									if		($row_commentaire['type'] == 'autre' && $row_commentaire['commentaire'] == 'Anomalie cloturée') { ?>
-										<img src="gfx/link.png">
+										<img src="/intranet/gfx/link.png">
 <?									} elseif($row_commentaire['type'] == 'autre' && $row_commentaire['commentaire'] == 'Anomalie réouverte') { ?>
-										<img src="gfx/link_break.png">
+										<img src="/intranet/gfx/link_break.png">
 <?									} ?>
 								</td>
 								<td width="10%"><?=$row_commentaire['createur']?>&nbsp;</td>
@@ -555,7 +555,7 @@ if (DEBUG)
 								<td width="60%"><?=stripslashes($row_commentaire['commentaire'])?></td>
 								<td width="5%">
 <?									if		($is_createur_commentaire && $row_commentaire['type'] != 'autre' && ($row_commentaire['temps_ecoule'] < MAX_TIME_ANOMALIE_DELETION)) { ?>
-										<a href="javascript:delete_commentaire(<?=$row_commentaire['id']?>);"><img src="gfx/comment_delete.png"></a>
+										<a href="javascript:delete_commentaire(<?=$row_commentaire['id']?>);"><img src="/intranet/gfx/comment_delete.png"></a>
 <?									} else { ?>&nbsp;<? } ?>
 								</td>
 							</tr>

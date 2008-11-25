@@ -460,15 +460,15 @@ function valider_nouveau_chemin() {
 
 <table id="article">
 	<tr>
-		<th class="code_article" nowrap>code<a href="affiche_article.php?order=code_article ASC"><img src="gfx/asc.png"></a><a href="affiche_article.php?order=code_article DESC"><img src="gfx/desc.png"></a></th>
-		<th class="fournisseur">Fournisseur<a href="affiche_article.php?order=fournisseur ASC"><img src="gfx/asc.png"></a><a href="affiche_article.php?order=fournisseur DESC"><img src="gfx/desc.png"></th>
-		<th class="ref_fournisseur" nowrap>Ref<a href="affiche_article.php?order=ref_fournisseur ASC"><img src="gfx/asc.png"></a><a href="affiche_article.php?order=ref_fournisseur DESC"><img src="gfx/desc.png"></th>
-		<th class="designation">Désignation<a href="affiche_article.php?order=designation ASC"><img src="gfx/asc.png"></a><a href="affiche_article.php?order=designation DESC"><img src="gfx/desc.png"></th>
+		<th class="code_article" nowrap>code<a href="affiche_article.php?order=code_article ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=code_article DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="fournisseur">Fournisseur<a href="affiche_article.php?order=fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="ref_fournisseur" nowrap>Ref<a href="affiche_article.php?order=ref_fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=ref_fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="designation">Désignation<a href="affiche_article.php?order=designation ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=designation DESC"><img src="/intranet/gfx/desc.png"></th>
 		<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 			<th></th>
 		<? } ?>
-		<th class="servi_sur_stock" nowrap>S<a href="affiche_article.php?order=servi_sur_stock ASC"><img src="gfx/asc.png"></a><a href="affiche_article.php?order=servi_sur_stock DESC"><img src="gfx/desc.png"></th>
-		<th class="prix_net" nowrap>Prix<a href="affiche_article.php?order=prix_net ASC"><img src="gfx/asc.png"></a><a href="affiche_article.php?order=prix_net DESC"><img src="gfx/desc.png"></th>
+		<th class="servi_sur_stock" nowrap>S<a href="affiche_article.php?order=servi_sur_stock ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=servi_sur_stock DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="prix_net" nowrap>Prix<a href="affiche_article.php?order=prix_net ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=prix_net DESC"><img src="/intranet/gfx/desc.png"></th>
 		<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 			<th nowrap>SUS</th>
 		<? } ?>
