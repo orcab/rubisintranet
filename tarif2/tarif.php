@@ -3,14 +3,12 @@ include('../inc/config.php');
 require_once('overload.php');
 set_time_limit(0);
 
-define('DEBUG',true);
+define('DEBUG',false);
 if (DEBUG)
 	$debug_file = fopen("debug.log", "w+") or die("Ne peux pas créer de fichier de debug"); 
 
 $mysql		= mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
-
-$electromenager=0;
 
 $PRINT_PAGE_NUMBER  = true;
 $PRINT_EDITION_DATE = true;
@@ -160,9 +158,11 @@ while($row = odbc_fetch_array($res)) {
 		}
 
 
-		debug("Vérifie saut de page $row[CHEMIN] : GetY=".$pdf->GetY()." max=".(PAGE_HEIGHT - 53)."\n");
-		if(($pdf->GetY() > PAGE_HEIGHT - 53) || ($last_img_bottom > PAGE_HEIGHT - 53)) { // check le saut de page
-			debug("  besoin d'un saut\n");
+		//debug("$row[CHEMIN] Vérifie saut de page : GetY=".$pdf->GetY()." max=".(PAGE_HEIGHT - 53)."\n");
+		//debug("$row[CHEMIN] Vérifie saut de page : \$last_img_bottom=$last_img_bottom max=".(PAGE_HEIGHT - 53)."\n");
+		//if(($pdf->GetY() > PAGE_HEIGHT - 53) || ($last_img_bottom > PAGE_HEIGHT - 53)) { // check le saut de page
+		if($pdf->GetY() > PAGE_HEIGHT - 53) { // check le saut de page
+			//debug(" besoin d'un saut\n");
 			$pdf->AddPage();
 			$last_img_bottom = 0;
 		}
@@ -176,25 +176,15 @@ while($row = odbc_fetch_array($res)) {
 			$img_info = getimagesize($IMAGE[$row['NOART']][0]);
 			$img_height = $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
 
-			/*	if (0 && $imgs[0] == 'fagor frigo top.jpg') {
-					//print_r($img_info);
-					echo "DEBUG img_height='$img_height'<br>\n";
-					echo "BAS DE PAGE sans image '".($pdf->GetY())."'<br>\n";
-					echo "BAS DE PAGE avec image '".($pdf->GetY() + $img_height)."'<br>\n";
-					echo "DEBUG last_img_bottom='$last_img_bottom'<br>\n";
-					echo "HAUTEUR DE PAGE '".PAGE_HEIGHT."'<br>\n";
-				}
-			*/
-
-				//if ($pdf->GetY() + $img_height > PAGE_HEIGHT) {
-				if ($last_img_bottom + $img_height + 5 > PAGE_HEIGHT) {
-					$pdf->AddPage();
-					$last_img_bottom = 0;
-				}
+			if ($last_img_bottom + $img_height + 5 > PAGE_HEIGHT) {
+				$pdf->AddPage();
+				//debug("  Saut de page forcé car l'image suivante dépassait ".($last_img_bottom + $img_height + 5)." > ".PAGE_HEIGHT."\n");
+				$last_img_bottom = 0;
+			}
 		}
 
-		if ($last_img_bottom) { // on vérifie que la nouvelle categ soit bien en dessous de la photo de l'ancienne categ
-			debug("$row[CHEMIN] Y=".$pdf->GetY()."   \$last_img_bottom=$last_img_bottom\n");
+		// on vérifie que la nouvelle categ soit bien en dessous de la photo de l'ancienne categ
+		if ($last_img_bottom) { 
 			if ($pdf->GetY() < $last_img_bottom)
 				$pdf->SetY($last_img_bottom);
 			$last_img_bottom = 0;
@@ -235,17 +225,17 @@ while($row = odbc_fetch_array($res)) {
 		//print_r($TOC);print_r($section_deja_dans_toc);exit;
 
 
-		// entete du tableau
-		if (isset($IMAGE[$row['CHEMIN']])) { // s'il y a une image de spécifié, on l'affiche
+		// images associé à la categ
+		if (isset($IMAGE[$row['CHEMIN']])) {
+			//debug("   Debut image de categ : GetY=".$pdf->GetY()."\n");
 			$last_img_bottom = 0 ;
 			for ($i=0; $i<sizeof($IMAGE[$row['CHEMIN']]) ; $i++) {
 					$pdf->Image($IMAGE[$row['CHEMIN']][$i],PAGE_WIDTH - 60,$pdf->GetY() + IMAGE_WIDTH * $i,IMAGE_WIDTH); // taille a 200 de l'image
 					$img_info = getimagesize($IMAGE[$row['CHEMIN']][$i]);
 					$last_img_bottom += $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
-					debug("   Ajoute image a categ : new \$last_img_bottom=$last_img_bottom\n");
 			}
 			$last_img_bottom += $pdf->GetY();
-			debug("   Fin image de categ : \$last_img_bottom=$last_img_bottom\n");
+			//debug("   Fin image de categ : GetY=".$pdf->GetY()."   \$last_img_bottom=$last_img_bottom\n");
 		}
 
 		// on dessine l'entete avec les colonnes
@@ -256,13 +246,18 @@ while($row = odbc_fetch_array($res)) {
 		$pdf->Cell(WIDTH_CODE		,6,'CODE','LT',0,'L',1);
 		$pdf->Cell(WIDTH_DESIGNATION,6,'DÉSIGNATION','T',0,'L',1);
 		$pdf->Cell(WIDTH_REF		,6,'RÉF.','T',0,'L',1);
-		$pdf->Cell(WIDTH_PRIX		,6,($electromenager ? 'PUBLIC '.EURO :'PRIX '.EURO.' HT'),'TR',0,'L',1);
+		$pdf->Cell(WIDTH_PRIX		,6,'PRIX '.EURO.' HT','TR',0,'L',1);
 		$pdf->Ln();
 
 	} else { // fin on a changer de categ
 		// on n'a pas changer de categ mais on vérifie si l'on ne doit pas réimprimer le titre
 
-		if ($pdf->GetY() > PAGE_HEIGHT - 27) { // on est sur une nouvelle page
+		//debug("$row[NOART] : GetY=".$pdf->GetY()." > PAGE_HEIGHT - 27 (".(PAGE_HEIGHT - 27).") ?\n");
+		//if ($pdf->GetY() > PAGE_HEIGHT - 27) { // on est sur une nouvelle page
+		if ($pdf->GetY() + 5 > PAGE_HEIGHT - 27) {
+			debug("  AddPage car l'article $row[NOART] suivant va sur la page suivante\n");
+			$pdf->AddPage();
+
 			$last_img_bottom = 0;
 
 			$pdf->SetLineWidth(0.5);
@@ -287,7 +282,7 @@ while($row = odbc_fetch_array($res)) {
 			$pdf->Cell(WIDTH_CODE		,6,'CODE','LT',0,'L',1);
 			$pdf->Cell(WIDTH_DESIGNATION,6,'DÉSIGNATION','T',0,'L',1);
 			$pdf->Cell(WIDTH_REF		,6,'RÉF.','T',0,'L',1);
-			$pdf->Cell(WIDTH_PRIX		,6,($electromenager ? 'PUBLIC '.EURO :'PRIX '.EURO.' HT'),'TR',0,'L',1);
+			$pdf->Cell(WIDTH_PRIX		,6,'PRIX '.EURO.' HT','TR',0,'L',1);
 			$pdf->Ln();
 		}
 	}
@@ -298,30 +293,11 @@ while($row = odbc_fetch_array($res)) {
 	// couleur de fond pour les articles
 	$pdf->SetFillColor($style[RED_BACKGROUND_ARTICLE],$style[GREEN_BACKGROUND_ARTICLE],$style[BLUE_BACKGROUND_ARTICLE]);
 	$pdf->SetTextColor($style[RED_ARTICLE],$style[GREEN_ARTICLE],$style[BLUE_ARTICLE]);
-		
-	// CODE ARTICLE
-	if ($electromenager) {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_CODE - 1);
-		$pdf->Cell(WIDTH_CODE,6,trim($row['code_article']).'.'.sprintf('%05s',round(isset($_GET['px_coop']) && $_GET['px_coop']==1 ? $row['px_coop_ht']:$row['px_adh_ht'])),"L$bordure",0,'L',1);
-	}
 	
 	// REFERENCE
-	if ($electromenager) {
-		$pdf->SetFont('helvetica','',FONT_SIZE_REF - 1);
-	}
 	$lien_vers_ref = $pdf->AddLink();
 	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
 	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
-
-	// PRIX
-	$eco_taxe = '';
-	if ($electromenager) {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_PRIX - 1);
-		$tmp = str_replace('.00','',$row['px_eco_ttc']);
-		$eco_taxe = $tmp > 0 ? "($tmp)" : '';
-	}
-
-
 	
 	$noart			= $row['NOART']; // deja trimé avant
 	$designation	= $row['DESI1'];
@@ -355,6 +331,7 @@ EOT;
 		}
 	}
 
+	$gety_pre = $pdf->GetY() ;
 	// on imprime la ligne
 	// code_article,designation,ref,prix
 	$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
@@ -366,8 +343,10 @@ EOT;
 			$kit ? $kit+2 : 1 // nombre de ligne
 	);
 
-	$font_redux = 0; // on réinitilise la taille de la police pour la désignation
+	$gety_post = $pdf->GetY() ;
+	debug("$row[NOART] \$gety_pre=$gety_pre     \$gety_post=$gety_post\n");
 
+	$font_redux = 0; // on réinitilise la taille de la police pour la désignation
 
 
 
@@ -414,10 +393,7 @@ if (isset($_POST['index_code']) && $_POST['index_code']) // index des code inter
 	include('index_des_codes.php');
 
 if (isset($_POST['sommaire']) && $_POST['sommaire']) // le sommaire
-	if ($electromenager)
-		include('table_des_matieres_electromenager.php');
-	else
-		include('table_des_matieres.php');
+	include('table_des_matieres.php');
 
 
 // EQUIPE + ORGANIGRAMME
