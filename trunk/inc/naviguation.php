@@ -49,8 +49,4 @@ ul#tabnav li.active {
 	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'devis/historique_devis.php') !== false ?' class="active"':''?>><a href="/intranet/devis/historique_devis.php">Devis Expo</a></li>
 
 	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'anomalie/historique_anomalie.php') !== false ?' class="active"':''?>><a href="/intranet/anomalie/historique_anomalie.php">Anomalies</a></li>
-
-	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'tarif2/index.php') !== false ?' class="active"':''?>><a href="/intranet/tarif2/index.php">Catalogue</a></li>
-
-	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'outils/index.php') !== false ?' class="active"':''?>><a href="/intranet/outils/index.php">Outils</a></li>
 </ul>

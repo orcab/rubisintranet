@@ -77,6 +77,7 @@ EOT;
 <?				} ?>
 		</select><br/>
 		<div id="path">&nbsp;</div>
+		<div style="text-align:left;width:30%;"><label for="page_de_garde"><input type="checkbox" name="page_de_garde" checked="checked" /> Ajouter les pages de garde</label></div>
 		<div style="text-align:left;width:30%;"><label for="index_ref"><input type="checkbox" name="index_ref" /> Ajouter l'index des références fabriquant</label></div>
 		<div style="text-align:left;width:30%;"><label for="index_code"><input type="checkbox" name="index_code" /> Ajouter l'index des codes <?=SOCIETE?></label></div>
 		<div style="text-align:left;width:30%;"><label for="sommaire"><input type="checkbox" name="sommaire" /> Ajouter le sommaire</label></div>

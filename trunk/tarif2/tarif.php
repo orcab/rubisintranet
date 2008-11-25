@@ -153,8 +153,11 @@ while($row = odbc_fetch_array($res)) {
 		// chamgement d'activité, on gere une page de garde + saut de page
 		if ($old_activite != $row['ACTIV']) {
 			$pdf->AddPage();
-			$pdf->Image(PAGE_DE_GARDE_PATH.'/'.$PAGE_DE_GARDE[$row['ACTIV']][FICHIER],0,0,PAGE_WIDTH); // taille a 200 de l'image
-			$pdf->AddPage();
+
+			if (isset($_POST['page_de_garde']) && $_POST['page_de_garde']) { // la page de garde
+				$pdf->Image(PAGE_DE_GARDE_PATH.'/'.$PAGE_DE_GARDE[$row['ACTIV']][FICHIER],0,0,PAGE_WIDTH); // taille a 200 de l'image
+				$pdf->AddPage();
+			}
 		}
 
 
@@ -186,7 +189,7 @@ while($row = odbc_fetch_array($res)) {
 		// on vérifie que la nouvelle categ soit bien en dessous de la photo de l'ancienne categ
 		if ($last_img_bottom) { 
 			if ($pdf->GetY() < $last_img_bottom)
-				$pdf->SetY($last_img_bottom);
+				$pdf->SetY($last_img_bottom + 3);
 			$last_img_bottom = 0;
 		}
 
@@ -228,11 +231,17 @@ while($row = odbc_fetch_array($res)) {
 		// images associé à la categ
 		if (isset($IMAGE[$row['CHEMIN']])) {
 			//debug("   Debut image de categ : GetY=".$pdf->GetY()."\n");
-			$last_img_bottom = 0 ;
+			$last_img_bottom = $pdf->GetY() ;
 			for ($i=0; $i<sizeof($IMAGE[$row['CHEMIN']]) ; $i++) {
-					$pdf->Image($IMAGE[$row['CHEMIN']][$i],PAGE_WIDTH - 60,$pdf->GetY() + IMAGE_WIDTH * $i,IMAGE_WIDTH); // taille a 200 de l'image
-					$img_info = getimagesize($IMAGE[$row['CHEMIN']][$i]);
-					$last_img_bottom += $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
+					$img_info		= getimagesize($IMAGE[$row['CHEMIN']][$i]);
+					$hauteur_image	= $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
+
+					if ($hauteur_image + $last_img_bottom > PAGE_HEIGHT - 28) { // si l'image dépasse en bas, on ignore les autres images
+						continue;
+					} else {
+						$pdf->Image($IMAGE[$row['CHEMIN']][$i],PAGE_WIDTH - 60,$last_img_bottom + 2*$i,IMAGE_WIDTH); // taille a 200 de l'image
+						$last_img_bottom += $hauteur_image ;
+					}
 			}
 			$last_img_bottom += $pdf->GetY();
 			//debug("   Fin image de categ : GetY=".$pdf->GetY()."   \$last_img_bottom=$last_img_bottom\n");
@@ -255,7 +264,7 @@ while($row = odbc_fetch_array($res)) {
 		//debug("$row[NOART] : GetY=".$pdf->GetY()." > PAGE_HEIGHT - 27 (".(PAGE_HEIGHT - 27).") ?\n");
 		//if ($pdf->GetY() > PAGE_HEIGHT - 27) { // on est sur une nouvelle page
 		if ($pdf->GetY() + 5 > PAGE_HEIGHT - 27) {
-			debug("  AddPage car l'article $row[NOART] suivant va sur la page suivante\n");
+			//debug("  AddPage car l'article $row[NOART] suivant va sur la page suivante\n");
 			$pdf->AddPage();
 
 			$last_img_bottom = 0;
@@ -331,7 +340,7 @@ EOT;
 		}
 	}
 
-	$gety_pre = $pdf->GetY() ;
+	//$gety_pre = $pdf->GetY() ;
 	// on imprime la ligne
 	// code_article,designation,ref,prix
 	$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
@@ -343,8 +352,8 @@ EOT;
 			$kit ? $kit+2 : 1 // nombre de ligne
 	);
 
-	$gety_post = $pdf->GetY() ;
-	debug("$row[NOART] \$gety_pre=$gety_pre     \$gety_post=$gety_post\n");
+	//$gety_post = $pdf->GetY() ;
+	//debug("$row[NOART] \$gety_pre=$gety_pre     \$gety_post=$gety_post\n");
 
 	$font_redux = 0; // on réinitilise la taille de la police pour la désignation
 
@@ -352,25 +361,35 @@ EOT;
 
 	// GESTION DES IMAGES
 	if (isset($IMAGE[$row['NOART']])) { // s'il y a une image de spécifié, on l'affiche
-		if (sizeof($IMAGE[$row['NOART']]) == 1) { // une seul image
-			$pdf->Image($IMAGE[$row['NOART']][0],PAGE_WIDTH - 60,$pdf->GetY(),IMAGE_WIDTH); // taille a 200 de l'image
-			$img_info = getimagesize($IMAGE[$row['NOART']][0]);
-			$pdf->Ln($img_info[1] * IMAGE_WIDTH / $img_info[0]);
-		} elseif (sizeof($IMAGE[$row['NOART']]) > 1) { // plusieur image
-			$last_max_height = 0;
-			for ($i=0 , $j=0; $i<sizeof($IMAGE[$row['NOART']]) ; $i++ , $j++) { // toutes les 5 images, on passe une ligne
-				$pdf->Image($IMAGE[$row['NOART']][$i],8 + IMAGE_WIDTH * $j,$pdf->GetY() + 7,IMAGE_WIDTH); // taille a 200 de l'image
-				$img_info = getimagesize($IMAGE[$row['NOART']][$i]);
-				$last_max_height = max($last_max_height,$img_info[1] * IMAGE_WIDTH / $img_info[0]) ;
+		$max_height = 0;
+		for ($i=0 , $j=0; $i<sizeof($IMAGE[$row['NOART']]) ; $i++ , $j++) { // toutes les 5 images, on passe une ligne
 
-				if (intval(($j+1) / 5) > 0) { // on saute une ligne
-					$pdf->Ln($last_max_height + 5);
-					$j=-1;
-					$last_max_height = 0 ;
+			if (($i % 5)==0 || $i==0) { // toutes les 5 image, on calcule la nouvelle hauteur de la rangé
+				for ($z=$i ; $z<sizeof($IMAGE[$row['NOART']]) && $z < $i+5 ; $z++) { // on essai de trouver la plus hautes des 5 image en ligne
+					$img_info = getimagesize($IMAGE[$row['NOART']][$z]);
+					$hauteur_image = $img_info[1] * IMAGE_WIDTH / $img_info[0];
+					$max_height = max($max_height,$hauteur_image) ;
+					//debug("\$i=$i,\$z=$z   \$hauteur_image=$hauteur_image\n");
 				}
+				//debug("\$i=$i   \$max_height=$max_height\n");
 			}
-			$pdf->Ln($last_max_height + 5);
+
+			$pdf->Image($IMAGE[$row['NOART']][$i],1 + (IMAGE_WIDTH+2) * $j ,$pdf->GetY() + 3,IMAGE_WIDTH); // taille a 200 de l'image
+			
+			if (intval(($j+1) / 5) > 0) { // on saute une ligne
+
+				//debug("Image n°".($i+1)." $max_height + ".$pdf->GetY()." (".($max_height + $pdf->GetY()).")    PAGE_HEIGHT - 27=".(PAGE_HEIGHT - 27)."\n");
+
+				if ($max_height + $pdf->GetY() + $max_height > PAGE_HEIGHT - 27) // on doit changer de page
+					$pdf->AddPage();
+				else // on peut rester sur la meme page, on saut une grosse ligne
+					$pdf->Ln($max_height + 3);
+
+				$j=-1;
+				$max_height = 0 ;
+			}
 		}
+		$pdf->Ln($max_height + 5);
 	}
 
 
