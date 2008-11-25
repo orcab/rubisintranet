@@ -284,7 +284,7 @@ function applique_hausse() {
 
 <table style="margin-bottom:10px;width:100%;"><tr>
 	<td style="width:20%;">
-		<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/list.gif);margin-bottom:4px;" onclick="document.location.href='historique_devis.php';" value="Voir l'historique des devis">
+		<input type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/list.gif);margin-bottom:4px;" onclick="document.location.href='historique_devis.php';" value="Voir l'historique des devis">
 	</td>
 	<td>
 		<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/update.gif);margin-bottom:4px;" onclick="update_price();" value="Mettre à jour les prix du devis">
@@ -375,7 +375,7 @@ function applique_hausse() {
 <tr>
 	<td><?= $id ? 'Devis N°' :'' ?></td>
 	<td><? if($id) { ?>
-			<?=$row_devis['numero']?> <a href="javascript:confirm_delete('<?=$id?>','<?=$row_devis['numero']?>');" style="border:none;"><img src="gfx/delete_micro.gif" alt="Suppression" align="absmiddle"></a>
+			<?=$row_devis['numero']?> <a href="javascript:confirm_delete('<?=$id?>','<?=$row_devis['numero']?>');" style="border:none;"><img src="/intranet/gfx/delete_micro.gif" alt="Suppression" align="absmiddle"></a>
 <?		} ?>
 	</td>
 	<td></td>

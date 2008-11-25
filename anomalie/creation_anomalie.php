@@ -361,7 +361,7 @@ function envoi_formulaire() {
 				<?=$row_anomalie['date_creation_formatee']?>
 			<? } else { ?>
 				<input type="text" id="date_creation" name="date_creation" value="<?=date('d/m/Y')?>" size="8" />
-				<button id="trigger_date_creation" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.creation_anomalie.date_creation.value='';" />
+				<button id="trigger_date_creation" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.creation_anomalie.date_creation.value='';" />
 				<script type="text/javascript">
 				  Calendar.setup(
 					{
@@ -439,9 +439,9 @@ function envoi_formulaire() {
 		<th>Evolution</th>
 		<td colspan="2">
 			<select name="evolution">
-				<option value="0" style="padding-left:30px;height:20px;background:white url(gfx/feu_red.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==0)) ? 'selected="selected"':'' ?>>A traiter</option>
-				<option value="1" style="padding-left:30px;height:20px;background:white url(gfx/feu_yellow.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==1)) ? 'selected="selected"':'' ?>>En cours</option>
-				<option value="2" style="padding-left:30px;height:20px;background:white url(gfx/feu_green.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==2)) ? 'selected="selected"':'' ?>>Cloturé</option>
+				<option value="0" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_red.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==0)) ? 'selected="selected"':'' ?>>A traiter</option>
+				<option value="1" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_yellow.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==1)) ? 'selected="selected"':'' ?>>En cours</option>
+				<option value="2" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_green.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==2)) ? 'selected="selected"':'' ?>>Cloturé</option>
 			</select>
 			<?= ($id && ($row_anomalie['evolution']==2)) ? "Cloturé le $row_anomalie[date_cloture_formatee]" :'' ?>
 		</td>
@@ -454,23 +454,23 @@ function envoi_formulaire() {
 	<tr>
 		<td style="vertical-align:top;text-align:center;padding-top:0px;">
 			<select name="resp_coop">
-				<option value="0" style="padding-left:30px;height:20px;background:white url(gfx/feu_green.png) no-repeat left;" <?= ($id && ($row_anomalie['resp_coop']==0)) ? 'selected="selected"':'' ?>>Pas responsable</option>
-				<option value="1" style="padding-left:30px;height:20px;background:white url(gfx/feu_yellow.png) no-repeat left;" <?= ($id && ($row_anomalie['resp_coop']==1)) ? 'selected="selected"':'' ?>>Partiellement responsable</option>
-				<option value="2" style="padding-left:30px;height:20px;background:white url(gfx/feu_red.png) no-repeat left;" <?= ($id && ($row_anomalie['resp_coop']==2)) ? 'selected="selected"':'' ?>>Completement responsable</option>
+				<option value="0" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_green.png) no-repeat left;" <?= ($id && ($row_anomalie['resp_coop']==0)) ? 'selected="selected"':'' ?>>Pas responsable</option>
+				<option value="1" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_yellow.png) no-repeat left;" <?= ($id && ($row_anomalie['resp_coop']==1)) ? 'selected="selected"':'' ?>>Partiellement responsable</option>
+				<option value="2" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_red.png) no-repeat left;" <?= ($id && ($row_anomalie['resp_coop']==2)) ? 'selected="selected"':'' ?>>Completement responsable</option>
 			</select>
 		</td>
 		<td style="vertical-align:top;text-align:center;padding-top:0px;">
 			<select name="resp_adh">
-				<option value="0" style="padding-left:30px;height:20px;background:white url(gfx/feu_green.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_adh']==0)) ? 'selected="selected"':'' ?>>Pas responsable</option>
-				<option value="1" style="padding-left:30px;height:20px;background:white url(gfx/feu_yellow.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_adh']==1)) ? 'selected="selected"':'' ?>>Partiellement responsable</option>
-				<option value="2" style="padding-left:30px;height:20px;background:white url(gfx/feu_red.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_adh']==2)) ? 'selected="selected"':'' ?>>Completement responsable</option>
+				<option value="0" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_green.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_adh']==0)) ? 'selected="selected"':'' ?>>Pas responsable</option>
+				<option value="1" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_yellow.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_adh']==1)) ? 'selected="selected"':'' ?>>Partiellement responsable</option>
+				<option value="2" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_red.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_adh']==2)) ? 'selected="selected"':'' ?>>Completement responsable</option>
 			</select>
 		</td>
 		<td style="text-align:center;padding-top:0px;padding-bottom:20px;">
 			<select name="resp_four">
-				<option value="0" style="padding-left:30px;height:20px;background:white url(gfx/feu_green.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_four']==0)) ? 'selected="selected"':'' ?>>Pas responsable</option>
-				<option value="1" style="padding-left:30px;height:20px;background:white url(gfx/feu_yellow.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_four']==1)) ? 'selected="selected"':'' ?>>Partiellement responsable</option>
-				<option value="2" style="padding-left:30px;height:20px;background:white url(gfx/feu_red.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_four']==2)) ? 'selected="selected"':'' ?>>Completement responsable</option>
+				<option value="0" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_green.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_four']==0)) ? 'selected="selected"':'' ?>>Pas responsable</option>
+				<option value="1" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_yellow.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_four']==1)) ? 'selected="selected"':'' ?>>Partiellement responsable</option>
+				<option value="2" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_red.png) no-repeat left;"  <?= ($id && ($row_anomalie['resp_four']==2)) ? 'selected="selected"':'' ?>>Completement responsable</option>
 			</select>
 		</td>
 	</tr>
@@ -491,9 +491,9 @@ function envoi_formulaire() {
 		<td style="text-align:center;padding-bottom:10px;" colspan="3">
 			<input type="button" class="button valider" onclick="envoi_formulaire();" value="Enregistrer">&nbsp;&nbsp;&nbsp;&nbsp;
 			<input type="button" class="button annuler" onclick="document.location.href='historique_anomalie.php';" value="Annuler">&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="button" class="button divers" style="background-image:url(gfx/printer.png);" onclick="envoi_impression();" value="Imprimer">&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="button" class="button divers" style="background-image:url(/intranet/gfx/printer.png);" onclick="envoi_impression();" value="Imprimer">&nbsp;&nbsp;&nbsp;&nbsp;
 			<? if ($id && $can_edit) { // mode modif ?>
-				<input type="button" class="button divers" style="background-image:url(gfx/cross.png);" onclick="delete_anomalie();" value="Supprimer l'anomalie">
+				<input type="button" class="button divers" style="background-image:url(/intranet/gfx/cross.png);" onclick="delete_anomalie();" value="Supprimer l'anomalie">
 			<? } ?>
 		</td>
 	</tr>
@@ -515,18 +515,18 @@ function envoi_formulaire() {
 	<?								switch ($row_commentaire['humeur']) {
 										case 0: ?>&nbsp;<?
 											break;
-										case 1: ?><img src="gfx/weather-clear.png"><?
+										case 1: ?><img src="/intranet/gfx/weather-clear.png"><?
 											break;
-										case 2: ?><img src="gfx/weather-few-clouds.png"><?
+										case 2: ?><img src="/intranet/gfx/weather-few-clouds.png"><?
 											break;
-										case 3: ?><img src="gfx/weather-storm.png"><?
+										case 3: ?><img src="/intranet/gfx/weather-storm.png"><?
 											break;
 									}
 									
 									if		($row_commentaire['type'] == 'autre' && $row_commentaire['commentaire'] == 'Anomalie cloturée') { ?>
-										<img src="gfx/link.png">
+										<img src="/intranet/gfx/link.png">
 <?									} elseif($row_commentaire['type'] == 'autre' && $row_commentaire['commentaire'] == 'Anomalie réouverte') { ?>
-										<img src="gfx/link_break.png">
+										<img src="/intranet/gfx/link_break.png">
 <?									} ?>
 								</td>
 								<td width="10%"><?=$row_commentaire['createur']?>&nbsp;</td>
@@ -534,7 +534,7 @@ function envoi_formulaire() {
 								<td width="60%"><?=stripslashes($row_commentaire['commentaire'])?></td>
 								<td width="5%">
 <?									if		($is_createur_commentaire && $row_commentaire['type'] != 'autre' && ($row_commentaire['temps_ecoule'] < MAX_TIME_ANOMALIE_DELETION)) { ?>
-										<a href="javascript:delete_commentaire(<?=$row_commentaire['id']?>);"><img src="gfx/comment_delete.png"></a>
+										<a href="javascript:delete_commentaire(<?=$row_commentaire['id']?>);"><img src="/intranet/gfx/comment_delete.png"></a>
 <?									} else { ?>&nbsp;<? } ?>
 								</td>
 							</tr>

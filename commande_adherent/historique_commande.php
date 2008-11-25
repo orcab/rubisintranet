@@ -230,9 +230,9 @@ function envoi_formulaire(l_action) {
 		<td>
 			<select name="relance_humeur" size="1">
 				<option style="padding-left:30px;height:20px;" value="0" selected>Indifférent</option>
-				<option style="padding-left:30px;height:20px;background:white url(gfx/weather-clear.png) no-repeat left;" value="1">Content</option>
-				<option style="padding-left:30px;height:20px;background:white url(gfx/weather-few-clouds.png) no-repeat left;" value="2">Mausade</option>
-				<option style="padding-left:30px;height:20px;background:white url(gfx/weather-storm.png) no-repeat left;" value="3">Enervé</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-clear.png) no-repeat left;" value="1">Content</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-few-clouds.png) no-repeat left;" value="2">Mausade</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-storm.png) no-repeat left;" value="3">Enervé</option>
 			</select>
 		</td>
 	</tr>
@@ -260,7 +260,7 @@ function envoi_formulaire(l_action) {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['cde_adh_filtre_date_inf']?>" size="8">
-					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_inf.value='';">
+					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -287,13 +287,13 @@ function envoi_formulaire(l_action) {
 						<option value="cde_en_cours"<?=$_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours'	?' selected':''?>>Cde en reliquats</option>
 					</select>
 				</td>
-				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(gfx/application_form_magnify.png);" value="Filtrer"></td>
+				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"></td>
 			</tr>
 			<tr>
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['cde_adh_filtre_date_sup']?>" size="8">
-					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_sup.value='';">
+					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
 						{
@@ -324,14 +324,14 @@ function envoi_formulaire(l_action) {
 
 	</caption>
 	<tr>
-		<th class="NOBON">N°<br><a href="historique_commande.php?filtre_classement=NOBON ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOBON DESC"><img src="gfx/desc.png"></a></th>
-		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="gfx/desc.png"></a></th>
-		<th class="LIVSB">Vendeur<br><a href="historique_commande.php?filtre_classement=LIVSB ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=LIVSB DESC"><img src="gfx/desc.png"></a></th>
-		<th class="NOMSB">Adhérent<br><a href="historique_commande.php?filtre_classement=NOMSB ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOMSB DESC"><img src="gfx/desc.png"></a></th>
-		<th class="RFCSB">Référence<br><a href="historique_commande.php?filtre_classement=RFCSB ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=RFCSB DESC"><img src="gfx/desc.png"></a></th>
-		<th class="NBLIG">Nb ligne<br><a href="historique_commande.php?filtre_classement=NBLIG ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NBLIG DESC"><img src="gfx/desc.png"></a></th>
-		<th class="MONTBT">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=MONTBT ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=MONTBT DESC"><img src="gfx/desc.png"></a></th>
-		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
+		<th class="NOBON">N°<br><a href="historique_commande.php?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="LIVSB">Vendeur<br><a href="historique_commande.php?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NOMSB">Adhérent<br><a href="historique_commande.php?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="RFCSB">Référence<br><a href="historique_commande.php?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NBLIG">Nb ligne<br><a href="historique_commande.php?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="MONTBT">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
 		<th>PDF</th>
 	</tr>
 <?
@@ -417,11 +417,11 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 <?			
 			$nb_relance = e('nb_relance',mysql_fetch_array(mysql_query("SELECT count(id) as nb_relance FROM commande_adherent_relance WHERE NOBON='$row[NOBON]'")));
 			if ($nb_relance) { ?>
-				<a class="hide_when_print" href="javascript:liste_relance('<?=$row['NOBON']?>');" style="border:none;"><img src="gfx/list.gif" alt="Liste des relances" title="Liste des relances fournisseur" align="top"></a><span style="font-size:1.2em;color:green;font-weight:bold;"><?=$nb_relance?></span>
+				<a class="hide_when_print" href="javascript:liste_relance('<?=$row['NOBON']?>');" style="border:none;"><img src="/intranet/gfx/list.gif" alt="Liste des relances" title="Liste des relances fournisseur" align="top"></a><span style="font-size:1.2em;color:green;font-weight:bold;"><?=$nb_relance?></span>
 <?			} ?>
 			<br><a href="javascript:relance_commande('<?=$row['NOBON']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="gfx/pdf-icon.png" alt="Edition PDF" /></a></td>
+		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="/intranet/gfx/pdf-icon.png" alt="Edition PDF" /></a></td>
 	</tr>
 
 
@@ -430,7 +430,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			$res_relance = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d %b %Y') AS date_formater,DATE_FORMAT(`date`,'%w') AS date_jour,DATE_FORMAT(`date`,'%H:%i') AS heure_formater FROM commande_adherent_relance WHERE NOBON='$row[NOBON]' ORDER BY `date` DESC") or die("Ne peux pas afficher les relances commandes adhérent ".mysql_error()); 
 ?>
 			<tr style="display:none;" id="relance_commande_<?=$row['NOBON']?>">
-				<td><img src="gfx/return.jpg"></td>
+				<td><img src="/intranet/gfx/return.jpg"></td>
 				<td colspan="13" valign="top">
 					<div style="font-weight:bold;">Liste des relances</div>
 					<table width="100%" cellspacing="0" style="border:solid 1px grey;">
@@ -441,18 +441,18 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 	<?								switch ($row_relance['humeur']) {
 										case 0: ?>&nbsp;<?
 											break;
-										case 1: ?><img src="gfx/weather-clear.png"><?
+										case 1: ?><img src="/intranet/gfx/weather-clear.png"><?
 											break;
-										case 2: ?><img src="gfx/weather-few-clouds.png"><?
+										case 2: ?><img src="/intranet/gfx/weather-few-clouds.png"><?
 											break;
-										case 3: ?><img src="gfx/weather-storm.png"><?
+										case 3: ?><img src="/intranet/gfx/weather-storm.png"><?
 											break;
 									}	?>									
 								</td>
 								<td style="border:none;border-bottom:solid 1px grey;" valign="top" width="10%"><?=$row_relance['representant']?></td>
 								<td style="border:none;border-bottom:solid 1px grey;" valign="top" width="10%"><?=$row_relance['type']?></td>
 								<td style="border:none;border-bottom:solid 1px grey;" valign="top" width="60%"><?=stripslashes($row_relance['commentaire'])?></td>
-								<td style="border:none;border-bottom:solid 1px grey;" valign="top" width="5%"><a href="javascript:delete_relance(<?=$row_relance['id']?>);"><img src="gfx/comment_delete.png"></a></td>
+								<td style="border:none;border-bottom:solid 1px grey;" valign="top" width="5%"><a href="javascript:delete_relance(<?=$row_relance['id']?>);"><img src="/intranet/gfx/comment_delete.png"></a></td>
 							</tr>
 <?							} ?>
 					</table>

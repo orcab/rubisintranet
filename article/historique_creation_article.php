@@ -119,7 +119,7 @@ while ($row = mysql_fetch_array($res)) {
 			<td class="valeur<?=$cree?>" style="width:10%" nowrap><?=$row['date_demande']?></td>
 			<td class="valeur<?=$cree?>" style="width:10%" nowrap><?=$row['date_creation'] ? $row['date_creation'] : '&nbsp;' ?></td>
 <?	if (recuperer_droit() & PEUT_CREER_ARTICLE) { // autoriser a créer et décréer des articles ?>
-			<td class="valeur<?=$cree?>" style="width:10%" nowrap><input type="button" class="button <?=$row['status']?'annuler':'valider'?>" style="background-image:url(gfx/<?=$row['status']?'delete':'add'?>.png);" value="<?=$row['status']?'DE':''?>CREER" onclick="creer_article(<?=$row['id']?>);"></td>
+			<td class="valeur<?=$cree?>" style="width:10%" nowrap><input type="button" class="button <?=$row['status']?'annuler':'valider'?>" style="background-image:url(../js/boutton_images/<?=$row['status']?'delete':'add'?>.png);" value="<?=$row['status']?'DE':''?>CREER" onclick="creer_article(<?=$row['id']?>);"></td>
 <? } ?>
 		</tr>
 <? } ?>

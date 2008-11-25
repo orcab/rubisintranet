@@ -408,7 +408,7 @@ Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
 	<td class="valeur"><input type="text" name="souschapitre" value="" size="3" maxlength="3" onfocus="affiche_aide('souschapitre');" onblur="majusculize(this.name);"></td>
 </tr>
 <tr>
-	<th colspan="2"><input type="button" class="button valider" style="background-image:url(gfx/email.gif);" onclick="envoi_formulaire();" value="Envoyer la demande"></td>
+	<th colspan="2"><input type="button" class="button valider" style="background-image:url(../js/boutton_images/email.gif);" onclick="envoi_formulaire();" value="Envoyer la demande"></td>
 </tr>
 <tr>
 	<th class="label">Commentaire :<br><small>("urgent" par exemple)</small></th>

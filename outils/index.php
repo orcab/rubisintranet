@@ -34,7 +34,7 @@ a:hover {
 <table style="width:70%;text-align:center;border:solid 1px #AAA;">
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="ordinateur/index.php"><img src="ordinateur/gfx/computer.png"><br>Ordinateur</a><br></td>
-	<td><a href="plan_de_vente/index.html"><img src="../gfx/plan_de_vente.png"><br>Plan de vente</a></td>
+	<td><a href="plan_de_vente/index.html"><img src="plan_de_vente/gfx/plan_de_vente.png"><br>Plan de vente</a></td>
 	<td style="width:50%;padding-bottom:20px;"><a href="cde_client_cde_fournisseur/index.php"><img src="cde_client_cde_fournisseur/gfx/assoc.png"><br>Relier cde adhérents et cde fournisseurs</a></td>
 </tr>
 <tr>
