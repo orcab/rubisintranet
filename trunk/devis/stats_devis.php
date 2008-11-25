@@ -2,7 +2,8 @@
 
 include('../inc/config.php');
 include('../inc/iCalParser/ical-parser-class.php');
-require_once 'Spreadsheet/Excel/Writer.php';
+set_include_path(get_include_path().PATH_SEPARATOR.'../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
+require_once '../inc/Spreadsheet/Excel/Writer.php';
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
