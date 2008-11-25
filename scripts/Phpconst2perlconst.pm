@@ -24,11 +24,11 @@ sub new {
 				define				# mot clé PHP define
 				\s*\(\s*			# premiere parenthese ouvrante
 				(["'])				# une simple ou double quote
-				\s*?(.+)\s*?		# on capture la constante tant que l'on ne trouve pas un espace
+				\s*?(.+?)\s*?		# on capture la constante tant que l'on ne trouve pas un espace
 				\1					# une simple ou double quote capturé plus haut
 				\s*,\s*				# une virgule
 				(["'])				# une simple ou double quote
-				([^"']*)			# on capture la valeur tant que l'on ne trouve pas une simple ou double quote
+				(.*?)				# on capture la valeur tant que l'on ne trouve pas une simple ou double quote
 				\3					# une simple ou double quote capturé plus haut
 				\s*\)\s*			# fin de la parenthese
 				;					# on finit avec une virgule
