@@ -139,13 +139,6 @@ class PDF extends FPDF
 		for($i=0 ; $i<sizeof($param) ; $i++)
 			$data[] = isset($param[$i]['text']) ? $param[$i]['text'] : '';
 
-		//Calcule la hauteur de la ligne
-	/*	$nb=0;
-		for($i=0;$i<count($data);$i++)
-			$nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
-		$h=5*$nb;
-	*/
-
 		// la hauteur est spécifié dans l'appel de la fonction. Defaut=1
 		$h = 5 * $nb_ligne ;
 
@@ -168,10 +161,10 @@ class PDF extends FPDF
 			$x=$this->GetX();
 			$y=$this->GetY();
 			//Dessine le cadre
-			$this->Rect($x,$y,$w,$h);
+			//$this->Rect($x,$y,$w,$h);
 
 			// dessine le cadre extérieur
-		/*	if ($i==0)	// uniquement pour la premiere cellule trace la ligne gauche
+			if ($i==0)	// uniquement pour la premiere cellule trace la ligne gauche
 				$this->Line($x,$y,$x,$y+$h);
 
 			// pour toutes les cellules, on trace la ligne dessu et dessous
@@ -180,7 +173,7 @@ class PDF extends FPDF
 
 			if ($i==count($data)-1) // pour la derniere case, on trace la bordure droite
 				$this->Line($x+$w,$y,$x+$w,$y+$h);
-		*/
+		
 
 			//Imprime le texte
 			$this->MultiCell($w,5,$data[$i],0,$a,0);
