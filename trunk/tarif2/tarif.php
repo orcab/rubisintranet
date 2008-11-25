@@ -3,6 +3,10 @@ include('../inc/config.php');
 require_once('overload.php');
 set_time_limit(0);
 
+define('DEBUG',true);
+if (DEBUG)
+	$debug_file = fopen("debug.log", "w+") or die("Ne peux pas créer de fichier de debug"); 
+
 $mysql		= mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
@@ -73,7 +77,6 @@ $IMAGE = rscandir(IMAGE_PATH);
 //print_r($IMAGE);exit;
 
 
-
 $pdv = '' ;
 if	(isset($_GET['pdv']) && $_GET['pdv'])
 	$pdv = $_GET['pdv'] ;
@@ -93,7 +96,7 @@ if ($pdv)
 
 $condition = join(' and ',$condition);
 
-// recherche des article a exporté pour le tarif
+// recherche des articles à exporter pour le tarif
 	$sql = <<<EOT
 select	
 		ARTICLE.NOART,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,
@@ -131,20 +134,16 @@ while($row = odbc_fetch_array($res)) {
 	$row['CHEMIN']	= ereg_replace('[ \.]*$','',$row['CHEMIN']);
 	$row['NOART']	= trim($row['NOART']);
 	$row['DESI1']	= trim($row['DESI1']);
-	$$row['REFFO']	= trim($row['REFFO']);
+	$row['REFFO']	= trim($row['REFFO']);
 
 	$style = html2rgb($PAGE_DE_GARDE[$row['ACTIV']][STYLE]);
 
 	$pdvente = array(
 		isset($PLAN_DE_VENTE[$row['ACTIV']]) ? $PLAN_DE_VENTE[$row['ACTIV']] : '',
-		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1]"]) ?
-			$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1]"] : '',
-		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1]"]) ?
-			$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1]"] : '',
-		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04]"]) ?
-			$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04]"] : '',
-		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04].$row[ART05]"]) ?
-			$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04].$row[ART05]"] : '',
+		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1]"]) ?	$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1]"] : '',
+		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1]"]) ?	$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1]"] : '',
+		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04]"]) ?	$PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04]"] : '',
+		isset($PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04].$row[ART05]"]) ? $PLAN_DE_VENTE["$row[ACTIV].$row[FAMI1].$row[SFAM1].$row[ART04].$row[ART05]"] : '',
 	);
 	$pdvente_sans_activite = ereg_replace('[/ ]*$','',join(' / ',array_slice($pdvente,1,sizeof($pdvente)-1)));
 	$pdvente = ereg_replace('[/ ]*$','',join(' / ',$pdvente));
@@ -160,7 +159,10 @@ while($row = odbc_fetch_array($res)) {
 			$pdf->AddPage();
 		}
 
-		if($pdf->GetY() > PAGE_HEIGHT - 53) { // check le saut de page
+
+		debug("Vérifie saut de page $row[CHEMIN] : GetY=".$pdf->GetY()." max=".(PAGE_HEIGHT - 53)."\n");
+		if(($pdf->GetY() > PAGE_HEIGHT - 53) || ($last_img_bottom > PAGE_HEIGHT - 53)) { // check le saut de page
+			debug("  besoin d'un saut\n");
 			$pdf->AddPage();
 			$last_img_bottom = 0;
 		}
@@ -192,7 +194,7 @@ while($row = odbc_fetch_array($res)) {
 		}
 
 		if ($last_img_bottom) { // on vérifie que la nouvelle categ soit bien en dessous de la photo de l'ancienne categ
-			//echo "Y=".$pdf->GetY()."   \$last_img_bottom=$last_img_bottom<br>\n";
+			debug("$row[CHEMIN] Y=".$pdf->GetY()."   \$last_img_bottom=$last_img_bottom\n");
 			if ($pdf->GetY() < $last_img_bottom)
 				$pdf->SetY($last_img_bottom);
 			$last_img_bottom = 0;
@@ -234,22 +236,16 @@ while($row = odbc_fetch_array($res)) {
 
 
 		// entete du tableau
-		//echo "'".$row['CHEMIN']."'\n";
 		if (isset($IMAGE[$row['CHEMIN']])) { // s'il y a une image de spécifié, on l'affiche
-			//echo "Je vais afficher des images ".$pdf->GetY()."<br>\n";
 			$last_img_bottom = 0 ;
-			if (sizeof($IMAGE[$row['CHEMIN']]) == 1) { // une seul image
-				$pdf->Image($IMAGE[$row['CHEMIN']][0],PAGE_WIDTH - 60,$pdf->GetY(),IMAGE_WIDTH); // taille a 200 de l'image
-				$img_info = getimagesize($IMAGE[$row['CHEMIN']][0]);
-				$last_img_bottom += $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
-			} elseif (sizeof($IMAGE[$row['CHEMIN']]) > 1) { // plusieur image
-				for ($i=0; $i<sizeof($IMAGE[$row['CHEMIN']]) ; $i++) {
+			for ($i=0; $i<sizeof($IMAGE[$row['CHEMIN']]) ; $i++) {
 					$pdf->Image($IMAGE[$row['CHEMIN']][$i],PAGE_WIDTH - 60,$pdf->GetY() + IMAGE_WIDTH * $i,IMAGE_WIDTH); // taille a 200 de l'image
-					$img_info = getimagesize($IMAGE[$row['CHEMIN']][0]);
+					$img_info = getimagesize($IMAGE[$row['CHEMIN']][$i]);
 					$last_img_bottom += $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
-				}
+					debug("   Ajoute image a categ : new \$last_img_bottom=$last_img_bottom\n");
 			}
 			$last_img_bottom += $pdf->GetY();
+			debug("   Fin image de categ : \$last_img_bottom=$last_img_bottom\n");
 		}
 
 		// on dessine l'entete avec les colonnes
@@ -433,6 +429,8 @@ if (isset($_POST['equipe']) && $_POST['equipe'])  // on rajoute les page contact
 $pdf->Output();
 
 
+if (DEBUG) // fermeture du fichier de debug
+	fclose($debug_file);
 
 
 function rscandir($base='', &$data=array()) {
@@ -452,4 +450,12 @@ function rscandir($base='', &$data=array()) {
   }
   return $data; // return the $data array
 }
+
+
+function debug($msg) {
+	global $debug_file;
+	if (DEBUG)
+		fwrite($debug_file,$msg) or die("Ne peux pas écrire dans le fichier de debug");
+}
+
 ?>
