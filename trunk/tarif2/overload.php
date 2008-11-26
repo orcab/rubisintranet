@@ -33,8 +33,8 @@ class PDF extends FPDF
 
 	//PIED DE PAGE
 	function Footer()
-	{	global $old_style,$PRINT_PAGE_NUMBER,$PRINT_EDITION_DATE ;
-
+	{	global $old_style,$PRINT_PAGE_NUMBER,$PRINT_EDITION_DATE,$last_img_bottom ;
+		$last_img_bottom = 0;
 
 		if ($PRINT_PAGE_NUMBER) {
 			// rectangle arrondi en page a gauche avec n° de page
@@ -58,7 +58,11 @@ class PDF extends FPDF
 		if ($PRINT_EDITION_DATE) {
 			// date d'édition
 			$this->SetTextColor(0);
-			$this->SetXY(PAGE_WIDTH/2 - 15,-17);
+			if ($this->PageNo() & 1) // page impaire a droite
+				$this->SetXY(10,-17);
+			else
+				$this->SetXY(PAGE_WIDTH - 50,-17);
+
 			$this->Cell(0,10,"Date d'édition : ".date('d/m/Y'),0,0,'');
 		}
 	}
