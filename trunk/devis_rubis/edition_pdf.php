@@ -18,7 +18,7 @@ $vendeurs['LN'] = 'Jean René';
 
 
 if (!(isset($_GET['NOBON']) && $_GET['NOBON'])) { ?>
-	ERREUR : Aucun N° de bon précisé.
+	ERREUR : Aucun N° de devis précisé.
 <? 	exit;
 }
 
