@@ -34,11 +34,11 @@ where	NOBON='$NOBON_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select NOLIG,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO
+select NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on	BON.NOFOU=FOURNISSEUR.NOFOU
-		left join AFAGESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 			on		BON.CODAR = ARTICLE_FOURNISSEUR.NOART
 				and	BON.NOFOU = ARTICLE_FOURNISSEUR.NOFOU
 where	NOBON='$NOBON_escape'
@@ -70,6 +70,8 @@ $pdf->SetTextColor(0,0,0);
 $pdf->SetDrawColor(0,0,0);
 $pdf->SetFillColor(230); // gris clair
 
+$kit = array();
+
 while($row = odbc_fetch_array($detail_commande)) {
 	
 	// largeur des colonnes
@@ -99,7 +101,19 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if ($row['DS2DB'])	$designation .= "\n$row[DS2DB]";
 		if ($row['DS3DB'])	$designation .= "\n$row[DS3DB]";
 		if ($row['CONSA'])	$designation .= "\n$row[CONSA]";
+
+		// gestion des kits
+		if ($row['ARCOM']=='OUI') { // attention article d'un kit, il faut l'enregistré pour le resortir sur le kit
+			if (!isset($kit[$row['DET97']])) // premier article du kit
+				$kit[$row['DET97']] = array();
+
+			$kit[$row['DET97']][] = $designation." x$row[QTESA] (".str_replace('.',',',sprintf('%0.2f',$row['QTESA']*$row['PRINE'])).EURO.")";// on rajoute la piece au kit
+			continue;
+		}
 		
+		//print_r($kit);exit;
+
+
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ADETBOP1' and CDETA='' and CDCOD LIKE '%$row_entete[NOBON]$row[NOLIG]%' ORDER BY CDLIG") ;
 		while($commentaire_row = odbc_fetch_array($commentaire_res))
@@ -108,7 +122,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
-					array('text' => $designation		, 'text-align' => 'L'),
+					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
 					array('text' => sprintf('%0.2f',round($row['PRINE'],2)).EURO	, 'text-align' => 'R'), // prix unitaire après remise
@@ -116,6 +130,26 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => $row['TYCDD']=='SPE'?'S':''	, 'text-align' => 'R') // spécial ou pas
 					)
 				);
+
+		
+		//print_r($kit);exit;
+		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
+			foreach ($kit[$row['DET97']] as $ligne)
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+								array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8')
+							)
+						);
+			
+			unset($kit[$row['DET97']]);
+		}
+
 	}
 }
 
