@@ -172,10 +172,10 @@ foreach($cmd_rubis as $vals)
 
 
 // Setup the graph
-$graph = new Graph(1200,600);
+$graph = new Graph(1200,650);
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
-$graph->SetMargin(70,50,30,30);
+$graph->SetMargin(70,50,100,30);
 $graph->title->Set('Evolution mois par mois');
 
 $graph->SetScale('textlin');
