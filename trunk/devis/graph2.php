@@ -194,7 +194,7 @@ $graph->xgrid->Show();
 $graph->xaxis->SetTickLabels(array_keys($cmd_rubis));
 
 $graph->legend->SetShadow('gray@0.4',5);
-$graph->legend->SetPos(0.1,0,'right','top');
+$graph->legend->SetPos(0.21,0,'right','top');
 
 
 
