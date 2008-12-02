@@ -12,6 +12,8 @@ $| = 1; # active le flush direct
 
 print print_time()."START\n";
 
+my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
+
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 print print_time()."Select des familles actives ...";
 my $sql = <<EOT;
@@ -30,7 +32,7 @@ $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql
 
 
 # drop table
-$dbh->query("DROP TABLE IF EXISTS pdvente;");
+my $dbh->query("DROP TABLE IF EXISTS pdvente;");
 
 # create table
 my $create_table = <<EOT;

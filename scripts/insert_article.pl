@@ -43,7 +43,7 @@ my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_US
 $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
-$dbh->query("TRUNCATE TABLE article;");
+my $dbh->query("TRUNCATE TABLE article;");
 print " ok\n";
 
 

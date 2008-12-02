@@ -106,7 +106,7 @@ EOT;
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
 	foreach ($CHEFS_DE_POLE as $p=>$chef)
-		if ($row_anomalie['pole'] & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajour de destinataire");
+		if ($row_anomalie['pole'] & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajout de destinataire");
 	$mail->From(e('email',mysql_fetch_array(mysql_query("SELECT email FROM employe WHERE prenom='$_POST[commentaire_createur]'"))));
 	$mail->Html($html);
 	$sent = $mail->Send("Nouveau commentaire sur anomalie n.$_POST[id]");
