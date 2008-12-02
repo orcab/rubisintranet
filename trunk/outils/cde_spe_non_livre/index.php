@@ -91,6 +91,9 @@ function invert_select() {
 </head>
 <body>
 
+<!-- menu de naviguation -->
+<? include('../../inc/naviguation.php'); ?>
+
 <center>
 <form name="cde_special" method="POST" action="index.php" onsubmit="return verif_champs(this);">
 	<fieldset style="width:50%;text-align:center;">

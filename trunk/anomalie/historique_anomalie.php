@@ -105,8 +105,13 @@ EOT;
 	$mail = new SMTP;
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
-	foreach ($CHEFS_DE_POLE as $p=>$chef)
-		if ($row_anomalie['pole'] & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajout de destinataire");
+	$emails_deja_envoye = array();
+	foreach ($CHEFS_DE_POLE as $p=>$chef) {
+		if (($row_anomalie['pole'] & $p) && !in_array($chef['email'],$emails_deja_envoye)) {
+			$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajout de destinataire");
+			array_push($emails_deja_envoye,$chef['email']); // on enregistre l'email pour ne pas lui envoyer d'autre mail
+		}
+	}
 	$mail->From(e('email',mysql_fetch_array(mysql_query("SELECT email FROM employe WHERE prenom='$_POST[commentaire_createur]'"))));
 	$mail->Html($html);
 	$sent = $mail->Send("Nouveau commentaire sur anomalie n.$_POST[id]");
