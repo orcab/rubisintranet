@@ -275,8 +275,6 @@ function check_ref_fournisseur() {
 <!-- menu de naviguation -->
 <? include('../inc/naviguation.php'); ?>
 
-<!--<div style="color:black;font-weight:bold;border:solid 2px black;margin-bottom:15px;padding:5px;"><a href="historique_creation_article.php" style="color:black;text-decoration:none;">Voir où en sont mes demandes de création</a></div>-->
-
 <table>
 <tr>
 <td style="width:65%;vertical-align:top;">
