@@ -175,6 +175,8 @@ EOT;
 		}
 		if ($ligne)
 			$ligne = ' AND ('.join(" OR ",$ligne).')';
+		else
+			$ligne = '';
 		
 		$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 $sql = <<<EOT
@@ -191,21 +193,24 @@ where	DETAIL_BON.NOCLI=CLIENT.NOCLI
 order by NOCLI ASC, NOBON ASC,NOLIG ASC
 EOT;
 
-		$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des cde adhérents ($sql)");
-		while($row = odbc_fetch_array($res)) {	?>
-		<tr>
-			<td><?=$row['NOMCL']?></td>
-			<td><?=$row['NOBON']?></td>
-			<td><?=$row['NOLIG']?></td>
-			<td><?=$row['CODAR']?></td>
-			<td><?=$row['DS1DB']?><br /><?=$row['DS2DB']?><br /><?=$row['DS3DB']?><?= trim($row['CONSA'])?"<br/>($row[CONSA])":'' ?></td>
-			<td>x<?=ereg_replace('\.000$','',$row['QTESA'])?></td>
-			<td><?=$row['MONPR']?>&euro;</td>
-			<td><?=$ligne_en_surveillance["$row[NOCLI]/$row[NOBON]/$row[NOLIG]"][1]?></td>
-			<td style="text-align:center;"><?= $row['QTREC'] ? $row['DATE_RECEPTION']:"<img src='/intranet/js/boutton_images/cancel.png'>"?></td>
-			<td><?=$row['DATE_LIVRAISON']?></td>
-		</tr>
-<?		}	?>
+		if ($ligne) { // s'il existe des lignes a surveiller
+
+			$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des cde adhérents ($sql)");
+			while($row = odbc_fetch_array($res)) {	?>
+				<tr>
+					<td><?=$row['NOMCL']?></td>
+					<td><?=$row['NOBON']?></td>
+					<td><?=$row['NOLIG']?></td>
+					<td><?=$row['CODAR']?></td>
+					<td><?=$row['DS1DB']?><br /><?=$row['DS2DB']?><br /><?=$row['DS3DB']?><?= trim($row['CONSA'])?"<br/>($row[CONSA])":'' ?></td>
+					<td>x<?=ereg_replace('\.000$','',$row['QTESA'])?></td>
+					<td><?=$row['MONPR']?>&euro;</td>
+					<td><?=$ligne_en_surveillance["$row[NOCLI]/$row[NOBON]/$row[NOLIG]"][1]?></td>
+					<td style="text-align:center;"><?= $row['QTREC'] ? $row['DATE_RECEPTION']:"<img src='/intranet/js/boutton_images/cancel.png'>"?></td>
+					<td><?=$row['DATE_LIVRAISON']?></td>
+				</tr>
+<?			}
+		} ?>
 	</table>
 <?	} ?>
 
