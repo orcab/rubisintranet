@@ -40,8 +40,14 @@ a:hover {
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br>EDI</a><br></td>
 	<td><a href="feuille_tournee/feuille_tournee.php"><img src="feuille_tournee/gfx/feuille_tournee.png"><br>Feuille de tournée</a></td>
-	<td></td>
+	<td style="width:50%;padding-bottom:20px;"><!--<a href="compta/index.php"><img src="compta/gfx/compta.png"><br>Compta</a>--></td>
 </tr>
+<tr>
+	<td style="width:50%;padding-bottom:20px;"></td>
+	<td></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="cde_spe_non_livre/index.php"><img src="cde_spe_non_livre/gfx/cde_spe_non_livre.png"><br>Suivi des cde sp&eacute;cial</a></td>
+</tr>
+
 <tr>
 	<td></td>
 	<td></td>
