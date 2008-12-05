@@ -41,14 +41,14 @@ $PAGE_DE_GARDE = array(
 	'00B'=>array('sanitaire.png','#A6AFC8,#5D6B97,#FFFFFF,#5D6B97,#FFFFFF,#000000,#5D6B97,#FFFFFF'),
 	'00C'=>array(),
 	'00D'=>array('electricite.png','#C397BF,#693C65,#FFFFFF,#693C65,#FFFFFF,#000000,#693C65,#FFFFFF'),
-	'OOE'=>array(),
-	'OOF'=>array(),
-	'OOG'=>array('plomberie.png','#9DC6B8,#798778,#FFFFFF,#798778,#FFFFFF,#000000,#798778,#FFFFFF'),
-	'OOH'=>array(),
-	'OOI'=>array(),
-	'OOJ'=>array(),
+	'00E'=>array(),
+	'00F'=>array(),
+	'00G'=>array('plomberie.png','#9DC6B8,#798778,#FFFFFF,#798778,#FFFFFF,#000000,#798778,#FFFFFF'),
+	'00H'=>array(),
+	'00I'=>array(),
+	'00J'=>array(),
 	'00K'=>array('outils.png','#9B6E59,#523C31,#FFFFFF,#523C31,#FFFFFF,#000000,#523C31,#FFFFFF'),
-	'00L'=>array(),'OOM'=>array(),'OON'=>array(),'OOP'=>array(),'OOQ'=>array(),'OOR'=>array(),
+	'00L'=>array(),'00M'=>array(),'00N'=>array(),'00P'=>array(),'00Q'=>array(),'00R'=>array(),
 	'00S'=>array()
 );
 // remplissage des valeurs non renseignées

@@ -11,11 +11,12 @@ use Phpconst2perlconst ;
 print print_time()."START\n";
 
 my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
+my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE};
 
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 
 print print_time()."Select des artisans actif ...";
-$loginor->Sql("select NOCLI,NOMCL,COMC1 from AFAGESTCOM.ACLIENP1 where CATCL='1' and ETCLE<>'S'"); # regarde les artisans actif
+$loginor->Sql("select NOCLI,NOMCL,COMC1 from ${prefix_base_rubis}GESTCOM.ACLIENP1 where CATCL='1' and ETCLE<>'S'"); # regarde les artisans actif
 print "OK\n";
 
 

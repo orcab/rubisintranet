@@ -13,6 +13,7 @@ $| = 1; # active le flush direct
 print print_time()."START\n";
 
 my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
+my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE};
 
 #connexion a loginor pour recuperer les infos
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
@@ -24,10 +25,10 @@ select	A.NOART as CODE_ARTICLE,
 		ACTIV as ACTIVITE,FAMI1 as FAMILLE,SFAM1 as SOUSFAMILLE,ART04 as CHAPITRE,ART05 as SOUSCHAPITRE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
 		PVEN1 as PRIX_NET
-from	AFAGESTCOM.AARTICP1 A,
-		AFAGESTCOM.AARFOUP1 A_F,
-		AFAGESTCOM.AFOURNP1 F,
-		AFAGESTCOM.ATARIFP1 T
+from	${prefix_base_rubis}GESTCOM.AARTICP1 A,
+		${prefix_base_rubis}GESTCOM.AARFOUP1 A_F,
+		${prefix_base_rubis}GESTCOM.AFOURNP1 F,
+		${prefix_base_rubis}GESTCOM.ATARIFP1 T
 where	ETARE=''
 	and A.NOART=A_F.NOART
 	and A_F.AGENC='AFA'

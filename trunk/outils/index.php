@@ -40,7 +40,7 @@ a:hover {
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br>EDI</a><br></td>
 	<td><a href="feuille_tournee/feuille_tournee.php"><img src="feuille_tournee/gfx/feuille_tournee.png"><br>Feuille de tournée</a></td>
-	<td style="width:50%;padding-bottom:20px;"><!--<a href="compta/index.php"><img src="compta/gfx/compta.png"><br>Compta</a>--></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
 </tr>
 <tr>
 	<td style="width:50%;padding-bottom:20px;"></td>

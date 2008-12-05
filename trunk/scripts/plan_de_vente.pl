@@ -13,12 +13,13 @@ $| = 1; # active le flush direct
 print print_time()."START\n";
 
 my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
+my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE};
 
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 print print_time()."Select des familles actives ...";
 my $sql = <<EOT;
 select		AFCNI,AFCAC,AFCFA,AFCSF,AFCCH,AFCSC,ACFLI
-from		AFAGESTCOM.AFAMILP1
+from		${prefix_base_rubis}GESTCOM.AFAMILP1
 where		AFCTY='FA1'
 order by	AFCAC asc, AFCFA asc, AFCSF asc, AFCCH asc, AFCSC asc
 EOT
