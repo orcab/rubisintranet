@@ -2,10 +2,10 @@
 include('../../inc/config.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
-
+$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
 //////////////////////// AJOUT DE LIGNE A SURVEILLER /////////////////////////////
-if (isset($_POST['what']) && $_POST['what']='cde_a_suivre') {
+if (isset($_POST['what']) && $_POST['what']=='cde_a_suivre') {
 	foreach($_POST as $cle=>$val) {
 		if (eregi("^check_([^\/]+)\/([^\/]+)\/([^\/]+)$",$cle,$regs)) { // si l'objet est a enregistrer
 			$no_cli = $regs[1]; $no_bon = $regs[2]; $no_ligne = $regs[3];
@@ -22,6 +22,8 @@ $res = mysql_query("SELECT CONCAT(no_client,'/',no_bon,'/',no_ligne) AS id_ligne
 while($row = mysql_fetch_array($res)) {
 	$ligne_en_surveillance[$row['id_ligne']] = array($row['date_saisie'],$row['date_saisie_formatee']) ;
 }
+
+//print_r($ligne_en_surveillance);
 
 ?>
 <html>
@@ -112,10 +114,10 @@ function invert_select() {
 		<table>
 <?
 		$nobon_escape = strtoupper(mysql_escape_string($_POST['NOBON']));
-		$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+		
 $sql = <<<EOT
 select NOMCL,CODAR,NOLIG,DS1DB,DS2DB,DS3DB,CONSA,CLIENT.NOCLI,QTESA,MONPR
-from AFAGESTCOM.ADETBOP1 DETAIL_BON, AFAGESTCOM.ACLIENP1 CLIENT
+from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 DETAIL_BON, ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 where	DETAIL_BON.NOCLI=CLIENT.NOCLI
 	and	NOBON='$nobon_escape'
 	and TRAIT='R'
@@ -124,12 +126,15 @@ where	DETAIL_BON.NOCLI=CLIENT.NOCLI
 	and ETSBE=''
 order by NOCLI ASC, NOBON ASC,NOLIG ASC
 EOT;
+	
+		//echo "<br>\n$sql\n<br>";
+
 		$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des cde adhérents ($sql)");
 		$old_nocli = '';
 		while($row = odbc_fetch_array($res)) {
 			if($row['NOCLI'] != $old_nocli) { // nouveau n° de client ?>
-				<tr><th colspan="5"><?=$row['NOMCL']?> cde n°<?=$_POST['NOBON']?></th></tr>
-				<tr><td colspan="5">&nbsp;
+				<tr><th colspan="6"><?=$row['NOMCL']?> cde n°<?=$_POST['NOBON']?></th></tr>
+				<tr><td colspan="6">&nbsp;
 					<img src="gfx/fleche.png"/>
 					<input type="button" value="Tout selectionner" onclick="select_all();" class="button divers" style="background-image:url(../../js/boutton_images/select.png)"/>&nbsp;&nbsp;
 					<input type="button" value="Inverser la sel." onclick="invert_select();" class="button divers" style="background-image:url(../../js/boutton_images/invert.png)"/>&nbsp;&nbsp;
@@ -143,7 +148,7 @@ EOT;
 				<td><?=$row['CODAR']?></td>
 				<td><?=$row['DS1DB']?><br/><?=$row['DS2DB']?><br /><?=$row['DS3DB']?><?= trim($row['CONSA'])?"<br/>($row[CONSA])":'' ?></td>
 				<td>x<?=ereg_replace('\.000$','',$row['QTESA'])?></td>
-				<td><?=$row['MONPR']?></td>
+				<td style="text-align:right;"><?=$row['MONPR']?>&euro;</td>
 			</tr>
 <?			$old_nocli = $row['NOCLI'];
 		}
@@ -159,8 +164,6 @@ EOT;
 	<table>
 		<caption>Cde adhérent à livrer</caption>
 		<tr>
-			<th>Adhérent</th>
-			<th>N° de cde</th>
 			<th>n° ligne</th>
 			<th>Article</th>
 			<th>Désignation</th>
@@ -180,14 +183,13 @@ EOT;
 			$ligne = ' AND ('.join(" OR ",$ligne).')';
 		else
 			$ligne = '';
-		
-		$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+
 $sql = <<<EOT
 select	NOMCL,CODAR,NOLIG,DS1DB,DS2DB,DS3DB,CONSA,CLIENT.NOCLI,QTESA,TRAIT,NOBON,MONPR,
 		CONCAT(DTLIJ,CONCAT('/',CONCAT(DTLIM,CONCAT('/',CONCAT(DTLIS,DTLIA))))) as DATE_LIVRAISON,
 		CONCAT(DDISJ,CONCAT('/',CONCAT(DDISM,CONCAT('/',CONCAT(DDISS,DDISA))))) as DATE_RECEPTION,
 		QTREC
-from AFAGESTCOM.ADETBOP1 DETAIL_BON, AFAGESTCOM.ACLIENP1 CLIENT
+from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 DETAIL_BON, ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 where	DETAIL_BON.NOCLI=CLIENT.NOCLI
 	and PROFI=1
 	and TYCDD='SPE'
@@ -198,11 +200,13 @@ EOT;
 
 		if ($ligne) { // s'il existe des lignes a surveiller
 
+			$old_bon = '' ;
 			$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des cde adhérents ($sql)");
-			while($row = odbc_fetch_array($res)) {	?>
+			while($row = odbc_fetch_array($res)) {
+				if ($row['NOMCL'].'/'.$row['NOBON'] != $old_bon) { // on change de bon, on colle un petit titre ?>
+					<tr><th colspan="8">Cde de <?=$row['NOMCL']?> N°<?=$row['NOBON']?></th></tr>
+<?				}	?>
 				<tr>
-					<td><?=$row['NOMCL']?></td>
-					<td><?=$row['NOBON']?></td>
 					<td><?=$row['NOLIG']?></td>
 					<td><?=$row['CODAR']?></td>
 					<td><?=$row['DS1DB']?><br /><?=$row['DS2DB']?><br /><?=$row['DS3DB']?><?= trim($row['CONSA'])?"<br/>($row[CONSA])":'' ?></td>
@@ -212,7 +216,9 @@ EOT;
 					<td style="text-align:center;"><?= $row['QTREC'] ? $row['DATE_RECEPTION']:"<img src='/intranet/js/boutton_images/cancel.png'>"?></td>
 					<td><?=$row['DATE_LIVRAISON']?></td>
 				</tr>
-<?			}
+<?			
+				$old_bon = $row['NOMCL'].'/'.$row['NOBON'] ;
+			}
 		} ?>
 	</table>
 <?	} ?>
@@ -223,3 +229,7 @@ EOT;
 
 </body>
 </html>
+<?
+odbc_close($loginor);
+mysql_close($mysql);
+?>
