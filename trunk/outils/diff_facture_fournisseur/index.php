@@ -6,10 +6,12 @@ $loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossib
 
 //////////////////////// AJOUT DE LIGNE EN DIFF /////////////////////////////
 if (isset($_POST['what']) && $_POST['what']=='add_fact' && 
-	isset($_POST['no_fact']) && $_POST['no_fact']) {
+	isset($_POST['no_fact']) && $_POST['no_fact'] && 
+	isset($_POST['montant_cde']) && $_POST['montant_cde']) {
 
 	// on va chercher les infos dans RUBIS
 	$nofact_escape = trim(strtoupper(mysql_escape_string($_POST['no_fact'])));
+	$montant_cde_escape = trim(strtoupper(mysql_escape_string($_POST['montant_cde'])));
 	$commentaire_escape = trim(strtoupper(mysql_escape_string($_POST['commentaire'])));
 
 	// on regarde si on a plusieur fournisseur qui ont le meme n° de facture
@@ -30,7 +32,9 @@ EOT;
 
 	if (sizeof($fournisseurs) == 1) { // si un seul fournisseur
 		// insertion de la nouvelle ligne a surveiller dans MYSQL
-		mysql_query("INSERT INTO diff_cde_fourn (code_fournisseur,no_fact,commentaire) VALUES ('".trim($fournisseurs[0][0])."','$nofact_escape','$commentaire_escape')") or die("Ne peux pas inserer la facture en surveillance : ".mysql_error());
+		mysql_query("INSERT INTO diff_cde_fourn (code_fournisseur,no_fact,montant_cde,commentaire) VALUES ('".trim($fournisseurs[0][0])."','$nofact_escape','$montant_cde_escape','$commentaire_escape')") or die("Ne peux pas inserer la facture en surveillance : ".mysql_error());
+	} else {
+		echo "Plusieurs fournisseurs ont ce n° de facture, ce n'est pas encore gérer";
 	}
 
 } // fin ajout
@@ -92,7 +96,10 @@ function verif_champs(mon_form) {
 		alert("Champs n° de facture fournisseur vide");
 		return false;
 	} else {
-		mon_form.commentaire.value = prompt("Commentaire");
+		while(mon_form.montant_cde.value == '') {
+			mon_form.montant_cde.value	= prompt("Montant de la cde fournisseur");
+		}
+		mon_form.commentaire.value	= prompt("Commentaire");
 		return true;
 	}
 }
@@ -109,6 +116,7 @@ function verif_champs(mon_form) {
 <center>
 <form name="add_cde" method="POST" action="index.php" onsubmit="return verif_champs(this);">
 	<input type="hidden" name="what" value="add_fact" />
+	<input type="hidden" name="montant_cde" value="" />
 	<input type="hidden" name="commentaire" value="" />
 	<fieldset style="width:50%;text-align:center;">
 		<legend>Ajouter une différence de facturation fournisseur</legend>
@@ -139,7 +147,7 @@ function verif_champs(mon_form) {
 		$ligne = array();
 		while($row = mysql_fetch_array($res)) {
 			$ligne[] = "(CONTROLE_FACTURE_ENTETE.CEFNU='$row[no_fact]' AND CONTROLE_FACTURE_ENTETE.CFAFOU='$row[code_fournisseur]')";
-			$ligne_a_surveiller["$row[code_fournisseur]/$row[no_fact]"] = $row['commentaire'];
+			$ligne_a_surveiller["$row[code_fournisseur]/$row[no_fact]"] = array($row['montant_cde'], $row['commentaire']);
 		}
 		if ($ligne)
 			$ligne = '('.join(" OR ",$ligne).')';
@@ -166,7 +174,7 @@ EOT;
 				$row['CFAFOU'] = trim($row['CFAFOU']);
 
 				$sql = <<<EOT
-select	HIBON,HIPRI,ACFLI
+select	HIBON,ACFLI
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFADEP1 CONTROLE_FACTURE_DETAIL
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFAMILP1 FAMILLE
 				on CONTROLE_FACTURE_DETAIL.CFVC6=FAMILLE.AFCAC and AFCNI='ACT'
@@ -180,20 +188,19 @@ EOT;
 				while($row_detail = odbc_fetch_array($res_detail)) {
 					$no_bon[$row_detail['HIBON']] = 1;
 					$activite[$row_detail['ACFLI']] = 1;
-					$montant_reel += $row_detail['HIPRI'];
 				}
-				$diff = $row['CEMON'] - $montant_reel;
+				$diff = (isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][0]:0) - $row['CEMON'] ;
 ?>
 				<tr class="<?=$diff >= 0 ? 'positif':'negatif'?>">
 					<td class="date"><?=$row['DATE_CONTROLE']?></td>
 					<td class="fournisseur"><?=$row['NOMFO']?></td>
 					<td class="cde"><?=join(", ",array_keys($no_bon))?></td>
 					<td class="facture"><?=$row['CEFNU']?></td>
+					<td class="prix"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][0]:'non saisie' ?></td>
 					<td class="prix"><?=sprintf('%0.2f',$row['CEMON'])?>&euro;</td>
-					<td class="prix"><?=sprintf('%0.2f',$montant_reel)?>&euro;</td>
 					<td class="prix <?=$diff >= 0 ? 'positif':'negatif'?>" style="font-weight:bold;"><?=sprintf('%0.2f',$diff)?>&euro;</td>
 					<td class="activite"><?=join("<br/>",array_keys($activite))?></td>
-					<td class="commentaire"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]:'' ?></td>
+					<td class="commentaire"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][1]:'' ?></td>
 					<td class="qui"><?=$row['CENID']?></td>
 				</tr>
 <?			}
