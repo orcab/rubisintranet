@@ -4,6 +4,8 @@ $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 $loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
+$message = '' ;
+
 //////////////////////// AJOUT DE LIGNE EN DIFF /////////////////////////////
 if (isset($_POST['what']) && $_POST['what']=='add_fact' && 
 	isset($_POST['no_fact']) && $_POST['no_fact'] && 
@@ -33,11 +35,28 @@ EOT;
 	if (sizeof($fournisseurs) == 1) { // si un seul fournisseur
 		// insertion de la nouvelle ligne a surveiller dans MYSQL
 		mysql_query("INSERT INTO diff_cde_fourn (code_fournisseur,no_fact,montant_cde,commentaire) VALUES ('".trim($fournisseurs[0][0])."','$nofact_escape','$montant_cde_escape','$commentaire_escape')") or die("Ne peux pas inserer la facture en surveillance : ".mysql_error());
+
+		$message = "La facture n°$_POST[no_fact] a été correctement ajouté";
 	} else {
-		echo "Plusieurs fournisseurs ont ce n° de facture, ce n'est pas encore gérer";
+		$message = "Plusieurs fournisseurs ont ce n° de facture, ce n'est pas encore gérer";
 	}
 
 } // fin ajout
+
+
+elseif (isset($_POST['what']) && $_POST['what']=='del_fact' && 
+		isset($_POST['del_no_fact']) && $_POST['del_no_fact'] &&
+		isset($_POST['code_fourn']) && $_POST['code_fourn']) {
+		// suppression de la ligne dans Mysql.
+
+		//echo "DELETE FROM diff_cde_fourn WHERE code_fournisseur='".mysql_escape_string($_POST['code_fourn'])."' AND no_fact='".mysql_escape_string($_POST['del_no_fact'])."'";
+
+		mysql_query("DELETE FROM diff_cde_fourn WHERE code_fournisseur='".mysql_escape_string($_POST['code_fourn'])."' AND no_fact='".mysql_escape_string($_POST['del_no_fact'])."'") or die("Ne peux pas supprimer la facture : ".mysql_error());
+
+		$message = "La facture n°$_POST[del_no_fact] a été correctement supprimée";
+}
+
+//print_r($_POST);
 
 ?>
 <html>
@@ -45,6 +64,8 @@ EOT;
 <title>Différence de facturation des commandes fournisseurs</title>
 
 <style>
+
+a > img { border:none; }
 
 body,td {
 	font-family:verdana;
@@ -91,7 +112,9 @@ fieldset {
 
 <script language="javascript">
 <!--
-function verif_champs(mon_form) {
+function verif_champs() {
+	mon_form = document.add_cde ;
+
 	if (!mon_form.no_fact.value) {
 		alert("Champs n° de facture fournisseur vide");
 		return false;
@@ -100,7 +123,19 @@ function verif_champs(mon_form) {
 			mon_form.montant_cde.value	= prompt("Montant de la cde fournisseur");
 		}
 		mon_form.commentaire.value	= prompt("Commentaire");
-		return true;
+		mon_form.what.value			='add_fact'; // action d'ajouté une facture
+		mon_form.submit();
+	}
+}
+
+function del_fact(fourn,fact) {
+	mon_form = document.add_cde ;
+
+	if (confirm("Voulez-vous vraiment supprimer cette facture ?")) {
+		mon_form.code_fourn.value	= fourn;
+		mon_form.del_no_fact.value	= fact;
+		mon_form.what.value			='del_fact'; // action de supprimer une facture
+		mon_form.submit();
 	}
 }
 
@@ -109,21 +144,29 @@ function verif_champs(mon_form) {
 
 </head>
 <body>
-
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 <br/>
+
 <center>
-<form name="add_cde" method="POST" action="index.php" onsubmit="return verif_champs(this);">
-	<input type="hidden" name="what" value="add_fact" />
+
+<? if ($message) { // affichage d'un message de traitement ?>
+	<div style="background:red;color:white;font-weight:bold;width:50%;"><?=$message?></div>
+<? } ?>
+
+<form name="add_cde" method="POST" action="index.php" onsubmit="verif_champs();">
+	<input type="hidden" name="what" value="" />
 	<input type="hidden" name="montant_cde" value="" />
 	<input type="hidden" name="commentaire" value="" />
+	<input type="hidden" name="code_fourn" value="" />
+	<input type="hidden" name="del_no_fact" value="" />
+
 	<fieldset style="width:50%;text-align:center;">
 		<legend>Ajouter une différence de facturation fournisseur</legend>
 		N° de facture fournisseur : <input type="text" name="no_fact" value="" size="8" />
-		<input type="submit" value="Valider" class="button valider" />
+		<input type="button" value="Valider" class="button valider" onclick="verif_champs();"/>
 	</fieldset>
-</form>
+
 
 
 <!-- AFFICHAGE DES SURVEILLANCES FACTURES -->
@@ -140,6 +183,7 @@ function verif_champs(mon_form) {
 			<th>Activ.</th>
 			<th>Commentaire</th>
 			<th>Qui</th>
+			<th>&nbsp;</th>
 		</tr>
 <?
 		$res = mysql_query("SELECT * FROM diff_cde_fourn ORDER BY id DESC") or die("Peux pas retrouver les lignes a surveiller : ".mysql_error());
@@ -202,10 +246,12 @@ EOT;
 					<td class="activite"><?=join("<br/>",array_keys($activite))?></td>
 					<td class="commentaire"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][1]:'' ?></td>
 					<td class="qui"><?=$row['CENID']?></td>
+					<td class="prix"><img src="../../gfx/delete_micro.gif" onclick="del_fact('<?=$row['CFAFOU']?>','<?=$row['CEFNU']?>');" /></td>
 				</tr>
 <?			}
 		} ?>
 
+</form>
 </center>
 
 </body>
