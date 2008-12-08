@@ -8,7 +8,7 @@ $loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossib
 if (isset($_POST['what']) && $_POST['what']=='cde_a_suivre') {
 	foreach($_POST as $cle=>$val) {
 		if (eregi("^check_([^\/]+)\/([^\/]+)\/([^\/]+)$",$cle,$regs)) { // si l'objet est a enregistrer
-			$no_cli = $regs[1]; $no_bon = $regs[2]; $no_ligne = $regs[3];
+			$no_cli = $regs[1]; $no_bon = strtoupper($regs[2]); $no_ligne = $regs[3];
 			// on ajoute les surveillances
 			mysql_query("INSERT INTO suivi_cde_spe (no_client,no_bon,no_ligne,date_saisie) VALUES ('$no_cli','$no_bon','$no_ligne',NOW())") ;
 		}
@@ -177,7 +177,7 @@ EOT;
 		$res = mysql_query("SELECT * FROM suivi_cde_spe") or die("Peux pas retrouver les lignes a surveiller : ".mysql_error());
 		$ligne = array();
 		while($row = mysql_fetch_array($res)) {
-			$ligne[] = "(DETAIL_BON.NOCLI='$row[no_client]' AND NOBON='$row[no_bon]' AND NOLIG='$row[no_ligne]')";
+			$ligne[] = "(DETAIL_BON.NOCLI='$row[no_client]' AND NOBON='".strtoupper($row['no_bon'])."' AND NOLIG='$row[no_ligne]')";
 		}
 		if ($ligne)
 			$ligne = ' AND ('.join(" OR ",$ligne).')';
