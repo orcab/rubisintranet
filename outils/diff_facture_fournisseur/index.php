@@ -44,16 +44,14 @@ EOT;
 } // fin ajout
 
 
-elseif (isset($_POST['what']) && $_POST['what']=='del_fact' && 
-		isset($_POST['del_no_fact']) && $_POST['del_no_fact'] &&
-		isset($_POST['code_fourn']) && $_POST['code_fourn']) {
-		// suppression de la ligne dans Mysql.
+//////////////////////// SUPPRESION DE LIGNE EN DIFF /////////////////////////////
+elseif (isset($_GET['what']) && $_GET['what']=='del_fact' && 
+		isset($_GET['del_no_fact']) && $_GET['del_no_fact'] &&
+		isset($_GET['code_fourn']) && $_GET['code_fourn']) {
 
-		//echo "DELETE FROM diff_cde_fourn WHERE code_fournisseur='".mysql_escape_string($_POST['code_fourn'])."' AND no_fact='".mysql_escape_string($_POST['del_no_fact'])."'";
+		mysql_query("DELETE FROM diff_cde_fourn WHERE code_fournisseur='".mysql_escape_string($_GET['code_fourn'])."' AND no_fact='".mysql_escape_string($_GET['del_no_fact'])."'") or die("Ne peux pas supprimer la facture : ".mysql_error());
 
-		mysql_query("DELETE FROM diff_cde_fourn WHERE code_fournisseur='".mysql_escape_string($_POST['code_fourn'])."' AND no_fact='".mysql_escape_string($_POST['del_no_fact'])."'") or die("Ne peux pas supprimer la facture : ".mysql_error());
-
-		$message = "La facture n°$_POST[del_no_fact] a été correctement supprimée";
+		$message = "La facture n°$_GET[del_no_fact] a été correctement supprimée";
 }
 
 //print_r($_POST);
@@ -129,14 +127,8 @@ function verif_champs() {
 }
 
 function del_fact(fourn,fact) {
-	mon_form = document.add_cde ;
-
-	if (confirm("Voulez-vous vraiment supprimer cette facture ?")) {
-		mon_form.code_fourn.value	= fourn;
-		mon_form.del_no_fact.value	= fact;
-		mon_form.what.value			='del_fact'; // action de supprimer une facture
-		mon_form.submit();
-	}
+	if (confirm("Voulez-vous vraiment supprimer cette facture ?"))
+		document.location.href="index.php?what=del_fact&code_fourn="+fourn+"&del_no_fact="+fact;
 }
 
 //-->
@@ -158,15 +150,13 @@ function del_fact(fourn,fact) {
 	<input type="hidden" name="what" value="" />
 	<input type="hidden" name="montant_cde" value="" />
 	<input type="hidden" name="commentaire" value="" />
-	<input type="hidden" name="code_fourn" value="" />
-	<input type="hidden" name="del_no_fact" value="" />
 
 	<fieldset style="width:50%;text-align:center;">
 		<legend>Ajouter une différence de facturation fournisseur</legend>
 		N° de facture fournisseur : <input type="text" name="no_fact" value="" size="8" />
 		<input type="button" value="Valider" class="button valider" onclick="verif_champs();"/>
 	</fieldset>
-
+</form>
 
 
 <!-- AFFICHAGE DES SURVEILLANCES FACTURES -->
@@ -251,7 +241,7 @@ EOT;
 <?			}
 		} ?>
 
-</form>
+
 </center>
 
 </body>
