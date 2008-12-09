@@ -134,7 +134,8 @@ function verif_champs() {
 		// on va checker la base pour vérifié combien il y a de fournisseur pour cette facture
 		http.open('GET', 'ajax.php?what=check_nb_fournisseur&no_fact='+escape(mon_form.no_fact.value), true);
 		http.onreadystatechange = function() {
-			
+			$('#loading').css('visibility','visible');
+
 			if (http.readyState == 4 && http.responseText) {
 				fournisseurs = eval('(' + http.responseText + ')'); // structure JSON [ [code1,nom1],[code2,nom2], ... ]
 				if (fournisseurs.length == 1)  { // un seul fournisseur
@@ -148,7 +149,8 @@ function verif_champs() {
 					for(i=0 ; i<fournisseurs.length ; i++)
 						$('#choix-fournisseur').html($('#choix-fournisseur').html() + '<a href="javascript:valider_choix_fournisseur(\''+fournisseurs[i][0]+'\')">'+fournisseurs[i][1]+'</a><br>') ;
 
-					$('#choix-fournisseur').show();
+					$('#loading').css('visibility','hidden');
+					$('#choix-fournisseur').show();					
 
 				} else { // pas de fournisseur trouvé
 					alert("N° de facture inconnu");
@@ -203,6 +205,7 @@ function del_fact(fourn,fact) {
 		<legend>Ajouter une différence de facturation fournisseur</legend>
 		N° de facture fournisseur : <input type="text" name="no_fact" value="" size="8" />
 		<input type="button" value="Valider" class="button valider" onclick="verif_champs();"/>
+		<img id="loading" src="gfx/loading4.gif" style="visibility:hidden;"/>
 	</fieldset>
 </form>
 
