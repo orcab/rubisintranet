@@ -9,37 +9,19 @@ $message = '' ;
 //////////////////////// AJOUT DE LIGNE EN DIFF /////////////////////////////
 if (isset($_POST['what']) && $_POST['what']=='add_fact' && 
 	isset($_POST['no_fact']) && $_POST['no_fact'] && 
-	isset($_POST['montant_cde']) && $_POST['montant_cde']) {
+	isset($_POST['montant_cde']) && $_POST['montant_cde'] &&
+	isset($_POST['fournisseur']) && $_POST['fournisseur']) {
 
 	// on va chercher les infos dans RUBIS
 	$nofact_escape = trim(strtoupper(mysql_escape_string($_POST['no_fact'])));
 	$montant_cde_escape = trim(strtoupper(mysql_escape_string($_POST['montant_cde'])));
 	$commentaire_escape = trim(strtoupper(mysql_escape_string($_POST['commentaire'])));
+	$fournisseur_escape = trim(strtoupper(mysql_escape_string($_POST['fournisseur'])));
 
-	// on regarde si on a plusieur fournisseur qui ont le meme n° de facture
-	$sql = <<<EOT
-select DISTINCT(CFAFOU) as CODE_FOURNISSEUR,NOMFO
-from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFAENP1 CONTROLE_FACTURE, ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
-where	
-		CEFNU='$nofact_escape'
-		and CONTROLE_FACTURE.CFAFOU=FOURNISSEUR.NOFOU
-EOT;
-	//echo "<br>\n$sql\n<br>";
-	$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des fournisseurs sur cette facture ($sql)");
-	$fournisseurs = array();
-	while($row = odbc_fetch_array($res)) {
-		array_push($fournisseurs, array($row['CODE_FOURNISSEUR'],$row['NOMFO']));
-	}
-	//print_r($fournisseurs);
+	// insertion de la nouvelle ligne a surveiller dans MYSQL
+	mysql_query("INSERT INTO diff_cde_fourn (code_fournisseur,no_fact,montant_cde,commentaire) VALUES ('$fournisseur_escape','$nofact_escape','$montant_cde_escape','$commentaire_escape')") or die("Ne peux pas inserer la facture en surveillance : ".mysql_error());
 
-	if (sizeof($fournisseurs) == 1) { // si un seul fournisseur
-		// insertion de la nouvelle ligne a surveiller dans MYSQL
-		mysql_query("INSERT INTO diff_cde_fourn (code_fournisseur,no_fact,montant_cde,commentaire) VALUES ('".trim($fournisseurs[0][0])."','$nofact_escape','$montant_cde_escape','$commentaire_escape')") or die("Ne peux pas inserer la facture en surveillance : ".mysql_error());
-
-		$message = "La facture n°$_POST[no_fact] a été correctement ajouté";
-	} else {
-		$message = "Plusieurs fournisseurs ont ce n° de facture, ce n'est pas encore gérer";
-	}
+	$message = "La facture n°$_POST[no_fact] a été correctement ajouté";
 
 } // fin ajout
 
@@ -91,6 +73,11 @@ td {
 	vertical-align:top;
 }
 
+fieldset {
+	border:solid 1px grey;
+	color:grey;
+}
+
 .date, .fournisseur,.cde,.facture,.qui { text-align:center; }
 .prix { text-align:right; }
 .commentaire { width:25%; }
@@ -100,16 +87,37 @@ tr.negatif { background-color:#FCC; }
 td.positif { color:green; }
 td.negatif { color:red; }
 
-fieldset {
-	border:solid 1px grey;
-	color:grey;
+
+
+div#choix-fournisseur {
+	padding:20px;
+	border:solid 2px black;
+	-moz-border-radius:15px;
+	background:white;
+	display:none;
+	position:absolute;
+	color:green;
+	font-size:1.2em;
+	z-index:99;
 }
 
 </style>
 <style type="text/css">@import url(../../js/boutton.css);</style>
+<script language="javascript" src="../../js/jquery.js"></script>
 
 <script language="javascript">
 <!--
+
+///// AJAX ///////////////////////////////////
+var http = null;
+if		(window.XMLHttpRequest) // Firefox 
+	   http = new XMLHttpRequest(); 
+else if	(window.ActiveXObject) // Internet Explorer 
+	   http = new ActiveXObject("Microsoft.XMLHTTP");
+else	// XMLHttpRequest non supporté par le navigateur 
+   alert("Votre navigateur ne supporte pas les objets XMLHTTPRequest...");
+
+
 function verif_champs() {
 	mon_form = document.add_cde ;
 
@@ -122,9 +130,42 @@ function verif_champs() {
 		}
 		mon_form.commentaire.value	= prompt("Commentaire");
 		mon_form.what.value			='add_fact'; // action d'ajouté une facture
-		mon_form.submit();
+
+		// on va checker la base pour vérifié combien il y a de fournisseur pour cette facture
+		http.open('GET', 'ajax.php?what=check_nb_fournisseur&no_fact='+escape(mon_form.no_fact.value), true);
+		http.onreadystatechange = function() {
+			
+			if (http.readyState == 4 && http.responseText) {
+				fournisseurs = eval('(' + http.responseText + ')'); // structure JSON [ [code1,nom1],[code2,nom2], ... ]
+				if (fournisseurs.length == 1)  { // un seul fournisseur
+					document.add_cde.fournisseur.value=fournisseurs[0][0];
+					document.add_cde.submit(); // on submit le formulaire
+
+				} else if (fournisseurs.length > 1) { // cas d'une facture avec plusieurs fournisseur
+					$('#choix-fournisseur').css('top',document.body.scrollTop +100);
+					$('#choix-fournisseur').css('left',screen.availWidth / 2 - 300);
+
+					for(i=0 ; i<fournisseurs.length ; i++)
+						$('#choix-fournisseur').html($('#choix-fournisseur').html() + '<a href="javascript:valider_choix_fournisseur(\''+fournisseurs[i][0]+'\')">'+fournisseurs[i][1]+'</a><br>') ;
+
+					$('#choix-fournisseur').show();
+
+				} else { // pas de fournisseur trouvé
+					alert("N° de facture inconnu");
+				}
+			}
+		};
+		http.send(null);
+		return false;
 	}
 }
+
+function valider_choix_fournisseur(code_fournisseur) {
+	$('#choix-fournisseur').hide();
+	document.add_cde.fournisseur.value=code_fournisseur;
+	document.add_cde.submit();
+}
+
 
 function del_fact(fourn,fact) {
 	if (confirm("Voulez-vous vraiment supprimer cette facture ?"))
@@ -140,16 +181,23 @@ function del_fact(fourn,fact) {
 <? include('../../inc/naviguation.php'); ?>
 <br/>
 
+<!-- dialog pour faire le choix entre plusieurs fournisseur -->
+<div id="choix-fournisseur">
+	<strong>Plusieurs fournisseurs correspondent à cette facture.<br>
+	Choisissez le bon :</strong><br><br>
+</div>
+
 <center>
 
 <? if ($message) { // affichage d'un message de traitement ?>
 	<div style="background:red;color:white;font-weight:bold;width:50%;"><?=$message?></div>
 <? } ?>
 
-<form name="add_cde" method="POST" action="index.php" onsubmit="verif_champs();">
+<form name="add_cde" method="POST" action="index.php" onsubmit="return verif_champs();">
 	<input type="hidden" name="what" value="" />
 	<input type="hidden" name="montant_cde" value="" />
 	<input type="hidden" name="commentaire" value="" />
+	<input type="hidden" name="fournisseur" value="" />
 
 	<fieldset style="width:50%;text-align:center;">
 		<legend>Ajouter une différence de facturation fournisseur</legend>
@@ -243,7 +291,7 @@ EOT;
 
 
 </center>
-
+<?=uniqid()?>
 </body>
 </html>
 <?
