@@ -233,7 +233,7 @@ EOT;
 			$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des cde adhérents ($sql)");
 			while($row = odbc_fetch_array($res)) {
 				if ($row['NOMCL'].'/'.$row['NOBON'] != $old_bon) { // on change de bon, on colle un petit titre ?>
-					<tr><th colspan="8">Cde de <?=$row['NOMCL']?> N°<?=$row['NOBON']?></th></tr>
+					<tr><th colspan="9">Cde de <?=$row['NOMCL']?> N°<?=$row['NOBON']?></th></tr>
 <?				}	?>
 				<tr>
 					<td><?=$row['NOLIG']?></td>

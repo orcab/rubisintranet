@@ -108,7 +108,7 @@ select#completion_fourn {
 </style>
 
 <style type="text/css">@import url(../js/boutton.css);</style>
-<SCRIPT LANGUAGE="JavaScript" SRC="../js/jquery.js"></SCRIPT>
+<script language="javascript" src="../js/jquery.js"></script>
 <script language="JavaScript">
 <!--
 
