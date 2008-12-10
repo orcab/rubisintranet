@@ -24,6 +24,7 @@ my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_US
 $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
+$mysql->query(join('',<DATA>)); # construction de la table si elle n'existe pas
 $mysql->query("TRUNCATE TABLE artisan;");
 print " ok\n";
 
@@ -37,7 +38,7 @@ while($loginor->FetchRow()) {
 		$mysql->quote($row{'COMC1'}) = 'bretagne-plomberie-chauffage@aliceadsl.fr';
 	}
 
-	$mysql->query("INSERT INTO artisan (numero,nom,suspendu,email) VALUES (".$mysql->quote($row{'NOCLI'}).",".$mysql->quote($row{'NOMCL'}).",0,".$mysql->quote($row{'COMC1'}).")") or warn "Ne peux pas inserer le client ".$row{'NOMCL'};
+	$mysql->query("INSERT INTO artisan (numero,nom,suspendu,email) VALUES (".$mysql->quote($row{'NOCLI'}).",".$mysql->quote($row{'NOMCL'}).",0,".lc($mysql->quote($row{'COMC1'})).")") or warn "Ne peux pas inserer le client ".$row{'NOMCL'};
 }
 
 $loginor->Close();
@@ -49,3 +50,15 @@ sub print_time {
 	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
 	return '';
 }
+
+__DATA__
+CREATE TABLE IF NOT EXISTS `artisan` (
+  `id` int(11) NOT NULL auto_increment,
+  `numero` varchar(6) NOT NULL,
+  `nom` varchar(255) NOT NULL,
+  `suspendu` tinyint(1) NOT NULL default '0',
+  `email` varchar(255) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `nom` (`nom`),
+  UNIQUE KEY `numero` (`numero`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 ;

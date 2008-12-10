@@ -3,19 +3,13 @@
 -- http://www.phpmyadmin.net
 --
 -- Serveur: localhost
--- Généré le : Ven 21 Novembre 2008 à 14:18
+-- Généré le : Mer 10 Décembre 2008 à 11:13
 -- Version du serveur: 5.0.27
 -- Version de PHP: 5.2.0
 
 SET FOREIGN_KEY_CHECKS=0;
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
 
 --
 -- Base de données: `mcs`
@@ -254,6 +248,22 @@ CREATE TABLE IF NOT EXISTS `devis_rubis_relance` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `diff_cde_fourn`
+--
+
+CREATE TABLE IF NOT EXISTS `diff_cde_fourn` (
+  `id` int(11) NOT NULL auto_increment,
+  `code_fournisseur` varchar(255) NOT NULL,
+  `no_fact` varchar(255) NOT NULL,
+  `montant_cde` decimal(10,2) default NULL,
+  `commentaire` text,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `fournisseur` (`code_fournisseur`,`no_fact`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `employe`
 --
 
@@ -325,6 +335,22 @@ CREATE TABLE IF NOT EXISTS `send_document` (
   `RELIQUAT` varchar(255) NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `numero_artisan` (`numero_artisan`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `suivi_cde_spe`
+--
+
+CREATE TABLE IF NOT EXISTS `suivi_cde_spe` (
+  `id` int(11) NOT NULL auto_increment,
+  `no_client` varchar(255) NOT NULL,
+  `no_bon` varchar(255) NOT NULL,
+  `no_ligne` varchar(255) NOT NULL,
+  `date_saisie` date NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `no_client` (`no_client`,`no_bon`,`no_ligne`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------

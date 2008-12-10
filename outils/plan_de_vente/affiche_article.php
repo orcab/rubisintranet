@@ -519,7 +519,7 @@ function valider_nouveau_chemin() {
 			<td class="prix_net" nowrap><?=$row['prix_net']?>€</td>
 			<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 				<td align="center">			
-					<a class="info"><span>Cliquer sur l'image pour suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=$_SESSION['chemin']?>');"></a>
+					<a class="info"><span>Cliquer sur l'image pour suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=isset($_SESSION['chemin'])?$_SESSION['chemin']:''?>');"></a>
 				</td>
 			<? } ?>
 		</tr>

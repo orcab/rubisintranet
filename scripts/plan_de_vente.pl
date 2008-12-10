@@ -27,54 +27,34 @@ $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
 
 
-print print_time()."Insertion du plan de vente dans la base ... ";
 my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_USER},$cfg->{MYSQL_PASS}) or die "Peux pas se connecter a mysql";
 $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
-
-# drop table
-my $dbh->query("DROP TABLE IF EXISTS pdvente;");
-
-# create table
-my $create_table = <<EOT;
-CREATE TABLE IF NOT EXISTS pdvente (
-  id int(11) NOT NULL auto_increment,
-  `code` varchar(3) NOT NULL,
-  libelle varchar(255) NOT NULL,
-  activite_pere varchar(3) default NULL,
-  famille_pere varchar(3) default NULL,
-  sousfamille_pere varchar(3) default NULL,
-  chapitre_pere varchar(3) default NULL,
-  chemin varchar(19) default NULL,
-  niveau int(3) NOT NULL,
-  PRIMARY KEY  (id)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
-EOT
-$dbh->query($create_table);
-
-# create index sur le chemin
-$dbh->query("CREATE UNIQUE INDEX chemin ON pdvente (`chemin`)");
+print print_time()."Suppression de la base ...";
+$mysql->query(join('',<DATA>)); # construction de la table si elle n'existe pas
+$mysql->query("TRUNCATE TABLE pdvente;");
+print " ok\n";
 
 #my ($code_activite,$libelle_activite,$code_famille,$libelle_famille,$code_sousfamille,$libelle_sousfamille,$code_chapitre,$libelle_chapitre,$code_souschapitre,$libelle_souschapitre);
-
+print print_time()."Insertion du plan de vente dans la base ... ";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
 	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
 
 	if		($row{'AFCNI'} eq 'ACT') { # activité
-		$dbh->query("INSERT INTO pdvente (code,libelle,chemin,niveau)                                                           VALUES ('$row{AFCAC}','$row{ACFLI}','$row{AFCAC}',                                                1);");
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau)                                                           VALUES ('$row{AFCAC}','$row{ACFLI}','$row{AFCAC}',                                                1);");
 	}
 	elsif	($row{'AFCNI'} eq 'FAM') { # famille 
-		$dbh->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere)                                             VALUES ('$row{AFCFA}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}',                                    2,'$row{AFCAC}');");
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere)                                             VALUES ('$row{AFCFA}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}',                                    2,'$row{AFCAC}');");
 	}
 	elsif	($row{'AFCNI'} eq 'SFA') { # sous famille 
-		$dbh->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere)                                VALUES ('$row{AFCSF}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}',                        3,'$row{AFCAC}','$row{AFCFA}');");
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere)                                VALUES ('$row{AFCSF}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}',                        3,'$row{AFCAC}','$row{AFCFA}');");
 	}
 	elsif	($row{'AFCNI'} eq 'CHA') { # chapitre 
-		$dbh->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere,sousfamille_pere)               VALUES ('$row{AFCCH}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}',            4,'$row{AFCAC}','$row{AFCFA}','$row{AFCSF}');");
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere,sousfamille_pere)               VALUES ('$row{AFCCH}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}',            4,'$row{AFCAC}','$row{AFCFA}','$row{AFCSF}');");
 	}
 	elsif	($row{'AFCNI'} eq 'SCH') { # sous chapitre 
-		$dbh->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere,sousfamille_pere,chapitre_pere) VALUES ('$row{AFCSC}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}.$row{AFCSC}',5,'$row{AFCAC}','$row{AFCFA}','$row{AFCSF}','$row{AFCCH}');");
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere,sousfamille_pere,chapitre_pere) VALUES ('$row{AFCSC}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}.$row{AFCSC}',5,'$row{AFCAC}','$row{AFCFA}','$row{AFCSF}','$row{AFCCH}');");
 	}
 }
 close F;
@@ -104,3 +84,18 @@ sub print_time {
 	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
 	return '';
 }
+
+__DATA__
+CREATE TABLE IF NOT EXISTS `pdvente` (
+  `id` int(11) NOT NULL auto_increment,
+  `code` varchar(3) NOT NULL,
+  `libelle` varchar(255) NOT NULL,
+  `activite_pere` varchar(3) default NULL,
+  `famille_pere` varchar(3) default NULL,
+  `sousfamille_pere` varchar(3) default NULL,
+  `chapitre_pere` varchar(3) default NULL,
+  `chemin` varchar(19) default NULL,
+  `niveau` int(3) NOT NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `chemin` (`chemin`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
