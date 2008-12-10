@@ -99,8 +99,10 @@ function save_frequence(obj) {
 			type: 'POST',
 			data: 'what=save_frequence&numero='+info[1]+'&type_doc='+info[2]+'&val='+obj[obj.selectedIndex].value,
 			success: function(result){
-						var json = eval('(' + result + ')') ;
-						if (json['debug']) $('#debug').html(json['debug']);
+						if (result) {
+							var json = eval('(' + result + ')') ;
+							if (json['debug']) $('#debug').html(json['debug']);
+						}
 					}	
 	});
 
@@ -115,7 +117,6 @@ function save_frequence(obj) {
 <form name="documents" method="POST">
 <input type="hidden" name="id" value="">
 
-
 <div id="debug"></div>
 
 <!-- boite de dialogue pour faire patienté pendant l'ajax -->
@@ -125,10 +126,11 @@ function save_frequence(obj) {
 	<caption></caption>
 <?
 $sql = <<<EOT
-SELECT	nom,numero_artisan,email,AR,BL,RELIQUAT
-FROM	artisan,send_document
-WHERE	artisan.numero = send_document.numero_artisan
-	and email<>''
+SELECT	nom,numero,email,AR,BL,RELIQUAT
+FROM	artisan
+			left join send_document on artisan.numero = send_document.numero_artisan
+WHERE	
+		email<>''
 	and email IS NOT NULL
 ORDER	BY nom ASC
 EOT;
@@ -152,7 +154,7 @@ while($row = mysql_fetch_array($res)) {
 	
 <?		foreach (array('AR','BL','RELIQUAT') as $type_doc) { ?>
 			<td>
-				<select name="select_<?=$row['numero_artisan']?>_<?=$type_doc?>" onchange="save_frequence(this);change_color(this);">
+				<select name="select_<?=$row['numero']?>_<?=$type_doc?>" onchange="save_frequence(this);change_color(this);">
 					<option style="background:white;" value=""<?=$row[$type_doc]==''?' selected':''?>>Pas d'envoi</option>
 					<option style="background:yellow;" value="1,2,3,4,5"<?=$row[$type_doc]=='1,2,3,4,5'?' selected':''?>>Quotidien</option>
 					<optgroup style="background-color:#44F;" label="Hebdomadaire">
@@ -183,10 +185,10 @@ while($row = mysql_fetch_array($res)) {
 
 <script language="javascript">
 <!--
-for(i=0 ; document.documents.elements ; i++) {
+for(i=0 ; document.documents.elements.length ; i++) {
 	if (document.documents.elements[i].type == 'select-one') {
 		document.documents.elements[i].style.backgroundColor = document.documents.elements[i].options[document.documents.elements[i].selectedIndex].style.backgroundColor;
-	}
+	} 
 }
 
 function change_color(obj) {

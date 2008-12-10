@@ -292,9 +292,8 @@ EOT;
 <?			}
 		} ?>
 
-
 </center>
-<?=uniqid()?>
+
 </body>
 </html>
 <?

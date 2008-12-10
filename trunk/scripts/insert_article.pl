@@ -44,7 +44,8 @@ my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_US
 $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
-my $dbh->query("TRUNCATE TABLE article;");
+$mysql->query(join('',<DATA>)); # construction de la table si elle n'existe pas
+$mysql->query("TRUNCATE TABLE article;");
 print " ok\n";
 
 
@@ -63,7 +64,7 @@ while($loginor->FetchRow()) {
 	push @chemin, $row{'SOUSCHAPITRE'}	if $row{'SOUSCHAPITRE'} ;
 	my $chemin = join('.',@chemin);
 	
-	$dbh->query("INSERT INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}');") or warn( Dumper(\%row) );
+	$mysql->query("INSERT INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}');") or warn( Dumper(\%row) );
 }
 close F ;
 print " ok\n";
@@ -91,3 +92,29 @@ sub print_time {
 	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
 	return '';
 }
+
+__DATA__
+CREATE TABLE IF NOT EXISTS `article` (
+  `id` int(11) NOT NULL auto_increment,
+  `code_article` varchar(15) NOT NULL,
+  `designation` varchar(122) default NULL COMMENT 'trois fois 40 car + 2CR',
+  `gencod` varchar(13) default NULL COMMENT 'code barre',
+  `servi_sur_stock` tinyint(1) NOT NULL,
+  `conditionnement` int(11) default NULL,
+  `surconditionnement` int(11) default NULL,
+  `unite` enum('BTE','CEN','COL','HEU','KG','L','MIL','ML','M2','M3','PCE','PLA','SAC','TON','UN') NOT NULL,
+  `activite` varchar(3) default NULL,
+  `famille` varchar(3) default NULL,
+  `sousfamille` varchar(3) default NULL,
+  `chapitre` varchar(3) default NULL,
+  `souschapitre` varchar(3) default NULL,
+  `chemin` varchar(19) NOT NULL,
+  `fournisseur` varchar(35) default NULL,
+  `ref_fournisseur` varchar(255) default NULL,
+  `ref_fournisseur_condensee` varchar(255) default NULL,
+  `prix_brut` decimal(10,2) default NULL,
+  `prix_net` decimal(10,2) default NULL,
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `code_article` (`code_article`),
+  KEY `fourn` (`fournisseur`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
