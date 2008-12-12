@@ -85,7 +85,13 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','B',12);
 		$this->SetTextColor(255,0,0);
 		$this->Cell(0,5,"BON DE COMMANDE FOURNISSEUR",0,1,'C');
-		$this->Ln(2);
+		$this->Ln(0.7);
+
+		// validation impérative
+		$this->SetFont('helvetica','',12);
+		$this->SetTextColor(0,0,0);
+		$this->MultiCell(0,4,"Pour la validation de cette commande, merci de retourner impérativement par fax ou courrier un accusé de réception en précisant vos prix et détails de livraison",0,'C');
+		$this->Ln(1);
 
 		//Entete des articles
 		$this->SetFont('helvetica','B',10);

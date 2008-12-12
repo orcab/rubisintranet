@@ -13,27 +13,24 @@ if (isset($_POST['what']) && $_POST['what']=='add_fact' &&
 	isset($_POST['fournisseur']) && $_POST['fournisseur']) {
 
 	// on va chercher les infos dans RUBIS
-	$nofact_escape = trim(strtoupper(mysql_escape_string($_POST['no_fact'])));
+	$nofact_escape		= trim(strtoupper(mysql_escape_string($_POST['no_fact'])));
 	$montant_cde_escape = trim(strtoupper(mysql_escape_string($_POST['montant_cde'])));
 	$commentaire_escape = trim(strtoupper(mysql_escape_string($_POST['commentaire'])));
 	$fournisseur_escape = trim(strtoupper(mysql_escape_string($_POST['fournisseur'])));
 
 	// insertion de la nouvelle ligne a surveiller dans MYSQL
 	mysql_query("INSERT INTO diff_cde_fourn (code_fournisseur,no_fact,montant_cde,commentaire) VALUES ('$fournisseur_escape','$nofact_escape','$montant_cde_escape','$commentaire_escape')") or die("Ne peux pas inserer la facture en surveillance : ".mysql_error());
-
-	$message = "La facture n°$_POST[no_fact] a été correctement ajouté";
+	$message = (mysql_affected_rows($mysql) == 1) ? "La facture n°$_POST[no_fact] a été correctement ajouté" : "Une erreur est survenu, impossible d'ajouter la facture";
 
 } // fin ajout
 
 
 //////////////////////// SUPPRESION DE LIGNE EN DIFF /////////////////////////////
 elseif (isset($_GET['what']) && $_GET['what']=='del_fact' && 
-		isset($_GET['del_no_fact']) && $_GET['del_no_fact'] &&
-		isset($_GET['code_fourn']) && $_GET['code_fourn']) {
+		isset($_GET['id']) && $_GET['id']) {
 
-		mysql_query("DELETE FROM diff_cde_fourn WHERE code_fournisseur='".mysql_escape_string($_GET['code_fourn'])."' AND no_fact='".mysql_escape_string($_GET['del_no_fact'])."'") or die("Ne peux pas supprimer la facture : ".mysql_error());
-
-		$message = "La facture n°$_GET[del_no_fact] a été correctement supprimée";
+		mysql_query("DELETE FROM diff_cde_fourn WHERE id=".mysql_escape_string($_GET['id'])) or die("Ne peux pas supprimer la facture : ".mysql_error());
+		$message = (mysql_affected_rows($mysql) == 1) ? "La facture a été correctement supprimée" : "Une erreur est survenu, impossible de supprimer la facture";
 }
 
 //print_r($_POST);
@@ -81,13 +78,14 @@ fieldset {
 .date, .fournisseur,.cde,.facture,.qui { text-align:center; }
 .prix { text-align:right; }
 .commentaire { width:25%; }
+.edit { text-align:center; border-right:none; }
+.sup { text-align:center; border-left:none; }
 
 tr.positif { background-color:#CFC; }
 tr.negatif { background-color:#FCC; }
 td.positif { color:green; }
 td.negatif { color:red; }
-
-
+td.manuelle { color:grey; }
 
 div#choix-fournisseur {
 	padding:20px;
@@ -169,11 +167,53 @@ function valider_choix_fournisseur(code_fournisseur) {
 }
 
 
-function del_fact(fourn,fact) {
+function del_fact(id) {
 	if (confirm("Voulez-vous vraiment supprimer cette facture ?"))
-		document.location.href="index.php?what=del_fact&code_fourn="+fourn+"&del_no_fact="+fact;
+		document.location.href='index.php?what=del_fact&id='+id;
 }
 
+function edit_fact(id) {
+	var diff_element= document.getElementById('diff_'+id);
+	var com_element	= document.getElementById('com_'+id);
+	var edit_element= document.getElementById('edit_'+id);
+	var old_diff	= trim(diff_element.innerHTML);
+	var old_com		= trim(com_element.innerHTML);
+	old_diff = old_diff.substring(0,old_diff.length - 1); // on supprime le caractere €
+
+	diff_element.innerHTML	= '<input type="text" name="new_diff" size="10" value="'+old_diff+'" class="prix" />&euro;';
+	com_element.innerHTML	= '<input type="text" name="new_com" size="40" value="'+old_com+'" />';
+	edit_element.innerHTML	= '<img src="../../js/boutton_images/accept.png" title="Valider les modifications" onclick="save_diff('+id+');"/>';
+}
+
+function save_diff(id) {
+	var diff_element= document.getElementById('diff_'+id);
+	var com_element	= document.getElementById('com_'+id);
+	var edit_element= document.getElementById('edit_'+id);
+
+	var nouveau_diff= document.add_cde.new_diff.value ;
+	var nouveau_com	= document.add_cde.new_com.value ;
+
+	// on sauvegarde le tout dans la base mysql
+	$.ajax({
+		type: "POST", url: "ajax.php",
+		data: "what=save_diff&id="+id+"&diff="+nouveau_diff+"&com="+nouveau_com,
+		success: function(msg){ if (msg) alert(msg); }
+	});
+
+	//on réaffiche les valeurs
+	diff_element.innerHTML	= nouveau_diff+'&euro;';
+	com_element.innerHTML	= nouveau_com;
+	edit_element.innerHTML	= '<img src="../../gfx/edit_mini.gif" onclick="edit_fact('+id+');" title="Modifier la ligne" />';
+
+	// on met la ligne de la bonne couleur en fonction de la différence
+	$('#ligne_'+id).removeClass('positif negatif');
+	$('#ligne_'+id).addClass( nouveau_diff >= 0 ? 'positif':'negatif');
+}
+
+
+function trim (myString) {
+	return myString.replace(/^\s+/g,'').replace(/\s+$/g,'');
+}
 //-->
 </script>
 
@@ -207,7 +247,7 @@ function del_fact(fourn,fact) {
 		<input type="button" value="Valider" class="button valider" onclick="verif_champs();"/>
 		<img id="loading" src="gfx/loading4.gif" style="visibility:hidden;"/>
 	</fieldset>
-</form>
+
 
 
 <!-- AFFICHAGE DES SURVEILLANCES FACTURES -->
@@ -224,7 +264,8 @@ function del_fact(fourn,fact) {
 			<th>Activ.</th>
 			<th>Commentaire</th>
 			<th>Qui</th>
-			<th>&nbsp;</th>
+			<th class="edit">&nbsp;</th>
+			<th class="sup">&nbsp;</th>
 		</tr>
 <?
 		$res = mysql_query("SELECT * FROM diff_cde_fourn ORDER BY id DESC") or die("Peux pas retrouver les lignes a surveiller : ".mysql_error());
@@ -232,7 +273,7 @@ function del_fact(fourn,fact) {
 		$ligne = array();
 		while($row = mysql_fetch_array($res)) {
 			$ligne[] = "(CONTROLE_FACTURE_ENTETE.CEFNU='$row[no_fact]' AND CONTROLE_FACTURE_ENTETE.CFAFOU='$row[code_fournisseur]')";
-			$ligne_a_surveiller["$row[code_fournisseur]/$row[no_fact]"] = array($row['montant_cde'], $row['commentaire']);
+			$ligne_a_surveiller["$row[code_fournisseur]/$row[no_fact]"] = array($row['montant_cde'], $row['commentaire'], $row['id'] , $row['diff']);
 		}
 		if ($ligne)
 			$ligne = '('.join(" OR ",$ligne).')';
@@ -274,24 +315,43 @@ EOT;
 					$no_bon[$row_detail['HIBON']] = 1;
 					$activite[$row_detail['ACFLI']] = 1;
 				}
-				$diff = (isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][0]:0) - $row['CEMON'] ;
+
+				// on récupere les infos venant de MYSQL
+				$mysql_mon  = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][0];
+				$mysql_com  = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][1];
+				$mysql_id	= $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][2];
+				$mysql_diff = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][3];
+
+				 // on différence a été enresgitrée manuellement dans la base
+				if ($mysql_diff)
+					$diff = $mysql_diff;
+				else
+					$diff = (isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_mon:0) - $row['CEMON'] ;
 ?>
-				<tr class="<?=$diff >= 0 ? 'positif':'negatif'?>">
+				<tr class="<?=$diff >= 0 ? 'positif':'negatif'?>" id="ligne_<?=$mysql_id?>">
 					<td class="date"><?=$row['DATE_CONTROLE']?></td>
 					<td class="fournisseur"><?=$row['NOMFO']?></td>
 					<td class="cde"><?=join(", ",array_keys($no_bon))?></td>
 					<td class="facture"><?=$row['CEFNU']?></td>
-					<td class="prix"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][0]:'non saisie' ?></td>
+					<td class="prix"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_mon:'non saisie' ?></td>
 					<td class="prix"><?=sprintf('%0.2f',$row['CEMON'])?>&euro;</td>
-					<td class="prix <?=$diff >= 0 ? 'positif':'negatif'?>" style="font-weight:bold;"><?=sprintf('%0.2f',$diff)?>&euro;</td>
+					<td class="prix <?=$diff >= 0 ? 'positif':'negatif'?> <?=$mysql_diff ? 'manuelle':''?>" id="diff_<?=$mysql_id?>" style="font-weight:bold;">
+						<?=sprintf('%0.2f',$diff)?>&euro;
+					</td>
 					<td class="activite"><?=join("<br/>",array_keys($activite))?></td>
-					<td class="commentaire"><?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][1]:'' ?></td>
+					<td class="commentaire" id="com_<?=$mysql_id?>">
+						<?=isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_com:'' ?>
+					</td>
 					<td class="qui"><?=$row['CENID']?></td>
-					<td class="prix"><img src="../../gfx/delete_micro.gif" onclick="del_fact('<?=$row['CFAFOU']?>','<?=$row['CEFNU']?>');" /></td>
+					<td class="edit" id="edit_<?=$mysql_id?>">
+						<img src="../../gfx/edit_mini.gif" onclick="edit_fact(<?=$mysql_id?>);" title="Modifier la ligne" />
+					</td>
+					<td class="sup"><img src="../../gfx/delete_micro.gif" onclick="del_fact(<?=$mysql_id?>);" title="Supprimer la ligne" /></td>
 				</tr>
 <?			}
 		} ?>
 
+</form>
 </center>
 
 </body>
