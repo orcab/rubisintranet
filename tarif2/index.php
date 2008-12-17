@@ -27,6 +27,8 @@ a:hover {
 	text-decoration:underline;
 }
 
+option { font-size:0.7em; }
+
 option.n1 {
 	font-size:0.8em;
 	font-weight:bold;
@@ -34,7 +36,6 @@ option.n1 {
 	background-color:#A00;
 }
 
-option.n2,option.n3,option.n4,option.n5 { 	font-size:0.7em; }
 option.n2 { padding-left:10px; }
 option.n3 { padding-left:20px;color:#666; }
 option.n4 { padding-left:30px;color:#999; }

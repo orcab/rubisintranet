@@ -30,6 +30,9 @@ input.pdf {
 	background-image:url('../js/boutton_images/pdf.png');
 }
 
+input.excel {
+	background-image:url('../js/boutton_images/excel.gif');
+}
 
 input.divers {
 	color:black;
