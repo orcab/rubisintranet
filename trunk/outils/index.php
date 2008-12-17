@@ -44,7 +44,7 @@ a:hover {
 </tr>
 <tr>
 	<td style="width:50%;padding-bottom:20px;"></td>
-	<td></td>
+	<td><a href="tarif_a_venir/index.php"><img src="tarif_a_venir/gfx/tarif_a_venir.png"><br>Comparaison de tarif</a></td>
 	<td style="width:50%;padding-bottom:20px;"><a href="cde_spe_non_livre/index.php"><img src="cde_spe_non_livre/gfx/cde_spe_non_livre.png"><br>Suivi des cde sp&eacute;cial</a></td>
 </tr>
 
