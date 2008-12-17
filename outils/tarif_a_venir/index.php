@@ -11,9 +11,9 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 if (isset($_POST['provenance']) && $_POST['provenance']) {
 
 $where = array();
-if		 ($_POST['provenance'] == 'fournisseur')
+if		 ($_POST['provenance'] == 'fournisseur' && $_POST['fournisseur'] != '>> Global <<')
 	array_push($where,"NOMFO='$_POST[fournisseur]'");
-elseif ($_POST['provenance'] == 'pdv')
+elseif ($_POST['provenance'] == 'pdv' && $_POST['pdv'] != '>> Global <<')
 	array_push($where,"CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) like '$_POST[pdv]%'");
 
 $where = ($where) ? ' and '.join(' and ',$where) : '';
@@ -26,8 +26,8 @@ select
 	XPVE1 as PRIX_VENTE_VENIR,XCOF1 as COEF_VENIR,
 	CONCAT(XAPCJ,CONCAT('/',CONCAT(XAPCM,CONCAT('/',CONCAT(XAPCS,XAPCA))))) as DATE_APPLICATION,
 	PVEN1 as PRIX_VENTE,COEF1 as COEF,
-	PARVT as PRIX_REVIENT,RMRV1 as REMISE1,RMRV2 as REMISE2,RMRV3 as REMISE3,
-	PXART as PRIX_REVIENT_VENIR,RMXV1 as REMISE1_VENIR,RMXV2 as REMISE2_VENIR,RMXV3 as REMISE3_VENIR
+	PNRVT as PRIX_REVIENT,RMRV1 as REMISE1,RMRV2 as REMISE2,RMRV3 as REMISE3,
+	PNXVT as PRIX_REVIENT_VENIR,RMXV1 as REMISE1_VENIR,RMXV2 as REMISE2_VENIR,RMXV3 as REMISE3_VENIR
 from
 	${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 VENTE_VENIR,
 	${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 VENTE,
