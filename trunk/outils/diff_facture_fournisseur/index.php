@@ -294,6 +294,7 @@ EOT;
 //echo "<pre style='text-align:left;font-size:1.2em;'>$sql</pre>";
 		if ($ligne) { // s'il existe des lignes a surveiller
 
+			$total_diff = 0 ;
 			$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des factures ($sql)");
 			while($row = odbc_fetch_array($res)) {
 				$row['CEFNU']  = trim($row['CEFNU']);
@@ -323,10 +324,7 @@ EOT;
 				$mysql_diff = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][3];
 
 				 // on différence a été enresgitrée manuellement dans la base
-				if ($mysql_diff)
-					$diff = $mysql_diff;
-				else
-					$diff = (isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_mon:0) - $row['CEMON'] ;
+				$diff = $mysql_diff ? $mysql_diff : ((isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_mon:0) - $row['CEMON']) ;
 ?>
 				<tr class="<?=$diff >= 0 ? 'positif':'negatif'?>" id="ligne_<?=$mysql_id?>">
 					<td class="date"><?=$row['DATE_CONTROLE']?></td>
@@ -349,8 +347,15 @@ EOT;
 					<td class="sup"><img src="../../gfx/delete_micro.gif" onclick="del_fact(<?=$mysql_id?>);" title="Supprimer la ligne" /></td>
 				</tr>
 <?			}
+			$total_diff += $diff;
 		} ?>
 
+		<tr>
+			<td colspan="6" class="prix">Total :</td>
+			<td class="prix"><?=$total_diff?>&euro;</td>
+			<td colspan="4">&nbsp;</td>
+		</tr>
+	</table>
 </form>
 </center>
 
