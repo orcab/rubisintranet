@@ -131,11 +131,11 @@ EOT;
 
 	// on rajoute les différences global
 	$worksheet->write( $i, REF_FOURNISSEUR,			"Total"  ,$format_title);
-	$worksheet->writeFormula($i, PRIX_VENTE,		'=SUM('.excel_column(PRIX_VENTE).'2:'.excel_column(PRIX_VENTE).($i-1).')' ,$format_prix);
-	$worksheet->writeFormula($i, PRIX_VENTE_VENIR,	'=SUM('.excel_column(PRIX_VENTE_VENIR).'2:'.excel_column(PRIX_VENTE_VENIR).($i-1).')' ,$format_prix);
+	$worksheet->writeFormula($i, PRIX_VENTE,		'=SUM('.excel_column(PRIX_VENTE).'2:'.excel_column(PRIX_VENTE).$i.')' ,$format_prix);
+	$worksheet->writeFormula($i, PRIX_VENTE_VENIR,	'=SUM('.excel_column(PRIX_VENTE_VENIR).'2:'.excel_column(PRIX_VENTE_VENIR).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, DELTA_VENTE,		'=('.excel_column(PRIX_VENTE_VENIR).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
-	$worksheet->writeFormula($i, PRIX_REVIENT,		'=SUM('.excel_column(PRIX_REVIENT).'2:'.excel_column(PRIX_REVIENT).($i-1).')' ,$format_prix);
-	$worksheet->writeFormula($i, PRIX_REVIENT_VENIR,'=SUM('.excel_column(PRIX_REVIENT_VENIR).'2:'.excel_column(PRIX_REVIENT_VENIR).($i-1).')' ,$format_prix);
+	$worksheet->writeFormula($i, PRIX_REVIENT,		'=SUM('.excel_column(PRIX_REVIENT).'2:'.excel_column(PRIX_REVIENT).$i.')' ,$format_prix);
+	$worksheet->writeFormula($i, PRIX_REVIENT_VENIR,'=SUM('.excel_column(PRIX_REVIENT_VENIR).'2:'.excel_column(PRIX_REVIENT_VENIR).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, DELTA_REVIENT,		'=('.excel_column(PRIX_REVIENT_VENIR).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
 
 	// Let's send the file
