@@ -1,5 +1,8 @@
 <?
 include('../../inc/config.php');
+set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
+require_once '../../inc/Spreadsheet/Excel/Writer.php';
+
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 $loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
@@ -33,7 +36,127 @@ elseif (isset($_GET['what']) && $_GET['what']=='del_fact' &&
 		$message = (mysql_affected_rows($mysql) == 1) ? "La facture a été correctement supprimée" : "Une erreur est survenu, impossible de supprimer la facture";
 }
 
-//print_r($_POST);
+
+elseif (isset($_POST['what']) && $_POST['what']=='excel') {
+
+	$i=0;
+	define('DATE_CONTROLE',$i++);
+	define('NOM_FOURNISSEUR',$i++);
+	define('NO_CDE',$i++);
+	define('NO_FACT',$i++);
+	define('MT_PREVU',$i++);
+	define('MT_REEL',$i++);
+	define('DIFF',$i++);
+	define('ACTIVITE',$i++);
+	define('COMMENTAIRE',$i++);
+	define('QUI',$i++);
+
+	// Creating a workbook
+	$workbook = new Spreadsheet_Excel_Writer();
+
+	// sending HTTP headers
+	$workbook->send('diff_facture.xls');
+
+	// Creating a worksheet
+	$worksheet =& $workbook->addWorksheet('Différence de facturation');
+	$workbook->setCustomColor(12, 220, 220, 220);
+
+	$format_title		=& $workbook->addFormat(array('bold'=>1 , 'fgcolor'=>12 , 'bordercolor'=>'black' ));
+	$format_cell		=& $workbook->addFormat(array('bordercolor'=>'black'));
+	$format_article		=& $workbook->addFormat(array('bordercolor'=>'black'));
+	$format_article->setNumFormat('00000000');
+	$format_pourcentage =& $workbook->addFormat(array('bold'=>1 , 'fgcolor'=>'12' , 'bordercolor'=>'black' ));
+	$format_pourcentage->setNumFormat('0.0%');
+	$format_prix		=& $workbook->addFormat(array('bordercolor'=>'black'));
+	$format_prix->setNumFormat('0.00€');
+	$format_coef		=& $workbook->addFormat(array('bordercolor'=>'black'));
+	$format_coef->setNumFormat('0.00000');
+
+	// La premiere ligne
+	$worksheet->write(0,DATE_CONTROLE,		'Date',$format_title); $worksheet->setColumn(DATE_CONTROLE,DATE_CONTROLE,12);
+	$worksheet->write(0,NOM_FOURNISSEUR, 	'Fournisseur',$format_title);  $worksheet->setColumn(NOM_FOURNISSEUR,NOM_FOURNISSEUR,20);
+	$worksheet->write(0,NO_CDE, 			'N° de cde',$format_title);
+	$worksheet->write(0,NO_FACT,			'N° de fact',$format_title);
+	$worksheet->write(0,MT_PREVU,			'Mt prévu',$format_title);
+	$worksheet->write(0,MT_REEL,			'Mt réel',$format_title);
+	$worksheet->write(0,DIFF,				'Diff',$format_title);
+	$worksheet->write(0,ACTIVITE,			'Activité',$format_title); $worksheet->setColumn(ACTIVITE,ACTIVITE,15);
+	$worksheet->write(0,COMMENTAIRE,		'Commentaire',$format_title); $worksheet->setColumn(COMMENTAIRE,COMMENTAIRE,30);
+	$worksheet->write(0,QUI,				'Qui',$format_title);
+
+	$res = mysql_query("SELECT * FROM diff_cde_fourn ORDER BY id DESC") or die("Peux pas retrouver les lignes a surveiller : ".mysql_error());
+	$ligne_a_surveiller = array();
+	$ligne = array();
+	while($row = mysql_fetch_array($res)) {
+		$ligne[] = "(CONTROLE_FACTURE_ENTETE.CEFNU='$row[no_fact]' AND CONTROLE_FACTURE_ENTETE.CFAFOU='$row[code_fournisseur]')";
+		$ligne_a_surveiller["$row[code_fournisseur]/$row[no_fact]"] = array($row['montant_cde'], $row['commentaire'], $row['id'] , $row['diff']);
+	}
+	$ligne = $ligne ? '('.join(" OR ",$ligne).')' : '';
+
+	$sql = <<<EOT
+select 	CENID,CONCAT(CENCJ,CONCAT('/',CONCAT(CENCM,CONCAT('/',CONCAT(CENCS,CENCA))))) as DATE_CONTROLE,
+		CONTROLE_FACTURE_ENTETE.CFAFOU,NOMFO,CEFNU,CEMON
+from	
+		${LOGINOR_PREFIX_BASE}GESTCOM.ACFAENP1 CONTROLE_FACTURE_ENTETE
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
+				on CONTROLE_FACTURE_ENTETE.CFAFOU=FOURNISSEUR.NOFOU
+where	$ligne
+EOT;
+
+	if ($ligne) { // s'il existe des lignes a surveiller
+		$total_diff = 0 ;
+		$i=1;
+		$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des factures ($sql)");
+		while($row = odbc_fetch_array($res)) {
+			$row['CEFNU']  = trim($row['CEFNU']);
+			$row['CFAFOU'] = trim($row['CFAFOU']);
+
+			$sql = <<<EOT
+select	HIBON,ACFLI
+from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFADEP1 CONTROLE_FACTURE_DETAIL
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFAMILP1 FAMILLE
+				on CONTROLE_FACTURE_DETAIL.CFVC6=FAMILLE.AFCAC and AFCNI='ACT'
+where		CFFNU='$row[CEFNU]'
+		and CFAFOU='$row[CFAFOU]'
+EOT;
+			$res_detail = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des détails factures ($sql)");
+			$no_bon = array(); $montant_reel = 0; $activite = array();
+			while($row_detail = odbc_fetch_array($res_detail)) {
+				$no_bon[trim($row_detail['HIBON'])] = 1;
+				$activite[trim($row_detail['ACFLI'])] = 1;
+			}
+
+			// on récupere les infos venant de MYSQL
+			$mysql_mon  = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][0];
+			$mysql_com  = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][1];
+			$mysql_id	= $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][2];
+			$mysql_diff = $ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"][3];
+
+			 // les différence a été enresgitrée manuellement dans la base
+			$diff = $mysql_diff ? $mysql_diff : ((isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_mon:0) - $row['CEMON']) ;
+			
+			$worksheet->write( $i, DATE_CONTROLE,	trim($row['DATE_CONTROLE'])		,$format_cell);
+			$worksheet->write( $i, NOM_FOURNISSEUR,	trim($row['NOMFO'])				,$format_cell);
+			$worksheet->write( $i, NO_CDE,			join(", ",array_keys($no_bon))  ,$format_cell);
+			$worksheet->write( $i, NO_FACT,			trim($row['CEFNU'])  ,$format_cell);
+			$worksheet->write( $i, MT_PREVU,		trim(isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_mon:'non saisie')  ,$format_prix);
+			$worksheet->write( $i, MT_REEL,			sprintf('%0.2f',$row['CEMON'])  ,$format_prix);
+			$worksheet->write( $i, DIFF,			sprintf('%0.2f',$diff)  ,$format_prix);
+			$worksheet->write( $i, ACTIVITE,		join(", ",array_keys($activite))  ,$format_cell);
+			$worksheet->write( $i, COMMENTAIRE,		isset($ligne_a_surveiller["$row[CFAFOU]/$row[CEFNU]"]) ? $mysql_com:''  ,$format_cell);
+			$worksheet->write( $i, QUI,				trim($row['CENID'])  ,$format_cell);	
+
+			$i++;
+		}
+
+		$worksheet->write( $i, MT_REEL,			"Total"  ,$format_title);
+		$worksheet->writeFormula($i, DIFF,		'=SUM('.excel_column(DIFF).'2:'.excel_column(DIFF).$i.')' ,$format_prix);
+	}
+
+	// Let's send the file
+	$workbook->close();
+	exit;
+}
 
 ?>
 <html>
@@ -208,10 +331,15 @@ function save_diff(id) {
 	// on met la ligne de la bonne couleur en fonction de la différence
 	$('#ligne_'+id).removeClass('positif negatif');
 	$('#ligne_'+id).addClass( nouveau_diff >= 0 ? 'positif':'negatif');
+	$('#diff_'+id).addClass('manuelle');
 }
 
+function excel() {
+	document.add_cde.what.value='excel';
+	document.add_cde.submit();
+}
 
-function trim (myString) {
+function trim(myString) {
 	return myString.replace(/^\s+/g,'').replace(/\s+$/g,'');
 }
 //-->
@@ -346,16 +474,19 @@ EOT;
 					</td>
 					<td class="sup"><img src="../../gfx/delete_micro.gif" onclick="del_fact(<?=$mysql_id?>);" title="Supprimer la ligne" /></td>
 				</tr>
-<?			}
-			$total_diff += $diff;
+<?				$total_diff += $diff;			
+			}
 		} ?>
 
 		<tr>
 			<td colspan="6" class="prix">Total :</td>
-			<td class="prix"><?=$total_diff?>&euro;</td>
-			<td colspan="4">&nbsp;</td>
+			<td class="prix <?=$total_diff >= 0 ? 'positif':'negatif'?>"  style="font-weight:bold;"><?=sprintf('%0.2f',$total_diff)?>&euro;</td>
+			<td colspan="5">&nbsp;</td>
 		</tr>
 	</table>
+
+<div style="text-align:center;margin-top:5px;"><input type="button" class="button valider excel" value="Télécharger le fichier Excel" onclick="excel();"/></div>
+
 </form>
 </center>
 
@@ -364,4 +495,15 @@ EOT;
 <?
 odbc_close($loginor);
 mysql_close($mysql);
+
+function excel_column($col_number) {
+	if( ($col_number < 0) || ($col_number > 701)) die('Column must be between 0(A) and 701(ZZ)');
+	if($col_number < 26) {
+		return(chr(ord('A') + $col_number));
+	} else {
+		$remainder = floor($col_number / 26) - 1;
+		return(chr(ord('A') + $remainder) . excel_column($col_number % 26));
+	}
+}
+
 ?>
