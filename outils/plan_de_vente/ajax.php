@@ -65,10 +65,12 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'detail_article' &&
 
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
-	$sql = "select LOCAL,STOMI,STALE,STOMA,STGES,DIAA1 from ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK,${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE where ARTICLE.NOART='".mysql_escape_string($_GET['code_article'])."' and STOCK.DEPOT='$LOGINOR_DEPOT' and ARTICLE.NOART=STOCK.NOART";
+	$sql = "select DESI1,DESI2,DESI3,LOCAL,STOMI,STALE,STOMA,STGES,DIAA1 from ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK,${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE where ARTICLE.NOART='".mysql_escape_string($_GET['code_article'])."' and STOCK.DEPOT='$LOGINOR_DEPOT' and ARTICLE.NOART=STOCK.NOART";
 	$res = odbc_exec($loginor,$sql) ;
 	$row = odbc_fetch_array($res);
-	echo "{mini:'$row[STOMI]',maxi:'$row[STOMA]',alerte:'$row[STALE]',localisation:'$row[LOCAL]',gestionnaire:'".trim($row['STGES'])."',edition_tarif:'".trim($row['DIAA1'])."'}";
+	foreach ($row as $key=>$val)
+		$row[$key] = trim(ereg_replace("'","\\'",$val));
+	echo "{desi1:'$row[DESI1]',desi2:'$row[DESI2]',desi3:'$row[DESI3]',mini:'$row[STOMI]',maxi:'$row[STOMA]',alerte:'$row[STALE]',localisation:'$row[LOCAL]',gestionnaire:'".trim($row['STGES'])."',edition_tarif:'".trim($row['DIAA1'])."'}";
 	odbc_close($loginor);
 }
 
@@ -88,8 +90,10 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'valider_detail_article' &&
 	odbc_exec($loginor,$sql) ;
 
 	// mise a jour de la fiche article
-	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set DIAA1='".mysql_escape_string($_GET['edition_tarif'])."' where NOART='".mysql_escape_string($_GET['code_article'])."'";
+	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set DESI1='".mysql_escape_string($_GET['desi1'])."',DESI2='".mysql_escape_string($_GET['desi2'])."',DESI3='".mysql_escape_string($_GET['desi3'])."',DIAA1='".mysql_escape_string($_GET['edition_tarif'])."' where NOART='".mysql_escape_string($_GET['code_article'])."'";
 	odbc_exec($loginor,$sql) ;
+
+	mysql_query("UPDATE article SET designation='".mysql_escape_string($_GET['desi1'])."\n".mysql_escape_string($_GET['desi2'])."\n".mysql_escape_string($_GET['desi3'])."' WHERE code_article='".mysql_escape_string($_GET['code_article'])."'"); // mysql
 
 	echo "{}";
 	odbc_close($loginor);
