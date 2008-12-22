@@ -4,7 +4,9 @@ include('../inc/config.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-if (!(recuperer_droit() & PEUT_CREER_DEVIS)) { // n'a pas le droit de faire des devis
+$droit = recuperer_droit();
+
+if (!($droit & PEUT_CREER_DEVIS)) { // n'a pas le droit de faire des devis
 	die("Vos droits ne vous permettent pas d'accéder à cette partie de l'intranet");
 }
 
@@ -459,7 +461,7 @@ for($i=1;$i<=NOMBRE_DE_LIGNE;$i++) {
 															onfocus="zone_active(this);"
 															value="<?= isset($row_ligne_devis['puht']) ? $row_ligne_devis['puht'] : ''?>"> &euro;&nbsp;
 <!--sanitaire-->
-	<? if (PEUX_AFFICHER_PRIX_NET_EXPO) { ?>
+	<? if ($droit & PEUT_EDITER_DEVIS_PRIX_ADH) { ?>
 		<br>Adh <input  type="text" name="a<?=$i?>_pu_adh_ht" size="7"
 															onfocus="zone_active(this);"
 															value="<?= isset($row_ligne_devis['pu_adh_ht']) ? $row_ligne_devis['pu_adh_ht'] : ''?>">
@@ -507,7 +509,7 @@ if ($id) { // modif
 
 <div style="text-align:center;margin-top:4px;"><input type="button" class="button valider pdf" value="Générer le devis" onclick="envoi_formulaire('');">&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button valider pdf" value="Générer le devis non chiffré" onclick="envoi_formulaire('non_chiffre');">
 <!-- sanitaire-->
-<? if (PEUX_AFFICHER_PRIX_NET_EXPO) { ?>
+<? if ($droit & PEUT_EDITER_DEVIS_PRIX_ADH) { ?>
 &nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button valider pdf" value="Générer prix ADH" onclick="envoi_formulaire('prix_adh');">
 <? } //fin sanitaire ?>
 </div>
