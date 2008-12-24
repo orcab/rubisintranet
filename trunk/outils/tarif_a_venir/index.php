@@ -150,7 +150,8 @@ EOT;
 ?>
 <html>
 <head>
-	<title></title>
+	<title>Tarif à venir</title>
+	<style type="text/css">@import url(../../js/activite.css);</style>
 <style>
 body {
 	font-family:verdana;
@@ -222,7 +223,7 @@ ORDER BY chemin ASC
 EOT;
 				$res = mysql_query($sql) or die("ne peux pas recupérer le plan de vente ".mysql_error());
 				while($row = mysql_fetch_array($res)) { ?>
-					<option value="<?=$row['chemin']?>" class="n<?=$row['niveau']?>"><?=$row['libelle']?></option>
+					<option value="<?=$row['chemin']?>" class="n<?=$row['niveau']?> act_<?=array_shift(explode('.',$row['chemin']))?>"><?=$row['libelle']?></option>
 <?				} ?>
 		</select><br/>
 		<div id="path">&nbsp;</div>

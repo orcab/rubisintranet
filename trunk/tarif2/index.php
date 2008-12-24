@@ -8,6 +8,7 @@ $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 <html>
 <head>
 <title>Edition du catalogue papier</title>
+<style type="text/css">@import url(../js/activite.css);</style>
 <style>
 
 body,td{
@@ -41,7 +42,6 @@ option.n3 { padding-left:20px;color:#666; }
 option.n4 { padding-left:30px;color:#999; }
 option.n5 { padding-left:40px;color:#BBB; }
 
-
 </style>
 <style type="text/css">@import url(../js/boutton.css);</style>
 
@@ -74,7 +74,7 @@ ORDER BY chemin ASC
 EOT;
 				$res = mysql_query($sql) or die("ne peux pas recupérer le plan de vente ".mysql_error());
 				while($row = mysql_fetch_array($res)) { ?>
-					<option value="<?=$row['chemin']?>" class="n<?=$row['niveau']?>"><?=$row['libelle']?></option>
+					<option value="<?=$row['chemin']?>" class="n<?=$row['niveau']?> act_<?=array_shift(explode('.',$row['chemin']))?>"><?=$row['libelle']?></option>
 <?				} ?>
 		</select><br/>
 		<div id="path">&nbsp;</div>
