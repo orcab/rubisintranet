@@ -15,11 +15,11 @@ EOT;
 
 $res = mysql_query($sql) or die("Ne peux pas trouver le nombre de d'anomalie ".mysql_error());
 
-$data_clo = array(0,0,0,0,0,0);
-$data_en_cours = array(0,0,0,0,0,0);
-$data_open = array(0,0,0,0,0,0);
+$data_clo = array(0,0,0,0,0,0,0);
+$data_en_cours = array(0,0,0,0,0,0,0);
+$data_open = array(0,0,0,0,0,0,0);
 while($row = mysql_fetch_array($res)) {
-	if		($row['pole']&POLE_LOGISTIQUE)
+	if	($row['pole']&POLE_LOGISTIQUE)
 		switch($row['evolution']) {
 			case 0 : $data_open[0]++ ;break ;
 			case 1 : $data_en_cours[0]++ ;break ;
