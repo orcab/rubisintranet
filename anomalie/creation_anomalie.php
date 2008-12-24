@@ -47,12 +47,13 @@ if		(isset($_POST['action']) && $_POST['action']=='creation_anomalie') {
 	$post_escaped = array_map('mysql_escape_string',$_POST);
 	$date_creation = join('-',array_reverse(explode('/',$post_escaped['date_creation']))).date(' H:i:s');
 
-	$pole = (isset($_POST['pole_logistique'])	&& $_POST['pole_logistique']=='on'		? POLE_LOGISTIQUE	: 0) |
-			(isset($_POST['pole_commerce'])		&& $_POST['pole_commerce']=='on'		? POLE_COMMERCE		: 0) |
-			(isset($_POST['pole_exposition'])	&& $_POST['pole_exposition']=='on'		? POLE_EXPOSITION	: 0) |
-			(isset($_POST['pole_administratif'])&& $_POST['pole_administratif']=='on'	? POLE_ADMINISTRATIF: 0) |
-			(isset($_POST['pole_informatique'])	&& $_POST['pole_informatique']=='on'	? POLE_INFORMATIQUE	: 0) |
-			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']=='on'			? POLE_AUTRE		: 0);
+	$pole = (isset($_POST['pole_logistique'])	&& $_POST['pole_logistique']	=='on'	? POLE_LOGISTIQUE	: 0) |
+			(isset($_POST['pole_commerce'])		&& $_POST['pole_commerce']		=='on'	? POLE_COMMERCE		: 0) |
+			(isset($_POST['pole_exposition'])	&& $_POST['pole_exposition']	=='on'	? POLE_EXPOSITION	: 0) |
+			(isset($_POST['pole_administratif'])&& $_POST['pole_administratif']	=='on'	? POLE_ADMINISTRATIF: 0) |
+			(isset($_POST['pole_informatique'])	&& $_POST['pole_informatique']	=='on'	? POLE_INFORMATIQUE	: 0) |
+			(isset($_POST['pole_litige'])		&& $_POST['pole_litige']		=='on'	? POLE_LITIGE		: 0) |
+			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']			=='on'	? POLE_AUTRE		: 0);
 
 	$resp_coop	= isset($post_escaped['resp_coop']) ? $post_escaped['resp_coop']	: 0;
 	$resp_adh	= isset($post_escaped['resp_adh'])	? $post_escaped['resp_adh']		: 0;
@@ -110,12 +111,13 @@ EOT;
 elseif (isset($_POST['action']) && $_POST['action']=='modification_anomalie') {
 
 	$post_escaped = array_map('mysql_escape_string',$_POST);
-	$pole = (isset($_POST['pole_logistique'])	&& $_POST['pole_logistique']=='on'		? POLE_LOGISTIQUE	: 0) |
-			(isset($_POST['pole_commerce'])		&& $_POST['pole_commerce']=='on'		? POLE_COMMERCE		: 0) |
-			(isset($_POST['pole_exposition'])	&& $_POST['pole_exposition']=='on'		? POLE_EXPOSITION	: 0) |
-			(isset($_POST['pole_administratif'])&& $_POST['pole_administratif']=='on'	? POLE_ADMINISTRATIF : 0) |
-			(isset($_POST['pole_informatique'])	&& $_POST['pole_informatique']=='on'	? POLE_INFORMATIQUE	: 0) |
-			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']=='on'			? POLE_AUTRE			: 0);
+	$pole = (isset($_POST['pole_logistique'])	&& $_POST['pole_logistique']	=='on'	? POLE_LOGISTIQUE	: 0) |
+			(isset($_POST['pole_commerce'])		&& $_POST['pole_commerce']		=='on'	? POLE_COMMERCE		: 0) |
+			(isset($_POST['pole_exposition'])	&& $_POST['pole_exposition']	=='on'	? POLE_EXPOSITION	: 0) |
+			(isset($_POST['pole_administratif'])&& $_POST['pole_administratif']	=='on'	? POLE_ADMINISTRATIF: 0) |
+			(isset($_POST['pole_informatique'])	&& $_POST['pole_informatique']	=='on'	? POLE_INFORMATIQUE	: 0) |
+			(isset($_POST['pole_litige'])		&& $_POST['pole_litige']		=='on'	? POLE_LITIGE		: 0) |
+			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']			=='on'	? POLE_AUTRE		: 0);
 
 	$resp_coop	= isset($post_escaped['resp_coop']) ? $post_escaped['resp_coop']	: 0;
 	$resp_adh	= isset($post_escaped['resp_adh'])	? $post_escaped['resp_adh']		: 0;
@@ -289,6 +291,7 @@ function envoi_formulaire() {
 				!pole_exposition.checked &&
 				!pole_administratif.checked &&
 				!pole_informatique.checked &&
+				!pole_litige.checked &&
 				!pole_autre.checked)
 				erreur = "Aucun pôle n'est coché, veuillez en cocher au moins un.";
 		}
@@ -418,6 +421,7 @@ function envoi_formulaire() {
 				<input type="checkbox" id="pole_exposition" name="pole_exposition" <?= ($id && $row_anomalie['pole'] & POLE_EXPOSITION) ? 'checked="on"':'' ?>/> <label for="pole_exposition">Exposition</label><br/>
 				<input type="checkbox" id="pole_administratif" name="pole_administratif" <?= ($id && $row_anomalie['pole'] & POLE_ADMINISTRATIF) ? 'checked="on"':'' ?>/> <label for="pole_administratif">Administratif</label><br/>
 				<input type="checkbox" id="pole_informatique" name="pole_informatique" <?= ($id && $row_anomalie['pole'] & POLE_INFORMATIQUE) ? 'checked="on"':'' ?>/> <label for="pole_informatique">Informatique</label><br/>
+				<input type="checkbox" id="pole_litige" name="pole_litige" <?= ($id && $row_anomalie['pole'] & POLE_LITIGE) ? 'checked="on"':'' ?>/> <label for="pole_litige">Litige</label><br/>
 				<input type="checkbox" id="pole_autre" name="pole_autre" <?= ($id && $row_anomalie['pole'] & POLE_AUTRE) ? 'checked="on"':'' ?>/> <label for="pole_autre">Autres</label> (précisez)
 <?			} else { ?>
 				<?= $row_anomalie['pole'] & POLE_LOGISTIQUE		? 'Logisitique<br/>':'' ?>
@@ -430,6 +434,8 @@ function envoi_formulaire() {
 				<input type="hidden" name="pole_administratif"	value="<?=$row_anomalie['pole']&POLE_ADMINISTRATIF?'on':''?>" />
 				<?= $row_anomalie['pole'] & POLE_INFORMATIQUE	? 'Informatique<br/>':'' ?>
 				<input type="hidden" name="pole_informatique"	value="<?=$row_anomalie['pole']&POLE_INFORMATIQUE?'on':''?>" />
+				<?= $row_anomalie['pole'] & POLE_LITIGE	? 'Litige<br/>':'' ?>
+				<input type="hidden" name="pole_litige"			value="<?=$row_anomalie['pole']&POLE_LITIGE?'on':''?>" />
 				<?= $row_anomalie['pole'] & POLE_AUTRE			? 'Autre<br/>':'' ?>
 				<input type="hidden" name="pole_autre"			value="<?=$row_anomalie['pole']&POLE_AUTRE?'on':''?>" />
 <?			} ?>

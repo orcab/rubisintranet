@@ -54,11 +54,18 @@ while($row = mysql_fetch_array($res)) {
 			case 2 : $data_clo[4]++ ;break ;
 		}
 
-	if	($row['pole']&POLE_AUTRE)
+	if	($row['pole']&POLE_LITIGE)
 		switch($row['evolution']) {
 			case 0 : $data_open[5]++ ;break ;
 			case 1 : $data_en_cours[5]++ ;break ;
 			case 2 : $data_clo[5]++ ;break ;
+		}
+
+	if	($row['pole']&POLE_AUTRE)
+		switch($row['evolution']) {
+			case 0 : $data_open[6]++ ;break ;
+			case 1 : $data_en_cours[6]++ ;break ;
+			case 2 : $data_clo[6]++ ;break ;
 		}
 }
 
@@ -84,7 +91,7 @@ $graph->yaxis->SetTitlemargin(50);
 $graph->yaxis->HideZeroLabel();
 $graph->ygrid->SetFill(true,'#EFEFEF@0.5','#BBCCFF@0.5');
 $graph->xgrid->Show();
-$graph->xaxis->SetTickLabels(array('Logistique','Commerce','Expo','Administratif','Informatique','Autre'));
+$graph->xaxis->SetTickLabels(array('Logistique','Commerce','Expo','Administratif','Informatique','Litige','Autre'));
 
 $graph->legend->SetShadow('gray@0.4',5);
 $graph->legend->SetPos(0.1,0,'right','top');
