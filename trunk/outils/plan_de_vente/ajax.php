@@ -30,8 +30,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'inverse_status_article' &&
 
 
 elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
-		isset($_GET['code_article']) && $_GET['code_article'] &&
-		isset($_GET['chemin']) && $_GET['chemin']) {
+		isset($_GET['code_article']) && $_GET['code_article']) {
 
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$etat_avant_modif = e('ETARE',odbc_fetch_array(odbc_exec($loginor,"select ETARE from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 where NOART='$_GET[code_article]'")));

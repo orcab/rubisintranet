@@ -19,15 +19,16 @@ EOT;
 $res = mysql_query($sql) or die("Ne peux pas trouver le nombre de d'anomalie ".mysql_error());
 
 $mois			= array();	$cumul			= array();
-$logistique		= array();	$commerce		= array(); $exposition		= array();
-$administratif	= array();	$informatique	= array();	$autre			= array();
+$logistique		= array();	$commerce		= array();	$exposition	= array();
+$administratif	= array();	$informatique	= array();	$litige		= array();	$autre	= array();
 
 $old_mois = '';
 while($row = mysql_fetch_array($res)) {
 	if ($old_mois != $row['mois_creation']) { // si le mois n'a pas encore été rencontré, on le rajoute
 		$mois[]									= $row['mois_creation'];
 		$logistique[$row['mois_creation']]		= 0;	$commerce[$row['mois_creation']]	= 0;	$exposition[$row['mois_creation']]	= 0;
-		$administratif[$row['mois_creation']]	= 0;	$informatique[$row['mois_creation']]= 0;	$autre[$row['mois_creation']]		= 0;
+		$administratif[$row['mois_creation']]	= 0;	$informatique[$row['mois_creation']]= 0;	$litige[$row['mois_creation']] = 0;
+		$autre[$row['mois_creation']]		= 0;
 		$cumul[$row['mois_creation']]			= 0;
 	}
 
@@ -45,6 +46,9 @@ while($row = mysql_fetch_array($res)) {
 
 	if	($row['pole']&POLE_INFORMATIQUE)
 		$informatique[$row['mois_creation']] += $row['nb_anomalie'];
+
+	if	($row['pole']&POLE_LITIGE)
+		$litige[$row['mois_creation']] += $row['nb_anomalie'];
 
 	if	($row['pole']&POLE_AUTRE)
 		$autre[$row['mois_creation']] += $row['nb_anomalie'];
@@ -86,7 +90,7 @@ $line_cumul->SetColor('navy');$line_cumul->SetLegend('Cumul');$line_cumul->value
 
 // Create the bar plots
 $bar_log = new BarPlot(array_values($logistique));$bar_log->SetFillColor('green');$bar_log->SetLegend('Logistique');
-$bar_log->value->SetColor('green');$bar_log->value->SetFormat('%d');$bar_log->value->SetFont( FF_FONT1, FS_BOLD);$bar_log->value->Show();
+$bar_log->value->SetColor('darkgreen');$bar_log->value->SetFormat('%d');$bar_log->value->SetFont( FF_FONT1, FS_BOLD);$bar_log->value->Show();
 
 $bar_com = new BarPlot(array_values($commerce));$bar_com->SetFillColor('blue');$bar_com->SetLegend('Commerce');
 $bar_com->value->SetColor('blue');$bar_com->value->SetFormat('%d');$bar_com->value->SetFont( FF_FONT1, FS_BOLD);$bar_com->value->Show();
@@ -100,11 +104,14 @@ $bar_adm->value->SetColor('orange');$bar_adm->value->SetFormat('%d');$bar_adm->v
 $bar_inf = new BarPlot(array_values($informatique));$bar_inf->SetFillColor('red');$bar_inf->SetLegend('Informatique');
 $bar_inf->value->SetColor('red');$bar_inf->value->SetFormat('%d');$bar_inf->value->SetFont( FF_FONT1, FS_BOLD);$bar_inf->value->Show();
 
+$bar_lit = new BarPlot(array_values($litige));$bar_lit->SetFillColor('lightgreen');$bar_lit->SetLegend('Litige');
+$bar_lit->value->SetColor('green');$bar_lit->value->SetFormat('%d');$bar_lit->value->SetFont( FF_FONT1, FS_BOLD);$bar_lit->value->Show();
+
 $bar_aut = new BarPlot(array_values($autre));$bar_aut->SetFillColor('black');$bar_aut->SetLegend('Autre');
 $bar_aut->value->SetColor('black');$bar_aut->value->SetFormat('%d');$bar_aut->value->SetFont( FF_FONT1, FS_BOLD);$bar_aut->value->Show();
 
 // Create the grouped bar plot
-$bar_group = new GroupBarPlot (array($bar_log,$bar_com,$bar_exp,$bar_adm,$bar_inf,$bar_aut));
+$bar_group = new GroupBarPlot (array($bar_log,$bar_com,$bar_exp,$bar_adm,$bar_inf,$bar_lit,$bar_aut));
 
 // ...and add it to the graPH
 $graph->Add($line_cumul);

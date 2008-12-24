@@ -1,5 +1,7 @@
 <?php
 include('../../inc/config.php');
+set_time_limit(0);
+
 set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
 require_once '../../inc/Spreadsheet/Excel/Writer.php';
 
@@ -37,7 +39,8 @@ from
 	${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR,
 	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 REF_FOURNISSEUR
 where
-		VENTE_VENIR.NOART=VENTE.NOART
+		ARTICLE.ETARE=''
+	and	VENTE_VENIR.NOART=VENTE.NOART
 	and VENTE_VENIR.NOART=REVIENT.NOART
 	and VENTE_VENIR.NOART=REVIENT_VENIR.NOART
 	and VENTE_VENIR.NOART=ARTICLE.NOART
