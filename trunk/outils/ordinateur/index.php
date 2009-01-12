@@ -1,6 +1,7 @@
 <?
 
 include('../../inc/config.php');
+include('../../inc/ping/ping.php'); # import ping(ip)
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
@@ -285,16 +286,13 @@ while($row = mysql_fetch_array($res)) {
 	error_reporting(E_ALL ^ E_WARNING);
 	set_time_limit(60);
 
-	$etat = FALSE; 
-	exec( "ping -n 1 -l 1 -w 50 $row[ip]"  , $output );
-	
-	if (strpos(join('',$output),'perte 100%') === FALSE) { // connexion réussi, PC allumé
+	$etat = ping($row['ip']);
+
+	if ($etat) { // connexion réussi, PC allumé
 	    echo '<img src="gfx/'.($row['printer'] ? 'printer':'computer').'-ok.png">';
-		$etat = TRUE ;
 	} else { // PC éteint
 		echo '<img src="gfx/'.($row['printer'] ? 'printer':'computer').'-bad.png">';
 	}
-	$output = array();
 ?>
 	</td>
 	<td style="text-align:center;">
