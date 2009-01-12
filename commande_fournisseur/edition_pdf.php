@@ -15,7 +15,7 @@ while($row = mysql_fetch_array($res)) {
 	$vendeurs[$row['code']] = $row['prenom'];
 }
 $vendeurs['LN'] = 'Jean René';
-
+$vendeurs['MAR'] = 'Marc';
 
 if (!(isset($_GET['CFBON']) && $_GET['CFBON'])) { ?>
 	ERREUR : Aucun N° de cde précisé.

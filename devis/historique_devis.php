@@ -21,33 +21,33 @@ if (!isset($_SESSION['devis_expo_filtre_date_inf']))			$_SESSION['devis_expo_fil
 if (!isset($_SESSION['devis_expo_filtre_date_sup']))			$_SESSION['devis_expo_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
 if (!isset($_SESSION['devis_expo_filtre_ville']))				$_SESSION['devis_expo_filtre_ville']		= '';
 if (!isset($_SESSION['devis_expo_filtre_montant_devis']))		$_SESSION['devis_expo_filtre_montant_devis']	= 0;
-if (!isset($_SESSION['devis_expo_filtre_montant_cmd']))		$_SESSION['devis_expo_filtre_montant_cmd']		= 0;
+if (!isset($_SESSION['devis_expo_filtre_montant_cmd']))			$_SESSION['devis_expo_filtre_montant_cmd']		= 0;
 if (!isset($_SESSION['devis_expo_filtre_signe_montant_cmd']))	$_SESSION['devis_expo_filtre_signe_montant_cmd']	= '>=';
 if (!isset($_SESSION['devis_expo_filtre_classement']))			$_SESSION['devis_expo_filtre_classement']	= 'date DESC';
 if (!isset($_SESSION['devis_expo_filtre_representant']))		$_SESSION['devis_expo_filtre_representant'] = '';
 if (!isset($_SESSION['devis_expo_filtre_numero_devis']))		$_SESSION['devis_expo_filtre_numero_devis'] = '';
 if (!isset($_SESSION['devis_expo_filtre_numero_cmd']))			$_SESSION['devis_expo_filtre_numero_cmd'] = '';
 if (!isset($_SESSION['devis_expo_filtre_client']))				$_SESSION['devis_expo_filtre_client'] = '';
-if (!isset($_SESSION['devis_expo_filtre_artisan']))			$_SESSION['devis_expo_filtre_artisan'] = '';
+if (!isset($_SESSION['devis_expo_filtre_artisan']))				$_SESSION['devis_expo_filtre_artisan'] = '';
 if (!isset($_SESSION['devis_expo_filtre_jour_relance']))		$_SESSION['devis_expo_filtre_jour_relance'] = JOUR_MAX_RELANCE_DEVIS ;
-if (!isset($_SESSION['devis_expo_filtre_relance']))			$_SESSION['devis_expo_filtre_relance'] = FALSE ;
+if (!isset($_SESSION['devis_expo_filtre_relance']))				$_SESSION['devis_expo_filtre_relance'] = FALSE ;
 if (!isset($_SESSION['devis_expo_filtre_commande']))			$_SESSION['devis_expo_filtre_commande'] = 'devis_cde' ;
-if (!isset($_SESSION['devis_expo_filtre_article']))			$_SESSION['devis_expo_filtre_article'] = '' ;
+if (!isset($_SESSION['devis_expo_filtre_article']))				$_SESSION['devis_expo_filtre_article'] = '' ;
 
-if (isset($_POST['filtre_date_inf']))			$_SESSION['devis_expo_filtre_date_inf']			= $_POST['filtre_date_inf'];
-if (isset($_POST['filtre_date_sup']))			$_SESSION['devis_expo_filtre_date_sup']			= $_POST['filtre_date_sup'];
+if (isset($_POST['filtre_date_inf']))			$_SESSION['devis_expo_filtre_date_inf']				= $_POST['filtre_date_inf'];
+if (isset($_POST['filtre_date_sup']))			$_SESSION['devis_expo_filtre_date_sup']				= $_POST['filtre_date_sup'];
 if (isset($_POST['filtre_ville']))				$_SESSION['devis_expo_filtre_ville']				= $_POST['filtre_ville'];
 if (isset($_POST['filtre_montant_cmd']))		$_SESSION['devis_expo_filtre_montant_cmd']			= $_POST['filtre_montant_cmd'];
-if (isset($_POST['filtre_signe_montant_devis']))$_SESSION['devis_expo_filtre_signe_montant_devis'] = $_POST['filtre_signe_montant_devis'];
+if (isset($_POST['filtre_signe_montant_devis']))$_SESSION['devis_expo_filtre_signe_montant_devis']	= $_POST['filtre_signe_montant_devis'];
 if (isset($_POST['filtre_signe_montant_cmd']))	$_SESSION['devis_expo_filtre_signe_montant_cmd']	= $_POST['filtre_signe_montant_cmd'];
-if (isset($_POST['filtre_numero_devis']))		$_SESSION['devis_expo_filtre_numero_devis']		= $_POST['filtre_numero_devis'];
+if (isset($_POST['filtre_numero_devis']))		$_SESSION['devis_expo_filtre_numero_devis']			= $_POST['filtre_numero_devis'];
 if (isset($_POST['filtre_numero_cmd']))			$_SESSION['devis_expo_filtre_numero_cmd']			= $_POST['filtre_numero_cmd'];
 if (isset($_GET['filtre_classement']))			$_SESSION['devis_expo_filtre_classement']			= $_GET['filtre_classement'];
-if (isset($_POST['filtre_representant']))		$_SESSION['devis_expo_filtre_representant']		= $_POST['filtre_representant'];
+if (isset($_POST['filtre_representant']))		$_SESSION['devis_expo_filtre_representant']			= $_POST['filtre_representant'];
 if (isset($_POST['filtre_client']))				$_SESSION['devis_expo_filtre_client']				= $_POST['filtre_client'];
 if (isset($_POST['filtre_artisan']))			$_SESSION['devis_expo_filtre_artisan']				= $_POST['filtre_artisan'];
-if (isset($_POST['filtre_jour_relance']))		$_SESSION['devis_expo_filtre_jour_relance']		= $_POST['filtre_jour_relance'];
-if (isset($_POST['filtre_commande']))			$_SESSION['devis_expo_filtre_commande']			= $_POST['filtre_commande'];
+if (isset($_POST['filtre_jour_relance']))		$_SESSION['devis_expo_filtre_jour_relance']			= $_POST['filtre_jour_relance'];
+if (isset($_POST['filtre_commande']))			$_SESSION['devis_expo_filtre_commande']				= $_POST['filtre_commande'];
 if (isset($_POST['filtre_article']))			$_SESSION['devis_expo_filtre_article']				= $_POST['filtre_article'];
 
 if (isset($_POST['filtre_relance']))
@@ -461,11 +461,11 @@ function calcul_cmd_rubis(id) {
 	if ($_SESSION['devis_expo_filtre_date_inf'] && $_SESSION['devis_expo_filtre_date_inf'] != 'Aucune') $where[] = "`date` >= '$date_inf_formater 00:00:00'" ;
 	if ($_SESSION['devis_expo_filtre_date_sup'] && $_SESSION['devis_expo_filtre_date_sup'] != 'Aucune') $where[] = "`date` <= '$date_sup_formater 23:59:59'" ;
 	if ($_SESSION['devis_expo_filtre_representant'])	$where[] = "representant LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_representant'])."%'";
-	if ($_SESSION['devis_expo_filtre_artisan'])		$where[] = "artisan LIKE '%".		mysql_escape_string($_SESSION['devis_expo_filtre_artisan'])."%'";
+	if ($_SESSION['devis_expo_filtre_artisan'])			$where[] = "artisan LIKE '%".		mysql_escape_string($_SESSION['devis_expo_filtre_artisan'])."%'";
 	if ($_SESSION['devis_expo_filtre_client'])			$where[] = "nom_client LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_client'])."%'";
 	if ($_SESSION['devis_expo_filtre_ville'])			$where[] = "ville_client LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_ville'])."%'";
 	if ($_SESSION['devis_expo_filtre_numero_cmd'])		$where[] = "num_cmd_rubis LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_numero_cmd'])."%'";
-	if ($_SESSION['devis_expo_filtre_numero_devis'])	$where[] = "id = '".				mysql_escape_string($_SESSION['devis_expo_filtre_numero_devis'])."'";
+	if ($_SESSION['devis_expo_filtre_numero_devis'])	$where[] = "devis.id = '".			mysql_escape_string($_SESSION['devis_expo_filtre_numero_devis'])."'";
 	if ($_SESSION['devis_expo_filtre_montant_cmd'] > 0) $where[] = "mtht_cmd_rubis $_SESSION[devis_expo_filtre_signe_montant_cmd] $_SESSION[devis_expo_filtre_montant_cmd]" ;
 
 
