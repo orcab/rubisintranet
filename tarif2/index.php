@@ -62,6 +62,17 @@ function update_path(selecteur) {
 
 <div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Edition du catalogue papier</div>
 
+
+<div style="float:right;border:solid 1px black;margin-right:3px;padding:5px;font-family:fixedsys;">
+Coef<br/>
+<?	foreach (get_defined_constants() as $constante => $valeur) {
+		if (eregi('^TARIF_COEF_(.+)',$constante,$regs)) { // une constante de coef tarif ?>
+			<?=$regs[1]?> <?=$valeur?><br>
+<?		}
+	}
+?>
+</div>
+
 <center>
 	<form method="post" name="tarif" action="tarif.php">
 		<select name="pdv" size="20" onchange="update_path(this);">
