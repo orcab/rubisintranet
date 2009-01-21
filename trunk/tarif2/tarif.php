@@ -3,7 +3,7 @@ include('../inc/config.php');
 require_once('overload.php');
 set_time_limit(0);
 
-define('DEBUG',true);
+define('DEBUG',false);
 if (DEBUG)
 	$debug_file = fopen("debug.log", "w+") or die("Ne peux pas créer de fichier de debug"); 
 
@@ -14,7 +14,7 @@ $PRINT_PAGE_NUMBER  = true;
 $PRINT_EDITION_DATE = true;
 
 define('FONT_SIZE_CODE',8);
-define('FONT_SIZE_REF',7);
+define('FONT_SIZE_REF',6);
 define('FONT_SIZE_PRIX',8);
 define('FONT_SIZE_DESIGNATION',7);
 define('WIDTH_CODE',20);
@@ -85,6 +85,7 @@ if	(isset($_POST['pdv']) && $_POST['pdv'])
 $condition	= array();
 $condition[]= "ETARE=''"; // non suspendu
 $condition[]= "DIAA1='OUI'"; // la case édité sur tarif est cochée
+$condition[]= "ARDIV='NON'"; // ce n'est pas un article divers
 
 //$condition[]= "ARTICLE.NOART='01001298'"; // pour les test sur les kits
 //$pdv = "00B.B00.002" ; // pour les tests
@@ -316,37 +317,42 @@ while($row = odbc_fetch_array($res)) {
 	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
 	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
 	
-	$noart			= $row['NOART']; // deja trimé avant
-	$designation	= $row['DESI1'];
-	$ref			= $row['REFFO'];
-	$prix			= sprintf('%01.2f',$row['PVEN1']);
 	$kit			= 0 ;
+	$prix_cumul_kit = 0;
+	$noart			= '' ;
+	$designation	= '' ;
+	$ref			= '' ;
+	$prix			= '' ;
 
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
-		// on va chercher le détail des article composants
+		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
-				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
-					on DETAIL_KIT.NOART=ARTICLE_FOURNISSEUR.NOART
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
+					on DETAIL_KIT.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
+					on ARTICLE.NOART=TARIF.NOART
 where		NOKIT='$row[NOART]'
 EOT;
-
-		$noart			.= "\n";
-		$designation	.= "\nKit composé de :";
-		$ref			.= "\n";
-		$prix			.= "\n";
 		
 		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
-			$noart			.= "\n".trim($row_kit['NOART']);
-			$designation	.= "\n".trim($row_kit['DESI1']).' x'.sprintf('%d',$row_kit['NUCOM']);
+			$noart			.= "\n     ".trim($row_kit['NOART']);
+			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
 			$ref			.= "\n".trim($row_kit['REFFO']);
+			$prix			.= "\n".sprintf('%01.2f',$row_kit['PVEN1']);
+			$prix_cumul_kit += $row_kit['PVEN1'] ;
 			$kit++;
 		}
 	}
+
+	$noart			= $row['NOART'] . ($kit ? "\n$noart" : '');
+	$designation	= $row['DESI1'] . ($kit ? "\nKit composé de $kit éléments :$designation" : '');
+	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
+	$prix			= ($kit ? "$prix_cumul_kit\n$prix" : sprintf('%01.2f',$row['PVEN1'])) ;
 
 	debug("avant $row[NOART] GetY=".$pdf->GetY()."\n");
 	// on imprime la ligne
@@ -355,7 +361,7 @@ EOT;
 							array('text' => $noart			, 'font-style' => 'B'	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_CODE ),
 							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_DESIGNATION),
 							array('text' => $ref			,													'font-size' => FONT_SIZE_REF),
-							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R')
+							array('text' => sprintf('%0.2f',$prix *	(defined('TARIF_COEF_'.$row['ACTIV']) ? constant('TARIF_COEF_'.$row['ACTIV']) : 1))		, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX) // le prix est multiplié par une valeur de config.php en fonction de l'activité
 				),
 			$kit ? $kit+2 : 1 // nombre de ligne
 	);
@@ -363,7 +369,6 @@ EOT;
 	debug("après $row[NOART] GetY=".$pdf->GetY()."\n");
 
 	$font_redux = 0; // on réinitilise la taille de la police pour la désignation
-
 
 
 	// GESTION DES IMAGES
