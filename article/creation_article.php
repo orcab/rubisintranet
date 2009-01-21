@@ -33,6 +33,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Remise</td><td>$_POST[remise]</td></tr>
 <tr><td>Marge</td><td>$_POST[marge]</td></tr>
 <tr><td>Px de vente</td><td>$_POST[px_vente]</td></tr>
+<tr><td>Eco Taxe</td><td>$_POST[eco_taxe]</td></tr>
 <tr><td>Servi sur stock</td><td>$_POST[stock]</td></tr>
 <tr><td>Stock mini</td><td>$_POST[stock_mini]</td></tr>
 <tr><td>Stock alerte</td><td>$_POST[stock_alerte]</td></tr>
@@ -64,6 +65,7 @@ Px d'achat/public : $_POST[px_achat]
 Remise : $_POST[remise]
 Marge : $_POST[marge]
 Px de vente : $_POST[px_vente]
+Eco Taxe : $_POST[eco_taxe]
 Servi sur stock : $_POST[stock]
 Stock mini : $_POST[stock_mini]
 Stock maxi : $_POST[stock_maxi]
@@ -148,6 +150,9 @@ function envoi_formulaire() {
 	}
 	else if      (!document.creation_article.ref_fournisseur.value) {
 		alert("Veuillez saisir une REFERENCE FOURNISSEUR"); erreur = 1;
+	}
+	else if      (document.creation_article.eco_taxe.value.length <= 0) {
+		alert("Veuillez saisir une ECO TAXE (0 si aucune éco taxe sur le produit)"); erreur = 1;
 	}
 	else if      (!document.creation_article.marge.options[document.creation_article.marge.selectedIndex].value) {
 		alert("Veuillez saisir une MARGE"); erreur = 1;
@@ -309,8 +314,11 @@ function check_ref_fournisseur() {
 <tr><th class="label">Ref Fournisseur :</th><td class="valeur"><input type="text" name="ref_fournisseur" value="" onblur="majusculize(this.name);check_ref_fournisseur();"></td></tr>
 <tr><th class="label">Gencode :</th><td class="valeur"><input type="text" name="gencode" value="" size="13" maxlength="13" onblur="majusculize(this.name);"></td></tr>
 <tr><th class="label">Apparait sur tarif :</th><td class="valeur">Oui<input type="radio" name="on_tarif" value="oui" checked>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="on_tarif" value="non"><br><br></td></tr>
-
-<tr><th class="label">Px d'achat/public :</th><td class="valeur"><input type="text" name="px_achat" value=""></td></tr>
+<tr><th class="label">Px d'achat/public :</th>
+	<td class="valeur"><input type="text" name="px_achat" value="">&nbsp;&nbsp;&nbsp;&nbsp;
+	Eco Taxe <input type="text" name="eco_taxe" value="" size="3">
+	</td>
+</tr>
 <tr><th class="label">Remise :</th><td class="valeur"><input type="text" name="remise" value=""></td></tr>
 <tr><th class="label"></th><td class="valeur">
 	Marge : 
