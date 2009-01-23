@@ -191,7 +191,7 @@ function detail_article(code_article) {
 
 
 <? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
-function inverse_status_article(obj_img,code_article) {
+function inverse_servi_article(obj_img,code_article) {
 
 	$('#dialogue').html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.");
 	$('#dialogue').css('top',document.body.scrollTop +100);
@@ -201,7 +201,7 @@ function inverse_status_article(obj_img,code_article) {
 	$.ajax({
 			url: 'ajax.php',
 			type: 'GET',
-			data: 'what=inverse_status_article&code_article='+code_article,
+			data: 'what=inverse_servi_article&code_article='+code_article,
 			success: function(result){
 						var json = eval('(' + result + ')') ;
 						if (json['stock'])	obj_img.src = 'gfx/yes.png';
@@ -212,6 +212,30 @@ function inverse_status_article(obj_img,code_article) {
 
 						if (json['debug']) $('#debug').html(json['debug']);
 					}	
+	});
+}
+
+function inverse_tarif_article(obj_img,code_article) {
+
+	$('#dialogue').html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.");
+	$('#dialogue').css('top',document.body.scrollTop +100);
+	$('#dialogue').css('left',screen.availWidth / 2 - 300);
+	$('#dialogue').show();
+
+	$.ajax({
+			url: 'ajax.php',
+			type: 'GET',
+			data: 'what=inverse_tarif_article&code_article='+code_article,
+			success: function(result){
+						var json = eval('(' + result + ')') ;
+						if (json['stock'])	obj_img.src = 'gfx/catalogue_yes.png';
+						else				obj_img.src = 'gfx/catalogue_no.png';
+
+						$('#dialogue').html('OK');
+						$('#dialogue').fadeOut(2000);
+
+						if (json['debug']) $('#debug').html(json['debug']);
+					}
 	});
 }
 
@@ -497,6 +521,7 @@ function valider_nouveau_chemin() {
 			<th></th>
 		<? } ?>
 		<th class="servi_sur_stock" nowrap>S<a href="affiche_article.php?order=servi_sur_stock ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=servi_sur_stock DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="sur_tarif" nowrap>T<a href="affiche_article.php?order=sur_tarif ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=sur_tarif DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="prix_net" nowrap>Prix<a href="affiche_article.php?order=prix_net ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=prix_net DESC"><img src="/intranet/gfx/desc.png"></th>
 		<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 			<th nowrap>SUS</th>
@@ -504,7 +529,7 @@ function valider_nouveau_chemin() {
 	</tr>
 <?	
 	
-	$sql = "SELECT code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net FROM article WHERE " ;
+	$sql = "SELECT code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif FROM article WHERE " ;
 
 	if (isset($_SESSION['chemin'])) { // recherche par chemin
 		$sql .= "chemin='".mysql_escape_string($_SESSION['chemin'])."'";
@@ -538,9 +563,18 @@ function valider_nouveau_chemin() {
 			<? } ?>
 			<td class="servi_sur_stock" align="center">
 				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
-					<a class="info"><span>Cliquer sur l'image pour changer le status de l'article</span>
+					<a class="info"><span>Changer "servi" de l'article</span>
 				<? } ?>
-				<img src="<?=$row['servi_sur_stock'] == '0' ? 'gfx/cancel.png':'gfx/yes.png'?>"<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?> onclick="inverse_status_article(this,'<?=$row['code_article']?>');"<? } ?>>
+				<img src="<?=$row['servi_sur_stock'] == '0' ? 'gfx/cancel.png':'gfx/yes.png'?>"<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?> onclick="inverse_servi_article(this,'<?=$row['code_article']?>');"<? } ?>>
+				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
+					</a>
+				<? } ?>
+			</td>
+			<td class="sur_tarif" align="center">
+				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
+					<a class="info"><span>Changer l'édition sur tarif papier de l'article</span>
+				<? } ?>
+				<img src="<?=$row['sur_tarif'] == '0' ? 'gfx/catalogue_no.png':'gfx/catalogue_yes.png'?>"<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?> onclick="inverse_tarif_article(this,'<?=$row['code_article']?>');"<? } ?>>
 				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 					</a>
 				<? } ?>
@@ -548,7 +582,7 @@ function valider_nouveau_chemin() {
 			<td class="prix_net" nowrap><?=$row['prix_net']?>€</td>
 			<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 				<td align="center">			
-					<a class="info"><span>Cliquer sur l'image pour suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=isset($_SESSION['chemin'])?$_SESSION['chemin']:''?>');"></a>
+					<a class="info"><span>Suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=isset($_SESSION['chemin'])?$_SESSION['chemin']:''?>');"></a>
 				</td>
 			<? } ?>
 		</tr>
@@ -579,7 +613,7 @@ function valider_nouveau_chemin() {
 					<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 						<a class="info"><span>Cliquer sur l'image pour changer le status de l'article</span>
 					<? } ?>
-						<img src="<?=$row['SERST'] == 'NON' ? 'gfx/cancel.png':'gfx/yes.png'?>"<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?> onclick="inverse_status_article(this,'<?=$row['NOART']?>');"<? } ?>>
+						<img src="<?=$row['SERST'] == 'NON' ? 'gfx/cancel.png':'gfx/yes.png'?>"<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?> onclick="inverse_servi_article(this,'<?=$row['NOART']?>');"<? } ?>>
 					<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 						</a>
 					<? } ?>
