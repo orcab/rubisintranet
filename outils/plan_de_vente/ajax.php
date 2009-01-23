@@ -5,24 +5,38 @@ $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
 
-if (isset($_GET['what']) && $_GET['what'] == 'inverse_status_article' &&
+if (isset($_GET['what']) && $_GET['what'] == 'inverse_servi_article' &&
 	isset($_GET['code_article']) && $_GET['code_article']) {
 
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$servi_avant_modif = e('SERST',odbc_fetch_array(odbc_exec($loginor,"select SERST from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 where NOART='$_GET[code_article]'")));
 	if ($servi_avant_modif == 'OUI') { // passer l'article en non servi
 		mysql_query("UPDATE article SET servi_sur_stock=0 WHERE code_article='$_GET[code_article]'"); // mysql
-		if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
-			odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='NON' where NOART='$_GET[code_article]' AND DEPOT='$LOGINOR_DEPOT'"); // loginor fiche de stock
-			odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set SERST='NON' where NOART='$_GET[code_article]'"); // loginor fiche article
-		}
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='NON' where NOART='$_GET[code_article]' AND DEPOT='$LOGINOR_DEPOT'"); // loginor fiche de stock
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set SERST='NON' where NOART='$_GET[code_article]'"); // loginor fiche article
 		echo "{stock:0}";
 	} else { // passer l'article en servi
 		mysql_query("UPDATE article SET servi_sur_stock=1 WHERE code_article='$_GET[code_article]'"); // mysql
-		if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
-			odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='OUI' where NOART='$_GET[code_article]' AND DEPOT='$LOGINOR_DEPOT'"); // loginor fiche de stock
-			odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set SERST='OUI' where NOART='$_GET[code_article]'"); // loginor fiche article
-		}
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='OUI' where NOART='$_GET[code_article]' AND DEPOT='$LOGINOR_DEPOT'"); // loginor fiche de stock
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set SERST='OUI' where NOART='$_GET[code_article]'"); // loginor fiche article
+		echo "{stock:1}";
+	}
+	odbc_close($loginor);
+}
+
+
+elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_tarif_article' &&
+		isset($_GET['code_article']) && $_GET['code_article']) {
+
+	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+	$servi_avant_modif = e('DIAA1',odbc_fetch_array(odbc_exec($loginor,"select DIAA1 from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 where NOART='$_GET[code_article]'")));
+	if ($servi_avant_modif == 'OUI') { // passer l'article en non sur tarif
+		mysql_query("UPDATE article SET sur_tarif=0 WHERE code_article='$_GET[code_article]'"); // mysql
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set DIAA1='NON' where NOART='$_GET[code_article]'"); // loginor fiche article
+		echo "{stock:0}";
+	} else { // passer l'article en sur tarif
+		mysql_query("UPDATE article SET sur_tarif=1 WHERE code_article='$_GET[code_article]'"); // mysql
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set DIAA1='OUI' where NOART='$_GET[code_article]'"); // loginor fiche article
 		echo "{stock:1}";
 	}
 	odbc_close($loginor);
@@ -41,6 +55,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
 			if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSTS='S' where NOART='$_GET[code_article]'"); // loginor fiche de stock
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set ETARE='S' where NOART='$_GET[code_article]'"); // loginor fiche article
+				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set ETAFE='S' where NOART='$_GET[code_article]'"); // loginor fiche article fournisseur
 			}
 			echo "{stock:0}";
 		}
@@ -51,6 +66,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
 			if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSTS='' where NOART='$_GET[code_article]'"); // loginor fiche de stock
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set ETARE='' where NOART='$_GET[code_article]'"); // loginor fiche article
+				// on ne reveil pas la fiche ARTICLE FOURNISSEUR pour éviter les erreurs de référence en double pour un meme fournisseur
 			}
 			echo "{stock:1}";
 		}
