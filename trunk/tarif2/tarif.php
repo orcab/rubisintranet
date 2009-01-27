@@ -48,7 +48,9 @@ $PAGE_DE_GARDE = array(
 	'00I'=>array(),
 	'00J'=>array(),
 	'00K'=>array('outils.png','#9B6E59,#523C31,#FFFFFF,#523C31,#FFFFFF,#000000,#523C31,#FFFFFF'),
-	'00L'=>array(),'00M'=>array(),'00N'=>array(),'00P'=>array(),'00Q'=>array(),'00R'=>array(),
+	'00L'=>array(),
+	'00M'=>array('gaz.png','#9B6E59,#523C31,#FFFFFF,#523C31,#FFFFFF,#000000,#523C31,#FFFFFF'),
+	'00N'=>array(),'00P'=>array(),'00Q'=>array(),'00R'=>array(),
 	'00S'=>array()
 );
 // remplissage des valeurs non renseignées

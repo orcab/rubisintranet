@@ -24,19 +24,19 @@ select	A.NOART as CODE_ARTICLE,
 		GENCO as GENCOD,SERST as SERVI_SUR_STOCK,CONDI as CONDITIONNEMENT,SURCO as SURCONDITIONNEMENT,LUNTA as UNITE,
 		ACTIV as ACTIVITE,FAMI1 as FAMILLE,SFAM1 as SOUSFAMILLE,ART04 as CHAPITRE,ART05 as SOUSCHAPITRE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
-		PVEN1 as PRIX_NET
-from	${prefix_base_rubis}GESTCOM.AARTICP1 A,
-		${prefix_base_rubis}GESTCOM.AARFOUP1 A_F,
-		${prefix_base_rubis}GESTCOM.AFOURNP1 F,
-		${prefix_base_rubis}GESTCOM.ATARIFP1 T
+		PVEN1 as PRIX_NET,
+		DIAA1 as SUR_TARIF
+from	${prefix_base_rubis}GESTCOM.AARTICP1 A
+			left outer join ${prefix_base_rubis}GESTCOM.AARFOUP1 A_F
+				on A.NOART=A_F.NOART and A.FOUR1=A_F.NOFOU
+			left join ${prefix_base_rubis}GESTCOM.AFOURNP1 F
+				on A_F.NOFOU=F.NOFOU
+			left join ${prefix_base_rubis}GESTCOM.ATARIFP1 T
+				on A.NOART=T.NOART
 where	ETARE=''
-	and A.NOART=A_F.NOART
-	and A_F.AGENC='AFA'
-	and T.AGENC  ='AFA'
-	and A_F.NOFOU=F.NOFOU
-	and A.NOART=T.NOART
-	and A.FOUR1=F.NOFOU
+	and T.AGENC ='AFA'
 EOT
+
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
 
@@ -54,7 +54,8 @@ while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
 	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
 
-	my $servi_sur_stock = $row{'SERVI_SUR_STOCK'} eq 'OUI' ? 1:0;
+	my $servi_sur_stock = $row{'SERVI_SUR_STOCK'}	eq 'OUI' ? 1:0;
+	my $sur_tarif		= $row{'SUR_TARIF'}			eq 'OUI' ? 1:0;
 
 	my @chemin = ();
 	push @chemin, $row{'ACTIVITE'}		if $row{'ACTIVITE'} ;
@@ -64,7 +65,7 @@ while($loginor->FetchRow()) {
 	push @chemin, $row{'SOUSCHAPITRE'}	if $row{'SOUSCHAPITRE'} ;
 	my $chemin = join('.',@chemin);
 	
-	$mysql->query("INSERT INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}');") or warn( Dumper(\%row) );
+	$mysql->query("INSERT INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net,sur_tarif) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}',$sur_tarif);") or warn( Dumper(\%row) );
 }
 close F ;
 print " ok\n";
@@ -114,6 +115,7 @@ CREATE TABLE IF NOT EXISTS `article` (
   `ref_fournisseur_condensee` varchar(255) default NULL,
   `prix_brut` decimal(10,2) default NULL,
   `prix_net` decimal(10,2) default NULL,
+  `sur_tarif` tinyint(1) NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code_article` (`code_article`),
   KEY `fourn` (`fournisseur`)
