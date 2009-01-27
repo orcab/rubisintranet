@@ -209,7 +209,7 @@ $line_taux	= new LinePlot($data_TAUX);
 
 
 // Create the grouped bar plot
-$acc_cmd_devis		= new AccBarPlot(array($bar_cmd,$bar_devis));
+$acc_cmd_devis		= new AccBarPlot(array($bar_devis,$bar_cmd));
 $acc_rdv_vis		= new AccBarPlot(array($bar_rdv,$bar_vis,$bar_pro));
 $group_bar_cmd_rdv  = new GroupBarPlot (array($acc_cmd_devis ,$acc_rdv_vis));
 

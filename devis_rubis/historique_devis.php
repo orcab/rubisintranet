@@ -2,7 +2,7 @@
 include('../inc/config.php');
 session_start();
 
-define('DEBUG',isset($_POST['debug'])?TRUE:FALSE);
+define('DEBUG',isset($_POST['debug']) ? TRUE : FALSE);
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
@@ -26,8 +26,8 @@ if (!isset($_SESSION['devis_rubis_filtre_vendeur']))	$_SESSION['devis_rubis_filt
 if (!isset($_SESSION['devis_rubis_filtre_numero']))		$_SESSION['devis_rubis_filtre_numero']		= '';
 if (!isset($_SESSION['devis_rubis_filtre_montant']))	$_SESSION['devis_rubis_filtre_montant']		= 0;
 if (!isset($_SESSION['devis_rubis_filtre_signe_montant']))	$_SESSION['devis_rubis_filtre_signe_montant'] = '>=';
-if (!isset($_SESSION['devis_rubis_filtre_transfere']))	$_SESSION['devis_rubis_filtre_transfere'] = FALSE;
-if (!isset($_SESSION['devis_rubis_filtre_classement'])) $_SESSION['devis_rubis_filtre_classement'] = 'NOBON DESC';
+if (!isset($_SESSION['devis_rubis_filtre_transfere']))	$_SESSION['devis_rubis_filtre_transfere']	= 0;
+if (!isset($_SESSION['devis_rubis_filtre_classement'])) $_SESSION['devis_rubis_filtre_classement']	= 'NOBON DESC';
 if (!isset($_SESSION['devis_rubis_filtre_article']))	$_SESSION['devis_rubis_filtre_article']		= '';
 
 if (isset($_POST['filtre_date_inf']))	$_SESSION['devis_rubis_filtre_date_inf']	= $_POST['filtre_date_inf'];
@@ -38,7 +38,7 @@ if (isset($_POST['filtre_vendeur']))	$_SESSION['devis_rubis_filtre_vendeur']		= 
 if (isset($_POST['filtre_numero']))		$_SESSION['devis_rubis_filtre_numero']		= $_POST['filtre_numero'];
 if (isset($_POST['filtre_montant']))	$_SESSION['devis_rubis_filtre_montant']		= $_POST['filtre_montant'];
 if (isset($_POST['filtre_signe_montant']))	$_SESSION['devis_rubis_filtre_signe_montant'] = $_POST['filtre_signe_montant'];
-$_SESSION['devis_rubis_filtre_transfere'] = isset($_POST['filtre_transfere']) ? TRUE : FALSE;
+if (isset($_POST['filtre_transfere']))	$_SESSION['devis_rubis_filtre_transfere']	= $_POST['filtre_transfere'];
 if (isset($_GET['filtre_classement']))	$_SESSION['devis_rubis_filtre_classement']  = $_GET['filtre_classement'];
 if (isset($_POST['filtre_article']))	$_SESSION['devis_rubis_filtre_article']		= $_POST['filtre_article'];
 
@@ -317,7 +317,13 @@ function envoi_formulaire(l_action) {
 				<td><input type="text" name="filtre_artisan" value="<?=$_SESSION['devis_rubis_filtre_artisan']?>" size="8"></td>
 				<td style="padding-left:2em;">N° Devis</td>
 				<td><input type="text" name="filtre_numero" value="<?=$_SESSION['devis_rubis_filtre_numero']?>" size="8"></td>
-				<td style="padding-left:2em;">Devis déjà transférés <input type="checkbox" name="filtre_transfere"<?=$_SESSION['devis_rubis_filtre_transfere'] ? ' checked':''?>></td>
+				<td style="padding-left:2em;">
+					<select name="filtre_transfere">
+						<option value="0"<?=$_SESSION['devis_rubis_filtre_transfere']==0 ? ' selected':''?>>Tous les devis</option>
+						<option value="1"<?=$_SESSION['devis_rubis_filtre_transfere']==1 ? ' selected':''?>>Devis transférés</option>
+						<option value="2"<?=$_SESSION['devis_rubis_filtre_transfere']==2 ? ' selected':''?>>Devis non transférés</option>
+					</select>
+				</td>
 				<td>Code Article <input type="text" name="filtre_article" value="<?=$_SESSION['devis_rubis_filtre_article']?>" size="8"></td>
 			</tr>
 		</table>
@@ -351,7 +357,12 @@ function envoi_formulaire(l_action) {
 
 	$where[] = "MONTBR $_SESSION[devis_rubis_filtre_signe_montant] $_SESSION[devis_rubis_filtre_montant]" ;
 	$where[] = 'NBLIG > 0' ;
-	if (!$_SESSION['devis_rubis_filtre_transfere']) $where[] = "DVTCD = 'NON'" ; // devis non passé en commande
+
+	// etat du devis
+	if ($_SESSION['devis_rubis_filtre_transfere'] == 1)
+			$where[] = "DVTCD = 'OUI'" ; // devis transféré
+	elseif ($_SESSION['devis_rubis_filtre_transfere'] == 2)
+			$where[] = "DVTCD = 'NON'" ; // non transféré
 
 	if ($_SESSION['devis_rubis_filtre_article']) {
 		$tables[] = "${LOGINOR_PREFIX_BASE}GESTCOM.ADETBVP1 DEVIS_DETAIL"; // on rajoute la table détail

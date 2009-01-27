@@ -1,9 +1,9 @@
 <?
 
 include('../inc/config.php');
-include ('../inc/jpgraph/src/jpgraph.php');
-include ('../inc/jpgraph/src/jpgraph_bar.php');
-include ('../inc/jpgraph/src/jpgraph_line.php');
+include('../inc/jpgraph/src/jpgraph.php');
+include('../inc/jpgraph/src/jpgraph_bar.php');
+include('../inc/jpgraph/src/jpgraph_line.php');
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
@@ -27,31 +27,18 @@ while($row = mysql_fetch_array($res)) {
 	if ($old_mois != $row['mois_creation']) { // si le mois n'a pas encore été rencontré, on le rajoute
 		$mois[]									= $row['mois_creation'];
 		$logistique[$row['mois_creation']]		= 0;	$commerce[$row['mois_creation']]	= 0;	$exposition[$row['mois_creation']]	= 0;
-		$administratif[$row['mois_creation']]	= 0;	$informatique[$row['mois_creation']]= 0;	$litige[$row['mois_creation']] = 0;
-		$autre[$row['mois_creation']]		= 0;
+		$administratif[$row['mois_creation']]	= 0;	$informatique[$row['mois_creation']]= 0;	$litige[$row['mois_creation']]		= 0;
+		$autre[$row['mois_creation']]			= 0;
 		$cumul[$row['mois_creation']]			= 0;
 	}
 
-	if	($row['pole']&POLE_LOGISTIQUE)
-		$logistique[$row['mois_creation']] += $row['nb_anomalie'];
-	
-	if	($row['pole']&POLE_COMMERCE)
-		$commerce[$row['mois_creation']] += $row['nb_anomalie'];
-
-	if	($row['pole']&POLE_EXPOSITION)
-		$exposition[$row['mois_creation']] += $row['nb_anomalie'];
-
-	if	($row['pole']&POLE_ADMINISTRATIF)
-		$administratif[$row['mois_creation']] += $row['nb_anomalie'];
-
-	if	($row['pole']&POLE_INFORMATIQUE)
-		$informatique[$row['mois_creation']] += $row['nb_anomalie'];
-
-	if	($row['pole']&POLE_LITIGE)
-		$litige[$row['mois_creation']] += $row['nb_anomalie'];
-
-	if	($row['pole']&POLE_AUTRE)
-		$autre[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_LOGISTIQUE)		$logistique[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_COMMERCE)		$commerce[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_EXPOSITION)		$exposition[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_ADMINISTRATIF)	$administratif[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_INFORMATIQUE)	$informatique[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_LITIGE)			$litige[$row['mois_creation']] += $row['nb_anomalie'];
+	if	($row['pole']&POLE_AUTRE)			$autre[$row['mois_creation']] += $row['nb_anomalie'];
 
 	$cumul[$row['mois_creation']] += $row['nb_anomalie'];
 	$old_mois = $row['mois_creation'];
@@ -80,7 +67,7 @@ $graph->xgrid->Show();
 $graph->xaxis->SetTickLabels(array_values($mois));
 
 $graph->legend->SetShadow('gray@0.4',5);
-$graph->legend->SetPos(0.1,0,'right','top');
+$graph->legend->SetPos(0.13,0,'left','top');
 
 
 // create the line cumul
