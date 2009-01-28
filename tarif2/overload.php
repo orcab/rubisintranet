@@ -33,7 +33,7 @@ class PDF extends FPDF
 
 	//PIED DE PAGE
 	function Footer()
-	{	global $old_style,$PRINT_PAGE_NUMBER,$PRINT_EDITION_DATE,$last_img_bottom ;
+	{	global $old_style,$last_img_bottom ;
 		$last_img_bottom = 0;
 
 		if ($PRINT_PAGE_NUMBER) {
@@ -58,14 +58,48 @@ class PDF extends FPDF
 		if ($PRINT_EDITION_DATE) {
 			// date d'édition
 			$this->SetTextColor(0);
-			if ($this->PageNo() & 1) // page impaire a droite
-				$this->SetXY(10,-17);
-			else
-				$this->SetXY(PAGE_WIDTH - 50,-17);
-
-			$this->Cell(0,10,"Date d'édition : ".date('d/m/Y'),0,0,'');
+			$this->SetXY(20,-17);
+			$this->Cell(0,10,"Date d'édition : ".date('d/m/Y').".      Les articles ayant une * ne sont pas stockés à la coopérative.",0,0,'');
 		}
 	}
+
+
+
+	// pour afficher le titre de la categ
+	function PrintCategTitle($titre, $lien_vers_page=false) {
+		global $style,$lien_vers_page;
+
+		$this->SetLineWidth(0.5);
+		$this->SetDrawColor($style[RED_BACKGROUND_TITLE],$style[GREEN_BACKGROUND_TITLE],$style[BLUE_BACKGROUND_TITLE]);
+
+		// texte en gras de la couleur de la section
+		$this->SetTextColor($style[RED_CATEG],$style[GREEN_CATEG],$style[BLUE_CATEG]);
+		
+		// on réduit la taille de la police si le titre est trop long pour la page
+		$i=0;		
+		do {
+			$this->SetFont('helvetica','B',12 - $i);
+			//debug("Longueur titre categ (redux=$i) : ".$this->GetStringWidth($titre)."\n");
+			$i++;
+		} while($this->GetStringWidth($titre) > PAGE_WIDTH - 15);
+		
+		// on ajout un lien au sommaire et on imprime le titre
+		if ($lien_vers_page)
+			$this->Cell(0,9,$titre ,0,1,'',0,  $this->SetLink($lien_vers_page)  );
+		else
+			$this->Cell(0,9,$titre ,0,1,'',0 );
+
+		$this->Ln(2);
+
+		$string_width = intval($this->GetStringWidth($titre));
+		// rectangle arrondi autour du mini titre
+		$this->RoundedRect($this->GetX()-1, $this->GetY()-10.5, $string_width + 7 , 8, 3.5);
+
+		// ligne fillante
+		if ($string_width < PAGE_WIDTH - 30)
+			$this->Line($string_width + 16.5, $this->GetY()-6.5 , PAGE_WIDTH - 15, $this->GetY()-6.5);
+	}
+
 
 
 // pour faire des pointillés

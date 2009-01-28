@@ -3,15 +3,15 @@ include('../inc/config.php');
 require_once('overload.php');
 set_time_limit(0);
 
-define('DEBUG',false);
+define('DEBUG',FALSE);
 if (DEBUG)
 	$debug_file = fopen("debug.log", "w+") or die("Ne peux pas créer de fichier de debug"); 
 
 $mysql		= mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-$PRINT_PAGE_NUMBER  = true;
-$PRINT_EDITION_DATE = true;
+$PRINT_PAGE_NUMBER=TRUE; // pas une constante car modifié dans 'equipe.php'
+$PRINT_EDITION_DATE=TRUE; // pas une constante car modifié dans 'equipe.php'
 
 define('FONT_SIZE_CODE',8);
 define('FONT_SIZE_REF',6);
@@ -100,7 +100,7 @@ $condition = join(' and ',$condition);
 // recherche des articles à exporter pour le tarif
 	$sql = <<<EOT
 select	
-		ARTICLE.NOART,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,
+		ARTICLE.NOART,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,SERST,
 		CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) as CHEMIN,
 		REFFO,PVEN1,
 		CDKIT
@@ -127,6 +127,7 @@ $pdf->SetDisplayMode('fullpage','two');
 $pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_REF,WIDTH_PRIX)); // a sortir de la boucle quand tout marchera bien
 
 // on passe sur chaque article
+$coef_multiplicateur = 1;
 $last_img_bottom = 0;
 $old_pdvente = '';
 $old_activite= '';
@@ -136,6 +137,7 @@ while($row = odbc_fetch_array($res)) {
 	$row['NOART']	= trim($row['NOART']);
 	$row['DESI1']	= trim($row['DESI1']);
 	$row['REFFO']	= trim($row['REFFO']);
+	$coef_multiplicateur = defined('TARIF_COEF_'.$row['ACTIV']) ? constant('TARIF_COEF_'.$row['ACTIV']) : 1;
 
 	debug("\nDebut $row[NOART] GetY=".$pdf->GetY()."\n");
 
@@ -204,21 +206,9 @@ while($row = odbc_fetch_array($res)) {
 
 		debug("debug4 $row[CHEMIN] GetY=".$pdf->GetY()."\n");
 
-		// dessin du titre de la categorie	
-		$pdf->SetLineWidth(0.5);
-		$pdf->SetFont('helvetica','B',12);
-		$pdf->SetDrawColor($style[RED_BACKGROUND_TITLE],$style[GREEN_BACKGROUND_TITLE],$style[BLUE_BACKGROUND_TITLE]);
-
-		// texte en gras de la couleur de la section
-		$pdf->SetTextColor($style[RED_CATEG],$style[GREEN_CATEG],$style[BLUE_CATEG]);
-		// Cell(float w [, float h [, string txt [, mixed border [, int ln [, string align [, int fill [, mixed link]]]]]]])
+		// dessin du titre de la categorie + le lien dans le sommaire
 		$lien_vers_page = $pdf->AddLink();
-		$pdf->Cell(0,9,$pdvente_sans_activite ,0,1,'',0,  $pdf->SetLink($lien_vers_page)  );
-		$pdf->Ln(2);
-
-		// rectangle arrondi autour du mini titre + ligne fillante
-		$pdf->RoundedRect($pdf->GetX()-1, $pdf->GetY()-10.5, intval($pdf->GetStringWidth($pdvente_sans_activite)) + 7 , 8, 3.5);
-		$pdf->Line(intval($pdf->GetStringWidth($pdvente_sans_activite)) + 16.5, $pdf->GetY()-6.5 , PAGE_WIDTH - 15, $pdf->GetY()-6.5);
+		$pdf->PrintCategTitle($pdvente_sans_activite,$lien_vers_page) ;
 
 
 		// mise a jour de la table des matière
@@ -280,19 +270,8 @@ while($row = odbc_fetch_array($res)) {
 
 			$last_img_bottom = 0;
 
-			$pdf->SetLineWidth(0.5);
-			$pdf->SetFont('helvetica','B',12);
-			$pdf->SetDrawColor($style[RED_BACKGROUND_TITLE],$style[GREEN_BACKGROUND_TITLE],$style[BLUE_BACKGROUND_TITLE]);
-
-			// texte en gras de la couleur de la section
-			$pdf->SetTextColor($style[RED_CATEG],$style[GREEN_CATEG],$style[BLUE_CATEG]);
-			$pdf->Cell(0,9,"$pdvente_sans_activite (suite)" ,0,1,'',0);
-			$pdf->Ln(2);
-
-			// rectangle arrondi autour du mini titre + ligne fillante
-			$string_width = intval($pdf->GetStringWidth("$pdvente_sans_activite (suite)")) ;
-			$pdf->RoundedRect($pdf->GetX()-1, $pdf->GetY()-10.5, $string_width + 7 , 8, 3.5);
-			$pdf->Line($string_width + 16.5, $pdf->GetY()-6.5 , PAGE_WIDTH - 15, $pdf->GetY()-6.5);
+			// on réimprime le titre de la categ car nouvelle page (mais on ne l'ajoute pas au sommaire)
+			$pdf->PrintCategTitle("$pdvente_sans_activite (suite)") ;
 
 			// on dessine l'entete avec les colonnes
 			$pdf->SetLineWidth(0.1);
@@ -329,7 +308,7 @@ while($row = odbc_fetch_array($res)) {
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
@@ -342,19 +321,19 @@ EOT;
 		
 		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
-			$noart			.= "\n     ".trim($row_kit['NOART']);
+			$noart			.= "\n   ".trim($row_kit['NOART']).( $row_kit['SERST']=='NON' ? ' *' :'' );
 			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
 			$ref			.= "\n".trim($row_kit['REFFO']);
-			$prix			.= "\n".sprintf('%01.2f',$row_kit['PVEN1']);
-			$prix_cumul_kit += $row_kit['PVEN1'] ;
+			$prix			.= "\n".sprintf('%0.2f',$row_kit['PVEN1'] *	$coef_multiplicateur);
+			$prix_cumul_kit += sprintf('%0.2f',$row_kit['PVEN1'] * $coef_multiplicateur) ;
 			$kit++;
 		}
 	}
 
-	$noart			= $row['NOART'] . ($kit ? "\n$noart" : '');
+	$noart			= $row['NOART'].( $row['SERST']=='NON' ? ' *' :'' ). ($kit ? "\n$noart" : '');
 	$designation	= $row['DESI1'] . ($kit ? "\nKit composé de $kit éléments :$designation" : '');
 	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
-	$prix			= ($kit ? "$prix_cumul_kit\n$prix" : sprintf('%01.2f',$row['PVEN1'])) ;
+	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$row['PVEN1'] * $coef_multiplicateur) ;
 
 	debug("avant $row[NOART] GetY=".$pdf->GetY()."\n");
 	// on imprime la ligne
@@ -363,7 +342,7 @@ EOT;
 							array('text' => $noart			, 'font-style' => 'B'	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_CODE ),
 							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_DESIGNATION),
 							array('text' => $ref			,													'font-size' => FONT_SIZE_REF),
-							array('text' => sprintf('%0.2f',$prix *	(defined('TARIF_COEF_'.$row['ACTIV']) ? constant('TARIF_COEF_'.$row['ACTIV']) : 1))		, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX) // le prix est multiplié par une valeur de config.php en fonction de l'activité
+							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX) // le prix est multiplié par une valeur de config.php en fonction de l'activité
 				),
 			$kit ? $kit+2 : 1 // nombre de ligne
 	);
