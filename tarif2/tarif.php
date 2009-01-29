@@ -49,7 +49,7 @@ $PAGE_DE_GARDE = array(
 	'00J'=>array(),
 	'00K'=>array('outils.png','#9B6E59,#523C31,#FFFFFF,#523C31,#FFFFFF,#000000,#523C31,#FFFFFF'),
 	'00L'=>array(),
-	'00M'=>array('gaz.png','#9B6E59,#523C31,#FFFFFF,#523C31,#FFFFFF,#000000,#523C31,#FFFFFF'),
+	'00M'=>array('gaz.png','#DB8931,#814D17,#FFFFFF,#814D17,#FFFFFF,#000000,#814D17,#FFFFFF'),
 	'00N'=>array(),'00P'=>array(),'00Q'=>array(),'00R'=>array(),
 	'00S'=>array()
 );
@@ -162,8 +162,12 @@ while($row = odbc_fetch_array($res)) {
 			$pdf->AddPage();
 
 			if (isset($_POST['page_de_garde']) && $_POST['page_de_garde']) { // la page de garde
+				$PRINT_EDITION_DATE = FALSE ;
+				$PRINT_PAGE_NUMBER  = FALSE;
 				$pdf->Image(PAGE_DE_GARDE_PATH.'/'.$PAGE_DE_GARDE[$row['ACTIV']][FICHIER],0,0,PAGE_WIDTH); // taille a 200 de l'image
 				$pdf->AddPage();
+				$PRINT_EDITION_DATE = TRUE ;
+				$PRINT_PAGE_NUMBER  = TRUE;
 			}
 		}
 

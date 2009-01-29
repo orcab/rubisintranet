@@ -33,7 +33,7 @@ class PDF extends FPDF
 
 	//PIED DE PAGE
 	function Footer()
-	{	global $old_style,$last_img_bottom ;
+	{	global $old_style,$last_img_bottom,$PRINT_PAGE_NUMBER,$PRINT_EDITION_DATE ;
 		$last_img_bottom = 0;
 
 		if ($PRINT_PAGE_NUMBER) {

@@ -118,6 +118,11 @@ table#article td.<?=e(0,explode(' ',$_SESSION['order']))?> {
 	background-color:#D0D0D0;
 }
 
+td strong {
+	font-weight:bold;
+	color:green;
+}
+
 
 </style>
 <style type="text/css">@import url(../../js/boutton.css);</style>
@@ -533,13 +538,21 @@ function valider_nouveau_chemin() {
 
 	if (isset($_SESSION['chemin'])) { // recherche par chemin
 		$sql .= "chemin='".mysql_escape_string($_SESSION['chemin'])."'";
-
 	} elseif (isset($_SESSION['search_text'])) { // recherche par text
-		$tmp = mysql_escape_string($_SESSION['search_text']);
-		$sql .=		"(code_article    LIKE '%$tmp%' OR ".
-					" designation     LIKE '%$tmp%' OR ".
-					" ref_fournisseur LIKE '%$tmp%' OR ".
-					" ref_fournisseur_condensee LIKE '%$tmp%')";
+
+		$phrase = split(' +',$_SESSION['search_text']); // on séprare les mots
+		$et  = array();
+		// on vérifie que chaque mot est présent dans la désignation (ET naturel)
+		foreach ($phrase as $mot) {
+			array_push($et,"designation LIKE '%$mot%'");
+		}
+		$et = join($et," AND ");
+
+		$search_text = mysql_escape_string($_SESSION['search_text']);
+		$sql .=		"(code_article    LIKE '%$search_text%' OR ".
+					" ($et) OR ".
+					" ref_fournisseur LIKE '%$search_text%' OR ".
+					" ref_fournisseur_condensee LIKE '%$search_text%')";
 
 	} else { // pas de recherche
 		$sql .= "chemin=''";
@@ -554,10 +567,22 @@ function valider_nouveau_chemin() {
 			$row['code_article'] = trim($row['code_article']);
 ?>
 		<tr id="<?=$row['code_article']?>">
-			<td class="code_article"><a href="javascript:detail_article('<?=$row['code_article']?>');" class="info"><?=$row['code_article']?><span>Afficher les détails de l'article</span></a></td>
+			<td class="code_article"><a href="javascript:detail_article('<?=$row['code_article']?>');" class="info"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['code_article']) : $row['code_article']?><span>Afficher les détails de l'article</span></a></td>
 			<td class="fournisseur" style="font-size:9px;"><?=wordwrap($row['fournisseur'], 20, "<br />\n")?></td>
-			<td class="ref_fournisseur" style="font-size:9px;"><?=$row['ref_fournisseur']?></td>
-			<td class="designation" style="font-size:9px;"><pre><?=$row['designation']?></pre></td>
+			<td class="ref_fournisseur" style="font-size:9px;">
+				<?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['ref_fournisseur']) : $row['ref_fournisseur']?>
+			</td>
+			<td class="designation" style="font-size:9px;">
+				<pre><?	if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
+					$designation = $row['designation'];
+					foreach ($phrase as $mot) {
+						$designation = preg_replace("/(".$mot.")/i","<strong>$1</strong>",$designation);
+					}
+					echo trim($designation);
+				} else {
+						echo trim($row['designation']);
+				}	?></pre>
+			</td>
 			<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 				<td><input type="checkbox" name="checkbox_<?=$row['code_article']?>" /></td>
 			<? } ?>
