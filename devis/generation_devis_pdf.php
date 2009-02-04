@@ -75,7 +75,7 @@ for($i=1,$j=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 		$article_devis['a'.$j.'_qte']	     =$_POST['a'.$i.'_qte'];
 		// sanitaire
 		if (in_array('prix_adh',$options)) { // Devis avec prix net
-			$article_devis['a'.$j.'_puht']	     =$_POST['a'.$i.'_pu_adh_ht'];
+			$article_devis['a'.$j.'_puht']	     =str_replace(',','.',$_POST['a'.$i.'_pu_adh_ht']);
 		} else { // devis avec prix public
 			$article_devis['a'.$j.'_puht']	     =$_POST['a'.$i.'_puht'];
 		}
@@ -142,7 +142,7 @@ $values['devis.ptttc2'] = str_replace('.',',',sprintf("%0.2f",$values['devis.pth
 $values['devis.ptht']   = str_replace('.',',',sprintf("%0.2f",$values['devis.ptht'])).EURO;
 
 
-
+//print($values["a3.puht"]);
 
 
 // GENERATION DU DOCUMENT PDF
@@ -274,39 +274,83 @@ if (eregi('^devis',$values['devis.theme'])) {
 
 $date = implode('-',array_reverse(explode('/',$_POST['devis_date']))).' '.$_POST['devis_heure'].':00'; //2007-09-10 14:16:59;
 
+$id_devis = 0;
+
 // SUPPRESSION DE L'ANCIEN DEVIS S'IL S'AGIT D'UNE MODIFICATION
 if(isset($_POST['id']) && $_POST['id']) { // mode modification
-	mysql_query("DELETE FROM devis WHERE id=$_POST[id]") or die("Impossible de supprimer l'ancien devis pour modification ".mysql_error()); // suppresion du devis et des ligne via la cascade
-	// ENREGISTREMENT DU DEVIS DANS LA BASE
-	$sql = "INSERT INTO devis (id,`date`,date_maj,representant,artisan,theme,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_cmd_rubis) VALUES ($_POST[id],'$date',NOW(),'".mysql_escape_string($_POST['artisan_representant'])."','".mysql_escape_string($artisan_nom)."','$_POST[devis_theme]','".mysql_escape_string($_POST['client_nom'])."','".mysql_escape_string($_POST['client_adresse'])."','".mysql_escape_string($_POST['client_adresse2'])."','$_POST[client_codepostal]','".mysql_escape_string($_POST['client_ville'])."','$_POST[client_telephone]','$_POST[client_telephone2]','$_POST[client_email]','$cmd_rubis')" ;
-mysql_query($sql) or die("Erreur dans la modification du devis : ".mysql_error());
+	//mysql_query("DELETE FROM devis WHERE id=$_POST[id]") or die("Impossible de supprimer l'ancien devis pour modification ".mysql_error()); // suppresion du devis et des ligne via la cascade
+
+	$artisan_nom_escape = mysql_escape_string($artisan_nom);
+	$POST_escaped = array();
+	foreach ($_POST as $key => $val)
+		$POST_escaped[$key] = mysql_escape_string($val);	
+
+	// ENREGISTREMENT DES NOUVELLES INFOS DEVIS DANS LA BASE
+	$sql = <<<EOT
+UPDATE devis SET
+		`date`='$date',
+		date_maj=NOW(),
+		representant='$POST_escaped[artisan_representant]',
+		artisan='$artisan_nom_escape',
+		theme='$POST_escaped[devis_theme]',
+		nom_client='$POST_escaped[client_nom]',
+		adresse_client='$POST_escaped[client_adresse]',
+		adresse_client2='$POST_escaped[client_adresse2]',
+		codepostal_client='$POST_escaped[client_codepostal]',
+		ville_client='$POST_escaped[client_ville]',
+		tel_client='$POST_escaped[client_telephone]',
+		tel_client2='$POST_escaped[client_telephone2]',
+		email_client='$POST_escaped[client_email]'
+WHERE id='$_POST[id]';
+EOT;
+
+//echo $sql ;
+
+	mysql_query($sql) or die("Erreur dans la modification du devis : ".mysql_error());
+	unset($POST_escaped,$artisan_nom_escape);
+	$id_devis = $_POST['id'];
 
 } else {
 	// ENREGISTREMENT DU DEVIS DANS LA BASE
 	$sql = "INSERT INTO devis (`date`,date_maj,representant,artisan,theme,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client) VALUES ('$date',NOW(),'".mysql_escape_string($_POST['artisan_representant'])."','".mysql_escape_string($artisan_nom)."','$_POST[devis_theme]','".mysql_escape_string($_POST['client_nom'])."','".mysql_escape_string($_POST['client_adresse'])."','".mysql_escape_string($_POST['client_adresse2'])."','$_POST[client_codepostal]','".mysql_escape_string($_POST['client_ville'])."','$_POST[client_telephone]','$_POST[client_telephone2]','$_POST[client_email]')" ;
-mysql_query($sql) or die("Erreur dans la creation du devis : ".mysql_error());
-}
 
-$id_devis = mysql_insert_id();
+	mysql_query($sql) or die("Erreur dans la creation du devis : ".mysql_error());
+	$id_devis = mysql_insert_id();
+}
 
 
 // ENREGISTREMENT DES DESIGNATION ARTICLE DANS LA BASE
 for($i=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 	if (isset($_POST['a'.$i.'_reference']) && $_POST['a'.$i.'_reference'] && isset($_POST['a'.$i.'_maj'])) { // ARTICLE SPÉCIFIÉ + MAJ FORCEE
-		$sql  = "REPLACE INTO devis_article (code_article,ref_fournisseur,fournisseur,designation,prix_public_ht,date_maj) VALUES" ;
-		$sql .= "('".$_POST['a'.$i.'_code']."','".strtoupper($_POST['a'.$i.'_reference'])."','".strtoupper(mysql_escape_string($_POST['a'.$i.'_fournisseur']))."','".mysql_escape_string($_POST['a'.$i.'_designation'])."','".$_POST['a'.$i.'_puht']."',NOW())" ;
 
-		mysql_query($sql) or die("Erreur dans l'enregistrement des designations article : ".mysql_error());
+		// on regarde deja si la référence existe dans la base.
+		$sql = "SELECT id FROM devis_article WHERE ref_fournisseur='".strtoupper($_POST['a'.$i.'_reference'])."' AND fournisseur='".strtoupper(mysql_escape_string($_POST['a'.$i.'_fournisseur']))."' LIMIT 0,1";
+		$res = mysql_query($sql) or die("Impossible de voir si la référence existe déjà dans la base : ".mysql_error());
+
+		if (mysql_num_rows($res) > 0) { // la référence exist dans la base
+			$row = mysql_fetch_array($res);
+			$sql = "UPDATE devis_article SET designation='".mysql_escape_string($_POST['a'.$i.'_designation'])."', prix_public_ht='".str_replace(',','.',$_POST['a'.$i.'_puht'])."', remise=0, date_maj=NOW() WHERE id='$row[id]'";
+			mysql_query($sql) or die("Impossible de voir si la référence existe déjà dans la base : ".mysql_error());
+
+		} else { // la référence n'existe pas dans la base -> on la crée
+			$sql  = "INSERT INTO devis_article (ref_fournisseur,fournisseur,designation,prix_public_ht,date_creation,date_maj) VALUES (";
+			$sql .= "'".strtoupper(mysql_escape_string(preg_replace("/[^a-z0-9]/i","",$_POST['a'.$i.'_reference'])))."',";
+			$sql .= "'".strtoupper(mysql_escape_string($_POST['a'.$i.'_fournisseur']))."',";
+			$sql .= "'".mysql_escape_string($_POST['a'.$i.'_designation'])."',";
+			$sql .= "".mysql_escape_string(str_replace(',','.',$_POST['a'.$i.'_puht'])).",";
+			$sql .= "NOW(),NOW())";
+
+			mysql_query($sql) or die("Impossible d'enregistrer la nouvelle référence dans la base : ".mysql_error());
+		}
 	}
 }
-mysql_query("UPDATE devis_article SET date_creation=NOW() WHERE date_creation='0000-00-00'") or die("Erreur dans la mise a jour de la date de creation : ".mysql_error());
-
 
 // ENREGISTREMENT DES LIGNES DEVIS DANS LA BASE
+mysql_query("DELETE FROM devis_ligne WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
 for($i=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 	if (isset($_POST['a'.$i.'_reference']) && $_POST['a'.$i.'_reference']) { // ARTICLE SPÉCIFIÉ
 		$sql  = "INSERT INTO devis_ligne (id_devis,code_article,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,stock,expo) VALUES" ;
-		$sql .= "($id_devis,'".$_POST['a'.$i.'_code']."','".strtoupper($_POST['a'.$i.'_reference'])."','".strtoupper(mysql_escape_string($_POST['a'.$i.'_fournisseur']))."','".mysql_escape_string($_POST['a'.$i.'_designation'])."','".$_POST['a'.$i.'_qte']."','".$_POST['a'.$i.'_puht']."','".$_POST['a'.$i.'_pu_adh_ht']."',".(isset($_POST['a'.$i.'_stock']) ? 1 : 0).",".(isset($_POST['a'.$i.'_expo']) ? 1 : 0).")" ;
+		$sql .= "($id_devis,'".$_POST['a'.$i.'_code']."','".strtoupper($_POST['a'.$i.'_reference'])."','".strtoupper(mysql_escape_string($_POST['a'.$i.'_fournisseur']))."','".mysql_escape_string($_POST['a'.$i.'_designation'])."','".$_POST['a'.$i.'_qte']."','".mysql_escape_string(str_replace(',','.',$_POST['a'.$i.'_puht']))."','".mysql_escape_string(str_replace(',','.',$_POST['a'.$i.'_pu_adh_ht']))."',".(isset($_POST['a'.$i.'_stock']) ? 1 : 0).",".(isset($_POST['a'.$i.'_expo']) ? 1 : 0).")" ;
 
 		mysql_query($sql) or die("Erreur dans creation des ligne devis : ".mysql_error());
 

@@ -5,7 +5,7 @@ $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
 if ($_GET['what'] == 'complette_via_ref' && isset($_GET['val'])) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR
-	$res = mysql_query("SELECT * FROM devis_article WHERE ref_fournisseur LIKE '".trim(mysql_escape_string(strtoupper($_GET['val'])))."' LIMIT 0,1");
+	$res = mysql_query("SELECT * FROM devis_article WHERE ref_fournisseur LIKE '".trim(mysql_escape_string(strtoupper($_GET['val'])))."' ORDER BY date_maj DESC, date_creation DESC LIMIT 0,1");
 		
 	if (mysql_num_rows($res)) {
 		$row = mysql_fetch_array($res);
