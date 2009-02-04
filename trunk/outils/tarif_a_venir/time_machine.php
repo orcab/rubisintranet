@@ -13,45 +13,62 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 if (isset($_POST['provenance']) && $_POST['provenance']) {
 
 $where = array();
-if		 ($_POST['provenance'] == 'fournisseur' && $_POST['fournisseur'] != '>> Global <<')
-	array_push($where,"NOMFO='$_POST[fournisseur]'");
-elseif ($_POST['provenance'] == 'pdv' && $_POST['pdv'] != '>> Global <<')
-	array_push($where,"CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) like '$_POST[pdv]%'");
+if		($_POST['provenance'] == 'fournisseur' && $_POST['fournisseur'] != '>> Global <<')
+	array_push($where,"FOURNISSEUR.NOMFO='$_POST[fournisseur]'");
+elseif	($_POST['provenance'] == 'pdv' && $_POST['pdv'] != '>> Global <<')
+	array_push($where,"CONCAT(ARTICLE.ACTIV,CONCAT('.',CONCAT(ARTICLE.FAMI1,CONCAT('.',CONCAT(ARTICLE.SFAM1,CONCAT('.',CONCAT(ARTICLE.ART04,CONCAT('.',ARTICLE.ART05)))))))) like '$_POST[pdv]%'");
+elseif	($_POST['provenance'] == 'code_article' && $_POST['code_article'])
+	array_push($where,"ARTICLE.NOART='$_POST[code_article]'");
 
 $where = ($where) ? ' and '.join(' and ',$where) : '';
 
 $sql = <<<EOT
 select
-	VENTE_VENIR.NOART as NO_ARTICLE,
+	ARTICLE.NOART as NO_ARTICLE,
 	DESI1 as DESIGNATION1,DESI2 as DESIGNATION2,DESI3 as DESIGNATION3,
 	NOMFO as NOM_FOURNISSEUR,REFFO as REF_FOURNISSEUR,
-	XPVE1 as PRIX_VENTE_VENIR,XCOF1 as COEF_VENIR,
-	CONCAT(XAPCJ,CONCAT('/',CONCAT(XAPCM,CONCAT('/',CONCAT(XAPCS,XAPCA))))) as DATE_APPLICATION,
-	PVEN1 as PRIX_VENTE,COEF1 as COEF,
-	PNRVT as PRIX_REVIENT,RMRV1 as REMISE1,RMRV2 as REMISE2,RMRV3 as REMISE3,
-	PNXVT as PRIX_REVIENT_VENIR,RMXV1 as REMISE1_VENIR,RMXV2 as REMISE2_VENIR,RMXV3 as REMISE3_VENIR
+	REVIENT.PNRVT as PRIX_REVIENT, REVIENT.RMRV1 as REMISE1, REVIENT.RMRV2 as REMISE2, REVIENT.RMRV3 as REMISE3,
+	VENTE.PVEN1 as PRIX_VENTE, VENTE.COEF1 as COEF,
+	OLD_PRIX_REVIENT.PNRVT as OLD_PRIX_REVIENT, OLD_PRIX_REVIENT.RMRV1 as OLD_REMISE1, OLD_PRIX_REVIENT.RMRV2 as OLD_REMISE2, OLD_PRIX_REVIENT.RMRV3 as OLD_REMISE3,
+	OLD_PRIX_VENTE.PVEN1 as OLD_PRIX_VENTE, OLD_PRIX_VENTE.COEF1 as OLD_COEF,
+	CONCAT(OLD_PRIX_REVIENT.PRVDJ,CONCAT('/',CONCAT(OLD_PRIX_REVIENT.PRVDM,CONCAT('/',CONCAT(OLD_PRIX_REVIENT.PRVDS,OLD_PRIX_REVIENT.PRVDA))))) as DATE_APPLICATION_FORMATEE
+--	,
+--	PNXVT as PRIX_REVIENT_VENIR,
+--	XPVE1 as PRIX_VENTE_VENIR,
+--	CONCAT(XAPCJ,CONCAT('/',CONCAT(XAPCM,CONCAT('/',CONCAT(XAPCS,XAPCA))))) as DATE_APPLICATION_VENIR
 from
-	${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 VENTE_VENIR,
-	${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 VENTE,
-	${LOGINOR_PREFIX_BASE}GESTCOM.ATARVTP1 REVIENT,
-	${LOGINOR_PREFIX_BASE}GESTCOM.ANEWPRP1 REVIENT_VENIR,
-	${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE,
-	${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR,
-	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 REF_FOURNISSEUR
+	${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
+			on ARTICLE.FOUR1=FOURNISSEUR.NOFOU
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 REF_FOURNISSEUR
+			on REF_FOURNISSEUR.NOFOU=FOURNISSEUR.NOFOU and REF_FOURNISSEUR.NOART=ARTICLE.NOART
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARVTP1 REVIENT
+			on ARTICLE.NOART=REVIENT.NOART
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 VENTE
+			on ARTICLE.NOART=VENTE.NOART
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AOLDPRP1 OLD_PRIX_REVIENT
+			on ARTICLE.NOART=OLD_PRIX_REVIENT.NOART
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AOLDPVP1 OLD_PRIX_VENTE
+			on		ARTICLE.NOART=OLD_PRIX_VENTE.NOART
+				and OLD_PRIX_REVIENT.PRVDS=OLD_PRIX_VENTE.PVEDS
+				and OLD_PRIX_REVIENT.PRVDA=OLD_PRIX_VENTE.PVEDA
+				and OLD_PRIX_REVIENT.PRVDM=OLD_PRIX_VENTE.PVEDM
+				and OLD_PRIX_REVIENT.PRVDJ=OLD_PRIX_VENTE.PVEDJ
+--		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ANEWPRP1 REVIENT_VENIR
+--			on ARTICLE.NOART=REVIENT_VENIR.NOART
+--		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 VENTE_VENIR
+--			on ARTICLE.NOART=VENTE_VENIR.NOART
 where
 		ARTICLE.ETARE=''
-	and	VENTE_VENIR.NOART=VENTE.NOART
-	and VENTE_VENIR.NOART=REVIENT.NOART
-	and VENTE_VENIR.NOART=REVIENT_VENIR.NOART
-	and VENTE_VENIR.NOART=ARTICLE.NOART
-	and VENTE_VENIR.NOART=REF_FOURNISSEUR.NOART
 	and REF_FOURNISSEUR.AGENC='$LOGINOR_AGENCE'
 	and VENTE.AGENC='$LOGINOR_AGENCE'
-	and REF_FOURNISSEUR.NOFOU=FOURNISSEUR.NOFOU
-	and ARTICLE.FOUR1=FOURNISSEUR.NOFOU
-		$where
+	and OLD_PRIX_REVIENT.AGENC='$LOGINOR_AGENCE'
+	and OLD_PRIX_VENTE.AGENC='$LOGINOR_AGENCE'
+	$where
+order by
+	ARTICLE.NOART ASC, CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,CONCAT(OLD_PRIX_REVIENT.PRVDM,OLD_PRIX_REVIENT.PRVDJ))) DESC
 EOT;
-	
+
 	//echo $sql;exit;
 
 	$i=0;
@@ -59,26 +76,31 @@ EOT;
 	define('DESIGNATION',$i++);
 	define('NOM_FOURNISSEUR',$i++);
 	define('REF_FOURNISSEUR',$i++);
-	define('PRIX_VENTE',$i++);
-	define('PRIX_VENTE_VENIR',$i++);
-	define('DELTA_VENTE',$i++);
-	define('PRIX_REVIENT',$i++);
-	define('PRIX_REVIENT_VENIR',$i++);
-	define('DELTA_REVIENT',$i++);
-	define('REMISE',$i++);
-	define('REMISE_VENIR',$i++);
-	define('COEF',$i++);
-	define('COEF_VENIR',$i++);
+
 	define('DATE_APPLICATION',$i++);
+
+	define('PRIX_VENTE',$i++);
+	define('OLD_PRIX_VENTE',$i++);
+	define('DELTA_VENTE',$i++);
+
+	define('PRIX_REVIENT',$i++);
+	define('OLD_PRIX_REVIENT',$i++);
+	define('DELTA_REVIENT',$i++);
+
+	define('REMISE',$i++);
+	define('OLD_REMISE',$i++);
+	define('COEF',$i++);
+	define('OLD_COEF',$i++);
+
 
 	// Creating a workbook
 	$workbook = new Spreadsheet_Excel_Writer();
 
 	// sending HTTP headers
-	$workbook->send('comparaison_prix.xls');
+	$workbook->send('time_machine_prix.xls');
 
 	// Creating a worksheet
-	$worksheet =& $workbook->addWorksheet('Comparaison de prix Rubis');
+	$worksheet =& $workbook->addWorksheet('Time machine prix Rubis');
 	$workbook->setCustomColor(12, 220, 220, 220);
 
 	$format_title		=& $workbook->addFormat(array('bold'=>1 , 'fgcolor'=>12 , 'bordercolor'=>'black' ));
@@ -97,42 +119,63 @@ EOT;
 	$worksheet->write(0,DESIGNATION, 		'Désignation',$format_title); $worksheet->setColumn(DESIGNATION,DESIGNATION,30);
 	$worksheet->write(0,NOM_FOURNISSEUR, 	'Fournisseur',$format_title); $worksheet->setColumn(NOM_FOURNISSEUR,NOM_FOURNISSEUR,12);
 	$worksheet->write(0,REF_FOURNISSEUR,	'Référence',$format_title);
-	$worksheet->write(0,PRIX_VENTE,			'Px V',$format_title);
-	$worksheet->write(0,PRIX_VENTE_VENIR,	'Px Vfutur',$format_title);
-	$worksheet->write(0,DELTA_VENTE,		'Diff V',$format_title);
-	$worksheet->write(0,PRIX_REVIENT,		'Px R',$format_title);
-	$worksheet->write(0,PRIX_REVIENT_VENIR,	'Px Rfutur',$format_title);
-	$worksheet->write(0,DELTA_REVIENT,		'Diff R',$format_title);
-	$worksheet->write(0,REMISE,				'Remise',$format_title);
-	$worksheet->write(0,REMISE_VENIR,		'Remise futur',$format_title);
-	$worksheet->write(0,COEF,				'Coef V',$format_title);
-	$worksheet->write(0,COEF_VENIR,			'Coef Vfutur',$format_title);
+
 	$worksheet->write(0,DATE_APPLICATION,	"Date d'application",$format_title); $worksheet->setColumn(DATE_APPLICATION,DATE_APPLICATION,12);
+
+	$worksheet->write(0,PRIX_VENTE,			'Px V',$format_title);
+	$worksheet->write(0,OLD_PRIX_VENTE,		'Px V avant',$format_title);
+	$worksheet->write(0,DELTA_VENTE,		'Diff V',$format_title);
+
+	$worksheet->write(0,PRIX_REVIENT,		'Px R',$format_title);
+	$worksheet->write(0,OLD_PRIX_REVIENT,	'Px R avant',$format_title);
+	$worksheet->write(0,DELTA_REVIENT,		'Diff R',$format_title);
+
+	$worksheet->write(0,REMISE,				'Remise',$format_title);
+	$worksheet->write(0,OLD_REMISE,			'Remise avant',$format_title);
+	$worksheet->write(0,COEF,				'Coef',$format_title);
+	$worksheet->write(0,OLD_COEF,			'Coef avant',$format_title);
 
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res		= odbc_exec($loginor,$sql) ;
 	$i = 1;
+	$old_prix_vente = 0; $old_prix_revient = 0; // pour voir si il est bien necessaire d'afficher la ligne si les prix non pas changés
+	$old_code_article = ''; // on s'en sert pour aéré le tableau et sauté une ligne quand on change de code
 	while($row = odbc_fetch_array($res)) {
-		$worksheet->write( $i, NO_ARTICLE,			trim($row['NO_ARTICLE'])  ,$format_article);
-		$worksheet->write( $i, DESIGNATION ,		trim($row['DESIGNATION1']).' '.trim($row['DESIGNATION2']).' '.trim($row['DESIGNATION3']),$format_cell);
-		$worksheet->write( $i, NOM_FOURNISSEUR ,	trim($row['NOM_FOURNISSEUR'])  ,$format_cell);
-		$worksheet->write( $i, REF_FOURNISSEUR,		trim($row['REF_FOURNISSEUR'])  ,$format_cell);
-		$worksheet->write( $i, PRIX_VENTE,			$row['PRIX_VENTE']  ,$format_prix);
-		$worksheet->write( $i, PRIX_VENTE_VENIR,	$row['PRIX_VENTE_VENIR']  ,$format_prix);
-		$worksheet->writeFormula($i, DELTA_VENTE,	'=('.excel_column(PRIX_VENTE_VENIR).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
-		$worksheet->write( $i, PRIX_REVIENT,		$row['PRIX_REVIENT']  ,$format_prix);
-		$worksheet->write( $i, PRIX_REVIENT_VENIR,	$row['PRIX_REVIENT_VENIR']  ,$format_prix);
-		$worksheet->writeFormula($i, DELTA_REVIENT, '=('.excel_column(PRIX_REVIENT_VENIR).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
-		$worksheet->write( $i, REMISE,				ereg_replace('.0000$','',$row['REMISE1']).' / '.ereg_replace('.0000$','',$row['REMISE2']).' / '.ereg_replace('.0000$','',$row['REMISE3'])  ,$format_cell);
-		$worksheet->write( $i, REMISE_VENIR,		ereg_replace('.0000$','',$row['REMISE1_VENIR']).' / '.ereg_replace('.0000$','',$row['REMISE2_VENIR']).' / '.ereg_replace('.0000$','',$row['REMISE3_VENIR'])  ,$format_cell);
-		$worksheet->write( $i, COEF,				$row['COEF']  ,$format_coef);
-		$worksheet->write( $i, COEF_VENIR,			$row['COEF_VENIR']  ,$format_coef);
-		$worksheet->write( $i, DATE_APPLICATION,	$row['DATE_APPLICATION']  ,$format_cell);
+		if (	$row['OLD_PRIX_VENTE']   != $old_prix_vente
+			||	$row['OLD_PRIX_REVIENT'] != $old_prix_revient
+			|| $i == 1) { // si les pix on changer ou si on est sur la premiere ligne
 
-		$i++;
+			$worksheet->write( $i, NO_ARTICLE,			trim($row['NO_ARTICLE'])  ,$format_article);
+			$worksheet->write( $i, DESIGNATION ,		trim($row['DESIGNATION1']).' '.trim($row['DESIGNATION2']).' '.trim($row['DESIGNATION3']),$format_cell);
+			$worksheet->write( $i, NOM_FOURNISSEUR ,	trim($row['NOM_FOURNISSEUR'])  ,$format_cell);
+			$worksheet->write( $i, REF_FOURNISSEUR,		trim($row['REF_FOURNISSEUR'])  ,$format_cell);
+			
+			$worksheet->write( $i, DATE_APPLICATION,	$row['DATE_APPLICATION_FORMATEE']  ,$format_cell);
+
+			$worksheet->write( $i, PRIX_VENTE,			$row['PRIX_VENTE']  ,$format_prix);
+			$worksheet->write( $i, OLD_PRIX_VENTE,		$row['OLD_PRIX_VENTE']  ,$format_prix);
+			$worksheet->writeFormula($i, DELTA_VENTE,	'=('.excel_column(OLD_PRIX_VENTE).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
+
+			$worksheet->write( $i, PRIX_REVIENT,		$row['PRIX_REVIENT']  ,$format_prix);
+			$worksheet->write( $i, OLD_PRIX_REVIENT,	$row['OLD_PRIX_REVIENT']  ,$format_prix);
+			$worksheet->writeFormula($i, DELTA_REVIENT, '=('.excel_column(OLD_PRIX_REVIENT).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
+
+			$worksheet->write( $i, REMISE,				ereg_replace('.0000$','',$row['REMISE1']).' / '.ereg_replace('.0000$','',$row['REMISE2']).' / '.ereg_replace('.0000$','',$row['REMISE3'])  ,$format_cell);
+			$worksheet->write( $i, OLD_REMISE,			ereg_replace('.0000$','',$row['OLD_REMISE1']).' / '.ereg_replace('.0000$','',$row['OLD_REMISE2']).' / '.ereg_replace('.0000$','',$row['OLD_REMISE3'])  ,$format_cell);
+			$worksheet->write( $i, COEF,				$row['COEF']  ,$format_coef);
+			$worksheet->write( $i, OLD_COEF,			$row['OLD_COEF']  ,$format_coef);
+
+			$i++;
+		}
+	
+		if ($old_code_article != $row['NO_ARTICLE']) $i++; // on passe une ligne pour aéré le code
+
+		$old_prix_vente = $row['OLD_PRIX_VENTE']; $old_prix_revient = $row['OLD_PRIX_REVIENT'];
+		$old_code_article = $row['NO_ARTICLE'];
 	}
 
 	// on rajoute les différences global
+	/*
 	$worksheet->write( $i, REF_FOURNISSEUR,			"Total"  ,$format_title);
 	$worksheet->writeFormula($i, PRIX_VENTE,		'=SUM('.excel_column(PRIX_VENTE).'2:'.excel_column(PRIX_VENTE).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, PRIX_VENTE_VENIR,	'=SUM('.excel_column(PRIX_VENTE_VENIR).'2:'.excel_column(PRIX_VENTE_VENIR).$i.')' ,$format_prix);
@@ -140,6 +183,7 @@ EOT;
 	$worksheet->writeFormula($i, PRIX_REVIENT,		'=SUM('.excel_column(PRIX_REVIENT).'2:'.excel_column(PRIX_REVIENT).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, PRIX_REVIENT_VENIR,'=SUM('.excel_column(PRIX_REVIENT_VENIR).'2:'.excel_column(PRIX_REVIENT_VENIR).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, DELTA_REVIENT,		'=('.excel_column(PRIX_REVIENT_VENIR).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
+	*/
 
 	// Let's send the file
 	$workbook->close();
@@ -214,9 +258,9 @@ function valid_form(quoi) {
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 
-<h1>Comparaison des prix a venir</h1>
+<h1>Comparaison des anciens prix de vente et de revient</h1>
 
-<form name="tarif" method="post" action="index.php" style="margin-top:10px;">
+<form name="tarif" method="post" action="time_machine.php" style="margin-top:10px;">
 	<input type="hidden" name="provenance" value=""/>
 	<center>
 	<div class="col">
@@ -257,6 +301,15 @@ EOT;
 		<div id="path">&nbsp;</div>
 		<input type="button" class="button valider excel" value="Télécharger le fichier Excel" onclick="valid_form('fournisseur');"/>
 		</div>
+
+	
+		<div>
+			<strong>Choix par code article</strong><br/>
+			<input type="text" value="" name="code_article" size="13"/>
+			<input type="button" class="button valider excel" value="Télécharger le fichier Excel" onclick="valid_form('code_article');"/>
+		</div>
+
+
 	</center>
 </form>
 

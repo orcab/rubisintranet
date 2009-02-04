@@ -544,7 +544,7 @@ function valider_nouveau_chemin() {
 		$et  = array();
 		// on vérifie que chaque mot est présent dans la désignation (ET naturel)
 		foreach ($phrase as $mot) {
-			array_push($et,"designation LIKE '%$mot%'");
+			if ($mot) array_push($et,"designation LIKE '%$mot%'");
 		}
 		$et = join($et," AND ");
 
@@ -576,7 +576,7 @@ function valider_nouveau_chemin() {
 				<pre><?	if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
 					$designation = $row['designation'];
 					foreach ($phrase as $mot) {
-						$designation = preg_replace("/(".$mot.")/i","<strong>$1</strong>",$designation);
+						if ($mot) $designation = preg_replace("/(".$mot.")/i","<strong>$1</strong>",$designation);
 					}
 					echo trim($designation);
 				} else {
