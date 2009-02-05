@@ -209,12 +209,12 @@ EOT;
 	<title>Historique des anciens tarifs</title>
 
 <link type="text/css" href="../../js/slider2/demoPages.css" media="screen" rel="Stylesheet" />
-<script type="text/javascript" src="../../js/slider2/jquery-1.2.6.min.js"></script>
-<script type="text/javascript" src="../../js/slider2/jquery-ui-personalized-1.6rc4.min.js"></script>
+<script type="text/javascript" src="../../js/jquery.js"></script>
+<script type="text/javascript" src="../../js/jquery.ui.all.js"></script>
 <script type="text/javascript" src="../../js/slider2/selectToUISlider.jQuery.js"></script>
-<link type="text/css" href="../../js/slider2/ui.core.css" rel="Stylesheet" />	
+<link type="text/css" href="../../js/theme/ui.core.css" rel="Stylesheet" />	
 <link rel="stylesheet" href="../../js/slider2/ui.theme.css" type="text/css" title="ui-theme" />
-<link rel="stylesheet" href="../../js/slider2/ui.slider.css" type="text/css" />
+<link rel="stylesheet" href="../../js/theme/ui.slider.css" type="text/css" />
 <link rel="Stylesheet" href="../../js/slider2/ui.slider.extras.css" type="text/css" />
 
 <style type="text/css">

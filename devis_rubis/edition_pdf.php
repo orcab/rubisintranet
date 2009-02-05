@@ -84,7 +84,7 @@ while($row = odbc_fetch_array($detail_devis)) {
 
 	$row['REFFO'] = $row['REFFO'] ? $row['REFFO'] : 'Divers';
 	
-	$row['QTESA'] = (int)$row['QTESA'];
+	$row['QTESA'] = preg_replace('/\.?0+$/','',$row['QTESA']);
 	$row['PRINE'] = sprintf('%0.2f',$row['PRINE']);
 
 	if ($row['CONSA'] && $row['PRINE'] <= 0) { // cas d'un commentaire
