@@ -26,6 +26,14 @@ if	(isset($_POST['valueA']) &&	isset($_POST['valueB'])) { // une date est spécif
 	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) <= ".join(array_reverse(explode('/',$_POST['valueB']))));
 }
 
+if	(isset($_POST['tarif_papier']) && $_POST['tarif_papier']) { // un critere de tarif papier OUI ou NON
+	array_push($where,"ARTICLE.DIAA1='".mysql_escape_string($_POST['tarif_papier'])."'");
+}
+
+if	(isset($_POST['servi_stock']) && $_POST['servi_stock']) { // un critere de servi sur stock OUI ou NON
+	array_push($where,"ARTICLE.SERST='".mysql_escape_string($_POST['servi_stock'])."'");
+}
+
 
 $where = ($where) ? ' and '.join(' and ',$where) : '';
 
@@ -198,7 +206,7 @@ EOT;
 ?>
 <html>
 <head>
-	<title>Tarif à venir</title>
+	<title>Historique des anciens tarifs</title>
 	
 <!-- CODE POUR LE SLIDER -->
 <link type="text/css" href="../../js/slider/slider.css" media="screen" rel="Stylesheet" />
@@ -318,7 +326,24 @@ option.n5 { padding-left:40px;color:#BBB; }
 	</fieldset>
 
 
-
+	<div>
+		<div class="col">
+			<h2>Tarif papier</h2>
+			<select name="tarif_papier" style="height:20px;">
+				<option value="" selected="selected">Tous les produits</option>
+				<option value="OUI">Les produits SUR le tarif papier</option>
+				<option value="NON">Les produits HORS du tarif papier</option>
+			</select>
+		</div>
+		<div class="col">
+			<h2>Servi sur stock</h2>
+			<select name="servi_stock" style="height:20px;">
+				<option value="" selected="selected">Tous les produits</option>
+				<option value="OUI">Les produits SERVI sur stock</option>
+				<option value="NON">Les produits NON SERVI sur stock</option>
+			</select>
+		</div>
+	</div>
 
 	<div class="col">
 		<h2>Choix par Plan de vente</h2>
