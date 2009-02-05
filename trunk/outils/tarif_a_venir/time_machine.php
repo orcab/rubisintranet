@@ -207,20 +207,29 @@ EOT;
 <html>
 <head>
 	<title>Historique des anciens tarifs</title>
-	
-<!-- CODE POUR LE SLIDER -->
-<link type="text/css" href="../../js/slider/slider.css" media="screen" rel="Stylesheet" />
-<script src="http://www.filamentgroup.com/script/testUserDevice/" type="text/javascript"></script>
-<script src="../../js/slider/jquery-latest.pack.js" type="text/javascript"></script>
-<script src="../../js/slider/interface.js" type="text/javascript"></script>	
-<script src="../../js/slider/jquery.slider.js" type="text/javascript"></script>
+
+<link type="text/css" href="../../js/slider2/demoPages.css" media="screen" rel="Stylesheet" />
+<script type="text/javascript" src="../../js/slider2/jquery-1.2.6.min.js"></script>
+<script type="text/javascript" src="../../js/slider2/jquery-ui-personalized-1.6rc4.min.js"></script>
+<script type="text/javascript" src="../../js/slider2/selectToUISlider.jQuery.js"></script>
+<link type="text/css" href="../../js/slider2/ui.core.css" rel="Stylesheet" />	
+<link rel="stylesheet" href="../../js/slider2/ui.theme.css" type="text/css" title="ui-theme" />
+<link rel="stylesheet" href="../../js/slider2/ui.slider.css" type="text/css" />
+<link rel="Stylesheet" href="../../js/slider2/ui.slider.extras.css" type="text/css" />
+
+<style type="text/css">
+	form { margin: 0 30px;}
+	fieldset { border:0; margin-top: 1em;}
+	.ui-slider {clear: both; top: 15px;}
+
+</style>
 <script type="text/javascript">
-enhancedDomReady(function(){
-	$('#slider2').makeSlider(3, 800); // enable time slider
+$(function(){
+	$('select#valueA, select#valueB').selectToUISlider({
+		labels: 15
+	});
 });
 </script>
-<!-- FIN DU CODE POUR LE SLIDER -->
-
 
 
 <style type="text/css">@import url(../../js/activite.css);</style>
@@ -264,6 +273,7 @@ div.col {
 	float:left; width:50%;
 	marging-left:50%; width:50%;
 	margin-bottom:30px;
+	text-align:center;
 }
 
 option { font-size:0.7em; }
@@ -296,30 +306,30 @@ option.n5 { padding-left:40px;color:#BBB; }
 
 <h1>Comparaison des anciens prix de vente et de revient</h1>
 
+
 <form name="tarif" method="post" action="time_machine.php" style="margin-top:10px;">
 	<input type="hidden" name="provenance" value=""/>
 	<center>
 
-		<fieldset id="slider2">
-		<label for="valueA" class="sentence">Depuis :</label>
+		<fieldset style="margin-bottom:30px;">
+		<label for="valueA" class="sentence" style="display:none;">Depuis :</label>
 
-		<select name="valueA" id="valueA">
-<?			$mois_mini = array('Jan','Fev','Mar','Avr','Mai','Jui','Jul','Aou','Sep','Oct','Nov','Dev');
+		<select name="valueA" id="valueA" style="display:none;">
+<?			$mois_mini = array('Jan','Fev','Mar','Avr','Mai','Jui','Jul','Aou','Sep','Oct','Nov','Dec');
 			for($i=2006 ; $i <= date('Y') ; $i++) {
 				for($j=0 ; $j<sizeof($mois_mini) ; $j++) {	?>
 					<option value="<?=sprintf('%02d',$j+1)."/$i"?>" <?=($i+1 == date('Y') && $j+1 == date('m')) ? 'selected="selected"':''?>><?=$mois_mini[$j]." $i"?></option>
-<?						if ($i == date('Y') && $j == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
+<?						if ($i == date('Y') && $j+1 == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
 				}
 			}
 ?>		</select>
 
-		<label for="valueB" class="sentence">Jusqu'à :</label>
-		<select name="valueB" id="valueB">
-<?			$mois_mini = array('Jan','Fev','Mar','Avr','Mai','Jui','Jul','Aou','Sep','Oct','Nov','Dev');
-			for($i=2006 ; $i <= date('Y') ; $i++) {
+		<label for="valueB" class="sentence" style="display:none;">Jusqu'à :</label>
+		<select name="valueB" id="valueB" style="display:none;">
+<?			for($i=2006 ; $i <= date('Y') ; $i++) {
 				for($j=0 ; $j<sizeof($mois_mini) ; $j++) {	?>
 					<option value="<?=sprintf('%02d',$j+1)."/$i"?>" <?=($i == date('Y') && $j+1 == date('m')) ? 'selected="selected"':''?>><?=$mois_mini[$j]." $i"?></option>
-<?						if ($i == date('Y') && $j == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
+<?						if ($i == date('Y') && $j+1 == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
 				}
 			}
 ?>		</select>
