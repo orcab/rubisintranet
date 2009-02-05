@@ -22,8 +22,8 @@ elseif	($_POST['provenance'] == 'code_article' && $_POST['code_article'])
 
 
 if	(isset($_POST['valueA']) &&	isset($_POST['valueB'])) { // une date est spécifiée
-	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) >= ".join(array_reverse(explode('/',$_POST['valueA']))));
-	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) <= ".join(array_reverse(explode('/',$_POST['valueB']))));
+	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) >= '".join(array_reverse(explode('/',$_POST['valueA'])))."'");
+	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) <= '".join(array_reverse(explode('/',$_POST['valueB'])))."'");
 }
 
 if	(isset($_POST['tarif_papier']) && $_POST['tarif_papier']) { // un critere de tarif papier OUI ou NON
