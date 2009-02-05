@@ -470,7 +470,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 	<td colspan="4">
 		Nombre de lignes : <?=$total_ligne?>
 	</td>
-	<td colspan="4">
+	<td colspan="6">
 		Total des montants : <?=$total_montant?> &euro;
 	</td>
 </tr>
