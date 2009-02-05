@@ -18,7 +18,14 @@ if		($_POST['provenance'] == 'fournisseur' && $_POST['fournisseur'] != '>> Globa
 elseif	($_POST['provenance'] == 'pdv' && $_POST['pdv'] != '>> Global <<')
 	array_push($where,"CONCAT(ARTICLE.ACTIV,CONCAT('.',CONCAT(ARTICLE.FAMI1,CONCAT('.',CONCAT(ARTICLE.SFAM1,CONCAT('.',CONCAT(ARTICLE.ART04,CONCAT('.',ARTICLE.ART05)))))))) like '$_POST[pdv]%'");
 elseif	($_POST['provenance'] == 'code_article' && $_POST['code_article'])
-	array_push($where,"ARTICLE.NOART='$_POST[code_article]'");
+	array_push($where,"(ARTICLE.NOART='".mysql_escape_string($_POST['code_article'])."' OR REF_FOURNISSEUR.REFFO='".mysql_escape_string($_POST['code_article'])."')");
+
+
+if	(isset($_POST['valueA']) &&	isset($_POST['valueB'])) { // une date est spécifiée
+	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) >= ".join(array_reverse(explode('/',$_POST['valueA']))));
+	array_push($where,"CONCAT(OLD_PRIX_REVIENT.PRVDS,CONCAT(OLD_PRIX_REVIENT.PRVDA,OLD_PRIX_REVIENT.PRVDM)) <= ".join(array_reverse(explode('/',$_POST['valueB']))));
+}
+
 
 $where = ($where) ? ' and '.join(' and ',$where) : '';
 
@@ -137,14 +144,23 @@ EOT;
 
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res		= odbc_exec($loginor,$sql) ;
-	$i = 1;
+	$i = 1; $j=0;
 	$old_prix_vente = 0; $old_prix_revient = 0; // pour voir si il est bien necessaire d'afficher la ligne si les prix non pas changés
 	$old_code_article = ''; // on s'en sert pour aéré le tableau et sauté une ligne quand on change de code
 	while($row = odbc_fetch_array($res)) {
-		if (	$row['OLD_PRIX_VENTE']   != $old_prix_vente
-			||	$row['OLD_PRIX_REVIENT'] != $old_prix_revient
-			|| $i == 1) { // si les pix on changer ou si on est sur la premiere ligne
+		if ($old_code_article != $row['NO_ARTICLE']) {
+				$old_prix_vente = $row['PRIX_VENTE'];
+				$old_prix_revient = $row['PRIX_REVIENT'];
+				$j = 0;
+				
+				if ($i > 1) $i++; // on passe une ligne pour aéré le code (sauf la premiere)
+		}
 
+
+		if (	$row['OLD_PRIX_VENTE']   != $old_prix_vente
+			||	$row['OLD_PRIX_REVIENT'] != $old_prix_revient) { // si les prix on changer ou si on est sur la premiere ligne
+
+			
 			$worksheet->write( $i, NO_ARTICLE,			trim($row['NO_ARTICLE'])  ,$format_article);
 			$worksheet->write( $i, DESIGNATION ,		trim($row['DESIGNATION1']).' '.trim($row['DESIGNATION2']).' '.trim($row['DESIGNATION3']),$format_cell);
 			$worksheet->write( $i, NOM_FOURNISSEUR ,	trim($row['NOM_FOURNISSEUR'])  ,$format_cell);
@@ -154,11 +170,11 @@ EOT;
 
 			$worksheet->write( $i, PRIX_VENTE,			$row['PRIX_VENTE']  ,$format_prix);
 			$worksheet->write( $i, OLD_PRIX_VENTE,		$row['OLD_PRIX_VENTE']  ,$format_prix);
-			$worksheet->writeFormula($i, DELTA_VENTE,	'=('.excel_column(OLD_PRIX_VENTE).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
+			$worksheet->writeFormula($i, DELTA_VENTE,	'=('.excel_column(PRIX_VENTE).($i+1).'/'.excel_column(OLD_PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
 
 			$worksheet->write( $i, PRIX_REVIENT,		$row['PRIX_REVIENT']  ,$format_prix);
 			$worksheet->write( $i, OLD_PRIX_REVIENT,	$row['OLD_PRIX_REVIENT']  ,$format_prix);
-			$worksheet->writeFormula($i, DELTA_REVIENT, '=('.excel_column(OLD_PRIX_REVIENT).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
+			$worksheet->writeFormula($i, DELTA_REVIENT, '=('.excel_column(PRIX_REVIENT).($i+1).'/'.excel_column(OLD_PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
 
 			$worksheet->write( $i, REMISE,				ereg_replace('.0000$','',$row['REMISE1']).' / '.ereg_replace('.0000$','',$row['REMISE2']).' / '.ereg_replace('.0000$','',$row['REMISE3'])  ,$format_cell);
 			$worksheet->write( $i, OLD_REMISE,			ereg_replace('.0000$','',$row['OLD_REMISE1']).' / '.ereg_replace('.0000$','',$row['OLD_REMISE2']).' / '.ereg_replace('.0000$','',$row['OLD_REMISE3'])  ,$format_cell);
@@ -166,24 +182,12 @@ EOT;
 			$worksheet->write( $i, OLD_COEF,			$row['OLD_COEF']  ,$format_coef);
 
 			$i++;
+			$j++;
 		}
 	
-		if ($old_code_article != $row['NO_ARTICLE']) $i++; // on passe une ligne pour aéré le code
-
 		$old_prix_vente = $row['OLD_PRIX_VENTE']; $old_prix_revient = $row['OLD_PRIX_REVIENT'];
 		$old_code_article = $row['NO_ARTICLE'];
 	}
-
-	// on rajoute les différences global
-	/*
-	$worksheet->write( $i, REF_FOURNISSEUR,			"Total"  ,$format_title);
-	$worksheet->writeFormula($i, PRIX_VENTE,		'=SUM('.excel_column(PRIX_VENTE).'2:'.excel_column(PRIX_VENTE).$i.')' ,$format_prix);
-	$worksheet->writeFormula($i, PRIX_VENTE_VENIR,	'=SUM('.excel_column(PRIX_VENTE_VENIR).'2:'.excel_column(PRIX_VENTE_VENIR).$i.')' ,$format_prix);
-	$worksheet->writeFormula($i, DELTA_VENTE,		'=('.excel_column(PRIX_VENTE_VENIR).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
-	$worksheet->writeFormula($i, PRIX_REVIENT,		'=SUM('.excel_column(PRIX_REVIENT).'2:'.excel_column(PRIX_REVIENT).$i.')' ,$format_prix);
-	$worksheet->writeFormula($i, PRIX_REVIENT_VENIR,'=SUM('.excel_column(PRIX_REVIENT_VENIR).'2:'.excel_column(PRIX_REVIENT_VENIR).$i.')' ,$format_prix);
-	$worksheet->writeFormula($i, DELTA_REVIENT,		'=('.excel_column(PRIX_REVIENT_VENIR).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
-	*/
 
 	// Let's send the file
 	$workbook->close();
@@ -195,7 +199,39 @@ EOT;
 <html>
 <head>
 	<title>Tarif à venir</title>
-	<style type="text/css">@import url(../../js/activite.css);</style>
+	
+<!-- CODE POUR LE SLIDER -->
+<link type="text/css" href="../../js/slider/slider.css" media="screen" rel="Stylesheet" />
+<script src="http://www.filamentgroup.com/script/testUserDevice/" type="text/javascript"></script>
+<script src="../../js/slider/jquery-latest.pack.js" type="text/javascript"></script>
+<script src="../../js/slider/interface.js" type="text/javascript"></script>	
+<script src="../../js/slider/jquery.slider.js" type="text/javascript"></script>
+<script type="text/javascript">
+enhancedDomReady(function(){
+	$('#slider2').makeSlider(3, 800); // enable time slider
+});
+</script>
+<!-- FIN DU CODE POUR LE SLIDER -->
+
+
+
+<style type="text/css">@import url(../../js/activite.css);</style>
+<style type="text/css">@import url(../../js/boutton.css);</style>
+
+<script language="javascript">
+<!--
+function update_path(selecteur) {
+	document.getElementById('path').innerHTML = selecteur[selecteur.selectedIndex].value;
+}
+
+function valid_form(quoi) {
+	document.tarif.provenance.value=quoi;
+	document.tarif.submit();
+}
+
+//-->
+</script>
+
 <style>
 body {
 	font-family:verdana;
@@ -206,13 +242,20 @@ body {
 
 h1 {
 	text-align:center;
-	font-size:1.1em;
+	font-size:1.5em;
 	color:green;
+}
+
+h2 {
+	text-align:center;
+	font-size:1.5em;
+	font-weight:bold;
 }
 
 div.col {
 	float:left; width:50%;
 	marging-left:50%; width:50%;
+	margin-bottom:30px;
 }
 
 option { font-size:0.7em; }
@@ -236,21 +279,6 @@ option.n5 { padding-left:40px;color:#BBB; }
 
 </style>
 
-<style type="text/css">@import url(../../js/boutton.css);</style>
-
-<script language="javascript">
-<!--
-function update_path(selecteur) {
-	document.getElementById('path').innerHTML = selecteur[selecteur.selectedIndex].value;
-}
-
-function valid_form(quoi) {
-	document.tarif.provenance.value=quoi;
-	document.tarif.submit();
-}
-
-//-->
-</script>
 
 </head>
 <body>
@@ -263,8 +291,37 @@ function valid_form(quoi) {
 <form name="tarif" method="post" action="time_machine.php" style="margin-top:10px;">
 	<input type="hidden" name="provenance" value=""/>
 	<center>
+
+		<fieldset id="slider2">
+		<label for="valueA" class="sentence">Depuis :</label>
+
+		<select name="valueA" id="valueA">
+<?			$mois_mini = array('Jan','Fev','Mar','Avr','Mai','Jui','Jul','Aou','Sep','Oct','Nov','Dev');
+			for($i=2006 ; $i <= date('Y') ; $i++) {
+				for($j=0 ; $j<sizeof($mois_mini) ; $j++) {	?>
+					<option value="<?=sprintf('%02d',$j+1)."/$i"?>" <?=($i+1 == date('Y') && $j+1 == date('m')) ? 'selected="selected"':''?>><?=$mois_mini[$j]." $i"?></option>
+<?						if ($i == date('Y') && $j == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
+				}
+			}
+?>		</select>
+
+		<label for="valueB" class="sentence">Jusqu'à :</label>
+		<select name="valueB" id="valueB">
+<?			$mois_mini = array('Jan','Fev','Mar','Avr','Mai','Jui','Jul','Aou','Sep','Oct','Nov','Dev');
+			for($i=2006 ; $i <= date('Y') ; $i++) {
+				for($j=0 ; $j<sizeof($mois_mini) ; $j++) {	?>
+					<option value="<?=sprintf('%02d',$j+1)."/$i"?>" <?=($i == date('Y') && $j+1 == date('m')) ? 'selected="selected"':''?>><?=$mois_mini[$j]." $i"?></option>
+<?						if ($i == date('Y') && $j == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
+				}
+			}
+?>		</select>
+	</fieldset>
+
+
+
+
 	<div class="col">
-		<strong>Choix par Plan de vente</strong><br/>
+		<h2>Choix par Plan de vente</h2>
 		<select name="pdv" size="20" onchange="update_path(this);">
 			<option style="text-align:center;font-size:1.2em;">&gt;&gt; Global &lt;&lt;</option>
 <?
@@ -284,7 +341,7 @@ EOT;
 
 
 		<div class="col">
-			<strong>Choix par Fournisseur</strong><br/>
+			<h2>Choix par Fournisseur</h2>
 			<select name="fournisseur" size="20">
 			<option style="text-align:center;font-size:1.2em;">&gt;&gt; Global &lt;&lt;</option>
 <?
@@ -302,9 +359,8 @@ EOT;
 		<input type="button" class="button valider excel" value="Télécharger le fichier Excel" onclick="valid_form('fournisseur');"/>
 		</div>
 
-	
 		<div>
-			<strong>Choix par code article</strong><br/>
+			<h2>Choix par code article ou Référence fournisseur</h2>
 			<input type="text" value="" name="code_article" size="13"/>
 			<input type="button" class="button valider excel" value="Télécharger le fichier Excel" onclick="valid_form('code_article');"/>
 		</div>
