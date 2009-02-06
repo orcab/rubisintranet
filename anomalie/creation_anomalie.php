@@ -83,8 +83,13 @@ EOT;
 	$mail = new SMTP;
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
-	foreach ($CHEFS_DE_POLE as $p=>$chef)
-		if ($pole & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajour de destinataire");
+	$emails_deja_envoye = array();
+	foreach ($CHEFS_DE_POLE as $p=>$chef) {
+		if (($row_anomalie['pole'] & $p) && !in_array($chef['email'],$emails_deja_envoye)) {
+			if ($pole & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajour de destinataire");
+			array_push($emails_deja_envoye,$chef['email']); // on enregistre l'email pour ne pas lui envoyer d'autre mail
+		}
+	}
 	$mail->From(e('email',mysql_fetch_array(mysql_query("SELECT email FROM employe WHERE prenom='$_POST[createur]'"))));
 	$mail->Html($html);
 	$sent = $mail->Send("Nouvelle Anomalie : $_POST[artisan]");
