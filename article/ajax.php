@@ -87,7 +87,7 @@ if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 
 } elseif ($_GET['what'] == 'check_ref_fournisseur' && $_GET['val']) { ////// RECHERCHE SI LA REFERENCE FOURNISSEUR N'EXISTE PAS DEJA
 	$vals = explode('/',$_GET['val']); // separation des valeurs pour la recherche
-	$res = mysql_query("SELECT code_article,designation FROM article WHERE (fournisseur='".strtoupper($vals[0])."' AND ref_fournisseur='".strtoupper($vals[1])."') OR (fournisseur='".strtoupper($vals[0])."' AND ref_fournisseur_condensee='".strtoupper($vals[1])."')");
+	$res = mysql_query("SELECT code_article,designation FROM article WHERE fournisseur='".strtoupper($vals[0])."' AND (ref_fournisseur='".strtoupper($vals[1])."' OR ref_fournisseur_condensee='".strtoupper($vals[1])."' OR ref_fournisseur='".strtoupper(preg_replace('/[^a-z0-9]/i','',$vals[1]))."' OR ref_fournisseur_condensee='".strtoupper(preg_replace('/[^a-z0-9]/i','',$vals[1]))."')");
 	
 	if ($res) {
 		if (mysql_num_rows($res)) {
