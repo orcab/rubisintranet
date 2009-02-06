@@ -33,7 +33,7 @@ ul#tabnav li.active {
 }
 </style>
 
-<ul id="tabnav">
+<ul id="tabnav" class="hide_when_print">
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/index.php")) { // test si le fichier exists ?>
 		<li><a href="/intranet"><img src="/intranet/gfx/home_mini.png" style="vertical-align:top;border:none;"> Accueil</a></li>

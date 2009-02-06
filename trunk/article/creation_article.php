@@ -102,9 +102,7 @@ td.valeur {
 }
 
 select#completion_fourn {
-	margin-left:88px;
 	border:solid 1px #000080;
-	border-top:none;
 	display:none;
 }
 </style>
@@ -122,9 +120,9 @@ function majusculize(champ) {
 // si article stocké --> affiche les champs de stock
 function affiche_stock_mini_maxi() {
 	if(document.creation_article.stock[0].checked) // stock a oui
-		document.getElementById('stock_mini_maxi').style.display = 'block'; // on le montre
+		$('#stock_mini_maxi').show;
 	else
-		document.getElementById('stock_mini_maxi').style.display = 'none'; // on le cache
+		$('#stock_mini_maxi').hide;
 }
 
 
@@ -308,7 +306,7 @@ function check_ref_fournisseur() {
 <tr><th class="label">Designation :</th><td class="valeur"><input type="text" name="designation" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
 <tr><th class="label">Designation 2 :</th><td class="valeur"><input type="text" name="designation2" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
 <tr><th class="label">Designation 3 :</th><td class="valeur"><input type="text" name="designation3" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
-<tr><th class="label">Fournisseur :</th><td class="valeur"><input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"><BR>
+<tr><th class="label">Fournisseur :</th><td class="valeur"><input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"><br/>
 <select id="completion_fourn" name="completion_fourn" size="1" onclick="complette_fourn_click();"></select>
 </td></tr>
 <tr><th class="label">Ref Fournisseur :</th><td class="valeur"><input type="text" name="ref_fournisseur" value="" onblur="majusculize(this.name);check_ref_fournisseur();"></td></tr>

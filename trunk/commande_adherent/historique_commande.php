@@ -260,7 +260,8 @@ function envoi_formulaire(l_action) {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['cde_adh_filtre_date_inf']?>" size="8">
-					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_inf.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -293,7 +294,8 @@ function envoi_formulaire(l_action) {
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['cde_adh_filtre_date_sup']?>" size="8">
-					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_commande.filtre_date_sup.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
 						{

@@ -86,7 +86,7 @@ EOT;
 	$emails_deja_envoye = array();
 	foreach ($CHEFS_DE_POLE as $p=>$chef) {
 		if (($row_anomalie['pole'] & $p) && !in_array($chef['email'],$emails_deja_envoye)) {
-			if ($pole & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajour de destinataire");
+			if ($pole & $p)	$mail->AddTo($chef['email'],$chef['nom']) or die("Erreur d'ajout de destinataire");
 			array_push($emails_deja_envoye,$chef['email']); // on enregistre l'email pour ne pas lui envoyer d'autre mail
 		}
 	}
@@ -233,6 +233,12 @@ table.anomalie table.commentaire td {
 
 textarea#probleme { height:200px; }
 
+
+select#completion_fourn {
+	border:solid 1px #000080;
+	display:none;
+}
+
 @media print {
 	.hide_when_print { display:none; }
 	table.anomalie { width:100%; }
@@ -318,11 +324,94 @@ function envoi_formulaire() {
 	}
 }
 
+
+
+/////////////////:// COMPLETION POUR LES FOURNISSEURS ////////////////////////
+///// AJAX ///////////////////////////////////
+
+var http = null;
+if		(window.XMLHttpRequest) // Firefox 
+	   http = new XMLHttpRequest(); 
+else if	(window.ActiveXObject) // Internet Explorer 
+	   http = new ActiveXObject("Microsoft.XMLHTTP");
+else	// XMLHttpRequest non supporté par le navigateur 
+   alert("Votre navigateur ne supporte pas les objets XMLHTTPRequest...");
+
+function complette_fourn(e) {
+	var sel = document.creation_anomalie.completion_fourn ;
+	var nb_el = sel.options.length ;
+	var selIndex = sel.selectedIndex ;
+
+	if (!document.creation_anomalie.fournisseur.value) {
+		sel.style.display = 'none';
+	} else if (e.keyCode == 40 && nb_el) { // fleche bas
+		if (selIndex < sel.options.length - 1)
+			sel.selectedIndex = selIndex + 1 ;
+	}
+	else if (e.keyCode == 38 && nb_el) { // fleche haut
+		if (selIndex > 0)
+			sel.selectedIndex = selIndex - 1 ;
+	}
+	else if (e.keyCode == 13 && nb_el) { // entrée
+		document.creation_anomalie.fournisseur.value = sel.options[selIndex].value ;
+		sel.style.display = 'none';
+	}
+	else { // autre touche --> on recherche les fournisseurs
+		val = document.creation_anomalie.fournisseur.value ;
+		if (val.length > 0) {
+			http.open("GET", "ajax.php?what=complette_fourn&val="+escape(val), true);
+			http.onreadystatechange = handleHttpResponse_complette_fourn;
+			http.send(null);
+		}
+	}
+}
+
+function handleHttpResponse_complette_fourn()
+{
+	if (http.readyState == 4)
+	{	fournisseurs = eval('(' + http.responseText + ')'); // [id1,id2, ...]
+		document.getElementById('completion_fourn').attributes['size'].value = fournisseurs.length;
+		sel = document.creation_anomalie.completion_fourn ;
+
+		// on vide le select
+		while(sel.options.length > 0)
+			sel.options[0] = null
+
+		// on rempli avec les nouveaux fournisseurs
+		for(i=0 ; i<fournisseurs.length ; i++)
+			sel.options[sel.options.length] = new Option(fournisseurs[i],fournisseurs[i]);
+
+		if (sel.options.length) {
+			sel.selectedIndex = 0 ; // on selectionne le premier element de la liste
+			sel.style.display = 'block';
+		}
+		else
+			sel.style.display = 'none';
+	}	
+}
+
+function complette_fourn_click() {
+	sel = document.creation_anomalie.completion_fourn ;
+	document.creation_anomalie.fournisseur.value = sel.options[sel.selectedIndex].value ;
+	sel.style.display = 'none';
+}
+
+////////////////// FIN COMPLETION POUR LES FOURNISSEURS ///////////////////////
+
+
+function majusculize(champ) {
+	document.creation_article.elements[champ].value = document.creation_article.elements[champ].value.toUpperCase();
+}
+
 //-->
 </script>
 
 </head>
 <body>
+
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <form name="creation_anomalie" action="creation_anomalie.php" method="POST">
 <?	if ($id) { // mode modification ?>
 		<input type="hidden" name="action" value="modification_anomalie" />
@@ -369,7 +458,8 @@ function envoi_formulaire() {
 				<?=$row_anomalie['date_creation_formatee']?>
 			<? } else { ?>
 				<input type="text" id="date_creation" name="date_creation" value="<?=date('d/m/Y')?>" size="8" />
-				<button id="trigger_date_creation" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.creation_anomalie.date_creation.value='';" />
+				<img src="../js/jscalendar/calendar.gif" id="trigger_date_creation" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
+				<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.creation_anomalie.date_creation.value='';" />
 				<script type="text/javascript">
 				  Calendar.setup(
 					{
@@ -410,7 +500,9 @@ function envoi_formulaire() {
 		<th>Fournisseur</th>
 		<td colspan="2">
 <?			if (($id && $can_edit) || !$id) { ?>
-				<input type="text" name="fournisseur" size="15" value="<?= $id ? $row_anomalie['fournisseur']:'' ?>" />
+				<input type="text" name="fournisseur" size="15" value="<?= $id ? $row_anomalie['fournisseur']:'' ?>" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);" />
+				<br/>
+				<select id="completion_fourn" name="completion_fourn" size="1" onclick="complette_fourn_click();"></select>
 <?			} else { ?>
 				<?=$row_anomalie['fournisseur']?>
 				<input type="hidden" name="fournisseur" value="<?=$row_anomalie['fournisseur']?>" />
