@@ -351,7 +351,7 @@ function calcul_cmd_rubis(id) {
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['devis_expo_filtre_date_inf']?>" size="8">
 					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';">
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_devis.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -384,7 +384,7 @@ function calcul_cmd_rubis(id) {
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['devis_expo_filtre_date_sup']?>" size="8">
 					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_sup.value='';">
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_devis.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
 						{
