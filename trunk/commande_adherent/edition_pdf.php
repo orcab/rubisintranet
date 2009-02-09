@@ -117,7 +117,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ADETBOP1' and CDETA='' and CDCOD LIKE '%$row_entete[NOBON]$row[NOLIG]%' ORDER BY CDLIG") ;
 		while($commentaire_row = odbc_fetch_array($commentaire_res))
-			if ($commentaire_row['CDLIB'])	$designation .= "\n$commentaire_row[CDLIB]";
+			if ($commentaire_row['CDLIB'])	$designation .= "\n".trim($commentaire_row['CDLIB']);
 
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),

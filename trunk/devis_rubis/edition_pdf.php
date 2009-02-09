@@ -128,7 +128,7 @@ while($row = odbc_fetch_array($detail_devis)) {
 		/// on cherche les commentaires associé à la ligne de commande (saisie sur un devis client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ADETBVP1' and CDETA='' and CDCOD='${NOCLI_escape}${NOBON_escape}$row[NOLIG]' ORDER BY CDLIG") ;
 		while($commentaire_row = odbc_fetch_array($commentaire_res))
-			if ($commentaire_row['CDLIB'])	$designation .= "\n$commentaire_row[CDLIB]";
+			if ($commentaire_row['CDLIB'])	$designation .= "\n".trim($commentaire_row['CDLIB']);
 
 
 		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // devis demandé sans prix

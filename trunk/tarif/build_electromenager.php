@@ -5,10 +5,9 @@ include('../inc/config.php');
 $mysql		= mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-define('FTP_SERVER','nas');
-define('CATALOGUE','emilie/TARIF/ELECTROMENAGER/cedil_co.csv');
-define('EXCLUSION','emilie/TARIF/ELECTROMENAGER/exclure_categorie_electromenager.txt');
-define('TRANSFORMATION','emilie/TARIF/ELECTROMENAGER/transformation_categorie_electromenager.csv');
+define('CATALOGUE','cedil_co.cat');
+define('EXCLUSION','exclure_categorie_electromenager.txt');
+define('TRANSFORMATION','transformation_categorie_electromenager.csv');
 
 $i=0;
 define('CODE_ARTICLE',$i++);
@@ -26,6 +25,8 @@ define('DESIGNATION_MINI',$i++);
 $i++;
 define('ECOTAXEHT',$i++);
 define('ECOTAXETTC',$i++);
+
+define('COEF_VENTE',1.13636);
 
 ?>
 <html>
@@ -64,7 +65,7 @@ Ouverture de la liste des exclusion CEDIL <?=EXCLUSION?><br>
 
 	
 	$exclusion = array();
-	$f = file( basename(EXCLUSION) ) or die("Impossible de trouver la liste des exclusion ".basename(EXCLUSION));
+	$f = file( EXCLUSION ) or die("Impossible de trouver la liste des exclusion ".EXCLUSION);
 	foreach ($f as $line) {
 		$exclusion[strtolower(trim($line))] = 1;
 	}
@@ -79,7 +80,7 @@ Ouverture de la liste des transformations CEDIL <?=TRANSFORMATION?><br>
 	*/
 	
 	$transformation = array();
-	$f = file( basename(TRANSFORMATION) ) or die("Impossible de trouver la liste des exclusion ".basename(TRANSFORMATION));
+	$f = file( TRANSFORMATION ) or die("Impossible de trouver la liste des exclusion ".TRANSFORMATION);
 	foreach ($f as $line) {
 		if (trim($line)) {
 			$tmp = explode(';',$line);
@@ -101,7 +102,7 @@ Ouverture du fichier catalogue CEDIL <?=CATALOGUE?><br>
 	ftp_close($conn_id);
 	*/
 
-	$f = file( basename(CATALOGUE) ) or die("Impossible de trouver le catalogue ".basename(CATALOGUE));
+	$f = file( CATALOGUE ) or die("Impossible de trouver le catalogue ".CATALOGUE);
 	foreach ($f as $line) {
 		$data = explode(';',$line);
 		$data[CATEGORIE] = trim($data[CATEGORIE]);
@@ -137,7 +138,7 @@ Ouverture du fichier catalogue CEDIL <?=CATALOGUE?><br>
 				mysql_escape_string($data[DESIGNATION])."','$id_categ',1,'".
 				mysql_escape_string($data[REF_FOURNISSEUR])."','".
 				mysql_escape_string($data[PUHT_ACHAT])."','".
-				mysql_escape_string($data[PUHT_ACHAT] * 1.111111111)."','".
+				mysql_escape_string($data[PUHT_ACHAT] * COEF_VENTE)."','".
 				mysql_escape_string($data[PUTTC_PUBLIC])."','".
 				mysql_escape_string($data[ECOTAXETTC])."')";
 		mysql_query($sql) or affiche_erreur("Ne peux pas insérer l'article '".$data[CODE_ARTICLE]."' ".mysql_error());

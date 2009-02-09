@@ -27,7 +27,7 @@ for($i=0 ; $i<sizeof($TOC) ; $i++) {
 	else
 		$pdf->SetFont('helvetica','',9);
 
-		$pdf->SetX(10+ 10 * $TOC[$i][DECALAGE]);
+		$pdf->SetX(10 + 10 * $TOC[$i][DECALAGE]);
 		$pdf->Cell(150 - 10 * $TOC[$i][DECALAGE],8, $TOC[$i][NOM] ,0,0,'L',0, $TOC[$i][LIEN] ); // titre de la sous section
 
 		// trace des pointillés pour aller chercher le n° de page

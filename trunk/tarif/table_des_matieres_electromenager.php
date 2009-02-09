@@ -26,8 +26,9 @@ for($i=0 ; $i<sizeof($TOC) ; $i++) {
 			if (isset($deja_afficher[join(' | ',array_slice($hierachie_categ,0,$j+1))])) continue ;
 
 //			echo sizeof($hierachie_categ)." \$j=$j ".$hierachie_categ[$j]."<br>" ;
-			if ($j==0 && $i>1) $pdf->AddPage();
-			$pdf->SetFont('helvetica',($j==0 ? 'BU':''),16 - 2*$j);
+//			if ($j==0 && $i>1) $pdf->AddPage();
+//			$pdf->SetFont('helvetica',($j==0 ? 'BU':''),16 - 2*$j);
+			$pdf->SetFont('helvetica',($j==0 ? 'BU':''),12 - $j);
 			$pdf->SetX($pdf->GetX() + 10 * ($j + 1));
 		
 			$pdf->Cell(150 - 10 * $j,8, $hierachie_categ[$j] ,0,0,'L',0, $TOC[$i][LIEN] ); // titre de la sous section
@@ -39,7 +40,7 @@ for($i=0 ; $i<sizeof($TOC) ; $i++) {
 			$pdf->Line(($pdf->GetStringWidth($hierachie_categ[$j])) + 10 * ($j+1) + 13,$pdf->GetY()+5,PAGE_WIDTH - $pdf->GetStringWidth('page '.$TOC[$i][NO_PAGE]) - 14,$pdf->GetY()+5);
 			$pdf->SetDash();
 			$pdf->Cell(30,8,'page '.$TOC[$i][NO_PAGE],0,0,'R',0, $TOC[$i][LIEN]); // page de la section
-			$pdf->Ln(6);
+			$pdf->Ln(4);
 		}
 
 	} else { // super section
