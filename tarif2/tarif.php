@@ -3,7 +3,7 @@ include('../inc/config.php');
 require_once('overload.php');
 set_time_limit(0);
 
-define('DEBUG',FALSE);
+define('DEBUG',TRUE);
 if (DEBUG)
 	$debug_file = fopen("debug.log", "w+") or die("Ne peux pas créer de fichier de debug"); 
 
@@ -13,8 +13,9 @@ $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 $PRINT_PAGE_NUMBER=TRUE; // pas une constante car modifié dans 'equipe.php'
 $PRINT_EDITION_DATE=TRUE; // pas une constante car modifié dans 'equipe.php'
 
+define('FONT_SIZE_CATEG',12);
 define('FONT_SIZE_CODE',8);
-define('FONT_SIZE_REF',6);
+define('FONT_SIZE_REF',8);
 define('FONT_SIZE_PRIX',8);
 define('FONT_SIZE_DESIGNATION',7);
 define('WIDTH_CODE',20);
@@ -139,7 +140,7 @@ while($row = odbc_fetch_array($res)) {
 	$row['REFFO']	= trim($row['REFFO']);
 	$coef_multiplicateur = defined('TARIF_COEF_'.$row['ACTIV']) ? constant('TARIF_COEF_'.$row['ACTIV']) : 1;
 
-	debug("\nDebut $row[NOART] GetY=".$pdf->GetY()."\n");
+	//debug("\nDebut $row[NOART] GetY=".$pdf->GetY()."\n");
 
 	$style = html2rgb($PAGE_DE_GARDE[$row['ACTIV']][STYLE]);
 
@@ -162,12 +163,10 @@ while($row = odbc_fetch_array($res)) {
 			$pdf->AddPage();
 
 			if (isset($_POST['page_de_garde']) && $_POST['page_de_garde']) { // la page de garde
-				$PRINT_EDITION_DATE = FALSE ;
-				$PRINT_PAGE_NUMBER  = FALSE;
+				$PRINT_EDITION_DATE = FALSE ;	$PRINT_PAGE_NUMBER  = FALSE;
 				$pdf->Image(PAGE_DE_GARDE_PATH.'/'.$PAGE_DE_GARDE[$row['ACTIV']][FICHIER],0,0,PAGE_WIDTH); // taille a 200 de l'image
 				$pdf->AddPage();
-				$PRINT_EDITION_DATE = TRUE ;
-				$PRINT_PAGE_NUMBER  = TRUE;
+				$PRINT_EDITION_DATE = TRUE ;	$PRINT_PAGE_NUMBER  = TRUE;
 			}
 		}
 
@@ -185,9 +184,9 @@ while($row = odbc_fetch_array($res)) {
 				$pdf->Ln(8); // pas de saut de page mais juste un décalage de 1cm
 		}
 
-		debug("debug2 $row[CHEMIN] GetY=".$pdf->GetY()."\n"); // good
+		//debug("debug2 $row[CHEMIN] GetY=".$pdf->GetY()."\n"); // good
 
-		// permet de gérer les eventuel saut de page si l'image dépasse
+		// permet de gérer les eventuels saut de page si l'image dépasse
 		if (isset($IMAGE[$row['NOART']])) { // s'il y a une image de spécifié, on vérifie que l'on a pas besoin d'un saut de page
 			$img_info = getimagesize($IMAGE[$row['NOART']][0]);
 			$img_height = $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
@@ -199,94 +198,46 @@ while($row = odbc_fetch_array($res)) {
 			}
 		}
 
-		debug("debug3 $row[CHEMIN] GetY=".$pdf->GetY()." \$last_img_bottom=$last_img_bottom\n");
-
+		//debug("debug3 $row[CHEMIN] GetY=".$pdf->GetY()." \$last_img_bottom=$last_img_bottom\n");
 		// on vérifie que la nouvelle categ soit bien en dessous de la photo de l'ancienne categ
 		if ($last_img_bottom) {
 			if ($pdf->GetY() < $last_img_bottom)
 				$pdf->SetY($last_img_bottom + 3);
 			$last_img_bottom = 0;
 		}
+		//debug("debug4 $row[CHEMIN] GetY=".$pdf->GetY()."\n");
 
-		debug("debug4 $row[CHEMIN] GetY=".$pdf->GetY()."\n");
+		// dessin du titre de la categorie
+		debug("debug5 $row[CHEMIN] GetY=".$pdf->GetY()." PAGE_HEIGHT=".PAGE_HEIGHT."\n");
+		if ($pdf->GetY() > PAGE_HEIGHT - 49) $pdf->AddPage(); // on vérifie que l'on a la place pour affiche un article
 
-		// dessin du titre de la categorie + le lien dans le sommaire
 		$lien_vers_page = $pdf->AddLink();
 		$pdf->PrintCategTitle($pdvente_sans_activite,$lien_vers_page) ;
 
-
 		// mise a jour de la table des matière
-		$tmp = explode(' / ',$pdvente);
-		for($i=0 ; $i<sizeof($tmp) ; $i++) {
-			$niveau_en_cours = join('/',array_slice($tmp,0,$i+1));
-			if (!isset($section_deja_dans_toc[$niveau_en_cours])) { // si section pas deja traité
-				array_push($TOC,array(
-									$tmp[$i],		// ID
-									$pdf->PageNo(),	// No DE PAGE
-									$lien_vers_page,// LIEN
-									$i				// décalage
-								)
-				);	
-				$section_deja_dans_toc[$niveau_en_cours] = 1;
-			}
-		}
+		$pdf->AddCategToSummary($lien_vers_page);
 		//print_r($TOC);print_r($section_deja_dans_toc);exit;
 
-
 		// images associé à la categ
-		if (isset($IMAGE[$row['CHEMIN']])) {
-			//debug("   Debut image de categ : GetY=".$pdf->GetY()."\n");
-			$last_img_bottom = $pdf->GetY() ;
-			for ($i=0; $i<sizeof($IMAGE[$row['CHEMIN']]) ; $i++) {
-					$img_info		= getimagesize($IMAGE[$row['CHEMIN']][$i]);
-					$hauteur_image	= $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
-
-					if ($hauteur_image + $last_img_bottom > PAGE_HEIGHT - 28) { // si l'image dépasse en bas, on ignore les autres images
-						continue;
-					} else {
-						$pdf->Image($IMAGE[$row['CHEMIN']][$i],PAGE_WIDTH - 60,$last_img_bottom + 2*$i,IMAGE_WIDTH); // taille a 200 de l'image
-						$last_img_bottom += $hauteur_image ;
-					}
-			}
-			//$last_img_bottom += $pdf->GetY();
-			//debug("   Fin image de categ : GetY=".$pdf->GetY()."   \$last_img_bottom=$last_img_bottom\n");
-		}
+		$pdf->DrawImagesCateg();
 
 		// on dessine l'entete avec les colonnes
-		$pdf->SetLineWidth(0.1);
-		$pdf->SetFillColor($style[RED_PAGE],$style[GREEN_PAGE],$style[BLUE_PAGE]);
-		$pdf->SetTextColor($style[RED_HEADER],$style[GREEN_HEADER],$style[BLUE_HEADER]);
-		$pdf->SetFont('helvetica','B',7);
-		$pdf->Cell(WIDTH_CODE		,6,'CODE','LT',0,'L',1);
-		$pdf->Cell(WIDTH_DESIGNATION,6,'DÉSIGNATION','T',0,'L',1);
-		$pdf->Cell(WIDTH_REF		,6,'RÉF.','T',0,'L',1);
-		$pdf->Cell(WIDTH_PRIX		,6,'PRIX '.EURO.' HT','TR',0,'L',1);
-		$pdf->Ln();
+		$pdf->PrintTableHeader();
 
 	} else { // fin on a changer de categ
 		// on n'a pas changer de categ mais on vérifie si l'on ne doit pas réimprimer le titre
 
 		//debug("$row[NOART] : GetY=".$pdf->GetY()." > PAGE_HEIGHT - 27 (".(PAGE_HEIGHT - 27).") ?\n");
-		//if ($pdf->GetY() > PAGE_HEIGHT - 27) { // on est sur une nouvelle page
-		if ($pdf->GetY() + 5 > PAGE_HEIGHT - 27) {
+		if ($pdf->GetY() > PAGE_HEIGHT - 32) { // on vérifie que l'on a la place pour affiche un article
 			//debug("  AddPage car l'article $row[NOART] suivant va sur la page suivante\n");
 			$pdf->AddPage();
-
 			$last_img_bottom = 0;
 
-			// on réimprime le titre de la categ car nouvelle page (mais on ne l'ajoute pas au sommaire)
+			// on réimprime le titre de la categ car nouvelle page
 			$pdf->PrintCategTitle("$pdvente_sans_activite (suite)") ;
 
 			// on dessine l'entete avec les colonnes
-			$pdf->SetLineWidth(0.1);
-			$pdf->SetFillColor($style[RED_PAGE],$style[GREEN_PAGE],$style[BLUE_PAGE]);
-			$pdf->SetTextColor($style[RED_HEADER],$style[GREEN_HEADER],$style[BLUE_HEADER]);
-			$pdf->SetFont('helvetica','B',7);
-			$pdf->Cell(WIDTH_CODE		,6,'CODE','LT',0,'L',1);
-			$pdf->Cell(WIDTH_DESIGNATION,6,'DÉSIGNATION','T',0,'L',1);
-			$pdf->Cell(WIDTH_REF		,6,'RÉF.','T',0,'L',1);
-			$pdf->Cell(WIDTH_PRIX		,6,'PRIX '.EURO.' HT','TR',0,'L',1);
-			$pdf->Ln();
+			$pdf->PrintTableHeader();
 		}
 	}
 	
@@ -309,6 +260,8 @@ while($row = odbc_fetch_array($res)) {
 	$ref			= '' ;
 	$prix			= '' ;
 
+
+	$font_size_max = FONT_SIZE_REF;
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
@@ -322,12 +275,15 @@ from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 					on ARTICLE.NOART=TARIF.NOART
 where		NOKIT='$row[NOART]'
 EOT;
-		
 		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
 			$noart			.= "\n   ".trim($row_kit['NOART']).( $row_kit['SERST']=='NON' ? ' *' :'' );
 			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
+
+			// calcul de la taille max de la font de la référence
 			$ref			.= "\n".trim($row_kit['REFFO']);
+			$font_size_max = min($pdf->redux_font_size($row_kit['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
+
 			$prix			.= "\n".sprintf('%0.2f',$row_kit['PVEN1'] *	$coef_multiplicateur);
 			$prix_cumul_kit += sprintf('%0.2f',$row_kit['PVEN1'] * $coef_multiplicateur) ;
 			$kit++;
@@ -339,62 +295,27 @@ EOT;
 	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
 	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$row['PVEN1'] * $coef_multiplicateur) ;
 
-	debug("avant $row[NOART] GetY=".$pdf->GetY()."\n");
+	// redux de font pour la référence
+	$font_size_max = min($pdf->redux_font_size($row['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
+	
+	//debug("avant $row[NOART] GetY=".$pdf->GetY()."\n");
 	// on imprime la ligne
 	// code_article,designation,ref,prix
 	$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 							array('text' => $noart			, 'font-style' => 'B'	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_CODE ),
 							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_DESIGNATION),
-							array('text' => $ref			,													'font-size' => FONT_SIZE_REF),
+							array('text' => $ref			,													'font-size' => $font_size_max),
 							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX) // le prix est multiplié par une valeur de config.php en fonction de l'activité
 				),
 			$kit ? $kit+2 : 1 // nombre de ligne
 	);
 
-	debug("après $row[NOART] GetY=".$pdf->GetY()."\n");
+	//debug("après $row[NOART] GetY=".$pdf->GetY()."\n");
 
-	$font_redux = 0; // on réinitilise la taille de la police pour la désignation
+	// affiche la ou les images associées aux articles
+	$pdf->DrawImagesArticle();
 
-
-	// GESTION DES IMAGES
-	if (isset($IMAGE[$row['NOART']])) { // s'il y a une image de spécifié, on l'affiche
-		//debug("image(s) associé(s) à $row[NOART] GetY=".$pdf->GetY()."\n");
-		$max_height = 0;
-		$nb_image_pour_la_ligne = 0;
-		for ($i=0 , $j=0; $i<sizeof($IMAGE[$row['NOART']]) ; $i++ , $j++) { // toutes les 5 images, on passe une ligne
-
-			if (($i % 5)==0 || $i==0) { // toutes les 5 image, on calcule la nouvelle hauteur de la rangé
-				$nb_image_pour_la_ligne = 0;
-				for ($z=$i ; $z<sizeof($IMAGE[$row['NOART']]) && $z < $i+5 ; $z++) { // on essai de trouver la plus hautes des 5 image en ligne
-					$img_info = getimagesize($IMAGE[$row['NOART']][$z]);
-					$hauteur_image = $img_info[1] * IMAGE_WIDTH / $img_info[0];
-					$max_height = max($max_height,$hauteur_image) ;
-					$nb_image_pour_la_ligne++;
-					//debug("\$i=$i,\$z=$z   \$hauteur_image=$hauteur_image\n");
-				}
-				//debug("\$i=$i   \$max_height=$max_height\n");
-			}
-
-			$ecart_x = (PAGE_WIDTH - IMAGE_WIDTH * $nb_image_pour_la_ligne) / ($nb_image_pour_la_ligne + 1) ;
-			$pdf->Image($IMAGE[$row['NOART']][$i],$ecart_x + (IMAGE_WIDTH+2) * $j ,$pdf->GetY() + 3,IMAGE_WIDTH); // taille a 200 de l'image
-			
-			if (intval(($j+1) / 5) > 0) { // on saute une ligne
-
-				//debug("Image n°".($i+1)." $max_height + ".$pdf->GetY()." (".($max_height + $pdf->GetY()).")    PAGE_HEIGHT - 27=".(PAGE_HEIGHT - 27)."\n");
-
-				if ($max_height + $pdf->GetY() + $max_height > PAGE_HEIGHT - 27) // on doit changer de page
-					$pdf->AddPage();
-				else // on peut rester sur la meme page, on saut une grosse ligne
-					$pdf->Ln($max_height + 3);
-
-				$j=-1;
-				$max_height = 0 ;
-			}
-		}
-		$pdf->Ln($max_height + 5);
-	}
-
-	debug("Fin $row[NOART] GetY=".$pdf->GetY()."\n");
+	//debug("Fin $row[NOART] GetY=".$pdf->GetY()."\n");
 
 	// on affect la categ en cours de traitement
 	$old_pdvente = $pdvente ;
@@ -440,8 +361,8 @@ function rscandir($base='', &$data=array()) {
       $data = rscandir($base.$value.'/', $data); /* then make a recursive call with the
       current $value as the $base supplying the $data array to carry into the recursion */
     }  elseif (is_file($base.$value) &&
-				(preg_match("/^(\d+)(?:-\d+)?\.(?:jpe?g|png)$/",$value,$regs) ||
-				 preg_match("/^((?:[\d\w]{3}\.?)+)(?:-\d+)?\.(?:jpe?g|png)$/",$value,$regs) )
+				(preg_match("/^(\d+)(?:-\d+)?\.(?:jpe?g|png)$/i",$value,$regs) ||
+				 preg_match("/^((?:[\d\w]{3}\.?)+)(?:-\d+)?\.(?:jpe?g|png)$/i",$value,$regs) )
 			) { /* else if the current $value is a file */
       $data[$regs[1]][] = $base.$value; /* just add the current $value to the $data array */
     }

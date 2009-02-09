@@ -1,5 +1,7 @@
 <?
 // Page supplémentaire avec l'equipe MCS !!!
+$PRINT_PAGE_NUMBER  = FALSE;
+$PRINT_EDITION_DATE = FALSE;
 
 if (TARIF_EQUIPE) {
 	$pdf->AddPage();
@@ -8,10 +10,7 @@ if (TARIF_EQUIPE) {
 
 if (TARIF_ORGANIGRAMME) {
 	$pdf->AddPage();
-	$PRINT_PAGE_NUMBER  = false;
-	$PRINT_EDITION_DATE = false;
 	$pdf->Image('images/page_de_garde/'.TARIF_ORGANIGRAMME,0,0,PAGE_WIDTH);
-	$PRINT_PAGE_NUMBER  = true;
-	$PRINT_EDITION_DATE = true;
 }
+
 ?>

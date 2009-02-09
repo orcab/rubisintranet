@@ -5,7 +5,6 @@ require_once('overload.php');
 $mysql		= mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-define('EURO',chr(128));
 
 define('FONT_SIZE_CODE',8);
 define('FONT_SIZE_REF',8);
@@ -22,9 +21,9 @@ define('PAGE_HEIGHT',297);
 define('IMAGE_WIDTH',40);
 
 // ne traite que l'électromenager
-$electromenager = isset($_GET['electromenager']) && $_GET['electromenager']==1 ? 1:0;
+$electromenager = 1;
 
-define('IMAGE_PATH','image/'.($electromenager ? 'electromenager':'autre').'/' );
+define('IMAGE_PATH','image/electromenager/' );
 define('PAGE_DE_GARDE_PATH','image/page_de_garde/' );
 
 $section_deja_dans_toc = array();
@@ -38,7 +37,7 @@ $sql = <<<EOT
 SELECT	tc.id,tc.nom,valeur,chemin,page_de_garde
 FROM	tarif_categ tc,tarif_style ts
 WHERE		tc.id_style=ts.id
-		AND tc.electromenager=$electromenager
+		AND tc.electromenager=1
 ORDER BY chemin ASC
 EOT;
 
@@ -51,12 +50,7 @@ while($row = mysql_fetch_array($res)) {
 	$categorie["pagegarde_$row[id]"]= $row['page_de_garde'];
 }
 
-
-
-
-
 // recherche des article a exporté pour le tarif
-if ($electromenager) { // on recherche uniquement dans la table tarif_article
 	$sql = <<<EOT
 SELECT	ta.code_article,ta.designation AS article_designation,ta.px_pub_ttc AS prix_net,ta.ref_fournisseur,ta.px_coop_ht,ta.px_adh_ht,ta.px_eco_ttc,
 		ta.designation AS tarif_designation,ta.image AS tarif_image,
@@ -75,23 +69,7 @@ WHERE		ta.id_categ = tc.id
 --		AND tc.nom LIKE 'Brun %'
 ORDER BY	chemin_complet_nom ASC,nom ASC
 EOT;
-} else  { // on a plus d'info on recherche le complement dans la table article
-	$sql = <<<EOT
-SELECT	a.code_article,a.designation AS article_designation,a.prix_net,a.ref_fournisseur,
-		ta.designation AS tarif_designation,ta.image AS tarif_image,
-		tc.chemin,tc.id AS categ_id, TRIM(BOTH '-' FROM CONCAT( tc.chemin ,'-',tc.id) ) AS chemin_complet, tc.saut_de_page, tc.image AS categ_image,
-		(SELECT valeur FROM tarif_style WHERE id=tc.id_style) AS style_categ_valeur,
-		(SELECT valeur FROM tarif_style WHERE id=ta.id_style) AS style_article_valeur
-FROM	article a,
-		tarif_article ta,
-		tarif_categ tc
-WHERE		a.code_article = ta.code_article
-		AND ta.id_categ = tc.id
-		AND ta.electromenager=0
-		AND tc.electromenager=0
-ORDER BY	chemin_complet ASC,nom ASC
-EOT;
-}
+
 
 $res = mysql_query($sql) or die("ne peux pas envoyé la requete à mysql ".mysql_error());
 
@@ -259,7 +237,7 @@ while($row = mysql_fetch_array($res)) {
 		$pdf->Cell(WIDTH_DESIGNATION	,6,'DÉSIGNATION','T',0,'L',1);
 		$pdf->Cell(WIDTH_REF			,6,'RÉF.','T',0,'L',1);
 
-		$pdf->Cell(WIDTH_PRIX			,6,($electromenager ? 'PUBLIC '.EURO :'PRIX '.EURO.' HT'),'TR',0,'L',1);
+		$pdf->Cell(WIDTH_PRIX			,6,'PUBLIC '.EURO,'TR',0,'L',1);
 		$pdf->Ln();
 
 	} else { // fin on a changer de categ
@@ -292,7 +270,7 @@ while($row = mysql_fetch_array($res)) {
 			$pdf->Cell(WIDTH_DESIGNATION	,6,'DÉSIGNATION','T',0,'L',1);
 			$pdf->Cell(WIDTH_REF			,6,'RÉF.','T',0,'L',1);
 
-			$pdf->Cell(WIDTH_PRIX			,6,($electromenager ? 'PUBLIC '.EURO :'PRIX '.EURO.' HT'),'TR',0,'L',1);
+			$pdf->Cell(WIDTH_PRIX			,6,'PUBLIC '.EURO,'TR',0,'L',1);
 			$pdf->Ln();
 		}
 	}
@@ -312,14 +290,9 @@ while($row = mysql_fetch_array($res)) {
 
 	// CODE ARTICLE
 	$pdf->SetTextColor($style[RED_ARTICLE],$style[GREEN_ARTICLE],$style[BLUE_ARTICLE]);
-	if ($electromenager) {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_CODE - 1);
-		$pdf->Cell(WIDTH_CODE,HEIGHT_ARTICLE,trim($row['code_article']).'.'.sprintf('%05s',round(isset($_GET['px_coop']) && $_GET['px_coop']==1 ? $row['px_coop_ht']:$row['px_adh_ht'])),"L$bordure",0,'L',1);
-	} else {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_CODE);
-		$pdf->Cell(WIDTH_CODE,HEIGHT_ARTICLE,$row['code_article'],"L$bordure",0,'L',1);
-	}
-	
+	$pdf->SetFont('helvetica','B',FONT_SIZE_CODE - 1);
+	$pdf->Cell(WIDTH_CODE,HEIGHT_ARTICLE,trim($row['code_article']).'.'.sprintf('%05s',round(isset($_GET['px_coop']) && $_GET['px_coop']==1 ? $row['px_coop_ht']:$row['px_adh_ht'])),"L$bordure",0,'L',1);
+		
 	// DESIGNATION
 	$pdf->SetFont('helvetica','',FONT_SIZE_DESIGNATION);
 	$font_redux = 0;
@@ -336,11 +309,8 @@ while($row = mysql_fetch_array($res)) {
 
 
 	// REFERENCE
-	if ($electromenager) {
-		$pdf->SetFont('helvetica','',FONT_SIZE_REF - 1);
-	} else {
-		$pdf->SetFont('helvetica','',FONT_SIZE_REF);
-	}
+	$pdf->SetFont('helvetica','',FONT_SIZE_REF - 1);
+	
 	$lien_vers_ref = $pdf->AddLink();
 	$pdf->Cell(WIDTH_REF,HEIGHT_ARTICLE,$row['ref_fournisseur'],$bordure,0,'L',1,    $pdf->SetLink($lien_vers_ref) );
 	$REFERENCE[$row['ref_fournisseur']] = array($pdf->PageNo(), $lien_vers_ref);
@@ -348,13 +318,9 @@ while($row = mysql_fetch_array($res)) {
 	// PRIX
 	$pdf->SetTextColor($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]);
 	$eco_taxe = '';
-	if ($electromenager) {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_PRIX - 1);
-		$tmp = str_replace('.00','',$row['px_eco_ttc']);
-		$eco_taxe = $tmp > 0 ? "($tmp)" : '';
-	} else {
-		$pdf->SetFont('helvetica','B',FONT_SIZE_PRIX);
-	}
+	$pdf->SetFont('helvetica','B',FONT_SIZE_PRIX - 1);
+	$tmp = str_replace('.00','',$row['px_eco_ttc']);
+	$eco_taxe = $tmp > 0 ? "($tmp)" : '';
 	$pdf->Cell(WIDTH_PRIX,HEIGHT_ARTICLE,$row['prix_net'].$eco_taxe,"R$bordure",0,'R',1);
 
 	
@@ -396,10 +362,7 @@ while($row = mysql_fetch_array($res)) {
 $titre_page = '';
 
 // PAGE SUPPLEMENTAIRE
-if ($electromenager)
-	include('table_des_matieres_electromenager.php');
-else
-	include('table_des_matieres.php');
+include('table_des_matieres_electromenager.php');
 
 include('index_des_references.php');
 

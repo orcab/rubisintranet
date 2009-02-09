@@ -3,7 +3,7 @@ require_once('../inc/fpdf/fpdf.php');
 
 class PDF extends FPDF
 {
-	//EN-TÊTE
+	///////////////////////// ENTETE DE PAGE ///////////////////////////////
 	function Header()
 	{	global $row,$style,$PLAN_DE_VENTE,$titre_page ;
 		
@@ -31,7 +31,7 @@ class PDF extends FPDF
 
 
 
-	//PIED DE PAGE
+	///////////////////////// PIED DE PAGE ///////////////////////////////
 	function Footer()
 	{	global $old_style,$last_img_bottom,$PRINT_PAGE_NUMBER,$PRINT_EDITION_DATE ;
 		$last_img_bottom = 0;
@@ -64,8 +64,123 @@ class PDF extends FPDF
 	}
 
 
+	///////////////////////// REDUIT LA TAILLE DE LA FONT ///////////////////////////////
+	function redux_font_size($texte,$initial_font_size,$max_width,$modifier='') {
+		$redux=0;
+		do {
+			$this->SetFont('helvetica',$modifier,$initial_font_size - $redux);
+			$redux++;
+		} while($this->GetStringWidth($texte) > $max_width);
+		return $initial_font_size - $redux;
+	}
 
-	// pour afficher le titre de la categ
+
+	///////////////////////// AFFICHE LA OU LES IMAGES ASSOCIÉES AUX CATEGORIES ///////////////////////////////
+	function DrawImagesCateg() {
+		global $IMAGE,$row,$last_img_bottom;
+		
+		if (isset($IMAGE[$row['CHEMIN']])) {
+			//debug("   Debut image de categ : GetY=".$this->GetY()."\n");
+			$last_img_bottom = $this->GetY() ;
+			for ($i=0; $i<sizeof($IMAGE[$row['CHEMIN']]) ; $i++) {
+					$img_info		= getimagesize($IMAGE[$row['CHEMIN']][$i]);
+					$hauteur_image	= $img_info[1] * IMAGE_WIDTH / $img_info[0] ;
+
+					if ($hauteur_image + $last_img_bottom > PAGE_HEIGHT - 28) { // si l'image dépasse en bas, on ignore les autres images
+						continue;
+					} else {
+						$this->Image($IMAGE[$row['CHEMIN']][$i],PAGE_WIDTH - 60,$last_img_bottom + 2*$i,IMAGE_WIDTH); // taille a 200 de l'image
+						$last_img_bottom += $hauteur_image ;
+					}
+			}
+			//$last_img_bottom += $this->GetY();
+			//debug("   Fin image de categ : GetY=".$this->GetY()."   \$last_img_bottom=$last_img_bottom\n");
+		}
+	}
+
+
+
+	///////////////////////// AFFICHE LA OU LES IMAGES ASSOCIÉES AUX ARTICLES ///////////////////////////////
+	function DrawImagesArticle() {
+		global $IMAGE,$row;
+		
+		if (isset($IMAGE[$row['NOART']])) { // s'il y a une image de spécifié, on l'affiche
+			//debug("image(s) associé(s) à $row[NOART] GetY=".$this->GetY()."\n");
+			$max_height = 0;
+			$nb_image_pour_la_ligne = 0;
+			for ($i=0 , $j=0; $i<sizeof($IMAGE[$row['NOART']]) ; $i++ , $j++) { // toutes les 5 images, on passe une ligne
+
+				if (($i % 5)==0 || $i==0) { // toutes les 5 image, on calcule la nouvelle hauteur de la rangé
+					$nb_image_pour_la_ligne = 0;
+					for ($z=$i ; $z<sizeof($IMAGE[$row['NOART']]) && $z < $i+5 ; $z++) { // on essai de trouver la plus hautes des 5 image en ligne
+						$img_info = getimagesize($IMAGE[$row['NOART']][$z]);
+						$hauteur_image = $img_info[1] * IMAGE_WIDTH / $img_info[0];
+						$max_height = max($max_height,$hauteur_image) ;
+						$nb_image_pour_la_ligne++;
+						//debug("\$i=$i,\$z=$z   \$hauteur_image=$hauteur_image\n");
+					}
+					//debug("\$i=$i   \$max_height=$max_height\n");
+				}
+
+				$ecart_x = (PAGE_WIDTH - IMAGE_WIDTH * $nb_image_pour_la_ligne) / ($nb_image_pour_la_ligne + 1) ;
+				$this->Image($IMAGE[$row['NOART']][$i],$ecart_x + (IMAGE_WIDTH+2) * $j ,$this->GetY() + 3,IMAGE_WIDTH); // taille a 200 de l'image
+				
+				if (intval(($j+1) / 5) > 0) { // on saute une ligne
+
+					//debug("Image n°".($i+1)." $max_height + ".$this->GetY()." (".($max_height + $this->GetY()).")    PAGE_HEIGHT - 27=".(PAGE_HEIGHT - 27)."\n");
+
+					if ($max_height + $this->GetY() + $max_height > PAGE_HEIGHT - 27) // on doit changer de page
+						$this->AddPage();
+					else // on peut rester sur la meme page, on saut une grosse ligne
+						$this->Ln($max_height + 3);
+
+					$j=-1;
+					$max_height = 0 ;
+				}
+			}
+			$this->Ln($max_height + 5);
+		}
+	}
+
+
+	///////////////////////// AJOUTE LA CATEGORIE AU SOMMAIRE ///////////////////////////////
+	function AddCategToSummary($lien_vers_page) {
+		global $pdvente,$section_deja_dans_toc,$TOC;
+
+		$tmp = explode(' / ',$pdvente);
+		for($i=0 ; $i<sizeof($tmp) ; $i++) {
+			$niveau_en_cours = join('/',array_slice($tmp,0,$i+1));
+			if (!isset($section_deja_dans_toc[$niveau_en_cours])) { // si section pas deja traité
+				array_push($TOC,array(	$tmp[$i],		// ID
+										$this->PageNo(),	// No DE PAGE
+										$lien_vers_page,// LIEN
+										$i				// décalage
+									)
+				);	
+				$section_deja_dans_toc[$niveau_en_cours] = 1;
+			}
+		}
+	}
+
+
+	///////////////////////// POUR AFFICHER LES ENTETE DE TABLEAUX ARTICLES ///////////////////////////////
+	function PrintTableHeader() {
+		global $style;
+
+		$this->SetLineWidth(0.1);
+		$this->SetFillColor($style[RED_PAGE],$style[GREEN_PAGE],$style[BLUE_PAGE]);
+		$this->SetTextColor($style[RED_HEADER],$style[GREEN_HEADER],$style[BLUE_HEADER]);
+		$this->SetFont('helvetica','B',7);
+		$this->Cell(WIDTH_CODE		,6,'CODE','LT',0,'L',1);
+		$this->Cell(WIDTH_DESIGNATION,6,'DÉSIGNATION','T',0,'L',1);
+		$this->Cell(WIDTH_REF		,6,'RÉF.','T',0,'L',1);
+		$this->Cell(WIDTH_PRIX		,6,'PRIX '.EURO.' HT','TR',0,'L',1);
+		$this->Ln();
+	}
+
+
+
+	///////////////////////// POUR AFFICHER LE TITRE DE LA CATEG ///////////////////////////////// 
 	function PrintCategTitle($titre, $lien_vers_page=false) {
 		global $style,$lien_vers_page;
 
@@ -76,12 +191,7 @@ class PDF extends FPDF
 		$this->SetTextColor($style[RED_CATEG],$style[GREEN_CATEG],$style[BLUE_CATEG]);
 		
 		// on réduit la taille de la police si le titre est trop long pour la page
-		$i=0;		
-		do {
-			$this->SetFont('helvetica','B',12 - $i);
-			//debug("Longueur titre categ (redux=$i) : ".$this->GetStringWidth($titre)."\n");
-			$i++;
-		} while($this->GetStringWidth($titre) > PAGE_WIDTH - 15);
+		$this->redux_font_size($titre,FONT_SIZE_CATEG,PAGE_WIDTH - 15,'B');
 		
 		// on ajout un lien au sommaire et on imprime le titre
 		if ($lien_vers_page)
