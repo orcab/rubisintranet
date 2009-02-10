@@ -225,7 +225,7 @@ function delete_commentaire(id) {
 }
 
 function liste_commentaire(id) {
-	document.getElementById('commentaire_anomalie_' + id).style.display = document.getElementById('commentaire_anomalie_' + id).style.display == 'table-row' ? 'none' : 'table-row' ;
+	$('#commentaire_anomalie_' + id).css('display',$('#commentaire_anomalie_' + id).css('display') == 'table-row' ? 'none' : 'table-row') ;
 }
 
 function liste_toute_commentaire() {
@@ -466,7 +466,7 @@ function envoi_formulaire(l_action) {
 	$ordre = $_SESSION['anomalie_filtre_classement'];
 
 	$sql = <<<EOT
-select *,DATE_FORMAT(date_creation,'%d %M %Y') AS date_creation_formatee, DATE_FORMAT(date_creation,'%w') AS jour_creation, DATE_FORMAT(date_cloture,'%d %M %Y') AS date_cloture_formatee
+select *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_creation_formatee, DATE_FORMAT(date_creation,'%w') AS jour_creation, DATE_FORMAT(date_cloture,'%d %b %Y') AS date_cloture_formatee
 from anomalie
 $where
 order by $ordre
