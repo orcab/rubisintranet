@@ -239,10 +239,10 @@ function handleHttpResponse_complette_fourn()
 
 		if (sel.options.length) {
 			sel.selectedIndex = 0 ; // on selection le premier element de la liste
-			sel.style.display = 'block';
+			$('#completion_fourn').show();
 		}
 		else
-			sel.style.display = 'none';
+			$('#completion_fourn').hide();
 	}	
 }
 
@@ -268,6 +268,15 @@ function check_ref_fournisseur() {
 	http.send(null);
 }
 
+
+$(document).ready(function(){
+    var p = $("input[name=fournisseur]");
+	var offset = p.offset();
+	$('#completion_fourn').css('top',offset.top + 22);
+	$('#completion_fourn').css('left',offset.left);
+	$('#completion_fourn').css('position','absolute');
+
+});
 
 //-->
 </script>
