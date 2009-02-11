@@ -252,6 +252,7 @@ select#completion_fourn {
 <script type="text/javascript" src="../js/jscalendar/calendar.js"></script>
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
+<script type="text/javascript" src="../js/jquery.js"></script>
 <script type="text/javascript" src="../js/tiny_mce/tiny_mce.js"></script>
 <script type="text/javascript">
 	tinyMCE.init({
@@ -383,10 +384,10 @@ function handleHttpResponse_complette_fourn()
 
 		if (sel.options.length) {
 			sel.selectedIndex = 0 ; // on selectionne le premier element de la liste
-			sel.style.display = 'block';
+			$('#completion_fourn').show();
 		}
 		else
-			sel.style.display = 'none';
+			$('#completion_fourn').hide();
 	}	
 }
 
@@ -402,6 +403,16 @@ function complette_fourn_click() {
 function majusculize(champ) {
 	document.creation_article.elements[champ].value = document.creation_article.elements[champ].value.toUpperCase();
 }
+
+
+$(document).ready(function(){
+    var p = $("input[name=fournisseur]");
+	var offset = p.offset();
+	$('#completion_fourn').css('top',offset.top + 22);
+	$('#completion_fourn').css('left',offset.left);
+	$('#completion_fourn').css('position','absolute');
+
+});
 
 //-->
 </script>
