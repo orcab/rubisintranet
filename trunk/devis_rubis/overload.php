@@ -72,7 +72,10 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','BI',11);
 		$this->Cell(21, 5 ,"Suivi par :");
 		$this->SetFont('helvetica','',11);
-		$this->Cell(100, 5 , isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']));
+		if (trim($row_entete['LIVSB']))
+			$this->Cell(100, 5 , isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']));
+		else
+			$this->Cell(100, 5 , '');
 		$this->Ln();
 
 

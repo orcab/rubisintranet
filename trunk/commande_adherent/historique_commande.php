@@ -178,9 +178,14 @@ function envoi_formulaire(l_action) {
 	return true;
 }
 
+$(document).ready(function() {
+	$("#historique-commande").tablesorter();
+});
+
 
 //-->
 </SCRIPT>
+
 </head>
 <body>
 
@@ -325,6 +330,7 @@ function envoi_formulaire(l_action) {
 		</table>
 
 	</caption>
+	<thead>
 	<tr>
 		<th class="NOBON">N°<br><a href="historique_commande.php?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
@@ -336,6 +342,8 @@ function envoi_formulaire(l_action) {
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
 		<th>PDF</th>
 	</tr>
+	</thead>
+	<tbody>
 <?
 	$where = array() ;
 	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE");
@@ -465,17 +473,17 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		$total_ligne++;
 		$total_montant += $row['MONTBT'] ;
 	} // while commande ?>
-
-
-<tr>
-	<td colspan="4">
-		Nombre de lignes : <?=$total_ligne?>
-	</td>
-	<td colspan="6">
-		Total des montants : <?=$total_montant?> &euro;
-	</td>
-</tr>
-
+	</tbody>
+	<tfoot>
+	<tr>
+		<td colspan="4">
+			Nombre de lignes : <?=$total_ligne?>
+		</td>
+		<td colspan="6">
+			Total des montants : <?=$total_montant?> &euro;
+		</td>
+	</tr>
+	</tfoot>
 </table>
 </form>
 </body>

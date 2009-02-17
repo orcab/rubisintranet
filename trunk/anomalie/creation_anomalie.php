@@ -411,12 +411,10 @@ $(document).ready(function(){
 	$('#completion_fourn').css('top',offset.top + 22);
 	$('#completion_fourn').css('left',offset.left);
 	$('#completion_fourn').css('position','absolute');
-
 });
 
 //-->
 </script>
-
 </head>
 <body>
 
@@ -468,7 +466,7 @@ $(document).ready(function(){
 			<? if ($id) { // mode modif ?>
 				<?=$row_anomalie['date_creation_formatee']?>
 			<? } else { ?>
-				<input type="text" id="date_creation" name="date_creation" value="<?=date('d/m/Y')?>" size="8" />
+				<input type="text" id="date_creation" name="date_creation" value="<?=date('d/m/Y')?>" size="8"/>
 				<img src="../js/jscalendar/calendar.gif" id="trigger_date_creation" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
 				<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.creation_anomalie.date_creation.value='';" />
 				<script type="text/javascript">

@@ -30,6 +30,10 @@ a:hover {
 
 </style>
 
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/infobulle/infobulle.js"></script>
+<style type="text/css">@import url(js/infobulle/infobulle.css);</style>
+
 </head>
 <body style="margin:0px;padding:0px;">
 <div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Intranet <?=SOCIETE?></div>

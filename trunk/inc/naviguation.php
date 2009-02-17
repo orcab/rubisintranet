@@ -36,7 +36,7 @@ ul#tabnav li.active {
 <ul id="tabnav" class="hide_when_print">
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/index.php")) { // test si le fichier exists ?>
-		<li><a href="/intranet"><img src="/intranet/gfx/home_mini.png" style="vertical-align:top;border:none;"> Accueil</a></li>
+		<li><a href="/intranet"><img src="/intranet/gfx/home_mini.png" style="vertical-align:top;border:none;"/> Accueil</a></li>
 <?	} ?>
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/article/creation_article.php")) { // test si le fichier exists ?>
