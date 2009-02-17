@@ -80,7 +80,10 @@ class PDF extends FPDF
 		// Date de création du devis
 		$this->SetFont('helvetica','BI',11);
 		$this->Cell(20, 5 ,"Suivi par : ");
-		$this->Cell(100, 5 , isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']));
+		if (trim($row_entete['LIVSB']))
+			$this->Cell(100, 5 , isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']));
+		else
+			$this->Cell(100, 5 , '');
 
 		// Référence
 		$this->SetFont('helvetica','',11);
