@@ -16,17 +16,10 @@ body,td{
 	font-size:0.8em;
 }
 
-a img { 
-	border:none;
-}
-
-a {
-	text-decoration:none;
-}
-
-a:hover {
-	text-decoration:underline;
-}
+a img { border:none; }
+a {	text-decoration:none; }
+a:hover { text-decoration:underline; }
+label { cursor:pointer; }
 
 option { font-size:0.7em; }
 
@@ -89,11 +82,13 @@ EOT;
 <?				} ?>
 		</select><br/>
 		<div id="path">&nbsp;</div>
-		<div style="text-align:left;width:30%;"><label for="page_de_garde"><input type="checkbox" name="page_de_garde" checked="checked" /> Ajouter les pages de garde</label></div>
-		<div style="text-align:left;width:30%;"><label for="index_ref"><input type="checkbox" name="index_ref" /> Ajouter l'index des références fabriquant</label></div>
-		<div style="text-align:left;width:30%;"><label for="index_code"><input type="checkbox" name="index_code" /> Ajouter l'index des codes <?=SOCIETE?></label></div>
-		<div style="text-align:left;width:30%;"><label for="sommaire"><input type="checkbox" name="sommaire" /> Ajouter le sommaire</label></div>
-		<div style="text-align:left;width:30%;"><label for="equipe"><input type="checkbox" name="equipe" /> Ajouter l'&eacute;quipe</label></div> <br/>
+		<div style="text-align:left;width:30%;"><label for="page_de_garde"><input id="page_de_garde" type="checkbox" name="page_de_garde" checked="checked" /> Ajouter les pages de garde</label></div>
+		<div style="text-align:left;width:30%;"><label for="index_ref"><input id="index_ref" type="checkbox" name="index_ref" /> Ajouter l'index des références fabriquant</label></div>
+		<div style="text-align:left;width:30%;"><label for="index_code"><input id="index_code" type="checkbox" name="index_code" /> Ajouter l'index des codes <?=SOCIETE?></label></div>
+		<div style="text-align:left;width:30%;"><label for="sommaire"><input id="sommaire" type="checkbox" name="sommaire" /> Ajouter le sommaire</label></div>
+		<div style="text-align:left;width:30%;"><label for="equipe"><input id="equipe" type="checkbox" name="equipe" /> Ajouter l'&eacute;quipe</label></div>
+		<div style="text-align:left;width:30%;"><label for="prix_a_venir"><input id="prix_a_venir" type="checkbox" name="prix_a_venir"  checked="checked" /> Prix à venir (si disponible)</label></div>
+		<br/>
 		<input type="submit" class="button valider pdf" value="Editer en PDF"/>
 		<div style="font-size:0.8em;">(attention certaine activit&eacute; peuvent demander un temps de traitement tr&egrave;s long)</div>
 	</form>

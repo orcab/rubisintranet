@@ -104,13 +104,16 @@ select
 		ARTICLE.NOART,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,SERST,
 		CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) as CHEMIN,
 		REFFO,PVEN1,
-		CDKIT
+		CDKIT,
+		XPVE1 as PRIX_VENTE_VENIR
 from	
 		${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 			left outer join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 				on ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
 				on ARTICLE.NOART=TARIF.NOART
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
+				on ARTICLE.NOART=TARIF_VENIR.NOART
 where $condition
 order by
 	ACTIV ASC,FAMI1 ASC,SFAM1 ASC,ART04 ASC,ART05 ASC,DESI1 ASC,DESI2 ASC,DESI3 ASC
@@ -122,7 +125,7 @@ $loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossib
 $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
 
 
-// creation de l'objet
+// creation de l'objet PDF
 $pdf=new PDF();
 $pdf->SetDisplayMode('fullpage','two');
 $pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_REF,WIDTH_PRIX)); // a sortir de la boucle quand tout marchera bien
@@ -134,6 +137,7 @@ $old_pdvente = '';
 $old_activite= '';
 $lien = 1 ;
 while($row = odbc_fetch_array($res)) {
+	$prix_de_base	= $row['PRIX_VENTE_VENIR'] && isset($_POST['prix_a_venir']) && $_POST['prix_a_venir'] ? $row['PRIX_VENTE_VENIR'] : $row['PVEN1'];
 	$row['CHEMIN']	= ereg_replace('[ \.]*$','',$row['CHEMIN']);
 	$row['NOART']	= trim($row['NOART']);
 	$row['DESI1']	= trim($row['DESI1']);
@@ -250,8 +254,8 @@ while($row = odbc_fetch_array($res)) {
 	
 	// REFERENCE
 	$lien_vers_ref = $pdf->AddLink();
-	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
-	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$row['PVEN1']), $lien_vers_ref);
+	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref);
+	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref);
 	
 	$kit			= 0 ;
 	$prix_cumul_kit = 0;
@@ -265,7 +269,7 @@ while($row = odbc_fetch_array($res)) {
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,XPVE1 as PRIX_VENTE_VENIR
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
@@ -273,10 +277,13 @@ from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 					on DETAIL_KIT.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
 					on ARTICLE.NOART=TARIF.NOART
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
+					on ARTICLE.NOART=TARIF_VENIR.NOART
 where		NOKIT='$row[NOART]'
 EOT;
 		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
+			$prix_de_base	 = $row_kit['PRIX_VENTE_VENIR'] && isset($_POST['prix_a_venir']) && $_POST['prix_a_venir'] ? $row_kit['PRIX_VENTE_VENIR'] : $row_kit['PVEN1'];
 			$noart			.= "\n   ".trim($row_kit['NOART']).( $row_kit['SERST']=='NON' ? ' *' :'' );
 			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
 
@@ -284,8 +291,8 @@ EOT;
 			$ref			.= "\n".trim($row_kit['REFFO']);
 			$font_size_max = min($pdf->redux_font_size($row_kit['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
 
-			$prix			.= "\n".sprintf('%0.2f',$row_kit['PVEN1'] *	$coef_multiplicateur);
-			$prix_cumul_kit += sprintf('%0.2f',$row_kit['PVEN1'] * $coef_multiplicateur) ;
+			$prix			.= "\n".sprintf('%0.2f',$prix_de_base *	$coef_multiplicateur);
+			$prix_cumul_kit += sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
 			$kit++;
 		}
 	}
@@ -293,7 +300,7 @@ EOT;
 	$noart			= $row['NOART'].( $row['SERST']=='NON' ? ' *' :'' ). ($kit ? "\n$noart" : '');
 	$designation	= $row['DESI1'] . ($kit ? "\nKit composé de $kit éléments :$designation" : '');
 	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
-	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$row['PVEN1'] * $coef_multiplicateur) ;
+	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
 
 	// redux de font pour la référence
 	$font_size_max = min($pdf->redux_font_size($row['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
