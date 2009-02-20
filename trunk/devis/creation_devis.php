@@ -446,7 +446,7 @@ for($i=1;$i<=NOMBRE_DE_LIGNE;$i++) {
 														value="<?= isset($row_ligne_devis['fournisseur']) ? $row_ligne_devis['fournisseur'] : ''?>">
 	</td>
 	<td class="designation">
-		<textarea  name="a<?=$i?>_designation"   rows="3" cols="40" onblur="zone_inactive(this);"
+		<textarea  name="a<?=$i?>_designation"   rows="3" style="width:100%;" onblur="zone_inactive(this);"
 																	onfocus="zone_active(this);"><?= isset($row_ligne_devis['designation']) ? eregi_replace("(\{CR\})+","\n",$row_ligne_devis['designation']) : ''?></textarea>
 	</td>
 	<td class="qte">
