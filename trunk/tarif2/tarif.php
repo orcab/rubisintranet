@@ -37,7 +37,6 @@ $section_deja_dans_toc = array();
 $TOC = array(); // pour la table des matieres
 $REFERENCE = array(); // pour la table d'index des reference fabriquant
 $CODE_MCS = array(); // pour la table d'index des reference mcs
-$ECOTAXE = array(); // relation code->ecotaxe
 
 define('FICHIER',0);
 define('STYLE',1);
@@ -80,19 +79,6 @@ while($row = mysql_fetch_array($res))
 
 
 
-/////////////////////////////// CHARGEMENT DES ECOTAXES EN MÉMOIRE ////////////////////////
-	$sql = <<<EOT
-select CODPR,TANU0
-from ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1
-where TYPPR='TPF'
-EOT;
-$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
-while($row = odbc_fetch_array($res))
-	$ECOTAXE[$row['CODPR']]=sprintf('%0.2f',$row['TANU0']);
-//print_r($ECOTAXE);exit;
-
-
-
 /////////////////////////////// CHARGEMENT DES NOM D'IMAGE EN MÉMOIRE ////////////////////////
 $IMAGE = rscandir(IMAGE_PATH);
 //print_r($IMAGE);exit;
@@ -127,7 +113,7 @@ select
 		REFFO,PVEN1,
 		CDKIT,
 		XPVE1 as PRIX_VENTE_VENIR,
-		TPFAR as CODE_ECOTAXE
+		TANU0 as ECOTAXE
 from	
 		${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 			left outer join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
@@ -136,6 +122,8 @@ from
 				on ARTICLE.NOART=TARIF.NOART
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
 				on ARTICLE.NOART=TARIF_VENIR.NOART
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
+				on ARTICLE.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where $condition
 order by
 	ACTIV ASC,FAMI1 ASC,SFAM1 ASC,ART04 ASC,ART05 ASC,DESI1 ASC,DESI2 ASC,DESI3 ASC
@@ -158,6 +146,7 @@ $old_pdvente = '';
 $old_activite= '';
 $lien = 1 ;
 while($row = odbc_fetch_array($res)) {
+	$row['ECOTAXE'] = $row['ECOTAXE'] ? sprintf('%0.2f',$row['ECOTAXE']):0;
 	$prix_de_base	= $row['PRIX_VENTE_VENIR'] && isset($_POST['prix_a_venir']) && $_POST['prix_a_venir'] ? $row['PRIX_VENTE_VENIR'] : $row['PVEN1'];
 	$row['CHEMIN']	= ereg_replace('[ \.]*$','',$row['CHEMIN']);
 	$row['NOART']	= trim($row['NOART']);
@@ -275,8 +264,8 @@ while($row = odbc_fetch_array($res)) {
 	
 	// REFERENCE
 	$lien_vers_ref = $pdf->AddLink();
-	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref,(isset($ECOTAXE[$row['CODE_ECOTAXE']]) ? $ECOTAXE[$row['CODE_ECOTAXE']]:0));
-	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref,(isset($ECOTAXE[$row['CODE_ECOTAXE']]) ? $ECOTAXE[$row['CODE_ECOTAXE']]:0));
+	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref,$row['ECOTAXE']);
+	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref,$row['ECOTAXE']);
 	
 	$kit				= 0 ;
 	$prix_cumul_kit		= 0 ;
@@ -291,7 +280,7 @@ while($row = odbc_fetch_array($res)) {
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,XPVE1 as PRIX_VENTE_VENIR,ARTICLE.TPFAR as CODE_ECOTAXE
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,XPVE1 as PRIX_VENTE_VENIR,TANU0 as ECOTAXE
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
@@ -301,10 +290,13 @@ from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 					on ARTICLE.NOART=TARIF.NOART
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
 					on ARTICLE.NOART=TARIF_VENIR.NOART
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
+					on ARTICLE.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where		NOKIT='$row[NOART]'
 EOT;
 		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
+			$row_kit['ECOTAXE'] = $row_kit['ECOTAXE'] ?  sprintf('%0.2f',$row_kit['ECOTAXE']):0;
 			$prix_de_base	 = $row_kit['PRIX_VENTE_VENIR'] && isset($_POST['prix_a_venir']) && $_POST['prix_a_venir'] ? $row_kit['PRIX_VENTE_VENIR'] : $row_kit['PVEN1'];
 			$noart			.= "\n   ".trim($row_kit['NOART']).( $row_kit['SERST']=='NON' ? ' *' :'' );
 			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
@@ -314,10 +306,10 @@ EOT;
 			$font_size_max = min($pdf->redux_font_size($row_kit['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
 
 			$prix			.= "\n".sprintf('%0.2f',$prix_de_base *	$coef_multiplicateur);
-			$ecotaxe		.= "\n".(isset($ECOTAXE[$row_kit['CODE_ECOTAXE']]) ? $ECOTAXE[$row_kit['CODE_ECOTAXE']]:0);
+			$ecotaxe		.= "\n".($row_kit['ECOTAXE'] ? $row_kit['ECOTAXE']:'');
 
 			$prix_cumul_kit		+= sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
-			$ecotaxe_cumul_kit	+= (isset($ECOTAXE[$row_kit['CODE_ECOTAXE']]) ? $ECOTAXE[$row_kit['CODE_ECOTAXE']]:0) ;
+			$ecotaxe_cumul_kit	+= $row_kit['ECOTAXE'];
 			$kit++;
 		}
 	}
@@ -326,7 +318,7 @@ EOT;
 	$designation	= $row['DESI1'] . ($kit ? "\nKit composé de $kit éléments :$designation" : '');
 	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
 	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
-	$ecotaxe		= $kit ? "$ecotaxe_cumul_kit\n$ecotaxe" : (isset($ECOTAXE[$row['CODE_ECOTAXE']]) ? $ECOTAXE[$row['CODE_ECOTAXE']]:0);
+	$ecotaxe		= $kit ? "$ecotaxe_cumul_kit\n$ecotaxe" : $row['ECOTAXE'] ;
 
 	// redux de font pour la référence
 	$font_size_max = min($pdf->redux_font_size($row['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
