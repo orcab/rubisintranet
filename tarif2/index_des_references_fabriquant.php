@@ -49,22 +49,29 @@ foreach($REFERENCE as $ref=>$data) {
 		$pdf->SetY(INDEX_TOP_MARGIN + ($ligne * INDEX_CELL_HEIGHT)); // mettre avant le SetY car Y agit sur X et créer des incohérences
 		$pdf->SetX(INDEX_LEFT_MARGIN + ($colonne * (INDEX_REF_WIDTH + INDEX_PRIX_WIDTH + INDEX_PAGE_WIDTH + INDEX_CELL_SPACING)));
 
+
+		////////////////// REFERENCE ////////////////
 		// si le texte depasse de la case, on diminu la police
 		$font_redux = 0;
-		while ($pdf->GetStringWidth($ref) > INDEX_REF_WIDTH && (INDEX_FONT_SIZE - $font_redux) > 0) {
+		while ($pdf->GetStringWidth($ref) > INDEX_REF_WIDTH && (INDEX_FONT_SIZE - $font_redux) > 0)
 			$pdf->SetFont('helvetica','',INDEX_FONT_SIZE - ++$font_redux);
-		}
-
-	//	echo $data[2]." ";
-
 		$pdf->Cell(INDEX_REF_WIDTH,INDEX_CELL_HEIGHT,$ref,'BTR',0,'L',0,$data[2]); // ref
-
-		// on revient à la police precédente
-		if ($font_redux) {
+		if ($font_redux) { // on revient à la police precédente
 			$pdf->SetFont('helvetica','',INDEX_FONT_SIZE); $font_redux =0;
 		}
 
-		$pdf->Cell(INDEX_PRIX_WIDTH,INDEX_CELL_HEIGHT,$data[1],'BTR',0,'R',0,$data[2]); // prix
+		////////////////// PRIX + ECOTAXE ////////////////
+		if ($data[3]) { // une écotaxe, donc on diminue la police
+			$font_redux = 0;
+			while ($pdf->GetStringWidth("$data[1] ($data[3])") > INDEX_PRIX_WIDTH && (INDEX_FONT_SIZE - $font_redux) > 0)
+				$pdf->SetFont('helvetica','',INDEX_FONT_SIZE - ++$font_redux);
+		}
+		$pdf->Cell(INDEX_PRIX_WIDTH,INDEX_CELL_HEIGHT,$data[1].( $data[3] ? " ($data[3])":''),'BTR',0,'R',0,$data[2]); // prix + ecotaxe
+		if ($font_redux) { // on revient à la police precédente
+			$pdf->SetFont('helvetica','',INDEX_FONT_SIZE); $font_redux =0;
+		}
+
+		////////////////// PAGE ////////////////
 		$pdf->Cell(INDEX_PAGE_WIDTH,INDEX_CELL_HEIGHT,$data[0],'BTL',0,'R',0,$data[2]); // page
 
 		$ligne++;

@@ -7,6 +7,7 @@ define('DEBUG',TRUE);
 if (DEBUG)
 	$debug_file = fopen("debug.log", "w+") or die("Ne peux pas créer de fichier de debug"); 
 
+$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 $mysql		= mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
@@ -17,11 +18,13 @@ define('FONT_SIZE_CATEG',12);
 define('FONT_SIZE_CODE',8);
 define('FONT_SIZE_REF',8);
 define('FONT_SIZE_PRIX',8);
+define('FONT_SIZE_ECOTAXE',8);
 define('FONT_SIZE_DESIGNATION',7);
 define('WIDTH_CODE',20);
 define('WIDTH_DESIGNATION',70);
 define('WIDTH_REF',20);
 define('WIDTH_PRIX',15);
+define('WIDTH_ECOTAXE',10);
 
 define('PAGE_WIDTH',210);
 define('PAGE_HEIGHT',297);
@@ -34,6 +37,7 @@ $section_deja_dans_toc = array();
 $TOC = array(); // pour la table des matieres
 $REFERENCE = array(); // pour la table d'index des reference fabriquant
 $CODE_MCS = array(); // pour la table d'index des reference mcs
+$ECOTAXE = array(); // relation code->ecotaxe
 
 define('FICHIER',0);
 define('STYLE',1);
@@ -55,13 +59,14 @@ $PAGE_DE_GARDE = array(
 	'00S'=>array()
 );
 // remplissage des valeurs non renseignées
-
 foreach ($PAGE_DE_GARDE as $act=>$tab)
 	if (sizeof($PAGE_DE_GARDE[$act]) <= 0)
 		$PAGE_DE_GARDE[$act] = array('a_definir.png','#9B6E59,#523C31,#FFFFFF,#523C31,#FFFFFF,#000000,#523C31,#FFFFFF');
 //print_r($PAGE_DE_GARDE);exit;
 
-// creation de l'arbre des categorie
+
+
+/////////////////////////////// CHARGEMENT DU PLAN DE VENTE EN MÉMOIRE ////////////////////////
 $sql = <<<EOT
 SELECT	chemin,libelle
 FROM	pdvente
@@ -73,22 +78,38 @@ while($row = mysql_fetch_array($res))
 	$PLAN_DE_VENTE[$row['chemin']] 	= $row['libelle'];
 //print_r($PLAN_DE_VENTE);exit;
 
-// Chargement des nom d'image en mémoire
+
+
+/////////////////////////////// CHARGEMENT DES ECOTAXES EN MÉMOIRE ////////////////////////
+	$sql = <<<EOT
+select CODPR,TANU0
+from ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1
+where TYPPR='TPF'
+EOT;
+$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
+while($row = odbc_fetch_array($res))
+	$ECOTAXE[$row['CODPR']]=sprintf('%0.2f',$row['TANU0']);
+//print_r($ECOTAXE);exit;
+
+
+
+/////////////////////////////// CHARGEMENT DES NOM D'IMAGE EN MÉMOIRE ////////////////////////
 $IMAGE = rscandir(IMAGE_PATH);
 //print_r($IMAGE);exit;
 
+
+
+////////////////////////////// CONSTRUCTION DE LA REQUETE SQL ///////////////////////////////
+$condition	= array();
+$condition[]= "ETARE=''"; // non suspendu
+$condition[]= "DIAA1='OUI'"; // la case édité sur tarif est cochée
+$condition[]= "ARDIV='NON'"; // ce n'est pas un article divers
 
 $pdv = '' ;
 if	(isset($_GET['pdv']) && $_GET['pdv'])
 	$pdv = $_GET['pdv'] ;
 if	(isset($_POST['pdv']) && $_POST['pdv'])
 	$pdv = $_POST['pdv'] ;
-
-
-$condition	= array();
-$condition[]= "ETARE=''"; // non suspendu
-$condition[]= "DIAA1='OUI'"; // la case édité sur tarif est cochée
-$condition[]= "ARDIV='NON'"; // ce n'est pas un article divers
 
 //$condition[]= "ARTICLE.NOART='01001298'"; // pour les test sur les kits
 //$pdv = "00B.B00.002" ; // pour les tests
@@ -105,7 +126,8 @@ select
 		CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) as CHEMIN,
 		REFFO,PVEN1,
 		CDKIT,
-		XPVE1 as PRIX_VENTE_VENIR
+		XPVE1 as PRIX_VENTE_VENIR,
+		TPFAR as CODE_ECOTAXE
 from	
 		${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 			left outer join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
@@ -121,14 +143,13 @@ EOT;
 
 //echo $sql ; exit;
 
-$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
 
 
 // creation de l'objet PDF
 $pdf=new PDF();
 $pdf->SetDisplayMode('fullpage','two');
-$pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_REF,WIDTH_PRIX)); // a sortir de la boucle quand tout marchera bien
+$pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_REF,WIDTH_PRIX,WIDTH_ECOTAXE)); // a sortir de la boucle quand tout marchera bien
 
 // on passe sur chaque article
 $coef_multiplicateur = 1;
@@ -254,22 +275,23 @@ while($row = odbc_fetch_array($res)) {
 	
 	// REFERENCE
 	$lien_vers_ref = $pdf->AddLink();
-	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref);
-	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref);
+	$REFERENCE[$row['REFFO'] ? $row['REFFO'] : $row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref,(isset($ECOTAXE[$row['CODE_ECOTAXE']]) ? $ECOTAXE[$row['CODE_ECOTAXE']]:0));
+	$CODE_MCS[$row['NOART']] = array($pdf->PageNo(),sprintf('%01.2f',$prix_de_base), $lien_vers_ref,(isset($ECOTAXE[$row['CODE_ECOTAXE']]) ? $ECOTAXE[$row['CODE_ECOTAXE']]:0));
 	
-	$kit			= 0 ;
-	$prix_cumul_kit = 0;
-	$noart			= '' ;
-	$designation	= '' ;
-	$ref			= '' ;
-	$prix			= '' ;
-
+	$kit				= 0 ;
+	$prix_cumul_kit		= 0 ;
+	$ecotaxe_cumul_kit	= 0 ;
+	$noart				= '' ;
+	$designation		= '' ;
+	$ref				= '' ;
+	$prix				= '' ;
+	$ecotaxe			= '' ;
 
 	$font_size_max = FONT_SIZE_REF;
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,XPVE1 as PRIX_VENTE_VENIR
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,XPVE1 as PRIX_VENTE_VENIR,ARTICLE.TPFAR as CODE_ECOTAXE
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
@@ -292,7 +314,10 @@ EOT;
 			$font_size_max = min($pdf->redux_font_size($row_kit['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
 
 			$prix			.= "\n".sprintf('%0.2f',$prix_de_base *	$coef_multiplicateur);
-			$prix_cumul_kit += sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
+			$ecotaxe		.= "\n".(isset($ECOTAXE[$row_kit['CODE_ECOTAXE']]) ? $ECOTAXE[$row_kit['CODE_ECOTAXE']]:0);
+
+			$prix_cumul_kit		+= sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
+			$ecotaxe_cumul_kit	+= (isset($ECOTAXE[$row_kit['CODE_ECOTAXE']]) ? $ECOTAXE[$row_kit['CODE_ECOTAXE']]:0) ;
 			$kit++;
 		}
 	}
@@ -301,6 +326,7 @@ EOT;
 	$designation	= $row['DESI1'] . ($kit ? "\nKit composé de $kit éléments :$designation" : '');
 	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
 	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
+	$ecotaxe		= $kit ? "$ecotaxe_cumul_kit\n$ecotaxe" : (isset($ECOTAXE[$row['CODE_ECOTAXE']]) ? $ECOTAXE[$row['CODE_ECOTAXE']]:0);
 
 	// redux de font pour la référence
 	$font_size_max = min($pdf->redux_font_size($row['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
@@ -312,7 +338,8 @@ EOT;
 							array('text' => $noart			, 'font-style' => 'B'	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_CODE ),
 							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_DESIGNATION),
 							array('text' => $ref			,													'font-size' => $font_size_max),
-							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX) // le prix est multiplié par une valeur de config.php en fonction de l'activité
+							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX), // le prix est multiplié par une valeur de config.php en fonction de l'activité
+							array('text' => $ecotaxe ? $ecotaxe:''		, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_ECOTAXE)
 				),
 			$kit ? $kit+2 : 1 // nombre de ligne
 	);
