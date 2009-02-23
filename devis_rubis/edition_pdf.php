@@ -33,12 +33,14 @@ where	NOBON='$NOBON_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select NOLIG,ARCOM,CODAR,DS1DB,DS2DB,DS3DB,CONSA,FOUR1,QTESA,UNICD,PRINE,EDIT1,REFFO,DET97
+select NOLIG,ARCOM,CODAR,DS1DB,DS2DB,DS3DB,CONSA,FOUR1,QTESA,UNICD,PRINE,EDIT1,REFFO,DET97,TANU0 as ECOTAXE
 from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBVP1 DEVIS
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 		on DEVIS.CODAR=ARTICLE_FOURNISSEUR.NOART
 			and DEVIS.NOFOU=ARTICLE_FOURNISSEUR.NOFOU
 			and ARTICLE_FOURNISSEUR.AGENC='$LOGINOR_AGENCE'
+	left join AFAGESTCOM.ATABLEP1 TAXE
+		on DEVIS.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where	NOBON='$NOBON_escape'
 	and DEVIS.NOCLI='$NOCLI_escape'
 	and ETSBE<>'ANN'
@@ -167,8 +169,21 @@ while($row = odbc_fetch_array($detail_devis)) {
 			unset($kit[$row['DET97']]);
 		}
 
-		$total_ht		+= $row['QTESA']*$row['PRINE']; // on rajoute la somme au total
-		$sous_total_ht	+= $row['QTESA']*$row['PRINE']; // on rajoute la somme au sous total
+		if ($row['ECOTAXE']) { // l'article contient de l'écotaxe
+			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+						array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+						array('text' => '','text-align'=>'R','font-size'=>'8'),
+						array('text' => "Ecotaxe sur l'article $row[CODAR]",'text-align'=>'R','font-size'=>'8'),
+						array('text' => $row['QTESA'],'text-align'=>'C','font-size'=>'8'),
+						array('text' => sprintf('%0.2f',$row['ECOTAXE']),'text-align'=>'R','font-size'=>'8'),
+						array('text' => sprintf('%0.2f',$row['ECOTAXE']*$row['QTESA']).EURO,'text-align'=>'R','font-size'=>'8'),
+					)
+				);
+		}
+
+
+		$total_ht		+= $row['QTESA']*$row['PRINE'] + $row['ECOTAXE']*$row['QTESA']; // on rajoute la somme au total
+		$sous_total_ht	+= $row['QTESA']*$row['PRINE'] + $row['ECOTAXE']*$row['QTESA']; // on rajoute la somme au sous total
 	}
 }
 
