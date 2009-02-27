@@ -84,17 +84,16 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 	if ($row['CFPRF'] == 9) { // cas d'un commentaire
 		if ($row['CFCOM']) {
-			if (ereg('^ +',$row_original['CFCOM'])) { // un espace devant le commentaire défini un COMMENTAIRE
+			if (ereg('^ +',$row_original['CFCOM']))// un espace devant le commentaire défini un COMMENTAIRE
 				$pdf->SetFillColor(255);
-			} else {
+			else
 				$pdf->SetFillColor(240); // pas d'espace définit un titre
-			}
 			
-			$pdf->SetFont('','B');
+			$pdf->SetFont('helvetica','B',10);
 			if($pdf->GetY() +  7 > PAGE_HEIGHT - 29) // check le saut de page
 				$pdf->AddPage();
 
-			$pdf->Cell(0,7,$row['CFCOM'],1,1,'C',1);		
+			$pdf->Cell(0,7,$row['CFCOM'],1,1,'C',1);
 			$pdf->SetFillColor(255);
 		}
 	} else { // cas d'un article
@@ -125,9 +124,9 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => $designation		, 'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['CFUNI']		, 'text-align' => 'C'), // unité
 					array('text' => str_replace('.000','',$row['CFQTE'])		, 'text-align' => 'C'), // quantité
-					array('text' => sprintf('%0.2f',round($row['CFPAB'],2)).EURO	, 'text-align' => 'R'), // prix d'achat brut
+					array('text' => sprintf('%0.2f',round($row['CFPAB'],2)).EURO, 'text-align' => 'R'), // prix d'achat brut
 					array('text' => str_replace('.00','',$remise?$remise:'')	, 'text-align' => 'C'), // remise
-					array('text' => sprintf('%0.2f',round($row['CFPAN'],2)).EURO	, 'text-align' => 'R'), // prix unitaire après remise
+					array('text' => sprintf('%0.2f',round($row['CFPAN'],2)).EURO, 'text-align' => 'R'), // prix unitaire après remise
 					array('text' => $row['CFMTH'].EURO	, 'text-align' => 'R') // total après remise
 					)
 				);
