@@ -45,7 +45,7 @@ $PAGE_DE_GARDE = array(
 	'00B'=>array('sanitaire.png','#A6AFC8,#5D6B97,#FFFFFF,#5D6B97,#FFFFFF,#000000,#5D6B97,#FFFFFF'),
 	'00C'=>array(),
 	'00D'=>array('electricite.png','#C397BF,#693C65,#FFFFFF,#693C65,#FFFFFF,#000000,#693C65,#FFFFFF'),
-	'00E'=>array(),
+	'00E'=>array('ventilation.png','#31a98d,#123e34,#FFFFFF,#123e34,#FFFFFF,#000000,#123e34,#FFFFFF'),
 	'00F'=>array(),
 	'00G'=>array('plomberie.png','#9DC6B8,#798778,#FFFFFF,#798778,#FFFFFF,#000000,#798778,#FFFFFF'),
 	'00H'=>array(),
@@ -353,16 +353,15 @@ EOT;
 $titre_page = '';
 
 
-
 // PAGE SUPPLEMENTAIRE
+if (isset($_POST['sommaire']) && $_POST['sommaire']) // le sommaire
+	include('table_des_matieres.php');
+
 if (isset($_POST['index_ref']) && $_POST['index_ref']) // index des références fabriquant
 	include('index_des_references_fabriquant.php');
 
 if (isset($_POST['index_code']) && $_POST['index_code']) // index des code interne de la société
 	include('index_des_codes.php');
-
-if (isset($_POST['sommaire']) && $_POST['sommaire']) // le sommaire
-	include('table_des_matieres.php');
 
 
 // EQUIPE + ORGANIGRAMME
