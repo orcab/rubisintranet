@@ -117,15 +117,6 @@ function majusculize(champ) {
 	document.creation_article.elements[champ].value = document.creation_article.elements[champ].value.toUpperCase();
 }
 
-// si article stocké --> affiche les champs de stock
-function affiche_stock_mini_maxi() {
-	if(document.creation_article.stock[0].checked) // stock a oui
-		$('#stock_mini_maxi').show;
-	else
-		$('#stock_mini_maxi').hide;
-}
-
-
 // permet le passage de champs en champs dans la saisie des familles/sous familles
 function compte_car(mon_objet) {
 	if (mon_objet.value.length >= 3) {
@@ -341,7 +332,7 @@ $(document).ready(function(){
 		<option value="Autre (voir Px de Vente)">Autre (préciser)</option>
 	</select> PV : <input type="text" name="px_vente" value="" size="6"><br><br></td></tr>
 
-<tr><th class="label">Stock :</th><td class="valeur">Oui<input type="radio" name="stock" value="oui" onclick="affiche_stock_mini_maxi();">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="stock" value="non" onclick="affiche_stock_mini_maxi();" checked>
+<tr><th class="label">Stock :</th><td class="valeur">Oui<input type="radio" name="stock" value="oui" onclick="$('#stock_mini_maxi').show('fast');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="stock" value="non" onclick="$('#stock_mini_maxi').hide('fast');" checked>
 <div id="stock_mini_maxi" style="display:none;">
 Stock mini : <input type="text" name="stock_mini" value="" size="5"><br>
 Stock maxi : <input type="text" name="stock_maxi" value="" size="5"><br>
