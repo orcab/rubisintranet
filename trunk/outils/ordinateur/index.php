@@ -82,7 +82,7 @@ function detail_utilisateur(id,prenom) {
 	document.utilisateur.detail_utilisateur_tel.value='';
 	document.utilisateur.detail_utilisateur_ip.value='';
 	document.utilisateur.detail_utilisateur_machine.value='';
-	document.utilisateur.detail_utilisateur_printer.checked=false;
+	document.utilisateur.detail_utilisateur_printer.selectedIndex=0;
 <?			foreach (get_defined_constants() as $constante => $valeur) {
 				if (ereg('^PEUT_',$constante)) { // une constante de droit ?>
 					document.utilisateur.detail_utilisateur_<?=$constante?>.checked=false;
@@ -124,8 +124,8 @@ function detail_utilisateur(id,prenom) {
 						document.utilisateur.detail_utilisateur_ip.value=$.trim(json['ip']);
 						$('#detail_utilisateur_machine').css('background','white');
 						document.utilisateur.detail_utilisateur_machine.value=$.trim(json['machine']);
+						document.utilisateur.detail_utilisateur_printer.selectedIndex = json['printer'] ;
 
-						document.utilisateur.detail_utilisateur_printer.checked = json['printer']==1 ? true:false ;
 <?						foreach (get_defined_constants() as $constante => $valeur) {
 							if (ereg('^PEUT_',$constante)) { // une constante de droit ?>
 								document.utilisateur.detail_utilisateur_<?=$constante?>.checked= <?=$valeur?> & json['droit'] ? true:false ;
@@ -158,7 +158,7 @@ function valider_detail_utilisateur() {
 					'&ip='			+$.trim(document.utilisateur.detail_utilisateur_ip.value)+
 					'&tel='			+$.trim(document.utilisateur.detail_utilisateur_tel.value)+
 					'&machine='		+$.trim(document.utilisateur.detail_utilisateur_machine.value)+
-					'&printer='		+(document.utilisateur.detail_utilisateur_printer.checked ? 1:0)+
+					'&printer='		+document.utilisateur.detail_utilisateur_printer.selectedIndex+
 					'&droit='		+ (<?
 						$tmp = array();
 						foreach (get_defined_constants() as $constante => $valeur) {
@@ -232,8 +232,15 @@ function valider_detail_utilisateur() {
 	</tr>
 	</tr>
 		<tr>
-		<th>Imprimante ?</th>
-		<td><input type="checkbox" name="detail_utilisateur_printer"></td>
+		<th>Type</th>
+		<td><select name="detail_utilisateur_printer">
+			<option value="0">Employé</option>
+			<option value="1">Imprimante</option>
+			<option value="2">Borne Wifi</option>
+			<option value="3">Douchette Wifi</option>
+			<option value="4">Serveur</option>
+			</select>
+		</td>
 	</tr>
 	</tr>
 		<tr>
@@ -275,9 +282,9 @@ while($row = mysql_fetch_array($res)) {
 	<tr>
 		<td>
 				<a href="javascript:detail_utilisateur(<?=$row['id']?>,'<?=$row['prenom']?>');"><?=$row['utilisateur']?></a>
-<?				if($row['printer']) { ?>
+<?				if($row['printer'] == 1 || $row['printer'] == 2) { // imprimante ou borne wifi ?>
 					<a href="http://<?=$row['ip']?>" target="_blank">[LIEN]</a>
-<?			} ?>
+<?				} ?>
 		</td>
 		<td><?=$row['machine']?></td>
 		<td><?=$row['ip']?></td>
@@ -288,17 +295,21 @@ while($row = mysql_fetch_array($res)) {
 
 	$etat = ping($row['ip']);
 
-	if ($etat) { // connexion réussi, PC allumé
-	    echo '<img src="gfx/'.($row['printer'] ? 'printer':'computer').'-ok.png">';
-	} else { // PC éteint
-		echo '<img src="gfx/'.($row['printer'] ? 'printer':'computer').'-bad.png">';
+	echo '<img src="gfx/';
+	switch ($row['printer']) {
+		case 0 : echo 'computer-'.($etat?'ok':'bad').'.png'; break;
+		case 1 : echo 'printer-'.($etat?'ok':'bad').'.png'; break;
+		case 2 : echo 'borne-wifi-'.($etat?'ok':'bad').'.png'; break;
+		case 3 : echo 'douchette-'.($etat?'ok':'bad').'.png'; break;
+		case 4 : echo 'serveur-'.($etat?'ok':'bad').'.png'; break;
 	}
+	echo '">';
 ?>
 	</td>
 	<td style="text-align:center;">
 <?
 	//if (FALSE) { // si PC allumé
-	if ($etat && !$row['printer']) { // si PC allumé
+	if ($etat && $row['printer'] == 0) { // si PC allumé
 
 		$port = 5900 ;
 		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
