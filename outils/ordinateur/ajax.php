@@ -26,7 +26,7 @@ elseif (isset($_POST['what']) && $_POST['what'] == 'valider_detail_utilisateur' 
 									"tel='".		mysql_escape_string($_POST['tel'])."',".
 									"ip='".			mysql_escape_string($_POST['ip'])."',".
 									"machine='".	mysql_escape_string($_POST['machine'])."',".
-									"printer=".		($_POST['printer'] ? 1:0).",".
+									"printer=".		mysql_escape_string($_POST['printer']).",".
 									"droit='".		mysql_escape_string($_POST['droit'])."'".
 			" where id='".mysql_escape_string($_POST['id'])."'";
 	mysql_query($sql) ;
