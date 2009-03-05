@@ -239,6 +239,8 @@ function valider_detail_utilisateur() {
 			<option value="2">Borne Wifi</option>
 			<option value="3">Douchette Wifi</option>
 			<option value="4">Serveur</option>
+			<option value="5">PABX</option>
+			<option value="6">Switch</option>
 			</select>
 		</td>
 	</tr>
@@ -302,6 +304,8 @@ while($row = mysql_fetch_array($res)) {
 		case 2 : echo 'borne-wifi-'.($etat?'ok':'bad').'.png'; break;
 		case 3 : echo 'douchette-'.($etat?'ok':'bad').'.png'; break;
 		case 4 : echo 'serveur-'.($etat?'ok':'bad').'.png'; break;
+		case 5 : echo 'pabx-'.($etat?'ok':'bad').'.png'; break;
+		case 6 : echo 'switch-'.($etat?'ok':'bad').'.png'; break;
 	}
 	echo '">';
 ?>
