@@ -135,9 +135,9 @@ function detail_article(code_article) {
 	$('#detail-article').css('top',document.body.scrollTop +100);
 	$('#detail-article').css('left',screen.availWidth / 2 - 300);
 
-	document.article.detail_article_designation1.value='';
-	document.article.detail_article_designation2.value='';
-	document.article.detail_article_designation3.value='';
+	$('#detail_article_designation1').html('');
+	$('#detail_article_designation2').html('');
+	$('#detail_article_designation3').html('');
 	document.article.detail_article_gestionnaire.selectedIndex=0;
 	document.article.detail_article_localisation.value='';
 	document.article.detail_article_mini.value='';
@@ -146,9 +146,6 @@ function detail_article(code_article) {
 	document.article.detail_article_edition_tarif.checked=false;
 
 	$('#detail_article_code_article').text(code_article);
-	$('#detail_article_designation1').css('background','url(gfx/loading5.gif) no-repeat center center');
-	$('#detail_article_designation2').css('background','url(gfx/loading5.gif) no-repeat center center');
-	$('#detail_article_designation3').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_gestionnaire').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_localisation').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_mini').css('background','url(gfx/loading5.gif) no-repeat center center');
@@ -163,12 +160,9 @@ function detail_article(code_article) {
 			success: function(result){
 						var json = eval('(' + result + ')') ;
 						
-						$('#detail_article_designation1').css('background','white');
-						document.article.detail_article_designation1.value=$.trim(json['desi1']);
-						$('#detail_article_designation2').css('background','white');
-						document.article.detail_article_designation2.value=$.trim(json['desi2']);
-						$('#detail_article_designation3').css('background','white');
-						document.article.detail_article_designation3.value=$.trim(json['desi3']);
+						$('#detail_article_designation1').html($.trim(json['desi1']));
+						$('#detail_article_designation2').html($.trim(json['desi2']));
+						$('#detail_article_designation3').html($.trim(json['desi3']));
 
 						$('#detail_article_gestionnaire').css('background','white');
 						for(i=0 ; i<document.article.detail_article_gestionnaire.options.length ; i++) {
@@ -287,9 +281,6 @@ function valider_detail_article() {
 			url: 'ajax.php',
 			type: 'GET',
 			data:	'what=valider_detail_article&code_article='+ $.trim($('#detail_article_code_article').text()) +
-					'&desi1='+$.trim(document.article.detail_article_designation1.value)+
-					'&desi2='+$.trim(document.article.detail_article_designation2.value)+
-					'&desi3='+$.trim(document.article.detail_article_designation3.value)+
 					'&gestionnaire='+$.trim(document.article.detail_article_gestionnaire.options[document.article.detail_article_gestionnaire.selectedIndex].value)+
 					'&localisation='+$.trim(document.article.detail_article_localisation.value)+
 					'&mini='+$.trim(document.article.detail_article_mini.value)+
@@ -399,15 +390,15 @@ function valider_nouveau_chemin() {
 	<caption>Edition du détail pour <strong id="detail_article_code_article"></strong></caption>
 	<tr>
 		<th>Designation 1</th>
-		<td><input type="text" name="detail_article_designation1" id="detail_article_designation1" size="15"></td>
+		<td id="detail_article_designation1"></td>
 	</tr>
 	<tr>
 		<th>Designation 2</th>
-		<td><input type="text" name="detail_article_designation2" id="detail_article_designation2" size="15"></td>
+		<td id="detail_article_designation2"></td>
 	</tr>
 	<tr>
 		<th>Designation 3</th>
-		<td><input type="text" name="detail_article_designation3" id="detail_article_designation3" size="15"></td>
+		<td id="detail_article_designation3"></td>
 	</tr>
 	<tr>
 		<th>Gestionnaire</th>

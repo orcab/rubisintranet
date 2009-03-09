@@ -105,10 +105,8 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'valider_detail_article' &&
 	odbc_exec($loginor,$sql) ;
 
 	// mise a jour de la fiche article
-	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set DESI1='".mysql_escape_string($_GET['desi1'])."',DESI2='".mysql_escape_string($_GET['desi2'])."',DESI3='".mysql_escape_string($_GET['desi3'])."',DIAA1='".mysql_escape_string($_GET['edition_tarif'])."' where NOART='".mysql_escape_string($_GET['code_article'])."'";
+	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set DIAA1='".mysql_escape_string($_GET['edition_tarif'])."' where NOART='".mysql_escape_string($_GET['code_article'])."'";
 	odbc_exec($loginor,$sql) ;
-
-	mysql_query("UPDATE article SET designation='".mysql_escape_string($_GET['desi1'])."\n".mysql_escape_string($_GET['desi2'])."\n".mysql_escape_string($_GET['desi3'])."' WHERE code_article='".mysql_escape_string($_GET['code_article'])."'"); // mysql
 
 	echo "{}";
 	odbc_close($loginor);
