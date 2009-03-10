@@ -133,12 +133,20 @@ function compte_car(mon_objet) {
 
 // vérifie que les donnée obligatoire sont bien présentes
 function envoi_formulaire() {
+	/*for(i=0 ; i<=document.creation_article.stock.length ; i++) {
+		alert(document.creation_article.stock[i].checked + ' ' + document.creation_article.stock[i].value);
+	}*/
+
+
 	var erreur = 0 ;
 	if      (!document.creation_article.fournisseur.value) {
 		alert("Veuillez saisir un FOURNISSEUR"); erreur = 1;
 	}
 	else if      (!document.creation_article.ref_fournisseur.value) {
 		alert("Veuillez saisir une REFERENCE FOURNISSEUR"); erreur = 1;
+	}
+	else if      (document.creation_article.stock[0].checked && !document.creation_article.gencode.value) { // article stocké --> il faut un gencod
+		alert("Veuillez saisir un GENCODE (même 0 si vous ne l'avez pas du tout)"); erreur = 1;
 	}
 	else if      (document.creation_article.eco_taxe.value.length <= 0) {
 		alert("Veuillez saisir une ECO TAXE (0 si aucune éco taxe sur le produit)"); erreur = 1;
