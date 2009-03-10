@@ -307,6 +307,7 @@ EOT;
 //echo $sql ;
 
 	mysql_query($sql) or die("Erreur dans la modification du devis : ".mysql_error());
+	devis_log("update_devis",$_POST['id'],$sql);
 	unset($POST_escaped,$artisan_nom_escape);
 	$id_devis = $_POST['id'];
 
@@ -316,6 +317,7 @@ EOT;
 
 	mysql_query($sql) or die("Erreur dans la creation du devis : ".mysql_error());
 	$id_devis = mysql_insert_id();
+	devis_log("insert_devis",$id_devis,$sql);
 }
 
 
@@ -331,6 +333,7 @@ for($i=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 			$row = mysql_fetch_array($res);
 			$sql = "UPDATE devis_article SET designation='".mysql_escape_string($_POST['a'.$i.'_designation'])."', prix_public_ht='".str_replace(',','.',$_POST['a'.$i.'_puht'])."', remise=0, date_maj=NOW() WHERE id='$row[id]'";
 			mysql_query($sql) or die("Impossible de voir si la référence existe déjà dans la base : ".mysql_error());
+			devis_log("update_article",$row['id'],$sql);
 
 		} else { // la référence n'existe pas dans la base -> on la crée
 			$sql  = "INSERT INTO devis_article (ref_fournisseur,fournisseur,designation,prix_public_ht,date_creation,date_maj) VALUES (";
@@ -341,19 +344,22 @@ for($i=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 			$sql .= "NOW(),NOW())";
 
 			mysql_query($sql) or die("Impossible d'enregistrer la nouvelle référence dans la base : ".mysql_error());
+			devis_log("insert_article",mysql_insert_id(),$sql);
 		}
 	}
 }
 
 // ENREGISTREMENT DES LIGNES DEVIS DANS LA BASE
-mysql_query("DELETE FROM devis_ligne WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
+$sql = "DELETE FROM devis_ligne WHERE id_devis='$id_devis'";
+mysql_query($sql) or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
+devis_log("delete_ligne",$id_devis,$sql);
 for($i=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 	if (isset($_POST['a'.$i.'_reference']) && $_POST['a'.$i.'_reference']) { // ARTICLE SPÉCIFIÉ
 		$sql  = "INSERT INTO devis_ligne (id_devis,code_article,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,stock,expo) VALUES" ;
 		$sql .= "($id_devis,'".$_POST['a'.$i.'_code']."','".strtoupper($_POST['a'.$i.'_reference'])."','".strtoupper(mysql_escape_string($_POST['a'.$i.'_fournisseur']))."','".mysql_escape_string($_POST['a'.$i.'_designation'])."','".$_POST['a'.$i.'_qte']."','".mysql_escape_string(str_replace(',','.',$_POST['a'.$i.'_puht']))."','".mysql_escape_string(str_replace(',','.',$_POST['a'.$i.'_pu_adh_ht']))."',".(isset($_POST['a'.$i.'_stock']) ? 1 : 0).",".(isset($_POST['a'.$i.'_expo']) ? 1 : 0).")" ;
 
 		mysql_query($sql) or die("Erreur dans creation des ligne devis : ".mysql_error());
-
+		
 	} elseif (!$_POST['a'.$i.'_reference'] && isset($_POST['a'.$i.'_designation']) && $_POST['a'.$i.'_designation']) { // CAS D'UN TITRE
 		$sql  = "INSERT INTO devis_ligne (id_devis,designation) VALUES" ;
 		$sql .= "($id_devis,'".mysql_escape_string($_POST['a'.$i.'_designation'])."')" ;
@@ -361,6 +367,7 @@ for($i=1 ; $i<=NOMBRE_DE_LIGNE ; $i++ ) {
 		mysql_query($sql) or die("Erreur dans creation des ligne devis : ".mysql_error());
 	}
 }
+devis_log("insert_lignes",$id_devis);
 
 $pdf->Output();
 ?>

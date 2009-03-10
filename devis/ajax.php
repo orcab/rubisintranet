@@ -75,8 +75,8 @@ EOT;
 		array_push($json,"[$id,$prix_cmd_rubis]");
 
 		// mise a jour de la base avec le montant pour éviter une recherche future
-		mysql_query("UPDATE devis SET mtht_cmd_rubis=$prix_cmd_rubis WHERE id=$id");
-	
+		mysql_query("UPDATE devis SET mtht_cmd_rubis='$prix_cmd_rubis' WHERE id=$id");
+		devis_log("update_montant_cmd_rubis",$_POST['id'],$sql);
 	}
 
 	odbc_close($loginor);

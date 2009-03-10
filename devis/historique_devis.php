@@ -59,7 +59,9 @@ elseif (isset($_POST['action']) && !$_POST['action'])
 if(isset($_GET['action']) && $_GET['action']=='delete' && isset($_GET['id']) && $_GET['id']) { // mode delete
 	$res = mysql_query("SELECT CONCAT(DATE_FORMAT(`date`,'%b%y-'),id) AS numero FROM devis WHERE id=$_GET[id] LIMIT 0,1");
 	$row = mysql_fetch_array($res);
-	mysql_query("DELETE FROM devis WHERE id=$_GET[id]");
+	#mysql_query("DELETE FROM devis WHERE id=$_GET[id]");
+	mysql_query("UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
+	devis_log("delete_devis",$_GET['id'],"UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
 	$message = "Le devis n° $row[numero] a été correctement supprimé";
 }
 
@@ -67,19 +69,25 @@ if(isset($_GET['action']) && $_GET['action']=='delete' && isset($_GET['id']) && 
 if(isset($_GET['action']) && $_GET['action']=='delete_relance' && isset($_GET['id']) && $_GET['id']) { // mode delete relance
 	$res = mysql_query("SELECT CONCAT(DATE_FORMAT(devis.`date`,'%b%y-'),devis.id) AS numero FROM devis_relance,devis WHERE devis_relance.id=$_GET[id] AND devis_relance.id_devis = devis.id LIMIT 0,1") or die("Ne peux pas trouver le n° du devis ".mysql_error());
 	$row = mysql_fetch_array($res);
-	mysql_query("DELETE FROM devis_relance WHERE id=$_GET[id]") or die("Ne peux pas supprimer la relance ".mysql_error());
+	#mysql_query("DELETE FROM devis_relance WHERE id=$_GET[id]") ;
+	mysql_query("UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'") or die("Ne peux pas supprimer la relance ".mysql_error());
+	devis_log("delete_relance",$_GET['id'],"UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'");
 	$message = "La relance du devis n° $row[numero] a été correctement supprimée";
 }
 
 
 if(isset($_POST['action']) && $_POST['action']=='saisie_relance' && isset($_POST['id']) && $_POST['id']) { // mode saisie de relance client
 	$date = implode('-',array_reverse(explode('/',$_POST['relance_date']))).' '.$_POST['relance_heure'].':00'; //2007-09-10 14:16:59;
-	$res = mysql_query("INSERT INTO devis_relance (id_devis,`date`,representant,`type`,humeur,commentaire) VALUES ($_POST[id],'$date','$_POST[relance_representant]','$_POST[relance_type]',$_POST[relance_humeur],'".mysql_escape_string($_POST['relance_commentaire'])."')") or die("Ne peux pas enregistrer la relance client ".mysql_error());
+	$sql = "INSERT INTO devis_relance (id_devis,`date`,representant,`type`,humeur,commentaire) VALUES ($_POST[id],'$date','$_POST[relance_representant]','$_POST[relance_type]',$_POST[relance_humeur],'".mysql_escape_string($_POST['relance_commentaire'])."')";
+	$res = mysql_query($sql) or die("Ne peux pas enregistrer la relance client ".mysql_error());
+	devis_log("insert_relance",mysql_insert_id(),$sql);
 	$message = "La relance client a été enregistrée";
 }
 
 if(isset($_POST['action']) && $_POST['action']=='saisie_cmd' && isset($_POST['id']) && $_POST['id']) { // mode saisie de cmd client
-	$res = mysql_query("UPDATE devis SET mtht_cmd_rubis=NULL, num_cmd_rubis='".strtoupper(ereg_replace("[^A-Za-z0-9]+",",",trim($_POST['cmd'])))."' WHERE id=$_POST[id]") or die("Ne peux pas enregistrer la commande client ".mysql_error());
+	$sql = "UPDATE devis SET mtht_cmd_rubis=NULL, num_cmd_rubis='".strtoupper(ereg_replace("[^A-Za-z0-9]+",",",trim($_POST['cmd'])))."' WHERE id=$_POST[id]";
+	$res = mysql_query($sql) or die("Ne peux pas enregistrer la commande client ".mysql_error());
+	devis_log("update_num_cmd_rubis",$_POST['id'],$sql);
 	$message = "La commande client a été enregistrée";
 }
 
@@ -476,6 +484,8 @@ function calcul_cmd_rubis(id) {
 	elseif	($_SESSION['devis_expo_filtre_commande'] == 'cde')
 		$where[] = "NOT (num_cmd_rubis IS NULL OR num_cmd_rubis='') AND num_cmd_rubis<>'ANNULE' AND num_cmd_rubis<>'SUSPENDU'";
 
+	$where[] = "supprime=0";
+
 	if ($where)
 		$where = ' WHERE '.join(' AND ',$where);
 	else
@@ -488,7 +498,6 @@ function calcul_cmd_rubis(id) {
 	else
 		$ordre = $_SESSION['devis_expo_filtre_classement'];
 
-
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
@@ -498,7 +507,7 @@ SELECT	devis.id as id,
 		DATE_FORMAT(`date`,'%d %b %Y') AS date_formater,
 		DATE_FORMAT(`date`,'%w') AS date_jour,
 		representant,nom_client,ville_client,tel_client,tel_client2,email_client,artisan,UPPER(num_cmd_rubis) as num_cmd_rubis,mtht_cmd_rubis,
-		(SELECT count(id) FROM devis_relance WHERE devis_relance.id_devis=devis.id) AS nb_relance,
+		(SELECT count(id) FROM devis_relance WHERE devis_relance.id_devis=devis.id AND devis_relance.supprime=0) AS nb_relance,
 		(SELECT DATEDIFF(NOW(),`date`) FROM devis_relance WHERE devis_relance.id_devis=devis.id ORDER BY `date` DESC LIMIT 0,1) AS datediff_relance, -- si des relances
 		DATEDIFF(NOW(),`date`) AS datediff_devis,
 		(SELECT SUM(qte * puht) FROM devis_ligne WHERE devis_ligne.id_devis=devis.id) AS ptht
@@ -601,7 +610,7 @@ EOT;
 
 <?		// ON AFFICHE LES RELANCE CLIENTS POUR CE DEVIS
 		if ($row['nb_relance']) {
-			$res_relance = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d %b %Y') AS date_formater,DATE_FORMAT(`date`,'%w') AS date_jour,DATE_FORMAT(`date`,'%H:%i') AS heure_formater FROM devis_relance WHERE id_devis=$row[id] ORDER BY `date` DESC") or die("Ne peux pas afficher les relances clients ".mysql_error()); 
+			$res_relance = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d %b %Y') AS date_formater,DATE_FORMAT(`date`,'%w') AS date_jour,DATE_FORMAT(`date`,'%H:%i') AS heure_formater FROM devis_relance WHERE id_devis=$row[id] AND devis_relance.supprime=0 ORDER BY `date` DESC") or die("Ne peux pas afficher les relances clients ".mysql_error()); 
 ?>
 			<tr style="display:none;" id="relance_devis_<?=$row['id']?>">
 				<td><img src="/intranet/gfx/return.jpg"></td>

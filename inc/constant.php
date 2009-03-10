@@ -40,4 +40,9 @@ function recuperer_droit() {
 	return e('droit',mysql_fetch_array(mysql_query("SELECT droit FROM employe WHERE ip='$_SERVER[REMOTE_ADDR]'")));
 }
 
+function devis_log($action='', $id_devis=0, $sql='', $complement='') {
+	$sql = "INSERT INTO devis_log (date_action,action,ip,cle,complement,`sql`) VALUES (NOW(),'".mysql_escape_string($action)."','".mysql_escape_string($_SERVER['REMOTE_ADDR'])."','".mysql_escape_string($id_devis)."','".mysql_escape_string($complement)."','".mysql_escape_string($sql)."')";
+	mysql_query($sql) or die("ne peux pas inserer le log ".mysql_error()." <br>$sql");
+}
+
 ?>
