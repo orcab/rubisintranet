@@ -45,4 +45,21 @@ function devis_log($action='', $id_devis=0, $sql='', $complement='') {
 	mysql_query($sql) or die("ne peux pas inserer le log ".mysql_error()." <br>$sql");
 }
 
+function select_vendeur() {
+	$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
+	$tmp = array();
+	while($row = mysql_fetch_array($res)) {
+		$tmp[$row['code']] = $row['prenom'];
+	}
+	$tmp['LN'] = 'Jean René';
+	$tmp['MAR'] = 'Marc';
+	ksort($tmp);
+
+	$vendeurs = array();
+	$vendeurs['AM,LG,RLF,MAR']   = 'Chauffage';
+	$vendeurs['AG,CLM,JFS,JM,LN']   = 'Sanitaire';
+	$vendeurs['BT,CLH,ELM,JLD,SLN,VN'] = 'Electricité';
+	return array_merge($vendeurs,$tmp);
+}
+
 ?>

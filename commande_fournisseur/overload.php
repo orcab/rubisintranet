@@ -94,6 +94,8 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','',12);
 		$this->SetTextColor(0,0,0);
 		$this->MultiCell(0,4,"Pour la validation de cette commande, merci de retourner impérativement par fax ou courrier un accusé de réception en précisant vos prix et détails de livraison",0,'C');
+		$this->SetFont('helvetica','B',14);
+		$this->MultiCell(0,4,"MCS sera fermé pour inventaire les 30 et 31 mars 2009",0,'C');
 		$this->Ln(1);
 
 		//Entete des articles
@@ -133,7 +135,7 @@ class PDF extends FPDF
 		$this->SetTextColor(255,255,255);
 		$this->Cell(0,8,$this->PageNo().'/{nb}',0,1,'');
 		$this->SetTextColor(0,0,0);
-		$this->SetFont('helvetica','',9);
+		$this->SetFont('helvetica','',8);
 		$this->Cell(0,4,PDF_CDE_FOURNISSEUR_PIED1,0,1,'C');
 		$this->SetFont('helvetica','',7);
 		$this->Cell(0,4,PDF_CDE_FOURNISSEUR_PIED2,0,1,'C');

@@ -9,13 +9,7 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 $erreur   = FALSE ;
 $message  = '' ;
 
-$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
-$vendeurs = array();
-while($row = mysql_fetch_array($res)) {
-	$vendeurs[$row['code']] = $row['prenom'];
-}
-$vendeurs['LN'] = 'Jean René';
-$vendeurs['MAR'] = 'Marc';
+$vendeurs = select_vendeur();
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
 if (!isset($_SESSION['cde_adh_filtre_date_inf']))	$_SESSION['cde_adh_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-0,date('Y')));
@@ -318,7 +312,7 @@ $(document).ready(function() {
 					<select name="filtre_vendeur">
 							<option value=""<?=$_SESSION['cde_adh_filtre_vendeur']==''?' selected':''?>>TOUS</option>
 <?						while (list($key, $val) = each($vendeurs)) { ?>
-							<option value="<?=$key?>"<?=$_SESSION['cde_adh_filtre_vendeur']==$key ? ' selected':''?>><?=$val?></option>
+							<option value="<?=$key?>" <?=strrpos($key,',') === false ? '':'style="font-weight:bold;background-color:grey;color:white;"' ?> <?=$_SESSION['cde_adh_filtre_vendeur']==$key ? ' selected':''?>><?=$val?></option>
 <?						} ?>
 					</select>
 				</td>
@@ -354,7 +348,12 @@ $(document).ready(function() {
 	if ($_SESSION['cde_adh_filtre_date_inf'] && $_SESSION['cde_adh_filtre_date_inf'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) >= '$date_inf_formater'" ;
 	if ($_SESSION['cde_adh_filtre_date_sup'] && $_SESSION['cde_adh_filtre_date_sup'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) <= '$date_sup_formater'" ;
 	if ($_SESSION['cde_adh_filtre_adherent'])	$where[] = "NOMSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_adherent']))."%'" ;
-	if ($_SESSION['cde_adh_filtre_vendeur'])	$where[] = "LIVSB='".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_vendeur']))."'" ;
+	if ($_SESSION['cde_adh_filtre_vendeur'])	{
+		$tmp = explode(',',$_SESSION['cde_adh_filtre_vendeur']);
+		for($i=0 ; $i<sizeof($tmp) ; $i++)
+			$tmp[$i] = "LIVSB='".strtoupper(mysql_escape_string($tmp[$i]))."'" ;
+		$where[] = "(".join(' or ',$tmp).")";
+	}
 	if ($_SESSION['cde_adh_filtre_reference'])	$where[] = "RFCSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_reference']))."%'" ;
 	if ($_SESSION['cde_adh_filtre_numero'])		$where[] = "CDE_ENTETE.NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_numero'])))."%'" ;
 
