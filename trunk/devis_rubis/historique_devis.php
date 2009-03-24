@@ -9,13 +9,7 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 $erreur   = FALSE ;
 $message  = '' ;
 
-$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
-$vendeurs = array();
-while($row = mysql_fetch_array($res)) {
-	$vendeurs[$row['code']] = $row['prenom'];
-}
-$vendeurs['LN'] = 'Jean René';
-$vendeurs['MAR'] = 'Marc';
+$vendeurs = select_vendeur();
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
 if (!isset($_SESSION['devis_rubis_filtre_date_inf']))	$_SESSION['devis_rubis_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-7,date('Y')));
@@ -281,7 +275,7 @@ function envoi_formulaire(l_action) {
 					<select name="filtre_vendeur">
 							<option value=""<?=$_SESSION['devis_rubis_filtre_vendeur']==''?' selected':''?>>TOUS</option>
 <?						while (list($key, $val) = each($vendeurs)) { ?>
-							<option value="<?=$key?>"<?=$_SESSION['devis_rubis_filtre_vendeur']==$key ? ' selected':''?>><?=$val?></option>
+							<option value="<?=$key?>" <?=strrpos($key,',') === false ? '':'style="font-weight:bold;background-color:grey;color:white;"' ?> <?=$_SESSION['devis_rubis_filtre_vendeur']==$key ? ' selected':''?>><?=$val?></option>
 <?						} ?>
 					</select>
 				</td>
@@ -354,7 +348,12 @@ function envoi_formulaire(l_action) {
 	if ($_SESSION['devis_rubis_filtre_date_sup'] && $_SESSION['devis_rubis_filtre_date_sup'] != 'Aucune') $where[] = "CONCAT(DSECS,CONCAT(DSECA,CONCAT('-',CONCAT(DSECM,CONCAT('-',DSECJ))))) <= '$date_sup_formater'" ;
 	if ($_SESSION['devis_rubis_filtre_client'])		$where[] = "RFCSB like '%".strtoupper(mysql_escape_string($_SESSION['devis_rubis_filtre_client']))."%'" ;
 	if ($_SESSION['devis_rubis_filtre_artisan'])	$where[] = "NOMSB like '%".strtoupper(mysql_escape_string($_SESSION['devis_rubis_filtre_artisan']))."%'" ;
-	if ($_SESSION['devis_rubis_filtre_vendeur'])	$where[] = "LIVSB='".strtoupper(mysql_escape_string($_SESSION['devis_rubis_filtre_vendeur']))."'" ;
+	if ($_SESSION['devis_rubis_filtre_vendeur'])	{
+		$tmp = explode(',',$_SESSION['devis_rubis_filtre_vendeur']);
+		for($i=0 ; $i<sizeof($tmp) ; $i++)
+			$tmp[$i] = "LIVSB='".strtoupper(mysql_escape_string($tmp[$i]))."'" ;
+		$where[] = "(".join(' or ',$tmp).")";
+	}
 	if ($_SESSION['devis_rubis_filtre_numero'])		$where[] = "NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['devis_rubis_filtre_numero'])))."%'" ;
 
 	$where[] = "MONTBR $_SESSION[devis_rubis_filtre_signe_montant] $_SESSION[devis_rubis_filtre_montant]" ;
