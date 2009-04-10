@@ -83,16 +83,15 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','',10);
 		$this->Cell(15, 5 ,"Devis du ");
 		$this->Cell(87, 5 ,$row_entete['DSECJ'].'/'.$row_entete['DSECM'].'/'.$row_entete['DSECS'].$row_entete['DSECA']);
-
-		
 		$this->Ln();
 		$this->Ln(2);
 
-		// heure d'ouverture
-		$this->SetFont('helvetica','B',12);
-		$this->SetTextColor(255,0,0);
-		$this->Cell(0,5,"Tous les prix affichés sont les prix nets adhérents $SOCIETE hors taxes",0,1,'C');
-		$this->Ln(2);
+		if ($row_entete['CATCL'] == 1) {
+			$this->SetFont('helvetica','B',12);
+			$this->SetTextColor(255,0,0);
+			$this->Cell(0,5,"Tous les prix affichés sont les prix nets adhérents $SOCIETE hors taxes",0,1,'C');
+			$this->Ln(2);
+		}
 
 		//Entete des articles
 		$this->SetFont('helvetica','B',10);

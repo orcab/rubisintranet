@@ -259,7 +259,7 @@ $(document).ready(function() {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['cde_adh_filtre_date_inf']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
+					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor:pointer;" title="Date selector" />
 					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(

@@ -2,6 +2,7 @@
 
 use Data::Dumper;
 use Win32::ODBC;
+use Net::FTP;
 use strict ;
 use POSIX qw(strftime);
 require 'Phpconst2perlconst.pm';
@@ -85,13 +86,24 @@ while($loginor->FetchRow()) {
 
 print "OK\n";
 
-
 #close SQL;
 $sqlite->disconnect();
 $loginor->Close();
 
+# Début du transfert FTP
+print print_time()."Transfert FTP ... ";
+my	$ftp = Net::FTP->new('ftp.coopmcs.com', Debug => 0) or die "Cannot connect to ftp.coopmcs.com : $@";
+	$ftp->login('coopmcs','9trFHEZd') or die "Cannot login ", $ftp->message;
+	$ftp->binary;
+    $ftp->put('cde_rubis.db') or die "put failed ", $ftp->message;
+    $ftp->quit;
+print print_time()."OK\n";
+
 
 print print_time()."END\n\n";
+
+
+
 
 sub print_time {
 	print strftime('[%Y-%m-%d %H:%M:%S] ', localtime);
