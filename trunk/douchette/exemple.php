@@ -34,7 +34,7 @@ body {
 	border:solid 1px green;
 	font-family:verdana;
 	width:240px;
-	height:320px;
+	height:210px;
 }
 
 body, input {

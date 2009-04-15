@@ -97,7 +97,7 @@ my	$ftp = Net::FTP->new('ftp.coopmcs.com', Debug => 0) or die "Cannot connect to
 	$ftp->binary;
     $ftp->put('cde_rubis.db') or die "put failed ", $ftp->message;
     $ftp->quit;
-print print_time()."OK\n";
+print "OK\n";
 
 
 print print_time()."END\n\n";
