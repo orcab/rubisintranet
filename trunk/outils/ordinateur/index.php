@@ -241,6 +241,7 @@ function valider_detail_utilisateur() {
 			<option value="4">Serveur</option>
 			<option value="5">PABX</option>
 			<option value="6">Switch</option>
+			<option value="7">Router</option>
 			</select>
 		</td>
 	</tr>
@@ -306,6 +307,7 @@ while($row = mysql_fetch_array($res)) {
 		case 4 : echo 'serveur-'.($etat?'ok':'bad').'.png'; break;
 		case 5 : echo 'pabx-'.($etat?'ok':'bad').'.png'; break;
 		case 6 : echo 'switch-'.($etat?'ok':'bad').'.png'; break;
+		case 7 : echo 'router-'.($etat?'ok':'bad').'.png'; break;
 	}
 	echo '">';
 ?>
