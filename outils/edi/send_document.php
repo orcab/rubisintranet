@@ -9,13 +9,7 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 
 
 // Liste des vendeur
-$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL ORDER BY prenom ASC");
-$vendeurs = array();
-while($row = mysql_fetch_array($res)) {
-	$vendeurs[$row['code']] = $row['prenom'];
-}
-$vendeurs['LN'] = 'Jean René';
-$vendeurs['MAR'] = 'Marc';
+$vendeurs = select_vendeur();
 
 $day_number     = date('w');
 $now			= date('Ymd');
@@ -88,8 +82,12 @@ td,th {
 </style>
 EOT;
 		
-		//trouve le dernier jour d'envoi, pour n'envoyé que les BL entre la derniere fois et aujourd'hui
+		//trouve le dernier jour d'envoi, pour n'envoyer que les BL entre la derniere fois et aujourd'hui
 		$jour_envoi = explode(',',$row[$type_doc]);
+
+	//	print_r($jour_envoi);
+	//	echo "\$day_number=$day_number\n";
+
 		for($i=0 ; $i<sizeof($jour_envoi) ; $i++) { // on parcours le tableau des jours
 			if ($jour_envoi[$i] == $day_number) { // on arrive sur la case du jour concerné
 				// on cherche le jour d'envoi précédent
@@ -98,7 +96,12 @@ EOT;
 				else // sur le premier jour du tableau --> on prend le dernier, pile cyclique
 					$jour_envoi_precedent = $jour_envoi[sizeof($i)-1];
 
-				$delta_jour = $day_number > $jour_envoi_precedent ? $day_number - $jour_envoi_precedent : 7-($jour_envoi_precedent-$day_number) ;
+			//	echo "\$jour_envoi_precedent=$jour_envoi_precedent\n";
+	
+				$delta_jour = $day_number >= $jour_envoi_precedent ? $day_number - $jour_envoi_precedent : 7-($jour_envoi_precedent-$day_number) ;
+
+			//	echo "\$delta_jour=$delta_jour\n";
+
 				$date_precedente = date('Ymd',mktime(0,0,0,date('m'),date('d')-$delta_jour,date('Y')));
 				$date_precedente_plus_un = date('d/m/Y',mktime(0,0,0,date('m'),date('d')-$delta_jour+1,date('Y')));
 				$date_jour=date('d/m/Y');
@@ -127,6 +130,7 @@ EOT;
 
 		// TOUT EST PRET, ON ENVOI LE MAIL
 		if ($titre && $nb_bon) { // quelque chose à envoyer
+		//if (0) {
 			require_once '../../inc/xpm2/smtp.php';
 			$mail = new SMTP;
 			$mail->Delivery('relay');
