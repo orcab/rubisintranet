@@ -26,7 +26,7 @@ $i++;
 define('ECOTAXEHT',$i++);
 define('ECOTAXETTC',$i++);
 
-define('COEF_VENTE',1.13636);
+define('COEF_VENTE',1.15);
 
 ?>
 <html>

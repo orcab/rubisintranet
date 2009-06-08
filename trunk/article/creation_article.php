@@ -14,8 +14,8 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 	//$mail->AddTo($to[0], $to[1]) or die("Erreur d'ajour de destinataire");
 	//ajout des differents destinataires du tableau $CREATION_ARTICLE
 	foreach ($CREATION_ARTICLE as $t) {
-		$to = explode('/',$_POST['to']);
-		$mail->AddTo($to[0], $to[1]) or die("Erreur d'ajour de destinataire");
+		//$to = explode('/',$t);
+		$mail->AddTo($t['email'], $t['nom']) or die("Erreur d'ajour de destinataire");
 	}
 	$mail->From($_POST['from']);
 

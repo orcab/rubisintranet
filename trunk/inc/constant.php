@@ -56,7 +56,7 @@ function select_vendeur() {
 	ksort($tmp);
 
 	$vendeurs = array();
-	$vendeurs['AM,LG,RLF,MAR']   = 'Chauffage';
+	$vendeurs['AM,LG,RLF,MAR,CG']   = 'Chauffage';
 	$vendeurs['AG,CLM,JFS,JM,LN']   = 'Sanitaire';
 	$vendeurs['BT,CLH,ELM,JLD,SLN,VN'] = 'Electricité';
 	return array_merge($vendeurs,$tmp);

@@ -9,6 +9,7 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 $erreur   = FALSE ;
 $message  = '' ;
 
+$today_Ymd = date('Ymd') ;
 $vendeurs = select_vendeur();
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
@@ -138,7 +139,7 @@ function relance_commande(numero) {
 
 function delete_relance(id) {
 	if (confirm("Voulez-vous vraiment supprimer cette relance ?"))
-		document.location.href = 'historique_commande.php?action=delete_relance&id=' + id ;
+		document.location.href = '<?=$_SERVER['PHP_SELF']?>?action=delete_relance&id=' + id ;
 }
 
 function liste_relance(id) {
@@ -187,7 +188,7 @@ $(document).ready(function() {
 <? include('../inc/naviguation.php'); ?>
 
 <!-- DECLARATION DU FORMULAIRE PRINCIPALE -->
-<form name="historique_commande" action="historique_commande.php" method="POST">
+<form name="historique_commande" action="<?=$_SERVER['PHP_SELF']?>" method="POST">
 <input type="hidden" name="action" value="">
 <input type="hidden" name="NOBON" value="">
 
@@ -326,13 +327,14 @@ $(document).ready(function() {
 	</caption>
 	<thead>
 	<tr>
-		<th class="NOBON">N°<br><a href="historique_commande.php?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="LIVSB">Vendeur<br><a href="historique_commande.php?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NOMSB">Adhérent<br><a href="historique_commande.php?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="RFCSB">Référence<br><a href="historique_commande.php?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NBLIG">Nb ligne<br><a href="historique_commande.php?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="MONTBT">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NOBON">N°<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="DATE">Date<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="DATE">Date Liv<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="LIVSB">Vendeur<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NOMSB">Adhérent<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="RFCSB">Référence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NBLIG">Nb ligne<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="MONTBT">Mt HT Cde<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
 		<th>PDF</th>
 	</tr>
@@ -387,13 +389,17 @@ $(document).ready(function() {
 		$ordre = 'DTBOS DESC, DTBOA DESC, DTBOM DESC, DTBOJ DESC';
 	elseif	($_SESSION['cde_adh_filtre_classement'] == 'DATE ASC')
 		$ordre = 'DTBOS ASC, DTBOA ASC, DTBOM ASC, DTBOJ ASC';
+	elseif	($_SESSION['cde_adh_filtre_classement'] == 'DATELIV DESC')
+		$ordre = 'DLSSB DESC, DLASB DESC, DLMSB DESC, DLJSB DESC';
+	elseif	($_SESSION['cde_adh_filtre_classement'] == 'DATELIV ASC')
+		$ordre = 'DLSSB ASC, DLASB ASC, DLMSB ASC, DLJSB ASC';
 	else
 		$ordre = $_SESSION['cde_adh_filtre_classement'];
 
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB
+select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB
 from $tables
 $where
 order by $ordre
@@ -417,6 +423,12 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			$date_formater = date('d M Y',$date_commande);
 			$jour_commande = $jours_mini[date('w',$date_commande)];		
 		?><?=$jour_commande?> <?=$date_formater?></td><!-- date -->
+		<td class="DATELIV"><?
+			$date_livraison = mktime(0,0,0,$row['DLMSB'],$row['DLJSB'],$row['DLSSB'].$row['DLASB']) ;
+			$date_formater = date('d M Y',$date_livraison);
+			$jour_commande = $jours_mini[date('w',$date_livraison)];		
+		?><?=$jour_commande?> <?=$date_formater?>
+		<?= ($today_Ymd > $row['DLSSB'].$row['DLASB'].$row['DLMSB'].$row['DLJSB'] && $_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours') ? "<img src='../gfx/attention.png'/>":''?></td><!-- date livraison -->
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
