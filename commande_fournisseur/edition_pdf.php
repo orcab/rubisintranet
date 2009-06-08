@@ -8,14 +8,7 @@ define('DEBUG',isset($_GET['debug'])?TRUE:FALSE);
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 
-
-$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL ORDER BY prenom ASC");
-$vendeurs = array();
-while($row = mysql_fetch_array($res)) {
-	$vendeurs[$row['code']] = $row['prenom'];
-}
-$vendeurs['LN'] = 'Jean René';
-$vendeurs['MAR'] = 'Marc';
+$vendeurs = select_vendeur();
 
 if (!(isset($_GET['CFBON']) && $_GET['CFBON'])) { ?>
 	ERREUR : Aucun N° de cde précisé.
