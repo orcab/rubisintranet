@@ -98,7 +98,13 @@ EOT;
 
 			//	echo "\$jour_envoi_precedent=$jour_envoi_precedent\n";
 	
-				$delta_jour = $day_number >= $jour_envoi_precedent ? $day_number - $jour_envoi_precedent : 7-($jour_envoi_precedent-$day_number) ;
+				if ($day_number > $jour_envoi_precedent) {
+					$delta_jour = $day_number - $jour_envoi_precedent;
+				} elseif ($day_number == $jour_envoi_precedent) {
+					$delta_jour = 1;
+				} else {
+					$delta_jour = 7-($jour_envoi_precedent-$day_number);
+				}
 
 			//	echo "\$delta_jour=$delta_jour\n";
 
