@@ -49,6 +49,12 @@ input[type=text] {
 	padding-left:2px;
 }
 
+div[contenteditable=true] {
+	border: 1px solid #bfbfbf;
+	background:url('../js/boutton_images/shadow.png') white top left no-repeat;
+	padding-left:2px;
+}
+
 select, textarea {
 	border: 1px solid #bfbfbf;
 }
