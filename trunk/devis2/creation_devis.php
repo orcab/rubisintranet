@@ -44,6 +44,9 @@ var tr ;
 var all_results = new Array();
 var nb_results_by_page = 20 ;
 var recherche = '';
+var nb_option = 1;
+
+
 
 function make_all_bind() {
 
@@ -59,6 +62,12 @@ function make_all_bind() {
 		$(this).parent().parent().children('td').children('.ligne').attr('disabled', $(this).attr('checked') ? 'disabled':'');
 	});
 
+	// bind des checkbox Options
+	$('input[name$=a_opt]').unbind('click');
+	$('input[name$=a_opt]').click(function(){
+		recalcul_total();
+	});
+
 	// ajoute un ligne au dessus de la ligne courante
 	$('img[name$=_add]').unbind('click');
 	$('img[name$=_add]').click(function() {
@@ -71,6 +80,7 @@ function make_all_bind() {
 	$('img[name$=_del]').click(function() {
 		$(this).parent().parent().remove();  // supprime le TR
 	});
+
 
 	// calcul le total de la ligne
 	$('input[name=a_qte], input[name=a_pu]').unbind('keyup');
@@ -131,9 +141,9 @@ function draw_page(pageno) {
 
 	div.append('</tbody><tfoot><tr><td colspan="4">'+all_results.length+' résultat(s)&nbsp;&nbsp;&nbsp;&nbsp;');
 	
-	if (pageno > 1) div.append('<span class="navig"><a href="#" onclick="draw_page(0);">&lt;&lt;</a>&nbsp;&nbsp;&nbsp;<a href="#" onclick="draw_page('+ parseInt(pageno-1) +');">&lt;prec.</a></span>&nbsp;&nbsp;&nbsp;&nbsp;');
+	if (pageno > 1) div.append('<span class="navig"><a href="javascript:draw_page(1);">&lt;&lt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+ parseInt(pageno-1) +');">&lt;prec.</a></span>&nbsp;&nbsp;&nbsp;&nbsp;');
 	div.append('Page '+pageno);
-	if (pageno < lastpage) div.append('&nbsp;&nbsp;&nbsp;&nbsp;<span class="navig"><a href="#" onclick="draw_page('+ parseInt(pageno+1) +');">suiv.&gt;</a>&nbsp;&nbsp;&nbsp;<a href="#" onclick="draw_page('+lastpage+');">&gt;&gt;</a></span>');
+	if (pageno < lastpage) div.append('&nbsp;&nbsp;&nbsp;&nbsp;<span class="navig"><a href="javascript:draw_page('+ parseInt(pageno+1) +');">suiv.&gt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+lastpage+');">&gt;&gt;</a></span>');
 
 	div.append('</td></tr></tfoot></table>');
 }
@@ -158,18 +168,27 @@ function insert_ligne(id) {
 
 function recalcul_total() {
 	total = 0;
+	option = 0;
 	$('input[name=a_qte]').each(function() {
 		var pu	= parseFloat($(this).parents('tr').children('td').children('input[name=a_pu]').val());
 		var qte = parseFloat($(this).parents('tr').children('td').children('input[name=a_qte]').val());
 		if (pu >= 0 && qte >=0) {
 			var val = (Math.round(qte * pu * 100)/100) ;
 			$(this).parents('tr').children('td[name=a_pt]').html(val + '&euro;');
-			total += val ;
-		} else {
+			// on vérifie si c'est une option
+			if ($(this).parents('tr').children('td').children('input[name=a_opt]').attr('checked')) // cas d'une option, on ne l'a compte pas dans le total
+				option++;
+			else
+				total += val ;
+		} else
 			$(this).parents('tr').children('td[name=a_pt]').text('');
-		}
 	});
+
 	$('span#total').text(total);
+	if (option > 0)
+		$('span#options').text("Le total ne tient pas compte des " + option + " option(s) choisit");
+	else
+		$('span#options').text('');
 }
 
 
@@ -177,10 +196,13 @@ function recalcul_total() {
 
 $pattern_ligne = <<<EOT
 <tr id="a_ligne">
-	<td><img src="gfx/add.png" name="a_add" title="Ajoute une ligne au dessus" /><br/><img src="../gfx/delete_micro.gif" name="a_del" title="Supprime la ligne"/></td>
+	<td>
+		<img src="gfx/add.png" name="a_add" title="Ajoute une ligne au dessus" /><br/>
+		<img src="../gfx/delete_micro.gif" name="a_del" title="Supprime la ligne" />
+	</td>
 	<td class="opt">
-		<input type="checkbox" id="a_com" name="a_com" /><label for="a_com">Com.</label><br/>
-		<input type="checkbox" class="ligne" id="a_opt" name="a_opt" /><label for="a_opt">Opt.</label>
+		<input type="checkbox" name="a_com" /><label for="a_com">Com.</label><br/>
+		<input type="checkbox" class="ligne" name="a_opt" /><label for="a_opt">Opt.</label>
 	</td>
 	<td><input type="text" name="a_reference"		class="ref ligne"			value="" /></td>
 	<td><input type="text" name="a_fournisseur"		class="fournisseur ligne"	value="" /></td>
@@ -203,7 +225,6 @@ $(document).ready(function(){
 		for(var i=0 ; i<=9 ; i++)
 			$('#add_ligne').click();
 	});
-
 
 	// ajoute une ligne à la fin du tableau
 	$('#add_ligne').click(function() {
@@ -275,10 +296,16 @@ textarea.designation {	width:100%; }
 input.qte	{	width:3em; }
 input.pu	{	width:5em; }
 
-fieldset.total div {
+
+div#div_bouton {
+	float:left;
+	text-align:left;
+}
+
+div#div_total {
+	float:right;
 	text-align:right;
 	font-weight:bold;
-
 }
 
 div#sugest {
@@ -306,6 +333,10 @@ span.navig a {
 	color:red;
 }
 
+span#options {
+	font-weight:normal;
+	font-size:0.8em;
+}
 
 </style>
 
@@ -443,7 +474,14 @@ span.navig a {
 
 <fieldset class="total">
     <legend>Total :</legend>
-	<div>Total <sup>ht</sup>&nbsp;:&nbsp;&nbsp; <span id="total"></span> &euro;</div>
+	<div id="div_bouton">
+		<input type="button" value="Générer le devis" class="button" style="background:#e7eef3;" />
+		<input type="button" value="Générer le devis en prix ADH" style="border:none;background:none;color:white;" />
+	</div>
+	<div id="div_total">
+		<span id="options"></span>&nbsp;&nbsp;
+		Total <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total"></span> &euro;
+	</div>
 </fieldset>
 
 </form>
