@@ -88,15 +88,15 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','B',12);
 		$this->SetTextColor(255,0,0);
 		$this->Cell(0,5,"BON DE COMMANDE FOURNISSEUR",0,1,'C');
-		$this->Ln(0.7);
+		$this->Ln(0.2);
 
 		// validation impérative
-		$this->SetFont('helvetica','',12);
+		$this->SetFont('helvetica','',9);
 		$this->SetTextColor(0,0,0);
-		$this->MultiCell(0,4,"Pour la validation de cette commande, merci de retourner impérativement par fax ou courrier un accusé de réception en précisant vos prix et détails de livraison",0,'C');
+		$this->MultiCell(0,4,"Pour la validation de cette commande, merci de retourner impérativement par fax ou courrier un accusé de réception en précisant vos prix et détails de livraison\nRéception marchandise : lun -> jeu 8h à 11h45, 13h30 16h30\n        Vendredi 8h à 11h45",0,'C');
 		$this->SetFont('helvetica','B',14);
-		$this->MultiCell(0,4,"MCS sera fermé pour inventaire les 30 et 31 mars 2009",0,'C');
-		$this->Ln(1);
+		//$this->MultiCell(0,4,"MCS sera fermé pour inventaire les 30 et 31 mars 2009",0,'C');
+		//$this->Ln(1);
 
 		//Entete des articles
 		$this->SetFont('helvetica','B',10);
