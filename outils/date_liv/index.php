@@ -122,8 +122,10 @@ EOT;
 					$message .= "<div class=\"message\" style=\"color:green;\">Email correctement envoyé à $row[nom] ($row[email])</div>\n";
 				else 
 					$message .= "<div class=\"message\" style=\"color:red;\">Erreur dans l'envoi de l'email à $row[nom] ($row[email])</div>\n";
-			} // fin pour chaque adhérents
-		}
+			} else { // fin if il a un email
+				$message .= "<div class=\"message\" style=\"color:red;\">Erreur $row[nom] n'a pas d'email</div>\n";
+			}
+		}// fin pour chaque adhérents
 	}
 	elseif (sizeof($four) > 1) { // cas ou plusieurs artisans ont le meme n° de cde
 		$select_fou = "<select name=\"no_fou\">";
