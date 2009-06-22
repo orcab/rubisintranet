@@ -71,7 +71,7 @@ EOT;
 				// entête de mail
 				$html = <<<EOT
 <b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur $nom_four</b><br/>
-(Attention les dates annoncés par le fournisseur ne sont pas contractuelles et peuvent être soumis à un battement d'une semaine environ)
+(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ)<br/>
 <br/>
 <table border="1" cellpadding="3" cellspacing="0">
 <tr>
