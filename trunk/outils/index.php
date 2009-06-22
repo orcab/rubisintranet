@@ -43,7 +43,7 @@ a:hover {
 	<td style="width:50%;padding-bottom:20px;"><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
 </tr>
 <tr>
-	<td style="width:50%;padding-bottom:20px;"></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="date_liv/index.php"><img src="date_liv/gfx/date2mail.png"><br>Prévenir adh des dates de livraison</a></td>
 	<td>
 		<img src="tarif_a_venir/gfx/tarif_a_venir.png"><br/>Comparaison de tarif<br/>
 		<a href="tarif_a_venir/index.php">A venir</a><br/>
