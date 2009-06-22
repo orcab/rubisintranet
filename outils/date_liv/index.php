@@ -70,7 +70,9 @@ EOT;
 				$nom_four = trim($lignes[0]['NOMFO']);
 				// entête de mail
 				$html = <<<EOT
-<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur $nom_four</b><br/><br/>
+<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur $nom_four</b><br/>
+(Attention les dates annoncés par le fournisseur ne sont pas contractuelles et peuvent être soumis à un battement d'une semaine environ)
+<br/>
 <table border="1" cellpadding="3" cellspacing="0">
 <tr>
 	<th>N° Cde</th>
