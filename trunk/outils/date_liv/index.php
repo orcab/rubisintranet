@@ -49,8 +49,8 @@ EOT;
 
 		$res = mysql_query($sql) or die ("Ne peux pas récupérer l'email de l'artisan : ".mysql_error());
 		$row = mysql_fetch_array($res);
-		$row['email']='ryo@wanadoo.fr'; // pour le debug
-		$row['nom']='benjamin'; // pour le debug
+		//$row['email']='ryo@wanadoo.fr'; // pour le debug
+		//$row['nom']='benjamin'; // pour le debug
 		if ($row['email']) { // un email de renseigné --> on peut envoyer
 
 			// entête de mail
