@@ -1,7 +1,6 @@
 <?
 //print_r($_POST);exit;
 
-
 $options = array();
 if (isset($_POST['les_options'])) {
 	$options = explode(',',$_POST['les_options']);
@@ -161,7 +160,7 @@ $pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,QTE_WI
 // on genere les lignes les une apres les autres
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // cas d'un article
-		$prix = in_array('px_adh',$options) ? $_POST['a_pu'][$i] : $_POST['a_adh_pu'][$i];
+		$prix = in_array('px_adh',$options) ? $_POST['a_adh_pu'][$i] : $_POST['a_pu'][$i];
 
 		if ($prix <= 0)
 			$pdf->SetFillColor(255,0,0);
@@ -193,7 +192,7 @@ if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
 	$pdf->AddPage();
 
 
-$total = in_array('px_adh',$options) ? $total_devis : $total_devis_adh;
+$total = in_array('px_adh',$options) ? $total_devis_adh : $total_devis;
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(230); // gris clair
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
