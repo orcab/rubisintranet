@@ -107,14 +107,14 @@ class PDF extends FPDF
 		$this->Ln();
 
 		// si on est avec un devis prix ADH
-	//	if (in_array('prix_adh',$options)) {
-	//		$this->SetTextColor(255,0,0);
-	//		$this->SetFont('helvetica','B',12);
-	//		$this->Cell(90, 5 ,"Les prix affichés sont NET HT Adhérents");
-	//		$this->SetTextColor(0,0,0);
-	//	} else {
+		if (in_array('px_adh',$options)) {
+			$this->SetTextColor(255,0,0);
+			$this->SetFont('helvetica','B',12);
+			$this->Cell(90, 5 ,"Les prix affichés sont NET HT Adhérents");
+			$this->SetTextColor(0,0,0);
+		} else {
 			$this->Cell(90);
-	//	}
+		}
 
 		// client email
 		$this->SetFont('helvetica','',10);
@@ -183,13 +183,13 @@ class PDF extends FPDF
 
 		$this->SetFont('helvetica','BI',8);
 //		if (eregi('^devis_net',$values['devis.theme'])) {
-			$this->MultiCell(0,3,PDF_DEVIS_PRIX_NET1,0,'C');
-			$this->SetFillColor(200,200,200); // gris clair
+			//$this->MultiCell(0,3,PDF_DEVIS_PRIX_NET1,0,'C');
+			//$this->SetFillColor(200,200,200); // gris clair
 			//$this->MultiCell(0,3,PDF_DEVIS_PRIX_NET2,0,'C',1);	
-/*		} elseif (eregi('^devis',$values['devis.theme'])) {
+//		} elseif (eregi('^devis',$values['devis.theme'])) {
 			$this->SetXY(PAGE_WIDTH - RIGHT_MARGIN - 65,-30);
 			$this->MultiCell(65,3,PDF_DEVIS_PRIX_PUBLIC1,0,'C');
-		} elseif (eregi('^gamme',$values['devis.theme'])) {
+/*		} elseif (eregi('^gamme',$values['devis.theme'])) {
 			$this->MultiCell(0,3,PDF_DEVIS_GAMME1,0,'C');
 		}*/
 

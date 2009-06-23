@@ -36,15 +36,22 @@ if($id) { // modif
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
 function affiche_adherent() {
-	if (document.creation_devis.artisan_nom.options[document.creation_devis.artisan_nom.selectedIndex].value != 'NON Adherent')
-		$('#artisan_nom_libre').hide('fast');
-	else
+	var value_selected = document.creation_devis.artisan_nom.options[document.creation_devis.artisan_nom.selectedIndex].value ;
+	if (value_selected == 'NON Adherent' || value_selected == 'CAB 56')
 		$('#artisan_nom_libre').show('fast');
+	else
+		$('#artisan_nom_libre').hide('fast');
 }
 
 function cache_sugest() {
 	$('div#sugest').hide('normal');
 }
+
+function valide_form(mes_options) {
+	document.creation_devis.les_options.value = mes_options;
+	document.creation_devis.submit();
+}
+
 
 var tr ;
 var all_results = new Array();
@@ -54,37 +61,52 @@ var recherche = '';
 
 function make_all_bind() {
 
+	// unbind click
+	$('input[name^=a_maj], input[name^=a_opt], img').unbind('click');
+
 	// colorisation des input quand la souris est dessus
-	$('input[type=text]').unbind('blur');
-	$('input[type=text]').unbind('focus');
-	$('input[type=text]').blur(function()	{	$(this).css('background','');	});
-	$('input[type=text]').focus(function()	{	$(this).css('background','#e7eef3');	});
+	$('input[type=text], textarea').unbind('blur');
+	$('input[type=text], textarea').unbind('focus');
+	$('input[type=text], textarea').blur(function()	{	$(this).css('background','');	});
+	$('input[type=text], textarea').focus(function(){	$(this).css('background','#e7eef3');	});
+
+	// ecriture dans les cases editable (designation ou prix)
+	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').unbind('change');
+	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').change(function() {
+		var parent_td = $(this).parents('tr').children('td') ;
+		if (parent_td.children('input[name^=a_reference]').val() && parent_td.children('input[name^=a_fournisseur]').val()) // si on a une référence et un fournisseur, c'est que l'on edit un article. Sinon on écris jsute un com'
+			parent_td.children('div.modification').show();
+	});
+
 
 	// click sur options
-	$('input[name=checkbox]').unbind('click');
-	$('input[type=checkbox]').click(function() {
-		$(this).parent('td').parent('tr').children('td').children('input[name^=a_hid_opt]').val( $(this).attr('checked') ? '1' : '0'  );
+	$('input[name^=a_opt]').click(function() {
+		$(this).parents('tr').children('td').children('input[name^=a_hid_opt]').val( $(this).attr('checked') ? '1' : '0'  );
 		recalcul_total();
 	});
 
+	// click sur MAJ
+	$('input[name^=a_maj]').click(function() {
+		$(this).parents('tr').children('td').children('input[name^=a_hid_maj]').val( $(this).attr('checked') ? '1' : '0'  );
+	});
+
 	// ajoute un ligne au dessus de la ligne courante
-	$('img[name^=a_add]').unbind('click');
 	$('img[name^=a_add]').click(function() {
-		$(this).parent().parent().before( pattern_ligne );
+		$(this).parents('tr').before( pattern_ligne );
 		make_all_bind();
 	});
 
 	// supprime une ligne du tableau en cliquant sur l'image
-	$('img[name^=a_del]').unbind('click');
 	$('img[name^=a_del]').click(function() {
-		$(this).parent().parent().remove();  // supprime le TR
+		if (confirm("Voulez-vous vraiment supprimer cette ligne ?"))
+			$(this).parents('tr').remove();  // supprime le TR
 	});
 
 
 	// on doit aller chercher les infos dans la BD et les ramener sur la page
 	$('input[name^=a_reference]').unbind('keyup');
 	$('input[name^=a_reference]').keyup(function() {
-		tr = $(this).parents().parents('tr');
+		tr = $(this).parents('tr');
 		recherche = $(this).val();
 		var div_offset = $(this).offset();
 		var div_height = $(this).height();
@@ -138,13 +160,14 @@ function draw_page(pageno) {
 }
 
 
+// ou a choisit une ligne parmis les propositions --> on insert les données
 function insert_ligne(id) {
 	//alert(id);
 	$('div#sugest').hide(); // on cache la boite
 	$.getJSON('ajax.php', { what:'get_detail', val: id  } ,
 			function(data){
-				//alert(data.couleur);
 				var tmp = tr.children('td') ;
+				tmp.children('div.modification').hide();
 				tmp.children('input[name^=a_reference]').val(data.reference);
 				tmp.children('input[name^=a_fournisseur]').val(data.fournisseur);
 				tmp.children('textarea[name^=a_designation]').val(
@@ -152,18 +175,18 @@ function insert_ligne(id) {
 								(data.couleur ? '\nCouleur : '+data.couleur:'') +
 								(data.taille ? '\nTaille : '+data.taille:''));
 				tmp.children('input[name^=a_qte]').val(1);
-
-				// pour le débug des prix.
-				tmp.children('input[name^=a_pu]').parents('td').html('<input type="text" name="a_pu[]" value="" class="pu" onkeyup="recalcul_total();"/>');
 				tmp.children('input[name^=a_pu]').val((Math.round(data.prix		* 100)/100)); // prix expo
-				tmp.children('input[name^=a_adh_pu]').val((Math.round(data.px_adh	* 100)/100)); // prix adh
-
-				// debug des différents prix calculé.
-				tmp.children('input[name^=a_pu]').after('<br/>coop '	+ Math.round(data.px_coop		* 100)/100 + 
-														'<br/>adh '		+ Math.round(data.px_adh		* 100)/100 + 
-														'<br/>expo '	+ Math.round(data.px_expo		* 100)/100 + 
-														'<br/>pub '		+ Math.round(data.px_public	* 100)/100
+				tmp.children('span').children('input[name^=a_adh_pu]').val((Math.round(data.px_adh	* 100)/100)); // prix adh
+				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_coop		* 100)/100 + 
+														'<br/>adh '	+ Math.round(data.px_adh		* 100)/100 + 
+														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
+														'<br/>pub '	+ Math.round(data.px_public	* 100)/100
 														);
+
+				if ($('#discret_mode').attr('checked'))
+					$('.discret').show();
+				else 
+					$('.discret').hide();
 				recalcul_total();
 			}
 	);
@@ -175,23 +198,25 @@ function recalcul_total() {
 	total = 0;
 	option = 0;
 	$('input[name^=a_qte]').each(function() {
-		var pu	= parseFloat($(this).parents('tr').children('td').children('input[name^=a_pu]').val());
-		var qte = parseFloat($(this).parents('tr').children('td').children('input[name^=a_qte]').val());
+		var parent_tr = $(this).parents('tr');
+		var parent_td = parent_tr.children('td');
+		var pu	= parseFloat(parent_td.children('input[name^=a_pu]').val().replace(',','.'));
+		var qte = parseFloat(parent_td.children('input[name^=a_qte]').val().replace(',','.'));
 		if (pu >= 0 && qte >=0) {
 			var val = (Math.round(qte * pu * 100)/100) ;
-			$(this).parents('tr').children('td[name^=a_pt]').html(val + '&euro;');
+			parent_tr.children('td[name^=a_pt]').html(val + '&euro;');
 			// on vérifie si c'est une option
-			if ($(this).parents('tr').children('td').children('input[name^=a_opt]').attr('checked')) // cas d'une option, on ne l'a compte pas dans le total
+			if (parent_td.children('input[name^=a_opt]').attr('checked')) // cas d'une option, on ne l'a compte pas dans le total
 				option++;
 			else
 				total += val ;
 		} else
-			$(this).parents('tr').children('td[name^=a_pt]').text('');
+			parent_tr.children('td[name^=a_pt]').text('');
 	});
 
 	$('span#total').text(Math.round(total * 100)/100);
 	if (option > 0)
-		$('span#options').text("Le total ne tient pas compte des " + option + " option(s) choisit");
+		$('span#options').text("Le total ne tient pas compte " + (option > 1 ? "des "+option+" options choisit" : "de l'option choisit"));
 	else
 		$('span#options').text('');
 }
@@ -204,15 +229,30 @@ $pattern_ligne = <<<EOT
 	<td>
 		<img src="gfx/add.png" name="a_add" title="Ajoute une ligne au dessus" /><br/>
 		<img src="../gfx/delete_micro.gif" name="a_del" title="Supprime la ligne" />
-		<input type="hidden"	name="a_adh_pu[]"	value="0"/>
+	</td>
+	<td class="opt">
+		<input type="checkbox" name="a_opt[]" />Opt.
 		<input type="hidden"	name="a_hid_opt[]"	value="0"/>
 	</td>
-	<td class="opt"><input type="checkbox" name="a_opt[]" /><label for="a_opt">Opt.</label></td>
 	<td><input type="text"		name="a_reference[]"	value=""		class="ref"			 autocomplete="off" /></td>
 	<td><input type="text"		name="a_fournisseur[]"	value=""		class="fournisseur"	 /></td>
-	<td><textarea				name="a_designation[]"	rows="3"	class="designation"></textarea></td>
-	<td><input type="text"		name="a_qte[]"		value="0"	class="qte" onkeyup="recalcul_total();"/></td>
-	<td><input type="text"		name="a_pu[]"		value="0"	class="pu"  onkeyup="recalcul_total();"/></td>
+	<td>
+		<textarea				name="a_designation[]"	rows="3"	class="designation"></textarea>
+		<input type="hidden"	name="a_hid_maj[]"	value="0"/>
+		<div class="modification">
+			<img src="../gfx/info.png" /> Modifications apportées &nbsp;&nbsp;&nbsp;
+			<input type="checkbox" name="a_maj[]" />MAJ
+		</div>
+	</td>
+	<td>
+		<input type="text"		name="a_qte[]"		value="0"	class="qte" onkeyup="recalcul_total();"/>
+		
+	</td>
+	<td style="text-align:right;">
+		<input type="text"		name="a_pu[]"		value="0"	class="pu"  onkeyup="recalcul_total();"/>
+		<span class="discret"><br/>Adh <input type="text"	name="a_adh_pu[]"	value="0" class="pu" /></span>
+		<div class="discret"></div>
+	</td>
 	<td name="a_pt"></td>
 </tr>
 EOT;
@@ -245,6 +285,16 @@ $(document).ready(function(){
 
 	make_all_bind();
 	recalcul_total();
+
+
+	// click sur le mode discret
+	$('#discret_mode').click(function() {
+		if ($(this).attr('checked'))
+			$('.discret').show();
+		else 
+			$('.discret').hide();
+	});
+
 }); // fin on document ready
 
 </script>
@@ -259,6 +309,9 @@ body {
 sup {	font-size:10px; }
 
 fieldset {	border:solid 1px #6290B3; }
+
+.discret { display:none; }
+
 fieldset#detail table tr {	border-bottom:dotted 1px #6290B3; }
 
 fieldset legend {
@@ -348,6 +401,12 @@ span#options {
 }
 
 td.devis_id { font-weight:bold; }
+input.qte { text-align:center; }
+input.pu { text-align:right; }
+div.modification { 
+	display:none;
+	font-size:0.8em;
+}
 
 </style>
 
@@ -355,10 +414,9 @@ td.devis_id { font-weight:bold; }
 <div id="sugest"></div><!-- pour la sugestion des résultat ajax -->
 
 <form method="post" action="generation_devis_pdf.php" name="creation_devis">
+<input type="hidden" name="les_options" value="" />
 <input type="hidden" name="id_devis" value="<?=$id?>" />
 <div id="cadre-exterieur">
-
-
 
 <fieldset id="entete">
     <legend>Entête :</legend>
@@ -445,7 +503,7 @@ td.devis_id { font-weight:bold; }
 	</td>
 </tr>
 <tr>
-	<td></td>
+	<td><input type="checkbox" id="discret_mode" name="discret_mode" /><label for="discret_mode" style="font-size:0.8em;">Mode spécial</label></td>
 	<td></td>
 	<td></td>
 	<th>Email</th>
@@ -510,8 +568,8 @@ td.devis_id { font-weight:bold; }
 <fieldset class="total">
     <legend>Total :</legend>
 	<div id="div_bouton">
-		<input type="submit" value="Générer le devis" class="button pdf" style="background-color:#e7eef3;" />
-		<input type="button" value="Générer le devis en prix ADH" style="border:none;background:none;color:white;" />
+		<input type="button" value="Générer le devis" class="button pdf" style="background-color:#e7eef3;" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Générer le devis en prix ADH" class="button pdf discret" style="background-color:#e7eef3;" onclick="valide_form('px_adh');" />
 	</div>
 	<div id="div_total">
 		<span id="options"></span>&nbsp;&nbsp;
