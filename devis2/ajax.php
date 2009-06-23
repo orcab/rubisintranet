@@ -4,35 +4,64 @@ include('../inc/config.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
+$search_car  =	array('à','ä','â','é','ê','è','ë','ê','ò','ö','ô','ì','ï','î','ù','ü','û','ÿ');
+$replace_car =	array('a','a','e','e','e','e','e','e','o','o','o','i','i','i','u','u','u','y');
 
 //$F = fopen('debug.txt','w');
 //fwrite($F,serialize($_GET));
 
 if ($_GET['what'] == 'complette_via_ref' && isset($_GET['val'])) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR
 	$val = mysql_escape_string(strtoupper($_GET['val'])) ;
-	$res = mysql_query("SELECT id,reference,designation,px_public,px_coop,(px_coop / (1-(marge_coop/100))) AS px_adh,(px_coop * 1.5 / (1-(marge_coop/100))) AS px_expo,fournisseur,couleur,taille FROM devis_article2 WHERE reference LIKE '$val%' OR reference_simple LIKE '$val%' ORDER BY designation ASC");
+	$sql = <<<EOT
+SELECT	id,reference,designation,marge_coop,
+		px_public,
+		px_coop,
+		(px_coop / (1-(marge_coop/100))) AS px_adh,
+		(px_coop * 1.5 / (1-(marge_coop/100))) AS px_expo,
+		fournisseur,couleur,taille
+FROM	devis_article2
+WHERE	reference LIKE '$val%' OR
+		reference_simple LIKE '$val%'
+ORDER BY designation ASC
+EOT;
+	$res = mysql_query($sql);
 
 	$json = array();
 	while($row = mysql_fetch_array($res)) {
-		$row['prix'] = min($row['px_public'],$row['px_expo']); // on prend le plus petit prix entre le prix expo et le prix public
+		foreach ($row as $key => $val) $row[$key] = stripslashes($val);
+		$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
+		$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public']; // on prend le plus petit prix entre le prix expo et le prix public
+		$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix']; // on prend le plus petit prix entre le prix expo et le prix public
 		array_push($json,$row);
 	}
 	//fwrite($F,json_encode($json));
 	echo json_encode($json);
-	
 } // fin RECHERCHE DES INFO VIA LA REF FOURNISSEUR
 
 
  
 elseif ($_GET['what'] == 'get_detail' && isset($_GET['val'])) { ////// RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
 	$id = mysql_escape_string(strtoupper($_GET['val'])) ;
-	$res = mysql_query("SELECT id,reference,designation,px_public,px_coop,(px_coop / (1-(marge_coop/100))) AS px_adh,(px_coop * 1.5 / (1-(marge_coop/100))) AS px_expo,fournisseur,couleur,taille FROM devis_article2 WHERE id='$id'");
+	$sql = <<<EOT
+SELECT	id,reference,designation,marge_coop,
+		px_public,
+		px_coop,
+		(px_coop / (1-(marge_coop/100))) AS px_adh,
+		(px_coop * 1.5 / (1-(marge_coop/100))) AS px_expo,
+		fournisseur,couleur,taille
+FROM	devis_article2
+WHERE	id='$id'
+EOT;
+	$res = mysql_query($sql);
 
 	//fwrite($F,"\n\nSELECT id,reference,designation,px_public,px_coop,(px_coop / (1-(marge_coop/100))) AS px_adh,(px_coop * 1.5 / (1-(marge_coop/100))) AS px_expo,fournisseur,couleur,taille FROM devis_article2 WHERE id='$id'");
 	$row = mysql_fetch_array($res);
+	foreach ($row as $key => $val) $row[$key] = stripslashes($val);
+	$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
 	//fwrite($F,"\n\n".serialize($row));
 
-	$row['prix'] = min($row['px_public'],$row['px_expo']);
+	$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public'];
+	$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
 	echo json_encode($row);
 } // fin RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
 

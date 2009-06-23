@@ -2,12 +2,12 @@
 //print_r($_POST);exit;
 
 
-/*$options = array();
+$options = array();
 if (isset($_POST['les_options'])) {
 	$options = explode(',',$_POST['les_options']);
 } elseif (isset($_GET['les_options'])) {
 	$options = explode(',',$_GET['les_options']);
-}*/
+}
 
 include('../inc/config.php');
 require_once('overload.php');
@@ -124,6 +124,25 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 devis_log("insert_lignes",$id_devis);
 
 
+// ENREGISTREMENT DES MOFIDICATIONS ARTICLE DANS LA BASE (OU CREATION)
+for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
+	if ($_POST['a_hid_maj'][$i] && $_POST['a_designation'][$i]) { // ARTICLE MIS A JOUR --> A ENREGISTRER
+		$sql =	"REPLACE INTO devis_article2 (fournisseur,reference,designation,px_public,px_coop,date_creation,marge_coop,reference_simple) VALUES (".
+					"'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))."',".
+					"'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))."',".
+					"'".mysql_escape_string($_POST['a_designation'][$i])."',".
+					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_pu'][$i]))."',".
+					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_adh_pu'][$i]))."',".
+					"NOW(),".
+					"0,". // marge_coop
+					"'".mysql_escape_string(ereg_replace('[^0-9A-Z]','',strtoupper($_POST['a_reference'][$i])))."'".
+				")";
+		mysql_query($sql) or die("Erreur dans la mise à jour des articles : ".mysql_error()."<br/>\n$sql");
+		devis_log("replace_article",$id_devis,$sql);
+	}
+}
+
+
 
 // GENERATION DU DOCUMENT PDF
 // creation de l'objet
@@ -142,7 +161,9 @@ $pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,QTE_WI
 // on genere les lignes les une apres les autres
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // cas d'un article
-		if ($_POST['a_pu'][$i] <= 0) 
+		$prix = in_array('px_adh',$options) ? $_POST['a_pu'][$i] : $_POST['a_adh_pu'][$i];
+
+		if ($prix <= 0)
 			$pdf->SetFillColor(255,0,0);
 		
 			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
@@ -150,8 +171,8 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 						array('text' => $_POST['a_fournisseur'][$i]	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
 						array('text' => stripslashes($_POST['a_designation'][$i]).($_POST['a_hid_opt'][$i] ? " (option)":'')	, 'text-align' => 'L'),
 						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
-						array('text' => $_POST['a_pu'][$i].($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
-						array('text' => $_POST['a_qte'][$i]*$_POST['a_pu'][$i].($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
+						array('text' => $prix.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
+						array('text' => $_POST['a_qte'][$i]*$prix.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
 						)
 					);
 		$pdf->SetFillColor(255);
@@ -162,7 +183,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		if($pdf->GetY() +  7 > PAGE_HEIGHT - 29) // check le saut de page
 			$pdf->AddPage();
 
-		$pdf->Cell(0,7,$_POST['a_designation'][$i] ,1,1,'C',1);
+		$pdf->MultiCell(0,7,stripslashes($_POST['a_designation'][$i]) ,1,'C',1);
 		$pdf->SetFillColor(255);
 	}
 }
@@ -171,26 +192,28 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
 	$pdf->AddPage();
 
+
+$total = in_array('px_adh',$options) ? $total_devis : $total_devis_adh;
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(230); // gris clair
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 $pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
-$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,$total_devis.EURO,1,0,'R',1);
+$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,$total.EURO,1,0,'R',1);
 $pdf->Ln();
 
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 $pdf->Cell(DESIGNATION_DEVIS_WIDTH ,7,"MONTANT TOTAL TTC (TVA ".TTC1."%)",1,0,'L',1);
-$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',sprintf("%0.2f",$total_devis + $total_devis * TTC1 / 100)).EURO,1,0,'R',1);
+$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',sprintf("%0.2f",$total + $total * TTC1 / 100)).EURO,1,0,'R',1);
 $pdf->Ln();
 
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 $pdf->Cell(DESIGNATION_DEVIS_WIDTH ,7,"MONTANT TOTAL TTC (TVA ".TTC2."%)",1,0,'L',1);
-$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',sprintf("%0.2f",$total_devis + $total_devis * TTC2 / 100)).EURO,1,0,'R',1);
+$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',sprintf("%0.2f",$total + $total * TTC2 / 100)).EURO,1,0,'R',1);
 $pdf->Ln();
 
 if ($option > 0) { // il y a des options, on balance un disclaimer
 	$pdf->Cell(	REF_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_DEVIS_WIDTH + QTE_WIDTH + PUHT_WIDTH + PUHT_WIDTH,7,
-				"Le total ne tient pas compte " . ($option > 1 ? "des $option options" : "de l'option choisit"),
+				"Le total ne tient pas compte " . ($option > 1 ? "des $option options choisit" : "de l'option choisit"),
 				1,0,'R',1);
 	$pdf->Ln();
 }
