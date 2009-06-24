@@ -459,7 +459,8 @@ function calcul_cmd_rubis(id_devis) {
 	elseif	($_SESSION['devis_expo_filtre_commande'] == 'cde')
 		$where[] = "NOT (num_cmd_rubis IS NULL OR num_cmd_rubis='') AND num_cmd_rubis<>'ANNULE' AND num_cmd_rubis<>'SUSPENDU'";
 
-	$where[] = "supprime=0";
+	$where[] = "supprime=0";			// ne pas afficher les devis supprimé
+	$where[] = "nom_client<>'EDITION'"; // ne pas afficher les devis en cours d'édition
 
 	if ($where)
 		$where = ' WHERE '.join(' AND ',$where);

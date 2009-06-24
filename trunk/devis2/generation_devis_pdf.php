@@ -70,7 +70,7 @@ EOT;
 			'$POST_escaped[client_adresse]',
 			'$POST_escaped[client_adresse2]',
 			'$POST_escaped[client_codepostal]',
-			'$POST_escaped[client_ville])',
+			'$POST_escaped[client_ville]',
 			'$POST_escaped[client_telephone]',
 			'$POST_escaped[client_telephone2]',
 			'$POST_escaped[client_email]'
