@@ -4,8 +4,8 @@ include('../inc/config.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-$search_car  =	array('à','ä','â','é','ê','è','ë','ê','ò','ö','ô','ì','ï','î','ù','ü','û','ÿ');
-$replace_car =	array('a','a','e','e','e','e','e','e','o','o','o','i','i','i','u','u','u','y');
+$search_car  =	array('à','ä','â','é','ê','è','ë','ê','ò','ö','ô','ì','ï','î','ù','ü','û','ÿ','{CR}');
+$replace_car =	array('a','a','e','e','e','e','e','e','o','o','o','i','i','i','u','u','u','y',"\n");
 
 //$F = fopen('debug.txt','w');
 //fwrite($F,serialize($_GET));

@@ -10,12 +10,31 @@ if (!($droit & PEUT_CREER_DEVIS)) { // n'a pas le droit de faire des devis
 	die("Vos droits ne vous permettent pas d'accéder à cette partie de l'intranet");
 }
 
-
 // mode creation ou modification ?
-$id = isset($_GET['id']) ? mysql_escape_string($_GET['id']) : '' ;
+if (isset($_GET['id'])) { // mode modification
+	$id = mysql_escape_string($_GET['id']) ;
+	$modif = TRUE;
+} else {
+	$representant = '';
+	$res  = mysql_query("SELECT * FROM employe WHERE droit & $PEUT_CREER_DEVIS ORDER BY prenom ASC");
+	while ($row = mysql_fetch_array($res))
+		if ($_SERVER['REMOTE_ADDR']==$row['ip']) { // on a trouvé l'éditeur
+			$representant = mysql_escape_string($row['prenom']); break;
+		}
+
+	// mode creation
+	// on crée un faux devis qu'il faudra compléter
+	$sql = <<<EOT
+INSERT INTO devis	(`date`,date_maj,representant,		artisan,	nom_client,	ville_client,	tel_client)
+VALUES				(NOW(),	NOW(),	'$representant',	'EDITION',	'EDITION',	'EDITION',		'EDITION')
+EOT;
+	mysql_query($sql) or die("Erreur dans la creation du dummy devis : ".mysql_error()."<br/>\n$sql");
+	$id = mysql_insert_id();
+	$modif=FALSE;
+}
 
 // recherche du l'entete du devis si en modification
-if($id) { // modif
+if($modif) { // modif
 	$res_devis = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d/%m/%Y') AS date_formater,DATE_FORMAT(`date`,'%H:%i') AS heure,DATE_FORMAT(date_maj,'%d/%m/%Y') AS date_maj_formater,CONCAT(DATE_FORMAT(`date`,'%b%y-'),id) AS numero FROM devis WHERE id='$id' LIMIT 0,1") or die("Requete impossible ".mysql_error()) ;
 	$row_devis = mysql_fetch_array($res_devis);
 }
@@ -24,7 +43,7 @@ if($id) { // modif
 
 ?><html>
 <head>
-<title><?= $id ? "Modification du $row_devis[numero]" : "Création de devis" ?></title>
+<title><?= $modif ? "Modification du $row_devis[numero]" : "Création du devis ".date('%b%y')."-$id" ?></title>
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_devis.ico" />
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
@@ -176,7 +195,7 @@ function insert_ligne(id) {
 								(data.taille ? '\nTaille : '+data.taille:''));
 				tmp.children('input[name^=a_qte]').val(1);
 				tmp.children('input[name^=a_pu]').val((Math.round(data.prix		* 100)/100)); // prix expo
-				tmp.children('span').children('input[name^=a_adh_pu]').val((Math.round(data.px_adh	* 100)/100)); // prix adh
+				tmp.children('span').children('input[name^=a_adh_pu]').val(Math.round(data.px_adh	* 100)/100); // prix adh
 				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_coop		* 100)/100 + 
 														'<br/>adh '	+ Math.round(data.px_adh		* 100)/100 + 
 														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
@@ -198,10 +217,16 @@ function recalcul_total() {
 	total = 0;
 	option = 0;
 	$('input[name^=a_qte]').each(function() {
-		var parent_tr = $(this).parents('tr');
-		var parent_td = parent_tr.children('td');
-		var pu	= parseFloat(parent_td.children('input[name^=a_pu]').val().replace(',','.'));
-		var qte = parseFloat(parent_td.children('input[name^=a_qte]').val().replace(',','.'));
+		var parent_tr	= $(this).parents('tr');
+		var parent_td	= parent_tr.children('td');
+		var pu			= parseFloat(parent_td.children('input[name^=a_pu]').val().replace(',','.'));
+		var pu_adh		= parseFloat(parent_td.children('span').children('input[name^=a_adh_pu]').val().replace(',','.'));
+		var qte			= parseFloat(parent_td.children('input[name^=a_qte]').val().replace(',','.'));
+		if (pu_adh <= 0 && qte > 0) // si le prix est a 0, on le met en évidence
+			parent_td.children('span').children('input[name^=a_adh_pu]').css('background-color','red').css('background-image','none');
+		else
+			parent_td.children('span').children('input[name^=a_adh_pu]').css('background-color','#999').css('background-image','none').css('color','white');
+
 		if (pu >= 0 && qte >=0) {
 			var val = (Math.round(qte * pu * 100)/100) ;
 			parent_tr.children('td[name^=a_pt]').html(val + '&euro;');
@@ -264,28 +289,21 @@ var pattern_ligne = '<?=ereg_replace("[\n\r]",'',$pattern_ligne)?>' ;
 
 
 $(document).ready(function(){
+		
+	// ajoute une ligne à la fin du tableau
+	$('#add_ligne').click(function() {
+		$('#lignes tbody').append( pattern_ligne );
+		if ($('#discret_mode').attr('checked')) $('.discret').show(); // affiche ou non les cases spécial a la creation de la ligne
+		else									$('.discret').hide();
+		make_all_bind();
+	}); // fin add ligne
 	
+	// ajoute 10 ligend d'un coup
 	$('#add_dix_ligne').click(function() {
 		for(var i=0 ; i<=9 ; i++)
 			$('#lignes tbody').append( pattern_ligne );
 		make_all_bind();
 	});
-
-	// ajoute une ligne à la fin du tableau
-	$('#add_ligne').click(function() {
-		$('#lignes tbody').append( pattern_ligne );
-		make_all_bind();
-	}); // fin add ligne
-	
-
-	// au chargement de la page, on ajoute une ligne au tableau des details
-<?	if (!$id) { // si aucune ligne sur le devis, on en propose une ?>
-		$('#add_ligne').click();
-<?	} ?>
-
-	make_all_bind();
-	recalcul_total();
-
 
 	// click sur le mode discret
 	$('#discret_mode').click(function() {
@@ -294,6 +312,15 @@ $(document).ready(function(){
 		else 
 			$('.discret').hide();
 	});
+
+
+		// au chargement de la page, on ajoute une ligne au tableau des details
+<?	if (!$modif) { // si aucune ligne sur le devis, on en propose une ?>
+		$('#add_ligne').click();
+<?	} ?>
+
+	make_all_bind();
+	recalcul_total();
 
 }); // fin on document ready
 
@@ -427,7 +454,7 @@ div.modification {
 		<select name="artisan_representant" TABINDEX="1">
 <?			$res  = mysql_query("SELECT * FROM employe WHERE droit & $PEUT_CREER_DEVIS ORDER BY prenom ASC");
 			while ($row = mysql_fetch_array($res)) {
-				if ($id) { //modif ?>
+				if ($modif) { //modif ?>
 					<option value="<?=$row['prenom']?>"<?= $row_devis['representant']==$row['prenom'] ? ' selected':''?>><?=$row['prenom']?></option>
 <?				} else { // creation ?>
 					<option value="<?=$row['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row['ip'] ? ' selected':''?>><?=$row['prenom']?></option>
@@ -437,7 +464,7 @@ div.modification {
 	</td>
 	<th>Client</th>
 	<th>Nom</th>
-	<td><input type="text" name="client_nom" size="45" TABINDEX="6" value="<?= $id ? $row_devis['nom_client']: ''?>"></td>
+	<td><input type="text" name="client_nom" size="45" TABINDEX="6" value="<?= $modif ? $row_devis['nom_client']: ''?>"></td>
 </tr>
 <tr>
 	<th>Artisan</th>
@@ -447,22 +474,22 @@ div.modification {
 <?			$res  = mysql_query("SELECT nom FROM artisan WHERE suspendu=0 ORDER BY nom ASC");
 			$a_trouve_artisan = FALSE ;
 			while ($row = mysql_fetch_array($res)) {
-				if ($id) { //modif ?>
+				if ($modif) { //modif ?>
 					<option value="<?=$row['nom']?>"<? if ($row_devis['artisan']==$row['nom']) { echo ' selected'; $a_trouve_artisan = TRUE ; } ?>><?=$row['nom']?></option>
 <?				} else { // creation ?>
 					<option value="<?=$row['nom']?>"><?=$row['nom']?></option>
 <?				}	
 			} ?>
-		</select><br/><input id="artisan_nom_libre" <?= $a_trouve_artisan ? 'style="visibility:hidden;"' : ''?> type="text" name="artisan_nom_libre" value="<?= $id && !$a_trouve_artisan ? $row_devis['artisan']:''; ?>">
+		</select><br/><input id="artisan_nom_libre" <?= $a_trouve_artisan ? 'style="visibility:hidden;"' : ''?> type="text" name="artisan_nom_libre" value="<?= $modif && !$a_trouve_artisan ? $row_devis['artisan']:''; ?>">
 	</td>
 	<td></td>
 	<th>Adresse (ligne 1)</th>
-	<td><input type="text" name="client_adresse" size="45" TABINDEX="7" value="<?= $id ? $row_devis['adresse_client']: ''?>"></td>
+	<td><input type="text" name="client_adresse" size="45" TABINDEX="7" value="<?= $modif ? $row_devis['adresse_client']: ''?>"></td>
 </tr>
 <tr>
 	<th>Date</th>
 	<td nowrap>
-		<input type="text" id="devis_date" name="devis_date" value="<?= $id ? $row_devis['date_formater'] : date('d/m/Y')?>" size="8">
+		<input type="text" id="devis_date" name="devis_date" value="<?= $modif ? $row_devis['date_formater'] : date('d/m/Y')?>" size="8">
 		<img src="../js/jscalendar/calendar.gif" id="trigger" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
 		<script type="text/javascript">
 		  Calendar.setup(
@@ -470,16 +497,16 @@ div.modification {
 			  inputField	: 'devis_date',         // ID of the input field
 			  ifFormat		: '%d/%m/%Y',    // the date format
 			  button		: 'trigger',       // ID of the button
-			  date			: '<?= $id ? $row_devis['date_formater'] : date('d/m/Y')?>',
+			  date			: '<?= $modif ? $row_devis['date_formater'] : date('d/m/Y')?>',
 			  firstDay 	: 1
 			}
 		  );
 		</script>
 
-	Heure <input type="text" name="devis_heure" size="5" maxlength="5" value="<?= $id ? $row_devis['heure'] : date('G:i')?>" TABINDEX="5"></td>
+	Heure <input type="text" name="devis_heure" size="5" maxlength="5" value="<?= $modif ? $row_devis['heure'] : date('G:i')?>" TABINDEX="5"></td>
 	<td></td>
 	<th>Adresse (ligne 2)</th>
-	<td><input type="text" name="client_adresse2" size="45" TABINDEX="8" value="<?= $id ? $row_devis['adresse_client2']: ''?>"></td>
+	<td><input type="text" name="client_adresse2" size="45" TABINDEX="8" value="<?= $modif ? $row_devis['adresse_client2']: ''?>"></td>
 </tr>
 <tr>
 	<td></td>
@@ -487,19 +514,19 @@ div.modification {
 	<td></td>
 	<th>Code Postal / Ville</th>
 	<td>
-		<input type="text" name="client_codepostal" size="5" maxsize="5" TABINDEX="9" value="<?= $id ? $row_devis['codepostal_client']: ''?>">
-		<input type="text" name="client_ville" size="35" TABINDEX="10" value="<?= $id ? $row_devis['ville_client']:''?>">
+		<input type="text" name="client_codepostal" size="5" maxsize="5" TABINDEX="9" value="<?= $modif ? $row_devis['codepostal_client']: ''?>">
+		<input type="text" name="client_ville" size="35" TABINDEX="10" value="<?= $modif ? $row_devis['ville_client']:''?>">
 	</td>
 </tr>
 <tr>
-	<td class="devis_id"><?= $id ? "Devis N°$id" :'' ?></td>
+	<td class="devis_id">Devis N°<?=$id?></td>
 	<td>
 	</td>
 	<td></td>
 	<th>Tél / Mobile</th>
 	<td>
-		<input type="text" name="client_telephone" TABINDEX="11" value="<?= $id ? $row_devis['tel_client']: ''?>">
-		<input type="text" name="client_telephone2" TABINDEX="12" value="<?= $id ? $row_devis['tel_client2']: ''?>">
+		<input type="text" name="client_telephone" TABINDEX="11" value="<?= $modif ? $row_devis['tel_client']: ''?>">
+		<input type="text" name="client_telephone2" TABINDEX="12" value="<?= $modif ? $row_devis['tel_client2']: ''?>">
 	</td>
 </tr>
 <tr>
@@ -508,7 +535,7 @@ div.modification {
 	<td></td>
 	<th>Email</th>
 	<td>
-		<input type="text" name="client_email" TABINDEX="13" value="<?= $id ? $row_devis['email_client']: ''?>" size="45">
+		<input type="text" name="client_email" TABINDEX="13" value="<?= $modif ? $row_devis['email_client']: ''?>" size="45">
 	</td>
 </tr>
 </table>
@@ -530,7 +557,7 @@ div.modification {
 		</tr>
 		</thead>
 		<tbody>
-<?	if ($id) {
+<?	if ($modif) {
 		$res_detail = mysql_query("SELECT * FROM devis_ligne WHERE id_devis='$id'");
 		while($row_detail = mysql_fetch_array($res_detail)) {
 
