@@ -43,7 +43,7 @@ if($modif) { // modif
 
 ?><html>
 <head>
-<title><?= $modif ? "Modification du $row_devis[numero]" : "Création du devis ".date('%b%y')."-$id" ?></title>
+<title><?= $modif ? "Modification du $row_devis[numero]" : "Création du devis ".date('My')."-$id" ?></title>
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_devis.ico" />
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
@@ -124,7 +124,11 @@ function make_all_bind() {
 
 	// on doit aller chercher les infos dans la BD et les ramener sur la page
 	$('input[name^=a_reference]').unbind('keyup');
-	$('input[name^=a_reference]').keyup(function() {
+	$('input[name^=a_reference]').keyup(function (e) {
+		if (e.which == 13 && all_results.length == 1) { // la touche ENREE et il n'y a qu'un seul résultat --> on le selectionne
+			insert_ligne(all_results[0].id); return;
+		}
+
 		tr = $(this).parents('tr');
 		recherche = $(this).val();
 		var div_offset = $(this).offset();
