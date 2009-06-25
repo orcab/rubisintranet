@@ -35,7 +35,7 @@ class PDF extends FPDF
 {
 	//EN-TÊTE
 	function Header()
-	{	global $values,$SOCIETE,$options,$_POST,$id_devis,$date_devis ;
+	{	global $values,$SOCIETE,$options,$_POST,$id_devis,$date ;
 		
 		// logo gauche et droite en haut de page si le theme le demande
 		//if (eregi('_avec_entete$',$values['devis.theme'])) {
@@ -100,7 +100,8 @@ class PDF extends FPDF
 		// Date de création du devis
 		$this->SetFont('helvetica','',10);
 		$this->Cell(15, 5 ,"Devis du ");
-		$this->Cell(77, 5 ,  $date_devis );
+		$tmp = ereg('^([0-9]{4})-([0-9]{2})-([0-9]{2})',$date,$regs);
+		$this->Cell(77, 5 , "$regs[3]/$regs[2]/$regs[1]" );
 
 		// client tel 2
 		$this->Cell(19);
