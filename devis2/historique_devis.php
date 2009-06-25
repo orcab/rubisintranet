@@ -101,11 +101,11 @@ a img { border:none; }
 
 input,textarea { border:solid 2px #AAA; }
 
-table#historique-devis th { border:solid 1px red; background:#DDD;font-size:0.8em; }
+table#historique-devis th { border:solid 1px black; background:#DDD;font-size:0.8em; }
 
 table#historique-devis { border-collapse:collapse; }
 
-table#historique-devis td { border:solid 1px red; padding:3px;font-size:0.8em;}
+table#historique-devis td { border:solid 1px grey; padding:3px;font-size:0.8em;}
 
 div#relance,div#cmd {
 	padding:20px;
@@ -323,8 +323,8 @@ function calcul_cmd_rubis(id_devis) {
 
 <input type="button" class="button divers hide_when_print" style="background-image:url(gfx/page_add.png);margin-bottom:4px;" onclick="document.location.href='creation_devis.php';" value="Créer un nouveau devis">
 
-<table id="historique-devis" style="width:100%;border:solid 1px red;">
-	<caption style="padding:3px;margin-bottom:15px;border:solid 2px red;font-weight:bold;font-size:1.2em;background:#DDD;color:red;">
+<table id="historique-devis" style="width:100%;border:solid 1px black;">
+	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;color:black;">
 		Historique des devis clients
 
 		<!-- choix pour les recherches -->
