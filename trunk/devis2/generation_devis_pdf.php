@@ -8,6 +8,8 @@ if (isset($_POST['les_options'])) {
 	$options = explode(',',$_GET['les_options']);
 }
 
+//print_r($options);exit;
+
 include('../inc/config.php');
 require_once('overload.php');
 

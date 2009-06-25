@@ -596,7 +596,9 @@ div.modification {
     <legend>Total :</legend>
 	<div id="div_bouton">
 		<input type="button" value="Générer le devis" class="button pdf" style="background-color:#e7eef3;" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Générer le devis en prix ADH" class="button pdf discret" style="background-color:#e7eef3;" onclick="valide_form('px_adh');" />
+		<input type="button" value="Générer le devis sans Entête" class="button pdf" style="background-color:#e7eef3;" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Générer le devis en prix ADH" class="button pdf discret" style="background-color:#e7eef3;" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Générer le devis en prix ADH sans Entête" class="button pdf discret" style="background-color:#e7eef3;" onclick="valide_form('px_adh,no_header');" />
 	</div>
 	<div id="div_total">
 		<span id="options"></span>&nbsp;&nbsp;

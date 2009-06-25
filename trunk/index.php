@@ -43,7 +43,7 @@ a:hover {
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="article/creation_article.php"><img src="article/gfx/creation_article.png"><br>Création d'article</a><br></td>
 	<td><a href="commande_fournisseur/historique_commande.php"><img src="commande_fournisseur/gfx/commande_fournisseur.png"><br>Commandes Fournisseur</a><br></td>
-	<td style="width:50%;padding-bottom:20px;"><a href="devis/index.html"><img src="devis/gfx/creation_devis.png"><br>Devis Exposition</a><br></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="devis2/index.html"><img src="devis/gfx/creation_devis.png"><br>Devis Exposition</a><br></td>
 </tr>
 <tr>
 	<td><a href="article/historique_creation_article.php"><img src="article/gfx/historique_creation_article.png"><br>Historique article</a><br></td>
