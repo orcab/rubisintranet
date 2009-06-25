@@ -39,9 +39,10 @@ class PDF extends FPDF
 		
 		// logo gauche et droite en haut de page si le theme le demande
 		//if (eregi('_avec_entete$',$values['devis.theme'])) {
+		if (!in_array('no_header',$options)) {
 			if (PDF_DEVIS_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_GAUCHE,0,0,62);
 			if (PDF_DEVIS_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_DROITE,PAGE_WIDTH - 50,0,50);
-		//}
+		}
 
 		// rectangle en top de page
 		$this->SetDrawColor(0,0,0);
@@ -174,7 +175,7 @@ class PDF extends FPDF
 
 	//PIED DE PAGE
 	function Footer()
-	{	global $values,$SOCIETE ;
+	{	global $values,$SOCIETE,$options ;
 
 		// texte avev la date
 		$this->SetXY(LEFT_MARGIN,-30);
@@ -201,14 +202,14 @@ class PDF extends FPDF
 		$this->SetXY(PAGE_WIDTH - RIGHT_MARGIN,-8);
 		$this->SetTextColor(255,255,255);
 		$this->Cell(0,8,$this->PageNo().'/{nb}',0,1,'');
-	//	if (eregi('_avec_entete$',$values['devis.theme'])) {
+		if (!in_array('no_header',$options)) {
 			$this->SetY(-20);
 			$this->SetTextColor(0,0,0);
 			$this->SetFont('helvetica','',9);
 			$this->Cell(120,4,PDF_DEVIS_PIED1,0,1,'L');
 			$this->SetFont('helvetica','',7);
 			$this->MultiCell(100,4,PDF_DEVIS_PIED2);
-	//	}
+		}
 	}
 
 
