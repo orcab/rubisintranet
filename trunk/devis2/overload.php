@@ -56,7 +56,12 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','BU',11);
 		$this->Cell(21, 5 ,"ARTISAN :");
 		$this->SetFont('helvetica','B',11);
-		$this->Cell(90, 5 , $_POST['artisan_nom'] == 'NON Adherent' ? $_POST['artisan_nom_libre'] : $_POST['artisan_nom'] );
+		if		($_POST['artisan_nom'] == 'NON Adherent')
+			$this->Cell(90, 5 , $_POST['artisan_nom_libre']);
+		elseif ($_POST['artisan_nom'] == 'CAB 56')
+			$this->Cell(90, 5 , 'CAB 56 : ' . $_POST['artisan_nom_libre']);
+		else
+			$this->Cell(90, 5 , $_POST['artisan_nom'] );
 		
 		// nom Client
 		$this->SetFont('helvetica','',11);

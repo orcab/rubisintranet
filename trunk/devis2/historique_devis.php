@@ -446,7 +446,7 @@ function calcul_cmd_rubis(id_devis) {
 	if ($_SESSION['devis_expo_filtre_date_inf'] && $_SESSION['devis_expo_filtre_date_inf'] != 'Aucune') $where[] = "`date` >= '$date_inf_formater 00:00:00'" ;
 	if ($_SESSION['devis_expo_filtre_date_sup'] && $_SESSION['devis_expo_filtre_date_sup'] != 'Aucune') $where[] = "`date` <= '$date_sup_formater 23:59:59'" ;
 	if ($_SESSION['devis_expo_filtre_representant'])	$where[] = "representant LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_representant'])."%'";
-	if ($_SESSION['devis_expo_filtre_artisan'])			$where[] = "artisan LIKE '%".		mysql_escape_string($_SESSION['devis_expo_filtre_artisan'])."%'";
+	if ($_SESSION['devis_expo_filtre_artisan'])			$where[] = "(artisan LIKE '%".		mysql_escape_string($_SESSION['devis_expo_filtre_artisan'])."%')";
 	if ($_SESSION['devis_expo_filtre_client'])			$where[] = "nom_client LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_client'])."%'";
 	if ($_SESSION['devis_expo_filtre_ville'])			$where[] = "ville_client LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_ville'])."%'";
 	if ($_SESSION['devis_expo_filtre_numero_cmd'])		$where[] = "num_cmd_rubis LIKE '%".	mysql_escape_string($_SESSION['devis_expo_filtre_numero_cmd'])."%'";
