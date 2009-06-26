@@ -19,8 +19,10 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 $id_devis = isset($_POST['id_devis']) && $_POST['id_devis'] ? $_POST['id_devis'] : '';
 // SI L'ARTISAN N'EST PAS ADHERENT, ON PREND LE LIBÉLLÉ LIBRE !
 $artisan_nom = $_POST['artisan_nom'] ;
-if ($_POST['artisan_nom'] == 'NON Adherent' && $_POST['artisan_nom_libre'])
+if		($_POST['artisan_nom'] == 'NON Adherent' && $_POST['artisan_nom_libre'])
 	$artisan_nom = $_POST['artisan_nom_libre'] ;
+elseif ($_POST['artisan_nom'] == 'CAB 56' && $_POST['artisan_nom_libre'])
+	$artisan_nom = 'CAB 56 : '.$_POST['artisan_nom_libre'] ;
 
 // DATE AU FORMAT yyyy-mm-dd hh:mm:ss
 $date = implode('-',array_reverse(explode('/',$_POST['devis_date']))).' '.$_POST['devis_heure'].':00'; //2007-09-10 14:16:59;
