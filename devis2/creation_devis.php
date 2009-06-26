@@ -442,6 +442,9 @@ div.modification {
 </style>
 
 <body>
+<!-- menu de naviguation -->
+<? include('../inc/naviguation.php'); ?>
+
 <div id="sugest"></div><!-- pour la sugestion des résultat ajax -->
 
 <form method="post" action="generation_devis_pdf.php" name="creation_devis">
@@ -612,6 +615,9 @@ div.modification {
 
 </form>
 
+</div>
+<div class="hide_when_print" style="border:solid 1px black;margin-top:10px;">
+<input type="button" class="button divers" style="background-image:url(../gfx/list.gif);margin:4px;" onclick="document.location.href='historique_devis.php';" value="Historique des devis">
 </div>
 </body>
 </html>

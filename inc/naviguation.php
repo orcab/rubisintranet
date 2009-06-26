@@ -60,7 +60,7 @@ ul#tabnav li.active {
 <?	} ?>
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/devis2/historique_devis.php")) { // test si le fichier exists ?>
-	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'devis/historique_devis.php') !== false ?' class="active"':''?>><a href="/intranet/devis/historique_devis.php">Devis Expo</a></li>
+	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'devis2/historique_devis.php') !== false ?' class="active"':''?>><a href="/intranet/devis2/historique_devis.php">Devis Expo</a></li>
 <?	} ?>
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/anomalie/historique_anomalie.php")) { // test si le fichier exists ?>
