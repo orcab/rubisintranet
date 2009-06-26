@@ -172,8 +172,8 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 						array('text' => $_POST['a_fournisseur'][$i]	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
 						array('text' => stripslashes($_POST['a_designation'][$i]).($_POST['a_hid_opt'][$i] ? " (option)":'')	, 'text-align' => 'L'),
 						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
-						array('text' => $prix.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
-						array('text' => $_POST['a_qte'][$i]*$prix.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
 						)
 					);
 		$pdf->SetFillColor(255);
@@ -199,7 +199,7 @@ $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(230); // gris clair
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 $pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
-$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,$total.EURO,1,0,'R',1);
+$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',$total).EURO,1,0,'R',1);
 $pdf->Ln();
 
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
