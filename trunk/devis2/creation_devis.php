@@ -478,16 +478,22 @@ div.modification {
 	<td>
 		<select name="artisan_nom" onchange="affiche_adherent();" TABINDEX="2">
 			<option value="NON Adherent">Artisan NON ADHERENT</option>
-<?			$res  = mysql_query("SELECT nom FROM artisan WHERE suspendu=0 ORDER BY nom ASC");
+<?			$res  = mysql_query("SELECT nom FROM artisan WHERE suspendu='0' ORDER BY nom ASC");
 			$a_trouve_artisan = FALSE ;
 			while ($row = mysql_fetch_array($res)) {
 				if ($modif) { //modif ?>
-					<option value="<?=$row['nom']?>"<? if ($row_devis['artisan']==$row['nom']) { echo ' selected'; $a_trouve_artisan = TRUE ; } ?>><?=$row['nom']?></option>
+					<option value="<?=$row['nom']?>"<?
+						if ($row_devis['artisan']==$row['nom']) {
+							echo ' selected'; $a_trouve_artisan = TRUE ;
+						} elseif ($row['nom']=='CAB 56' && eregi('^CAB 56',$row_devis['artisan'])) {
+							echo ' selected';
+						}
+						?>><?=$row['nom']?></option>
 <?				} else { // creation ?>
 					<option value="<?=$row['nom']?>"><?=$row['nom']?></option>
 <?				}	
 			} ?>
-		</select><br/><input id="artisan_nom_libre" <?= $a_trouve_artisan ? 'style="visibility:hidden;"' : ''?> type="text" name="artisan_nom_libre" value="<?= $modif && !$a_trouve_artisan ? $row_devis['artisan']:''; ?>">
+		</select><br/><input id="artisan_nom_libre" <?= $a_trouve_artisan ? 'style="visibility:hidden;"' : ''?> type="text" name="artisan_nom_libre" value="<?= $modif && !$a_trouve_artisan ? eregi_replace('^CAB 56 : ','',$row_devis['artisan']):''; ?>">
 	</td>
 	<td></td>
 	<th>Adresse (ligne 1)</th>
