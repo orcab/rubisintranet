@@ -201,7 +201,7 @@ $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(230); // gris clair
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 $pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
-$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',$total).EURO,1,0,'R',1);
+$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH ,7,str_replace('.',',',sprintf("%0.2f",$total)).EURO,1,0,'R',1);
 $pdf->Ln();
 
 $pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
