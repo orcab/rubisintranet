@@ -228,8 +228,6 @@ function recalcul_total() {
 		var qte			= parseFloat(parent_td.children('input[name^=a_qte]').val().replace(',','.'));
 		if (pu_adh <= 0 && qte > 0) // si le prix est a 0, on le met en évidence
 			parent_td.children('span').children('input[name^=a_adh_pu]').css('background-color','red').css('background-image','none');
-		else
-			parent_td.children('span').children('input[name^=a_adh_pu]').css('background-color','#999').css('background-image','none').css('color','white');
 
 		if (pu >= 0 && qte >=0) {
 			var val = (Math.round(qte * pu * 100)/100) ;
