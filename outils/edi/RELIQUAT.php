@@ -9,6 +9,8 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE,
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 			on		CDE_DETAIL.CODAR= ARTICLE_FOURNISSEUR.NOART
 				and	CDE_DETAIL.NOFOU= ARTICLE_FOURNISSEUR.NOFOU
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
+			on	CDE_DETAIL.CODAR=ARTICLE.NOART
 where	
 		ETSBE<>'ANN'
 	and	ETSEE<>'ANN'
@@ -19,6 +21,7 @@ where
 	and CDE_ENTETE.NOCLI='$row[numero_artisan]'
 	and CDE_ENTETE.NOCLI=CDE_DETAIL.NOCLI
 	and CDE_ENTETE.NOBON=CDE_DETAIL.NOBON
+	and ARDIV='NON'
 order by DTBOS asc,DTBOA asc,DTBOM asc,DTBOJ asc,CDE_ENTETE.NOBON asc, CDE_DETAIL.NOLIG ASC
 EOT;
 
@@ -35,7 +38,7 @@ $total = 0 ;
 // pour chaque ligne en reliquat
 while($row_entete = odbc_fetch_array($detail_commande)) {
 	$row_entete	= array_map('trim',$row_entete);
-	$livsb = isset($vendeurs[$row_entete['LIVSB']]) ? $vendeurs[$row_entete['LIVSB']] : $row_entete['LIVSB'];
+	$livsb = htmlentities(isset($vendeurs[$row_entete['LIVSB']]) ? $vendeurs[$row_entete['LIVSB']] : $row_entete['LIVSB']);
 
 	if ($old_nobon != $row_entete['NOBON']) { // nouveau bon, on rajoute un entete
 		if ($nb_bon > 0) {
@@ -54,8 +57,8 @@ EOT;
 		$html .= <<<EOT
 <table>
 	<caption style="font-size:1.2em;">
-		Bon n°$row_entete[NOBON] du $row_entete[DTBOJ]/$row_entete[DTBOM]/$row_entete[DTBOS]$row_entete[DTBOA] servi par $livsb<br/>
-		Référence : $row_entete[RFCSB]<br/>
+		Bon n&ordm;$row_entete[NOBON] du $row_entete[DTBOJ]/$row_entete[DTBOM]/$row_entete[DTBOS]$row_entete[DTBOA] servi par $livsb<br/>
+		R&eacute;f&eacute;rence : $row_entete[RFCSB]<br/>
 		Date de livraison initiale : $row_entete[DLJSB]/$row_entete[DLMSB]/$row_entete[DLSSB]$row_entete[DLASB]
 	</caption>
 	<tr>
@@ -65,7 +68,7 @@ EOT;
 		<th class="qte">Qte</th>
 		<th class="prix">P.U.</th>
 		<th class="tot">Tot.</th>
-		<th class="spe">Spé</th>
+		<th class="spe">Sp&eacute;</th>
 	</tr>
 EOT;
 	}
