@@ -216,7 +216,7 @@ $pdf->Ln();
 
 if ($option > 0) { // il y a des options, on balance un disclaimer
 	$pdf->Cell(	REF_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_DEVIS_WIDTH + QTE_WIDTH + PUHT_WIDTH + PUHT_WIDTH,7,
-				"Le total ne tient pas compte " . ($option > 1 ? "des $option options choisit" : "de l'option choisit"),
+				"Le total ne tient pas compte " . ($option > 1 ? "des $option options choisies" : "de l'option choisie"),
 				1,0,'R',1);
 	$pdf->Ln();
 }

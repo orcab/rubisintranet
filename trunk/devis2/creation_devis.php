@@ -243,7 +243,7 @@ function recalcul_total() {
 
 	$('span#total').text(Math.round(total * 100)/100);
 	if (option > 0)
-		$('span#options').text("Le total ne tient pas compte " + (option > 1 ? "des "+option+" options choisit" : "de l'option choisit"));
+		$('span#options').text("Le total ne tient pas compte " + (option > 1 ? "des "+option+" options choisies" : "de l'option choisie"));
 	else
 		$('span#options').text('');
 }
