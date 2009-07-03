@@ -157,10 +157,10 @@ $pdf->AddPage();
 $pdf->SetTextColor(0,0,0);
 $pdf->SetDrawColor(0,0,0);
 $pdf->SetFillColor(230); // gris clair
-
 $pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,QTE_WIDTH,PUHT_WIDTH,PTHT_WIDTH));
 
-
+$sous_total = 0 ;
+$sous_total_option = 0 ;
 // on genere les lignes les une apres les autres
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // cas d'un article
@@ -186,8 +186,27 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		if($pdf->GetY() +  7 > PAGE_HEIGHT - 29) // check le saut de page
 			$pdf->AddPage();
 
-		$pdf->MultiCell(0,7,stripslashes($_POST['a_designation'][$i]) ,1,'C',1);
+		// on doit aller cherche le prochain commentaire pour trouver le sous total
+		for($j=$i+1 ; $j < sizeof($_POST['a_reference']) ; $j++) {
+			if ($_POST['a_reference'][$j] && $_POST['a_qte'][$j]) { // cas d'un article
+				if ($_POST['a_hid_opt'][$j]) // c'est une option
+					$sous_total_option++;
+				else
+					$sous_total += ($_POST['a_qte'][$j] * (in_array('px_adh',$options) ? $_POST['a_adh_pu'][$j] : $_POST['a_pu'][$j])) ;
+			} else {
+				break ; // on tombe sur un autre commentaire, on s'arrete
+			}
+		}
+
+		if ($sous_total_option)
+			$option_phrase = "\nLe sous total ne tient pas compte " . ($sous_total_option > 1 ? "des $sous_total_option options choisies" : "de l'option choisie");
+		else
+			$option_phrase='';
+
+		$pdf->MultiCell(0,7,stripslashes($_POST['a_designation'][$i]).' ('.str_replace('.',',',sprintf("%0.2f",$sous_total)).EURO.')'.$option_phrase  ,1,'C',1);
 		$pdf->SetFillColor(255);
+		$sous_total = 0 ;
+		$sous_total_option = 0;
 	}
 }
 
