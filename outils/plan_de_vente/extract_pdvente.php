@@ -12,6 +12,7 @@ $res = mysql_query($sql);
 
 //echo "code;libelle;niveau;chemin;chemin_sans_code_finale\n";
 while($row = mysql_fetch_array($res)) {
+	
 	$chemin = '';
 	$chemin .= $row['activite_pere']		? $row['activite_pere'].'.' : '';
 	$chemin .= $row['famille_pere']			? $row['famille_pere'].'.' : '';
