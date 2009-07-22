@@ -79,10 +79,27 @@ EOT;
 
 				$html = '';
 				if ($_POST['what'] == 'date_liv') { // on previent des futures date de livraison
-					$html .= "<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur $nom_four</b><br/>\n(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ)<br/>";
+					$html .= "<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur <u>$nom_four</u></b><br/>\n(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ)";
 				} elseif ($_POST['what'] == 'mise_a_dispo') { // on previent de la mise a dispo du matos
-					$html .= "<b>Les articles suivant du fournisseur $nom_four viennent d'être mis à disposition à la coopérative</b><br/>";
+					$html .= "<b>Les articles suivant du fournisseur <u>$nom_four</u> viennent d'être mis à disposition à la coopérative</b>";
 				}
+
+				$html .= <<<EOT
+<br/><br/>
+<table border="1" cellpadding="3" cellspacing="0">
+<tr>
+        <th>N° Cde</th>
+        <th>Référence Cde</th>
+        <th>Code</th>
+        <th>Fourn</th>
+        <th>Ref fourn.</th>
+        <th>Designation</th>
+        <th>Date liv.</th>
+        <th>Qte</th>
+        <th>P.U.</th>
+        <th>Tot.</th>
+</tr>
+EOT;
 
 				$cde_adh = array();
 				foreach ($lignes as $idx => $lig) { // pour chaque ligne des bons adhérents
@@ -120,11 +137,13 @@ EOT;
 				$mail->From('rachel.kerzulec@coopmcs.com','Rachel Kerzulec');
 
 				$mail->Html($html);
+				//echo $row['nom']."\n<br>".$html."<br><br><br>";
 				
 				if ($mail->Send("MCS : Dates de livraison du fournisseur $nom_four : Cde : ".join(', ',$cde_adh)))
 					$message .= "<div class=\"message\" style=\"color:green;\">Email correctement envoyé à $row[nom] ($row[email])</div>\n";
 				else 
 					$message .= "<div class=\"message\" style=\"color:red;\">Erreur dans l'envoi de l'email à $row[nom] ($row[email])</div>\n";
+					
 				
 			} else { // fin if il a un email
 				$message .= "<div class=\"message\" style=\"color:red;\">Erreur $row[nom] n'a pas d'email</div>\n";
