@@ -77,103 +77,38 @@ EOT;
 			if ($row['email']) { // un email de renseigné --> on peut envoyer
 				$nom_four = trim($lignes[0]['NOMFO']);
 
-
-
+				$html = '';
 				if ($_POST['what'] == 'date_liv') { // on previent des futures date de livraison
-
-					// entête de mail
-					$html = <<<EOT
-<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur $nom_four</b><br/>
-(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ)<br/>
-<br/>
-<table border="1" cellpadding="3" cellspacing="0">
-<tr>
-	<th>N° Cde</th>
-	<th>Référence Cde</th>
-	<th>Code</th>
-	<th>Fourn</th>
-	<th>Ref fourn.</th>
-	<th>Designation</th>
-	<th>Date liv.</th>
-	<th>Qte</th>
-	<th>P.U.</th>
-	<th>Tot.</th>
-</tr>
-EOT;
-					$cde_adh = array();
-					foreach ($lignes as $idx => $lig) { // pour chaque ligne des bons adhérents
-						array_push($cde_adh,$lig['CFCLB']);
-						$designation	= $lig['CFDE1'];
-						$designation	.= $lig['CFDE2'] ? '<br>'.$lig['CFDE2']:'';
-						$designation	.= $lig['CFDE3'] ? '<br>'.$lig['CFDE3']:'';
-						$lig['CFQTE']	= sprintf('%0.2f',$lig['CFQTE']);
-						$lig['PRINE']	= sprintf('%0.2f',$lig['PRINE']);
-						$lig['REFFO']	= $lig['REFFO'] ? $lig['REFFO'] : '&nbsp;';
-						$html .= <<<EOT
-<tr>
-	<td>$lig[CFCLB]</td>
-	<td>$lig[RFCSB]</td>
-	<td>$lig[CFART]</td>
-	<td>$lig[NOMFO]</td>
-	<td>$lig[REFFO]</td>
-	<td>$designation</td>
-	<td style="font-weight:bold;">$lig[CFDLJ]/$lig[CFDLM]/$lig[CFDLS]$lig[CFDLA]</td>
-	<td>$lig[CFQTE]</td>
-	<td>$lig[PRINE]</td>
-	<td>$lig[MONHT]</td>
-</tr>
-EOT;
-					}
-					$html .= "</table>";
-
-
+					$html .= "<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur $nom_four</b><br/>\n(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ)<br/>";
 				} elseif ($_POST['what'] == 'mise_a_dispo') { // on previent de la mise a dispo du matos
-
-					// entête de mail
-					$html = <<<EOT
-<b>Les articles suivant du fournisseur $nom_four viennent d'être mis à disposition à la coopérative</b><br/>
-<br/>
-<table border="1" cellpadding="3" cellspacing="0">
-<tr>
-	<th>N° Cde</th>
-	<th>Référence Cde</th>
-	<th>Code</th>
-	<th>Fourn</th>
-	<th>Ref fourn.</th>
-	<th>Designation</th>
-	<th>Date liv.</th>
-	<th>Qte</th>
-	<th>P.U.</th>
-	<th>Tot.</th>
-</tr>
-EOT;
-					$cde_adh = array();
-					foreach ($lignes as $idx => $lig) { // pour chaque ligne des bons adhérents
-						array_push($cde_adh,$lig['CFCLB']);
-						$designation	= $lig['CFDE1'];
-						$designation	.= $lig['CFDE2'] ? '<br>'.$lig['CFDE2']:'';
-						$designation	.= $lig['CFDE3'] ? '<br>'.$lig['CFDE3']:'';
-						$lig['CFQTE']	= sprintf('%0.2f',$lig['CFQTE']);
-						$lig['PRINE']	= sprintf('%0.2f',$lig['PRINE']);
-						$lig['REFFO']	= $lig['REFFO'] ? $lig['REFFO'] : '&nbsp;';
-						$html .= <<<EOT
-<tr>
-	<td>$lig[CFCLB]</td>
-	<td>$lig[RFCSB]</td>
-	<td>$lig[CFART]</td>
-	<td>$lig[NOMFO]</td>
-	<td>$lig[REFFO]</td>
-	<td>$designation</td>
-	<td style="font-weight:bold;">$lig[CFDLJ]/$lig[CFDLM]/$lig[CFDLS]$lig[CFDLA]</td>
-	<td>$lig[CFQTE]</td>
-	<td>$lig[PRINE]</td>
-	<td>$lig[MONHT]</td>
-</tr>
-EOT;
-					}
-					$html .= "</table>";
+					$html .= "<b>Les articles suivant du fournisseur $nom_four viennent d'être mis à disposition à la coopérative</b><br/>";
 				}
 
+				$cde_adh = array();
+				foreach ($lignes as $idx => $lig) { // pour chaque ligne des bons adhérents
+					array_push($cde_adh,$lig['CFCLB']);
+					$designation	= $lig['CFDE1'];
+					$designation	.= $lig['CFDE2'] ? '<br>'.$lig['CFDE2']:'';
+					$designation	.= $lig['CFDE3'] ? '<br>'.$lig['CFDE3']:'';
+					$lig['CFQTE']	= sprintf('%0.2f',$lig['CFQTE']);
+					$lig['PRINE']	= sprintf('%0.2f',$lig['PRINE']);
+					$lig['REFFO']	= $lig['REFFO'] ? $lig['REFFO'] : '&nbsp;';
+					$html .= <<<EOT
+<tr>
+	<td>$lig[CFCLB]</td>
+	<td>$lig[RFCSB]</td>
+	<td>$lig[CFART]</td>
+	<td>$lig[NOMFO]</td>
+	<td>$lig[REFFO]</td>
+	<td>$designation</td>
+	<td style="font-weight:bold;">$lig[CFDLJ]/$lig[CFDLM]/$lig[CFDLS]$lig[CFDLA]</td>
+	<td>$lig[CFQTE]</td>
+	<td>$lig[PRINE]</td>
+	<td>$lig[MONHT]</td>
+</tr>
+EOT;
+				} // fin pour chaque ligne
+				$html .= "</table>";
 
 
 				require_once '../../inc/xpm2/smtp.php';
