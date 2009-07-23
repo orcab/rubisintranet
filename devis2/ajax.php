@@ -7,7 +7,7 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 $search_car  =	array('à','ä','â','é','ê','è','ë','ê','ò','ö','ô','ì','ï','î','ù','ü','û','ÿ','{CR}');
 $replace_car =	array('a','a','e','e','e','e','e','e','o','o','o','i','i','i','u','u','u','y',"\n");
 
-//$F = fopen('debug.txt','w');
+$F = fopen('debug.txt','w');
 //fwrite($F,serialize($_GET));
 
 if ($_GET['what'] == 'complette_via_ref' && isset($_GET['val'])) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR
@@ -104,11 +104,28 @@ EOT;
 }
 
 
+
+
+elseif ($_POST['what'] == 'sauvegarde_auto') { ////// SAUVEGARDE_AUTO
+	/*ob_start();
+	print_r($_POST);
+	fwrite($F,ob_get_contents());
+	ob_end_clean();*/
+
+	require_once('save_data_into_database.php');
+	// enregistre les données dans la base
+	save_data_into_database();
+} // fin sauvegarde_auto
+
+
+
+
+
 // CAS PAR DEFAUT
 else {
 	echo "Aucune procedure selectionnée";
 }
 
 
-//fclose($F);
+fclose($F);
 ?>
