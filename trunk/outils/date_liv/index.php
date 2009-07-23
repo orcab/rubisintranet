@@ -1,5 +1,7 @@
 <?
 include('../../inc/config.php');
+require_once '../../inc/xpm2/smtp.php';
+
 $num_cde	= '';
 $select_fou = '';
 $message	= '';
@@ -13,7 +15,7 @@ if (	isset($_POST['what'])
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
 	$sql = <<<EOT
-select DETAIL_BON.NOFOU,NOMFO,DETAIL_BON.CFCLI,NOMCL,CFDLS,CFDLA,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFQTE,PRINE,MONHT,CFART,CFCLI,CFCLB,RFCSB
+select DETAIL_BON.NOFOU,NOMFO,DETAIL_BON.CFCLI,NOMCL,CFDLS,CFDLA,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFQTE,PRINE,MONHT,CFART,CFCLI,CFCLB,RFCSB,CFLIG
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL_BON
 		left join  ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on		DETAIL_BON.NOFOU	= FOURNISSEUR.NOFOU
@@ -42,8 +44,10 @@ EOT;
 	$four			= array();
 	$four_nom		= array();
 	$adhs			= array();
-	//$row_loginor	= array();
+	$nb_result		= 0;
+
 	while($row = odbc_fetch_array($res)) {
+		$nb_result++;
 		//array_push($row_loginor,$row); // charge les résultats en mémoire
 
 		if (!in_array($row['NOFOU'],$four)) { // regarde combien de fournisseur correspond à la commande
@@ -59,6 +63,9 @@ EOT;
 			$adhs[$row['CFCLI']] = array($row);
 		}
 	}
+
+	if ($nb_result <= 0)
+		$message .= "<div class=\"message\" style=\"color:red;\">Aucune lignes concern&eacute;e pour le bon $num_cde</div>\n";
 
 	//print_r($adhs);exit;
 
@@ -102,7 +109,18 @@ EOT;
 EOT;
 
 				$cde_adh = array();
+				$cde_ligne_traitee = array();
+				$need_email = FALSE;
 				foreach ($lignes as $idx => $lig) { // pour chaque ligne des bons adhérents
+
+					// on vérifie si un email n'a pas déjà été envoyé
+					if (mysql_num_rows(mysql_query("SELECT id FROM mise_a_dispo_sent WHERE no_cde_fourn='$num_cde' AND code_fourn='".mysql_escape_string($four[0])."' AND ligne='".mysql_escape_string($lig['CFLIG'])."' LIMIT 0,1"))) { // si oui --> on passe à la ligne suivante
+						$message .= "<div class=\"message\" style=\"color:grey;\">Email d&eacute;j&agrave; envoyé à $row[nom] ($row[email])</div>\n";
+						continue;
+					}
+
+					$need_email = TRUE;
+					array_push($cde_ligne_traitee,$lig['CFLIG']); // on enregsitre la ligne traitee pour la base de donnée
 					array_push($cde_adh,$lig['CFCLB']);
 					$designation	= $lig['CFDE1'];
 					$designation	.= $lig['CFDE2'] ? '<br>'.$lig['CFDE2']:'';
@@ -127,24 +145,27 @@ EOT;
 				} // fin pour chaque ligne
 				$html .= "</table>";
 
+				if ($need_email) {
+					$mail = new SMTP;
+					$mail->Delivery('relay');
+					$mail->Relay(SMTP_SERVEUR);
+					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
+					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
+					$mail->From('rachel.kerzulec@coopmcs.com','Rachel Kerzulec');
 
-				require_once '../../inc/xpm2/smtp.php';
-				$mail = new SMTP;
-				$mail->Delivery('relay');
-				$mail->Relay(SMTP_SERVEUR);
-				//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
-				$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-				$mail->From('rachel.kerzulec@coopmcs.com','Rachel Kerzulec');
+					$mail->Html($html);
+					//echo $row['nom']."\n<br>".$html."<br><br><br>";
 
-				$mail->Html($html);
-				//echo $row['nom']."\n<br>".$html."<br><br><br>";
-				
-				if ($mail->Send("MCS : Dates de livraison du fournisseur $nom_four : Cde : ".join(', ',$cde_adh)))
-					$message .= "<div class=\"message\" style=\"color:green;\">Email correctement envoyé à $row[nom] ($row[email])</div>\n";
-				else 
-					$message .= "<div class=\"message\" style=\"color:red;\">Erreur dans l'envoi de l'email à $row[nom] ($row[email])</div>\n";
+					// on enregistre dans la base que le mail a ete envoyé (pour ne pas le réenvoyer plus tard)
+					foreach ($cde_ligne_traitee as $ligne)
+						mysql_query("INSERT IGNORE INTO mise_a_dispo_sent (no_cde_fourn,code_fourn,ligne) VALUES ('$num_cde','".mysql_escape_string($four[0])."','".mysql_escape_string($ligne)."')") or die ("Ne peux pas enregistrer l'envoi de mail ".mysql_error());
 					
-				
+					if ($mail->Send("MCS : Dates de livraison du fournisseur $nom_four : Cde : ".join(', ',$cde_adh)))
+						$message .= "<div class=\"message\" style=\"color:green;\">Email correctement envoyé à $row[nom] ($row[email])</div>\n";
+					else 
+						$message .= "<div class=\"message\" style=\"color:red;\">Erreur dans l'envoi de l'email à $row[nom] ($row[email])</div>\n";
+						
+				}
 			} else { // fin if il a un email
 				$message .= "<div class=\"message\" style=\"color:red;\">Erreur $row[nom] n'a pas d'email</div>\n";
 			}
@@ -195,31 +216,53 @@ div.message {
 <script language="javascript">
 <!--
 
-function send_email(type_of_action) {
+function send_date_liv() {
 	if (document.association.cde_fournisseur.value) {
-		document.association.what.value = type_of_action;
-		document.association.submit();
+		document.association.what.value = 'date_liv';
+		return 1;
 	} else {
 		alert("Aucun n° de commande fournisseur");
+		return 0;
 	}
 }
+
+
+function send_mise_a_dispo() {
+	if (document.association2.cde_fournisseur.value) {
+		document.association2.what.value = 'mise_a_dispo';
+		return 1;
+	} else {
+		alert("Aucun n° de commande fournisseur");
+		return 0;
+	}
+}
+
+function init_focus() {
+<?	if (isset($_POST['what'])) {
+		if ($_POST['what'] == 'date_liv') { ?>
+			document.association.cde_fournisseur.focus();
+<?		} elseif ($_POST['what'] == 'mise_a_dispo') { ?>
+			document.association2.cde_fournisseur.focus();
+<?		}
+	} ?>
+} // fin init_focus
 
 //-->
 </script>
 
 </head>
-<body>
-
-<form name="association" method="POST" action="index.php">
-<input type="hidden" name="what" value="" />
+<body onload="init_focus();">
 
 <table id="assoc" align="center">
+<form name="association" method="POST" action="index.php" onsubmit="return send_date_liv();">
 <tr>
 	<td style="width:10%;" nowrap>N° cde fournisseur :</td>
-	<td style="width:10%;"><input name="cde_fournisseur" value="<?=$num_cde ? $num_cde:'' ?>" size="8" /></td>
+	<td style="width:10%;">
+		<input type="hidden" name="what" value="" />
+		<input name="cde_fournisseur" value="" size="8" />
+	</td>
 	<td style="text-align:left;">
-		<input type="button" class="button valider" value="Prévenir des dates de livraisons"		onclick="send_email('date_liv');" />
-		<input type="button" class="button valider" value="Prévenir de la mise à dispo du matériel" onclick="send_email('mise_a_dispo');" style="margin-top:5px;" />
+		<input type="submit" class="button valider" value="Prévenir des dates de livraisons"		onclick="send_date_liv();" />
 	</td>
 </tr>
 <? if ($select_fou) { // plusieur fournisseur corresponde, on propose d'en selectionné un ?>
@@ -227,8 +270,30 @@ function send_email(type_of_action) {
 	<td colspan="3" style="text-align:center;"><img src="../../gfx/attention.png" /> Plusieurs fournisseur ont ce n° de bon, selectionné le bon : <?=$select_fou?></td>
 </tr>
 <?  } ?>
-</table>
 </form>
+
+
+<form name="association2" method="POST" action="index.php" onsubmit="return send_mise_a_dispo();">
+<tr>
+	<td style="width:10%;" nowrap>N° cde fournisseur :</td>
+	<td style="width:10%;">
+		<input type="hidden" name="what" value="" />
+		<input name="cde_fournisseur" value="" size="8" />
+	</td>
+	<td style="text-align:left;">
+		<input type="submit" class="button valider" value="Prévenir de la mise à dispo du matériel" onclick="send_mise_a_dispo();" />
+	</td>
+</tr>
+<? if ($select_fou) { // plusieur fournisseur corresponde, on propose d'en selectionné un ?>
+<tr>	
+	<td colspan="3" style="text-align:center;"><img src="../../gfx/attention.png" /> Plusieurs fournisseur ont ce n° de bon, selectionné le bon : <?=$select_fou?></td>
+</tr>
+<?  } ?>
+</form>
+
+
+</table>
+
 
 <?= $message ? $message:'' ?>
 </body>
