@@ -286,6 +286,42 @@ EOT;
 
 ?>
 
+function sauvegarde_auto() {
+	$('#sauvegarde').css('opacity','1');
+	$('#sauvegarde').css('visibility','visible');
+
+	var valeur_deja_vu = {} ;
+	var data = {};
+	data.what = 'sauvegarde_auto' ;
+	for(var i=0 ; i<document.creation_devis.elements.length ; i++) {
+		if (valeur_deja_vu[document.creation_devis.elements[i].name] == 1) { // on a deja vu la varible ?
+
+			//alert(typeof(data[document.creation_devis.elements[i].name]));
+
+			if (typeof(data[document.creation_devis.elements[i].name]) == 'undefined' || typeof(data[document.creation_devis.elements[i].name]) == 'string') { // le tablea n'est pas encore crée
+				// il faut cree un tableau car il y a plusieur element avec le meme nom
+				var tmp = data[document.creation_devis.elements[i].name]; // on sauvegarde l'ancienne valeur
+				data[document.creation_devis.elements[i].name] = new Array();
+				data[document.creation_devis.elements[i].name].push(tmp);
+				data[document.creation_devis.elements[i].name].push(document.creation_devis.elements[i].value);
+			} else { // le tableau est deja crée, il faut lui rajouté une entrée
+				data[document.creation_devis.elements[i].name].push(document.creation_devis.elements[i].value); //is undefined
+			}
+
+		} else { // premiere fois qu'on la voit
+			data[document.creation_devis.elements[i].name] = document.creation_devis.elements[i].value ;
+		}
+		valeur_deja_vu[document.creation_devis.elements[i].name] = 1; // on a vu la variable		
+	}
+
+	$.post('ajax.php', data,
+		  function(data){
+			$('#sauvegarde').fadeTo(3000,0);
+			window.setTimeout ("sauvegarde_auto()", 1000*60*2 );  // pour répété l'opération régulièrement toutes les 2min
+		  });
+}
+
+
 
 var pattern_ligne = '<?=ereg_replace("[\n\r]",'',$pattern_ligne)?>' ;
 
@@ -300,7 +336,7 @@ $(document).ready(function(){
 		make_all_bind();
 	}); // fin add ligne
 	
-	// ajoute 10 ligend d'un coup
+	// ajoute 10 lignes d'un coup
 	$('#add_dix_ligne').click(function() {
 		for(var i=0 ; i<=9 ; i++)
 			$('#lignes tbody').append( pattern_ligne );
@@ -323,6 +359,9 @@ $(document).ready(function(){
 
 	make_all_bind();
 	recalcul_total();
+
+	window.setTimeout ("sauvegarde_auto()", 1000*60*2 ); // on sauve regulierement
+
 
 }); // fin on document ready
 
@@ -435,6 +474,14 @@ input.pu { text-align:right; }
 div.modification { 
 	display:none;
 	font-size:0.8em;
+}
+
+div#sauvegarde {
+	visibility:hidden;
+	color:#6290B3;
+	text-align:center;
+	margin:0px;
+	padding:0px;
 }
 
 </style>
@@ -552,6 +599,10 @@ div.modification {
 </table>
 </fieldset>
 
+
+<div id="sauvegarde">Sauvegarde Auto <img src="gfx/loading4.gif" /></div>
+
+
 <fieldset id="detail">
     <legend>Lignes :</legend>
 	<table id="lignes">
@@ -582,7 +633,7 @@ div.modification {
 			if ($row_detail['fournisseur'])
 				$custom_ligne = preg_replace('/\sname="a_fournisseur\[\]"\s+value=""\s/i',' name="a_fournisseur[]" value="'.$row_detail['fournisseur'].'" ',$custom_ligne);
 			if ($row_detail['designation'])
-				$custom_ligne = preg_replace('/\s+class="designation"\s*><\/textarea>/i',' class="designation">'.$row_detail['designation'].'</textarea>',$custom_ligne);
+				$custom_ligne = preg_replace('/\s+class="designation"\s*><\/textarea>/i',' class="designation">'.stripslashes($row_detail['designation']).'</textarea>',$custom_ligne);
 			if ($row_detail['qte'])
 				$custom_ligne = preg_replace('/\sname="a_qte\[\]"\s+value="0"\s/i',' name="a_qte[]" value="'.$row_detail['qte'].'" ',$custom_ligne);
 			if ($row_detail['puht'])
