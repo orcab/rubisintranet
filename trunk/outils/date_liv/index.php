@@ -170,7 +170,7 @@ EOT;
 
 					// on enregistre dans la base que le mail a ete envoyé (pour ne pas le réenvoyer plus tard)
 					foreach ($cde_ligne_traitee as $ligne)
-						mysql_query("INSERT IGNORE INTO mise_a_dispo_sent (no_cde_fourn,code_fourn,ligne) VALUES ('$num_cde','".mysql_escape_string($four[0])."','".mysql_escape_string($ligne)."')") or die ("Ne peux pas enregistrer l'envoi de mail ".mysql_error());
+						mysql_query("INSERT IGNORE INTO mise_a_dispo_sent (no_cde_fourn,code_fourn,ligne,date_envoi) VALUES ('$num_cde','".mysql_escape_string($four[0])."','".mysql_escape_string($ligne)."',NOW())") or die ("Ne peux pas enregistrer l'envoi de mail ".mysql_error());
 					
 					if ($mail->Send("MCS : Dates de livraison du fournisseur $nom_four : Cde : ".join(', ',$cde_adh)))
 						$message .= "<div class=\"message\" style=\"color:green;\">Email correctement envoyé à $row[nom] ($row[email])</div>\n";
