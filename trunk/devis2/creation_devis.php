@@ -634,7 +634,7 @@ div#sauvegarde {
 			if ($row_detail['fournisseur'])
 				$custom_ligne = preg_replace('/\sname="a_fournisseur\[\]"\s+value=""\s/i',' name="a_fournisseur[]" value="'.$row_detail['fournisseur'].'" ',$custom_ligne);
 			if ($row_detail['designation'])
-				$custom_ligne = preg_replace('/\s+class="designation"\s*><\/textarea>/i',' class="designation">'.my_utf8_decode(stripslashes($row_detail['designation'])).'</textarea>',$custom_ligne);
+				$custom_ligne = preg_replace('/\s+class="designation"\s*><\/textarea>/i',' class="designation">'.stripslashes($row_detail['designation']).'</textarea>',$custom_ligne);
 			if ($row_detail['qte'])
 				$custom_ligne = preg_replace('/\sname="a_qte\[\]"\s+value="0"\s/i',' name="a_qte[]" value="'.$row_detail['qte'].'" ',$custom_ligne);
 			if ($row_detail['puht'])
