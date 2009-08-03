@@ -45,6 +45,74 @@ function devis_log($action='', $id_devis=0, $sql='', $complement='') {
 	mysql_query($sql) or die("ne peux pas inserer le log ".mysql_error()." <br>$sql");
 }
 
+function my_utf8_decode($string) { // try to convert string (pseudo utf8) to iso8859-1
+	$tmp = $string;
+	$tmp = str_replace('Ã§','ç',$tmp);
+	$tmp = str_replace('ä§','ç',$tmp);
+	$tmp = str_replace('Ã©','é',$tmp);
+	$tmp = str_replace('ä©','é',$tmp);
+	$tmp = str_replace('Ã¨','è',$tmp);
+	$tmp = str_replace('ä¨','è',$tmp);
+	$tmp = str_replace('Ãª','ê',$tmp);
+	$tmp = str_replace('äª','ê',$tmp);
+	$tmp = str_replace('Ã«','ë',$tmp);
+	$tmp = str_replace('ä«','ë',$tmp);
+	$tmp = str_replace('Ã?','Ê',$tmp);
+	$tmp = str_replace('ä?','Ê',$tmp);
+	$tmp = str_replace('Ã?','Ë',$tmp);
+	$tmp = str_replace('ä?','Ë',$tmp);
+	$tmp = str_replace('Ã®','î',$tmp);
+	$tmp = str_replace('ä®','î',$tmp);
+	$tmp = str_replace('Ã¯','ï',$tmp);
+	$tmp = str_replace('ä¯','ï',$tmp);
+	$tmp = str_replace('Ã¬','ì',$tmp);
+	$tmp = str_replace('Ã?','Î',$tmp);
+	$tmp = str_replace('ä?','Î',$tmp);
+	$tmp = str_replace('Ã²','ò',$tmp);
+	$tmp = str_replace('ä²','ò',$tmp);
+	$tmp = str_replace('Ã´','ô',$tmp);
+	$tmp = str_replace('ä´','ô',$tmp);
+	$tmp = str_replace('Ã¶','ö',$tmp);
+	$tmp = str_replace('ä¶','ö',$tmp);
+	$tmp = str_replace('Ãµ','õ',$tmp);
+	$tmp = str_replace('Ã³','ó',$tmp);
+	$tmp = str_replace('Ã¸','ø',$tmp);
+	$tmp = str_replace('äµ','õ',$tmp);
+	$tmp = str_replace('ä³','ó',$tmp);
+	$tmp = str_replace('ä¸','ø',$tmp);
+	$tmp = str_replace('Ã?','Ô',$tmp);
+	$tmp = str_replace('ä?','Ô',$tmp);
+	$tmp = str_replace('Ã?','Ö',$tmp);
+	$tmp = str_replace('ä?','Ö',$tmp);
+	$tmp = str_replace('Ã ','à',$tmp);
+	$tmp = str_replace('ä ','à',$tmp);
+	$tmp = str_replace('Ã¢','â',$tmp);
+	$tmp = str_replace('ä¢','â',$tmp);
+	$tmp = str_replace('Ã¤','ä',$tmp);
+	$tmp = str_replace('ä¤','ä',$tmp);
+	$tmp = str_replace('Ã¥','å',$tmp);
+	$tmp = str_replace('ä¥','å',$tmp);
+	$tmp = str_replace('Ã?','Â',$tmp);
+	$tmp = str_replace('ä?','Â',$tmp);
+	$tmp = str_replace('Ã?','Ä',$tmp);
+	$tmp = str_replace('ä?','Ä',$tmp);
+	$tmp = str_replace('Ã¹','u',$tmp);
+	$tmp = str_replace('Ã»','û',$tmp);
+	$tmp = str_replace('Ã¼','ü',$tmp);
+	$tmp = str_replace('ä¼','ü',$tmp);
+	$tmp = str_replace('Ã?','Û',$tmp);
+	$tmp = str_replace('Ã?','Ü',$tmp);
+	$tmp = str_replace('ä¹','u',$tmp);
+	$tmp = str_replace('ä»','û',$tmp);
+	$tmp = str_replace('ä¼','ü',$tmp);
+	$tmp = str_replace('ä¼','ü',$tmp);
+	$tmp = str_replace('ä?','Û',$tmp);
+	$tmp = str_replace('ä?','Ü',$tmp);
+	$tmp = str_replace('Ã²','ñ',$tmp);
+	$tmp = str_replace('Ã±','ñ',$tmp); 
+	return $tmp;
+}
+
 function select_vendeur() {
 	$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
 	$tmp = array();
