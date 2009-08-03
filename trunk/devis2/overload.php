@@ -59,38 +59,38 @@ class PDF extends FPDF
 		if		($_POST['artisan_nom'] == 'NON Adherent')
 			$this->Cell(90, 5 , $_POST['artisan_nom_libre']);
 		elseif ($_POST['artisan_nom'] == 'CAB 56')
-			$this->Cell(90, 5 , 'CAB 56 : ' . $_POST['artisan_nom_libre']);
+			$this->Cell(90, 5 , 'CAB 56 : ' . utf8_decode($_POST['artisan_nom_libre']));
 		else
-			$this->Cell(90, 5 , $_POST['artisan_nom'] );
+			$this->Cell(90, 5 , utf8_decode($_POST['artisan_nom']) );
 		
 		// nom Client
 		$this->SetFont('helvetica','',11);
-		$this->Cell(60, 5 ,$_POST['client_nom']);
+		$this->Cell(60, 5 ,utf8_decode($_POST['client_nom']));
 		$this->Ln();
 
 		// representant
 		$this->SetFont('helvetica','BI',11);
 		$this->Cell(21, 5 ,"Suivi par :");
 		$this->SetFont('helvetica','',11);
-		$this->Cell(90, 5 ,$_POST['artisan_representant']);
+		$this->Cell(90, 5 ,utf8_decode($_POST['artisan_representant']));
 
 		// client adresse 1
 		$this->SetFont('helvetica','I',11);
-		$this->Cell(90, 5 ,$_POST['client_adresse']);
+		$this->Cell(90, 5 ,utf8_decode($_POST['client_adresse']));
 		$this->Ln();
 
 		// client adresse 2
 		$this->Cell(111);
-		$this->Cell(60, 5 ,$_POST['client_adresse2']);
+		$this->Cell(60, 5 ,utf8_decode($_POST['client_adresse2']));
 		$this->Ln();
 
 		// client CP
 		$this->SetFont('helvetica','',11);
 		$this->Cell(111);
-		$this->Cell(13, 5 ,$_POST['client_codepostal']);
+		$this->Cell(13, 5 ,utf8_decode($_POST['client_codepostal']));
 
 		// client ville
-		$this->Cell(60, 5 ,$_POST['client_ville']);
+		$this->Cell(60, 5 ,utf8_decode($_POST['client_ville']));
 		$this->Ln();
 
 		// N° de bon
@@ -99,7 +99,7 @@ class PDF extends FPDF
 		$this->Cell(77, 5 , $id_devis );
 
 		// client tel 1
-		$this->Cell(60, 5 ,$_POST['client_telephone']);
+		$this->Cell(60, 5 ,utf8_decode($_POST['client_telephone']));
 		$this->Ln();
 
 		// Date de création du devis
@@ -110,7 +110,7 @@ class PDF extends FPDF
 
 		// client tel 2
 		$this->Cell(19);
-		$this->Cell(60, 5 ,   $_POST['client_telephone2']   );
+		$this->Cell(60, 5 ,   utf8_decode($_POST['client_telephone2'])   );
 		$this->Ln();
 
 		// si on est avec un devis prix ADH
@@ -126,7 +126,7 @@ class PDF extends FPDF
 		// client email
 		$this->SetFont('helvetica','',10);
 		$this->Cell(21);
-		$this->Cell(60, 5 ,$_POST['client_email']);
+		$this->Cell(60, 5 ,utf8_decode($_POST['client_email']));
 		$this->Ln(6);
 
 		// heure d'ouverture

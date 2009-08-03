@@ -44,6 +44,7 @@ if($modif) { // modif
 ?><html>
 <head>
 <title><?= $modif ? "Modification du $row_devis[numero]" : "Création du devis ".date('My')."-$id" ?></title>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_devis.ico" />
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
@@ -200,7 +201,7 @@ function insert_ligne(id) {
 				tmp.children('input[name^=a_qte]').val(1);
 				tmp.children('input[name^=a_pu]').val((Math.round(data.prix		* 100)/100)); // prix expo
 				tmp.children('span').children('input[name^=a_adh_pu]').val(Math.round(data.px_adh	* 100)/100); // prix adh
-				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_coop		* 100)/100 + 
+				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_achat_coop	* 100)/100 + 
 														'<br/>adh '	+ Math.round(data.px_adh		* 100)/100 + 
 														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
 														'<br/>pub '	+ Math.round(data.px_public	* 100)/100

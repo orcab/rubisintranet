@@ -45,9 +45,9 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 			$pdf->SetFillColor(255,0,0);
 		
 			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
-						array('text' => $_POST['a_reference'][$i]	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
-						array('text' => $_POST['a_fournisseur'][$i]	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
-						array('text' => stripslashes($_POST['a_designation'][$i]).($_POST['a_hid_opt'][$i] ? " (option)":'')	, 'text-align' => 'L'),
+						array('text' => utf8_decode($_POST['a_reference'][$i])	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
+						array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
+						array('text' => my_utf8_decode(stripslashes($_POST['a_designation'][$i])).($_POST['a_hid_opt'][$i] ? " (option)":'')	, 'text-align' => 'L'),
 						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
 						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
 						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
@@ -79,9 +79,9 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 			$option_phrase='';
 
 		if ($sous_total)
-			$pdf->MultiCell(0,7,stripslashes($_POST['a_designation'][$i]).' ('.str_replace('.',',',sprintf("%0.2f",$sous_total)).EURO.')'.$option_phrase  ,1,'C',1);
+			$pdf->MultiCell(0,7,utf8_decode(stripslashes($_POST['a_designation'][$i])).' ('.str_replace('.',',',sprintf("%0.2f",$sous_total)).EURO.')'.$option_phrase  ,1,'C',1);
 		else
-			$pdf->MultiCell(0,7,stripslashes($_POST['a_designation'][$i]) ,1,'C',1);
+			$pdf->MultiCell(0,7,utf8_decode(stripslashes($_POST['a_designation'][$i])) ,1,'C',1);
 
 		$pdf->SetFillColor(255);
 		$sous_total = 0 ;

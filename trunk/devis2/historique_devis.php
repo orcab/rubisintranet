@@ -62,17 +62,17 @@ if(isset($_GET['action']) && $_GET['action']=='delete' && isset($_GET['id']) && 
 	#mysql_query("DELETE FROM devis WHERE id=$_GET[id]");
 	mysql_query("UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
 	devis_log("delete_devis",$_GET['id'],"UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
-	$message = "Le devis n° $row[numero] a été correctement supprimé";
+	$message = "Le devis n&deg; $row[numero] a &eacute;t&eacute; correctement supprim&eacute;";
 }
 
 
 if(isset($_GET['action']) && $_GET['action']=='delete_relance' && isset($_GET['id']) && $_GET['id']) { // mode delete relance
-	$res = mysql_query("SELECT CONCAT(DATE_FORMAT(devis.`date`,'%b%y-'),devis.id) AS numero FROM devis_relance,devis WHERE devis_relance.id=$_GET[id] AND devis_relance.id_devis = devis.id LIMIT 0,1") or die("Ne peux pas trouver le n° du devis ".mysql_error());
+	$res = mysql_query("SELECT CONCAT(DATE_FORMAT(devis.`date`,'%b%y-'),devis.id) AS numero FROM devis_relance,devis WHERE devis_relance.id=$_GET[id] AND devis_relance.id_devis = devis.id LIMIT 0,1") or die("Ne peux pas trouver le n&deg; du devis ".mysql_error());
 	$row = mysql_fetch_array($res);
 	#mysql_query("DELETE FROM devis_relance WHERE id=$_GET[id]") ;
 	mysql_query("UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'") or die("Ne peux pas supprimer la relance ".mysql_error());
 	devis_log("delete_relance",$_GET['id'],"UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'");
-	$message = "La relance du devis n° $row[numero] a été correctement supprimée";
+	$message = "La relance du devis n&deg; $row[numero] a &eacute;t&eacute; correctement supprim&eacute;e";
 }
 
 
@@ -81,20 +81,21 @@ if(isset($_POST['action']) && $_POST['action']=='saisie_relance' && isset($_POST
 	$sql = "INSERT INTO devis_relance (id_devis,`date`,representant,`type`,humeur,commentaire) VALUES ($_POST[id],'$date','$_POST[relance_representant]','$_POST[relance_type]',$_POST[relance_humeur],'".mysql_escape_string($_POST['relance_commentaire'])."')";
 	$res = mysql_query($sql) or die("Ne peux pas enregistrer la relance client ".mysql_error());
 	devis_log("insert_relance",mysql_insert_id(),$sql);
-	$message = "La relance client a été enregistrée";
+	$message = "La relance client a &eacute;t&eacute; enregistr&eacute;e";
 }
 
 if(isset($_POST['action']) && $_POST['action']=='saisie_cmd' && isset($_POST['id']) && $_POST['id']) { // mode saisie de cmd client
 	$sql = "UPDATE devis SET mtht_cmd_rubis=NULL, num_cmd_rubis='".strtoupper(ereg_replace("[^A-Za-z0-9]+",",",trim($_POST['cmd'])))."' WHERE id=$_POST[id]";
 	$res = mysql_query($sql) or die("Ne peux pas enregistrer la commande client ".mysql_error());
 	devis_log("update_num_cmd_rubis",$_POST['id'],$sql);
-	$message = "La commande client a été enregistrée";
+	$message = "La commande client a &eacute;t&eacute; enregistr&eacute;e";
 }
 
 ?>
 <html>
 <head>
 <title>Historique des devis</title>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <link rel="shortcut icon" type="image/x-icon" href="../gfx/creation_devis.ico" />
 <style>
 a img { border:none; }
@@ -256,7 +257,7 @@ function calcul_cmd_rubis(id_devis) {
 <table style="border:solid 2px grey;">
 	<caption style="font-weight:bold;">Saisie des relances client</caption>
 	<tr>
-		<td>Devis n°</td>
+		<td>Devis n&deg;</td>
 		<td id="relance_numero"></td>
 		<td></td>
 		<td><input type="text" name="relance_date" size="8" maxlength="10"> <input type="text" name="relance_heure" size="5" maxlength="5"></td>
@@ -265,14 +266,14 @@ function calcul_cmd_rubis(id_devis) {
 		<td>Type</td>
 		<td>
 			<select name="relance_type">
-				<option value="telephone">Téléphone</option>
+				<option value="telephone">T&eacute;l&eacute;phone</option>
 				<option value="fax">Fax</option>
 				<option value="visite">Visite en salle</option>
 				<option value="courrier">Courrier</option>
 				<option value="email">Email</option>
 			</select>
 		</td>
-		<td>Représentant</td>
+		<td>Repr&eacute;sentant</td>
 		<td>
 			<select name="relance_representant">
 <?			$res  = mysql_query("SELECT * FROM employe ORDER BY prenom ASC");
@@ -287,10 +288,10 @@ function calcul_cmd_rubis(id_devis) {
 		<td>Humeur</td>
 		<td>
 			<select name="relance_humeur" size="1">
-				<option style="padding-left:30px;height:20px;" value="0" selected>Indifférent</option>
+				<option style="padding-left:30px;height:20px;" value="0" selected>Indiff&eacute;rent</option>
 				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-clear.png) no-repeat left;" value="1">Content</option>
 				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-few-clouds.png) no-repeat left;" value="2">Mausade</option>
-				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-storm.png) no-repeat left;" value="3">Enervé</option>
+				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-storm.png) no-repeat left;" value="3">Enerv&eacute;</option>
 			</select>
 		</td>
 	</tr>
@@ -307,11 +308,11 @@ function calcul_cmd_rubis(id_devis) {
 <!-- boite de dialogue pour la saisie de la relantion entre devis et cmd client -->
 <div id="cmd">
 <table style="border:solid 2px grey;">
-	<caption style="font-weight:bold;">Saisie des n° de commande client</caption>
-	<tr><td>Devis n°</td>
+	<caption style="font-weight:bold;">Saisie des n&deg; de commande client</caption>
+	<tr><td>Devis n&deg;</td>
 		<td id="cmd_numero"></td>
 	</tr>
-	<tr><td>N° des commandes<br><span style="font-size:0.7em;">(séparées par une virgule)<br>Saisir "ANNULE" si le devis n'aboutira pas</span><br>Saisir "SUSPENDU" pour un devis en attente</td>
+	<tr><td>N&deg; des commandes<br><span style="font-size:0.7em;">(s&eacute;par&eacute;es par une virgule)<br>Saisir "ANNULE" si le devis n'aboutira pas</span><br>Saisir "SUSPENDU" pour un devis en attente</td>
 		<td><input type="text" name="cmd"></td>
 	</tr>
 	<tr><td colspan="2" align="center"><input type="button" class="button valider" onclick="envoi_formulaire('saisie_cmd');" value="Enregistrer"> <input type="button"  class="button annuler" onclick="cache('cmd');" value="Annuler"></td>
@@ -321,7 +322,7 @@ function calcul_cmd_rubis(id_devis) {
 
 
 
-<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/page_add.png);margin-bottom:4px;" onclick="document.location.href='creation_devis.php';" value="Créer un nouveau devis">
+<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/page_add.png);margin-bottom:4px;" onclick="document.location.href='creation_devis.php';" value="Cr&eacute;er un nouveau devis">
 
 <table id="historique-devis" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;color:black;">
@@ -330,7 +331,7 @@ function calcul_cmd_rubis(id_devis) {
 		<!-- choix pour les recherches -->
 		<table id="recherche">
 			<tr>
-				<td>Date de départ</td>
+				<td>Date de d&eacute;part</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['devis_expo_filtre_date_inf']?>" size="8">
 					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
@@ -349,14 +350,14 @@ function calcul_cmd_rubis(id_devis) {
 				</td>
 				<td style="padding-left:2em;text-align:right;">Artisan</td>
 				<td><input type="text" name="filtre_artisan" value="<?=$_SESSION['devis_expo_filtre_artisan']?>" size="8"></td>
-				<td style="padding-left:2em;text-align:right;">Représentant</td>
+				<td style="padding-left:2em;text-align:right;">Repr&eacute;sentant</td>
 				<td><input type="text" name="filtre_representant" value="<?=$_SESSION['devis_expo_filtre_representant']?>" size="8"></td>
-				<td style="padding-left:2em;text-align:right;">N° CMD</td>
+				<td style="padding-left:2em;text-align:right;">N&deg; CMD</td>
 				<td ><input type="text" name="filtre_numero_cmd" value="<?=$_SESSION['devis_expo_filtre_numero_cmd']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;" nowrap>Montant CMD
 					<select name="filtre_signe_montant_cmd">
-						<option value=">="<?=$_SESSION['devis_expo_filtre_signe_montant_cmd']=='>=' ? ' selected':''?>>supérieur à</option>
-						<option value="<="<?=$_SESSION['devis_expo_filtre_signe_montant_cmd']=='<=' ? ' selected':''?>>inférieur à</option>
+						<option value=">="<?=$_SESSION['devis_expo_filtre_signe_montant_cmd']=='>=' ? ' selected':''?>>sup&eacute;rieur &agrave;</option>
+						<option value="<="<?=$_SESSION['devis_expo_filtre_signe_montant_cmd']=='<=' ? ' selected':''?>>inf&eacute;rieur &agrave;</option>
 					</select></td>
 				<td nowrap><input type="text" name="filtre_montant_cmd" value="<?=$_SESSION['devis_expo_filtre_montant_cmd'] ? $_SESSION['devis_expo_filtre_montant_cmd']:'0' ?>" size="3">&euro;</td>
 
@@ -384,7 +385,7 @@ function calcul_cmd_rubis(id_devis) {
 				<td><input type="text" name="filtre_client" value="<?=$_SESSION['devis_expo_filtre_client']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;">Ville</td>
 				<td><input type="text" name="filtre_ville" value="<?=$_SESSION['devis_expo_filtre_ville']?>" size="8"></td>
-				<td style="padding-left:2em;text-align:right;">N° Devis</td>
+				<td style="padding-left:2em;text-align:right;">N&deg; Devis</td>
 				<td><input type="text" name="filtre_numero_devis" value="<?=$_SESSION['devis_expo_filtre_numero_devis']?>" size="8"></td>
 				<td style="padding-left:2em;text-align:right;" nowrap>Article <input type="text" name="filtre_article" value="<?=$_SESSION['devis_expo_filtre_article']?>" size="8" /></td>
 				<td nowrap></td>
@@ -412,12 +413,12 @@ function calcul_cmd_rubis(id_devis) {
 <div style="color:red;"><?= $message ? $message : ''?></div>
 	</caption>
 	<tr>
-		<th class="NUMERO">N°</th>
+		<th class="NUMERO">N&deg;</th>
 		<th class="DATE">Date<br><a href="historique_devis.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="REPRESENTANT">Représentant<br><a href="historique_devis.php?filtre_classement=NUMERO ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NUMERO DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="REPRESENTANT">Repr&eacute;sentant<br><a href="historique_devis.php?filtre_classement=NUMERO ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NUMERO DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="NOM_CLIENT">Client<br><a href="historique_devis.php?filtre_classement=NOM_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NOM_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="VILLE_CLIENT">Ville<br><a href="historique_devis.php?filtre_classement=VILLE_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=VILLE_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="TEL_CLIENT">Téléphone<br><a href="historique_devis.php?filtre_classement=TEL_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=TEL_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="TEL_CLIENT">T&eacute;l&eacute;phone<br><a href="historique_devis.php?filtre_classement=TEL_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=TEL_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="ARTISAN">Artisan<br><a href="historique_devis.php?filtre_classement=ARTISAN ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=ARTISAN DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="PTHT">Mt HT Devis<br><a href="historique_devis.php?filtre_classement=PTHT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=PTHT DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="MTHT_CMD_RUBIS">Mt HT Cmd<br><a href="historique_devis.php?filtre_classement=MTHT_CMD_RUBIS ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=MTHT_CMD_RUBIS DESC"><img src="/intranet/gfx/desc.png"></a></th>
@@ -551,7 +552,7 @@ EOT;
 		<td class="NUM_CMD_RUBIS"><?=eregi_replace("[^a-z0-9]","<br>",$row['num_cmd_rubis'])?></td><!-- N° CMD Rubis -->
 		<? if ($droit & PEUT_ASSOCIER_CMD_AU_DEVIS) { // peut associer une cmd a une devis ?>
 				<td class="hide_when_print" style="border-left-width:3px;">
-					<a href="javascript:associe_cmd_devis('<?=$row['id']?>','<?=$row['numero']?>','<?=ereg_replace("[^A-Za-z0-9]",",",trim($row['num_cmd_rubis']))?>');" style="border:none;"><img src="gfx/yellow-triple.png" alt="Associe une commande à un devis" title="Associe une commande à un devis"></a>
+					<a href="javascript:associe_cmd_devis('<?=$row['id']?>','<?=$row['numero']?>','<?=ereg_replace("[^A-Za-z0-9]",",",trim($row['num_cmd_rubis']))?>');" style="border:none;"><img src="gfx/yellow-triple.png" alt="Associe une commande &agrave; un devis" title="Associe une commande &agrave; un devis"></a>
 				</td>
 		<? } ?>
 		<td style="text-align:center;vertical-align:bottom;font-size:0.6em;background-color:<?  // le devis n'est pas annulé
