@@ -163,16 +163,20 @@ while($row = odbc_fetch_array($detail_devis)) {
 			unset($kit[$row['DET97']]);
 		}
 
-		if ($row['ECOTAXE'] && !in_array('sans_prix',$_GET['options'])) { // l'article contient de l'écotaxe
-			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-						array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
-						array('text' => '','text-align'=>'R','font-size'=>'8'),
-						array('text' => "Ecotaxe sur l'article $row[CODAR]",'text-align'=>'R','font-size'=>'8'),
-						array('text' => $row['QTESA'],'text-align'=>'C','font-size'=>'8'),
-						array('text' => sprintf('%0.2f',$row['ECOTAXE']),'text-align'=>'R','font-size'=>'8'),
-						array('text' => sprintf('%0.2f',$row['ECOTAXE']*$row['QTESA']).EURO,'text-align'=>'R','font-size'=>'8'),
-					)
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // pas d'eco taxe a afficher
+
+		} else {
+			if ($row['ECOTAXE']) { // l'article contient de l'écotaxe
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+							array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+							array('text' => '','text-align'=>'R','font-size'=>'8'),
+							array('text' => "Ecotaxe sur l'article $row[CODAR]",'text-align'=>'R','font-size'=>'8'),
+							array('text' => $row['QTESA'],'text-align'=>'C','font-size'=>'8'),
+							array('text' => sprintf('%0.2f',$row['ECOTAXE']),'text-align'=>'R','font-size'=>'8'),
+							array('text' => sprintf('%0.2f',$row['ECOTAXE']*$row['QTESA']).EURO,'text-align'=>'R','font-size'=>'8'),
+						)
 				);
+			}
 		}
 
 
