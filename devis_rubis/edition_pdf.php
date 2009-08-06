@@ -163,7 +163,7 @@ while($row = odbc_fetch_array($detail_devis)) {
 			unset($kit[$row['DET97']]);
 		}
 
-		if ($row['ECOTAXE']) { // l'article contient de l'écotaxe
+		if ($row['ECOTAXE'] && !in_array('sans_prix',$_GET['options'])) { // l'article contient de l'écotaxe
 			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 						array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
 						array('text' => '','text-align'=>'R','font-size'=>'8'),
