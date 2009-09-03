@@ -4,25 +4,25 @@ include('../../inc/config.php');
 
 
 $tournee_chauffeur = array(
-	'124' =>	array(	'1' => 'PHILIPPE 1',
-						'2' => 'PHILIPPE 2',
+	'124' =>	array(	'1' => 'PHILIPPE',
+						'2' => 'LAURENT',
 						'4' => 'GILLES'
 				),
 	'134' =>	array(	'1' => 'GILLES',
-						'3' => 'PHILIPPE 1',
-						'4' => 'PHILIPPE 2'
+						'3' => 'PHILIPPE',
+						'4' => 'LAURENT'
 				),
-	'135' =>	array(	'1' => 'PHILIPPE 2',
+	'135' =>	array(	'1' => 'LAURENT',
 						'3' => 'GILLES',
-						'5' => 'PHILIPPE 1'
+						'5' => 'PHILIPPE'
 				),
-	'235' =>	array(	'2' => 'PHILIPPE 1',
-						'3' => 'PHILIPPE 2',
+	'235' =>	array(	'2' => 'PHILIPPE',
+						'3' => 'LAURENT',
 						'5' => 'GILLES'
 				),
 	'245' =>	array(	'2' => 'GILLES',
-						'4' => 'PHILIPPE 1',
-						'5' => 'PHILIPPE 2'
+						'4' => 'PHILIPPE',
+						'5' => 'LAURENT'
 				)
 );
 
