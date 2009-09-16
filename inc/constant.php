@@ -57,6 +57,7 @@ function my_utf8_decode($string) { // try to convert string (pseudo utf8) to iso
 	$tmp = str_replace('äª','ê',$tmp);
 	$tmp = str_replace('Ã«','ë',$tmp);
 	$tmp = str_replace('ä«','ë',$tmp);
+	$tmp = str_replace('Ã‰','É',$tmp);
 	$tmp = str_replace('Ã?','Ê',$tmp);
 	$tmp = str_replace('ä?','Ê',$tmp);
 	$tmp = str_replace('Ã?','Ë',$tmp);
@@ -109,7 +110,7 @@ function my_utf8_decode($string) { // try to convert string (pseudo utf8) to iso
 	$tmp = str_replace('ä?','Û',$tmp);
 	$tmp = str_replace('ä?','Ü',$tmp);
 	$tmp = str_replace('Ã²','ñ',$tmp);
-	$tmp = str_replace('Ã±','ñ',$tmp); 
+	$tmp = str_replace('Ã±','ñ',$tmp);
 	return $tmp;
 }
 
