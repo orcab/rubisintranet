@@ -145,6 +145,12 @@ table#historique-devis td.<?=e(0,explode(' ',$_SESSION['devis_expo_filtre_classe
 	background-color:#D0D0D0;
 }
 
+span.show_col { display:none; margin-right:2em;}
+span.show_col:hover {
+	cursor:pointer;
+	border-bottom:solid 1px black;
+}
+
 </style>
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
@@ -238,6 +244,24 @@ function calcul_cmd_rubis(id_devis) {
 			$('#cmd_rubis_'+id_devis).html(data + ' &euro;');
 		} // fin fonction
 	); // fin getJson
+}
+
+
+
+// cache ou affiche les colonnes pour un affichage plus reduit en largeur
+function hide_col(col) {
+	$('.'+col).hide();
+	$('#show_col_'+col).show();
+}
+
+function show_col(col) {
+	$('.'+col).show();
+	$('#show_col_'+col).hide();
+}
+
+// generation du fichier excel
+function telecharger_excel(sql) {
+	document.location.href='historique_devis_excel.php?sql='+sql;
 }
 
 //-->
@@ -410,34 +434,53 @@ function calcul_cmd_rubis(id_devis) {
 			</tr>
 		</table>
 
-<div style="color:red;"><?= $message ? $message : ''?></div>
+	<div style="color:red;"><?= $message ? $message : ''?></div>
 	</caption>
+
 	<tr>
-		<th class="NUMERO">N&deg;</th>
-		<th class="DATE">Date<br><a href="historique_devis.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="REPRESENTANT">Repr&eacute;sentant<br><a href="historique_devis.php?filtre_classement=NUMERO ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NUMERO DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NOM_CLIENT">Client<br><a href="historique_devis.php?filtre_classement=NOM_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NOM_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="VILLE_CLIENT">Ville<br><a href="historique_devis.php?filtre_classement=VILLE_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=VILLE_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="TEL_CLIENT">T&eacute;l&eacute;phone<br><a href="historique_devis.php?filtre_classement=TEL_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=TEL_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="ARTISAN">Artisan<br><a href="historique_devis.php?filtre_classement=ARTISAN ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=ARTISAN DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="PTHT">Mt HT Devis<br><a href="historique_devis.php?filtre_classement=PTHT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=PTHT DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="MTHT_CMD_RUBIS">Mt HT Cmd<br><a href="historique_devis.php?filtre_classement=MTHT_CMD_RUBIS ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=MTHT_CMD_RUBIS DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NUM_CMD_RUBIS">Cmd Rubis<br><a href="historique_devis.php?filtre_classement=NUM_CMD_RUBIS ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NUM_CMD_RUBIS DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<td id="col_visible" colspan="14" style="border:none;">&nbsp;
+			<span id="show_col_NUMERO"			onclick="show_col('NUMERO');"		class="show_col">N&deg; <img src="gfx/eye.gif" /></span>
+			<span id="show_col_DATE"			onclick="show_col('DATE');"			class="show_col">Date <img src="gfx/eye.gif" /></span>
+			<span id="show_col_REPRESENTANT"	onclick="show_col('REPRESENTANT');" class="show_col">Représentant <img src="gfx/eye.gif" /></span>
+			<span id="show_col_NOM_CLIENT"		onclick="show_col('NOM_CLIENT');"	class="show_col">Client <img src="gfx/eye.gif" /></span>
+			<span id="show_col_VILLE_CLIENT"	onclick="show_col('VILLE_CLIENT');"	class="show_col">Ville <img src="gfx/eye.gif" /></span>
+			<span id="show_col_TEL_CLIENT"		onclick="show_col('TEL_CLIENT');"	class="show_col">T&eacute;l&eacute;phone <img src="gfx/eye.gif" /></span>
+			<span id="show_col_ARTISAN"			onclick="show_col('ARTISAN');"		class="show_col">Artisan <img src="gfx/eye.gif" /></span>
+			<span id="show_col_PTHT"			onclick="show_col('PTHT');"			class="show_col">Mt Devis <img src="gfx/eye.gif" /></span>
+			<span id="show_col_MTHT_CMD_RUBIS"	onclick="show_col('MTHT_CMD_RUBIS');"	class="show_col">Mt Cmd <img src="gfx/eye.gif" /></span>
+			<span id="show_col_NUM_CMD_RUBIS"	onclick="show_col('NUM_CMD_RUBIS');"	class="show_col">N&deg; Cmd <img src="gfx/eye.gif" /></span>
+			<span id="show_col_RELANCE"			onclick="show_col('RELANCE');"			class="show_col">Relances <img src="gfx/eye.gif" /></span>
+		</td>
+	</tr>
+
+	<tr>
+		<th class="NUMERO">N&deg; <img src="gfx/eye.gif" onclick="hide_col('NUMERO');"/></th>
+		<th class="DATE">Date <img src="gfx/eye.gif" onclick="hide_col('DATE');"/><br><a href="historique_devis.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="REPRESENTANT">Repr&eacute;sentant <img src="gfx/eye.gif" onclick="hide_col('REPRESENTANT');"/><br><a href="historique_devis.php?filtre_classement=NUMERO ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NUMERO DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NOM_CLIENT">Client <img src="gfx/eye.gif" onclick="hide_col('NOM_CLIENT');"/><br><a href="historique_devis.php?filtre_classement=NOM_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NOM_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="VILLE_CLIENT">Ville <img src="gfx/eye.gif" onclick="hide_col('VILLE_CLIENT');"/><br><a href="historique_devis.php?filtre_classement=VILLE_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=VILLE_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="TEL_CLIENT">T&eacute;l&eacute;phone <img src="gfx/eye.gif" onclick="hide_col('TEL_CLIENT');"/><br><a href="historique_devis.php?filtre_classement=TEL_CLIENT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=TEL_CLIENT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="ARTISAN">Artisan <img src="gfx/eye.gif" onclick="hide_col('ARTISAN');"/><br><a href="historique_devis.php?filtre_classement=ARTISAN ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=ARTISAN DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="PTHT">Mt HT Devis <img src="gfx/eye.gif" onclick="hide_col('PTHT');"/><br><a href="historique_devis.php?filtre_classement=PTHT ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=PTHT DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="MTHT_CMD_RUBIS">Mt HT Cmd <img src="gfx/eye.gif" onclick="hide_col('MTHT_CMD_RUBIS');"/><br><a href="historique_devis.php?filtre_classement=MTHT_CMD_RUBIS ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=MTHT_CMD_RUBIS DESC"><img src="/intranet/gfx/desc.png"></a></th>
+		<th class="NUM_CMD_RUBIS">Cmd Rubis <img src="gfx/eye.gif" onclick="hide_col('NUM_CMD_RUBIS');"/><br><a href="historique_devis.php?filtre_classement=NUM_CMD_RUBIS ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NUM_CMD_RUBIS DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<? if ($droit & PEUT_ASSOCIER_CMD_AU_DEVIS) { // peut associer une cmd a une devis ?>
 			<th class="hide_when_print" style="border-left-width:3px;">Cmd</th>
 		<? } ?>
-		<th>Relances<br><a href="historique_devis.php?filtre_classement=NB_RELANCE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NB_RELANCE DESC"><img src="/intranet/gfx/desc.png"></a><br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
+		<th class="RELANCE">Relances <img src="gfx/eye.gif" onclick="hide_col('RELANCE');"/><br><a href="historique_devis.php?filtre_classement=NB_RELANCE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NB_RELANCE DESC"><img src="/intranet/gfx/desc.png"></a><br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
 		<th class="hide_when_print">Edit</th>
 		<th class="hide_when_print">Supp</th>
 	</tr>
 <?	
-	$where = array() ;
-	$tables = array('devis') ;
+	$where		= array() ;
+	$tables		= array('devis') ;
+	$group_by	= '';
 	
 	if ($_SESSION['devis_expo_filtre_article']) {
 		$tables[] = 'devis_ligne'; // on rajoute la table des ligne de devis à la recherche
 		$where[] = "devis.id = devis_ligne.id_devis";
 		$where[] = "(ref_fournisseur LIKE '%".mysql_escape_string($_SESSION['devis_expo_filtre_article'])."%' OR designation LIKE '%".mysql_escape_string($_SESSION['devis_expo_filtre_article'])."%')";
+		$group_by = 'GROUP BY id';
 	}
 
 
@@ -490,6 +533,7 @@ SELECT	devis.id as id,
 		(SELECT SUM(qte * puht) FROM devis_ligne WHERE devis_ligne.id_devis=devis.id) AS ptht
 FROM  $tables
 $where
+$group_by
 ORDER BY $ordre
 EOT;
 
@@ -522,15 +566,15 @@ EOT;
 	<tr style="background:<?= $i++ & 1 ? '#F5F5F5':'white' ?>">
 		<td class="NUMERO"><?=$row['numero']?></td>
 		<td class="DATE"><a name="<?=$row['id']?>"></a><?=$jours_mini[$row['date_jour']]?> <?=$row['date_formater']?></td>
-		<td class="REPRESENTANT"><?=$row['representant']?></td>
-		<td class="NOM_CLIENT"><?=$row['nom_client']?></td>
+		<td class="REPRESENTANT"><?=my_utf8_decode($row['representant'])?></td>
+		<td class="NOM_CLIENT"><?=my_utf8_decode($row['nom_client'])?></td>
 		<td class="VILLE_CLIENT"><?=$row['ville_client']?></td>
 		<td class="TEL_CLIENT">
 			<?=$row['tel_client']?>
 			<? if ($row['tel_client2']) { ?><br><?=$row['tel_client2']?><? } ?>
 			<? if ($row['email_client']) { ?><br><?=$row['email_client']?><? } ?>
 		</td>
-		<td class="ARTISAN"><?=$row['artisan']?></td>
+		<td class="ARTISAN"><?=my_utf8_decode($row['artisan'])?></td>
 		<td class="PTHT" nowrap><?=$row['ptht']?> &euro;</td><!-- Mt devis -->
 		<td class="MTHT_CMD_RUBIS" style="text-align:center;"
 			<?	if ($row['num_cmd_rubis']) { // si un numero de cmd renseigné
@@ -555,7 +599,7 @@ EOT;
 					<a href="javascript:associe_cmd_devis('<?=$row['id']?>','<?=$row['numero']?>','<?=ereg_replace("[^A-Za-z0-9]",",",trim($row['num_cmd_rubis']))?>');" style="border:none;"><img src="gfx/yellow-triple.png" alt="Associe une commande &agrave; un devis" title="Associe une commande &agrave; un devis"></a>
 				</td>
 		<? } ?>
-		<td style="text-align:center;vertical-align:bottom;font-size:0.6em;background-color:<?  // le devis n'est pas annulé
+		<td class="RELANCE" style="text-align:center;vertical-align:bottom;font-size:0.6em;background-color:<?  // le devis n'est pas annulé
 										$jour_sans_relance = 0 ;
 										if (!strtoupper(trim($row['num_cmd_rubis']))) {
 											// le devis a été relance et a depasssé la date limite OU le devis n'a jamais été relancé et la date est dépassé
@@ -629,7 +673,8 @@ EOT;
 <tr>
 	<td colspan="3">Nombre de ligne : <?=$total_ligne?></td>
 	<td colspan="3">Montant des devis : <?=$total_devis?> &euro;</td>
-	<td colspan="8">Montant des cmd : <?=$total_cmd?> &euro;</td>
+	<td colspan="4">Montant des cmd : <?=$total_cmd?> &euro;</td>
+	<td colspan="4"><input type="button" class="button valider excel" value="Télécharger le fichier Excel" onclick="telecharger_excel('<?=urlencode(urlencode(base64_encode($sql)))?>');"/><!-- double urlencode pour éviter le probleme du décoage automatique par php --></td>
 </tr>
 
 </table>

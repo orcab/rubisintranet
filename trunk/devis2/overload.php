@@ -37,6 +37,10 @@ class PDF extends FPDF
 	function Header()
 	{	global $values,$SOCIETE,$options,$_POST,$id_devis,$date ;
 		
+		if (in_array('px_adh',$options))
+			$this->Image('gfx/filigranne_devis.png',0 ,0, 210, 297); // filigranne en fond de page
+
+
 		// logo gauche et droite en haut de page si le theme le demande
 		//if (eregi('_avec_entete$',$values['devis.theme'])) {
 		if (!in_array('no_header',$options)) {
@@ -119,6 +123,7 @@ class PDF extends FPDF
 			$this->SetFont('helvetica','B',12);
 			$this->Cell(90, 5 ,"Les prix affichés sont NET HT Adhérents");
 			$this->SetTextColor(0,0,0);
+			
 		} else {
 			$this->Cell(90);
 		}
