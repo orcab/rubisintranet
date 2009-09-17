@@ -54,7 +54,7 @@ a:hover {
 
 <tr>
 	<td></td>
-	<td></td>
+	<td><a href="bon_mise_en_stock/index.php"><img src="bon_mise_en_stock/gfx/bon_mise_en_stock.png"><br>Bon de mise en stock</a></td>
 	<td></td>
 </tr>
 </table>

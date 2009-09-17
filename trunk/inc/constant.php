@@ -111,6 +111,7 @@ function my_utf8_decode($string) { // try to convert string (pseudo utf8) to iso
 	$tmp = str_replace('ä?','Ü',$tmp);
 	$tmp = str_replace('Ã²','ñ',$tmp);
 	$tmp = str_replace('Ã±','ñ',$tmp);
+	$tmp = str_replace('Â°','°',$tmp);
 	return $tmp;
 }
 
