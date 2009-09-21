@@ -121,7 +121,7 @@ class PDF extends FPDF
 		if (in_array('px_adh',$options)) {
 			$this->SetTextColor(255,0,0);
 			$this->SetFont('helvetica','B',12);
-			$this->Cell(90, 5 ,"Les prix affichés sont NET HT Adhérents");
+			$this->Cell(90, 5 ,"Les prix affichés sont NETS HT Adhérents");
 			$this->SetTextColor(0,0,0);
 			
 		} else {
