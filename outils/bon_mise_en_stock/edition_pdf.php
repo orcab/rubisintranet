@@ -19,7 +19,7 @@ where	CFBON='$cfbon_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFCLI,CFPRF,CFCOM,LOCAL,LOCA2,LOCA3
+select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFCLI,CFPRF,CFCOM,LOCAL,LOCA2,LOCA3,CFPAN,CFMTH
 from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
 		on		DETAIL.CFART = STOCK.NOART
@@ -56,7 +56,7 @@ $pdf->SetFillColor(230); // gris clair
 while($row = odbc_fetch_array($detail_commande)) {
 	
 	// largeur des colonnes
-	$pdf->SetWidths(array(REF_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,QTE_WIDTH,QTE_RECU_WIDTH,LOCAL_WIDTH));
+	$pdf->SetWidths(array(REF_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,PU_WIDTH,PT_WIDTH,QTE_WIDTH,QTE_RECU_WIDTH,LOCAL_WIDTH));
 
 	$row_original = $row ;
 	$row =array_map('trim',$row);
@@ -89,7 +89,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		}
 	} else { // cas d'un article
 	
-		if($pdf->GetY() +  7 > PAGE_HEIGHT - 60) // check le saut de page
+		if($pdf->GetY() +  7 > PAGE_HEIGHT - 75) // check le saut de page
 			$pdf->AddPage();
 
 		$designation = $row['CFDE1'] ;
@@ -100,6 +100,13 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if ($row['CFCLB'])	$designation .= "\nCommande $row[CFCLB]";
 		if ($ref_adh)		$designation .= "    Réf : $ref_adh";
 		if ($row['CFCOM'])	$designation .= "\n$row[CFCOM]";
+
+
+		// comparaison de la date de livraison et de la date du jour --> départ immédiat ou non
+		$date_liv	= "$row[CFDLS]$row[CFDLA]$row[CFDLM]$row[CFDLJ]";
+		$today		= date('Ymd');
+		if ($today >= $date_liv)
+			$designation .= "\n              DEPART IMMEDIAT  à livrer pour le $row[CFDLJ]/$row[CFDLM]/$row[CFDLS]$row[CFDLA]";
 
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ACFDETP1' and CDETA='' and CDCOD LIKE '%$row_entete[CFBON]$row[CFLIG]%' ORDER BY CDLIG") ;
@@ -114,11 +121,13 @@ while($row = odbc_fetch_array($detail_commande)) {
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => ($row['REFFO'] ? $row['REFFO'] : "$row[CFART]\n(code MCS)") . 
 									($row['CFCLB'] ? "\n\nCommande\nspéciale":'')	,
-																					'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10 , 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
-					array('text' => $designation		,							'text-align' => 'L', 'font-size' => 8 , 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
+																					'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10 ),
+					array('text' => $designation		,							'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['CFUNI']		,							'text-align' => 'C'), // unité
+					array('text' => round($row['CFPAN'],2).EURO		,				'text-align' => 'C'), // PU
+					array('text' => $row['CFMTH'].EURO				,				'text-align' => 'C'), // PT
 					array('text' => str_replace('.000','',$row['CFQTE'])		,	'text-align' => 'C'), // quantité
-					array('text' => '' ), // prix d'achat brut
+					array('text' => '' ), // case vide
 					array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,
 							'text-align' => 'C', 'font-size' => 10) // total après remise
 					)

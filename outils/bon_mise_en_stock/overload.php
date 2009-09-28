@@ -10,11 +10,13 @@ define('TOP_MARGIN',5);
 
 define('REF_WIDTH',25);
 define('UNITE_WIDTH',9);
+define('PU_WIDTH',15);
+define('PT_WIDTH',15);
 define('QTE_WIDTH',12);
-define('QTE_RECU_WIDTH',25);
-define('LOCAL_WIDTH', 23);
+define('QTE_RECU_WIDTH',22);
+define('LOCAL_WIDTH', 20);
 
-define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + UNITE_WIDTH + QTE_WIDTH + QTE_RECU_WIDTH + LOCAL_WIDTH) ); // s'appadate à la largeur de la page
+define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + UNITE_WIDTH + PU_WIDTH + PT_WIDTH + QTE_WIDTH + QTE_RECU_WIDTH + LOCAL_WIDTH) ); // s'appadate à la largeur de la page
 
 //echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
@@ -96,6 +98,8 @@ class PDF extends FPDF
 		$this->Cell(REF_WIDTH,8,"Référence",1,0,'C',1);
 		$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
 		$this->Cell(UNITE_WIDTH,8,"Unit.",1,0,'C',1);
+		$this->Cell(PU_WIDTH,8,"P.U.",1,0,'C',1);
+		$this->Cell(PT_WIDTH,8,"P.T.",1,0,'C',1);
 		$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
 		$this->Cell(QTE_RECU_WIDTH,8,"Qte Reçu",1,0,'C',1);
 		$this->Cell(LOCAL_WIDTH,8,"Localisation",1,0,'C',1);
