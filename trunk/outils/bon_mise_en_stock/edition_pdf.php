@@ -105,7 +105,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		// comparaison de la date de livraison et de la date du jour --> départ immédiat ou non
 		$date_liv	= "$row[CFDLS]$row[CFDLA]$row[CFDLM]$row[CFDLJ]";
 		$today		= date('Ymd');
-		if ($today >= $date_liv)
+		if ($today >= $date_liv && $row['CFCLB'])
 			$designation .= "\n              DEPART IMMEDIAT  à livrer pour le $row[CFDLJ]/$row[CFDLM]/$row[CFDLS]$row[CFDLA]";
 
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
@@ -121,8 +121,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => ($row['REFFO'] ? $row['REFFO'] : "$row[CFART]\n(code MCS)") . 
 									($row['CFCLB'] ? "\n\nCommande\nspéciale":'')	,
-																					'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10 ),
-					array('text' => $designation		,							'text-align' => 'L', 'font-size' => 8),
+																					'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10 , 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
+					array('text' => $designation		,							'text-align' => 'L', 'font-size' => 8, 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
 					array('text' => $row['CFUNI']		,							'text-align' => 'C'), // unité
 					array('text' => round($row['CFPAN'],2).EURO		,				'text-align' => 'C'), // PU
 					array('text' => $row['CFMTH'].EURO				,				'text-align' => 'C'), // PT
