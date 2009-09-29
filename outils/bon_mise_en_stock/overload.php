@@ -53,7 +53,12 @@ class PDF extends FPDF
 		// N° de bon
 		$this->SetFont('helvetica','B',11);
 		$this->Cell(16, 5 ,"N° Cde : ");
-		$this->Cell(110, 5 ,$row_entete['CFBON']);
+		$this->Cell(20, 5 ,$row_entete['CFBON']);
+
+
+		// Ref de livraison
+		$this->SetFont('helvetica','B',11);
+		$this->Cell(90, 5 ,"Ref de livraison : ");
 
 		// date liv
 		$this->SetFont('helvetica','',11);
