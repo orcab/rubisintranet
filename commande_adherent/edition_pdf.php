@@ -65,13 +65,16 @@ $pdf->SetTextColor(0,0,0);
 $pdf->SetDrawColor(0,0,0);
 $pdf->SetFillColor(230); // gris clair
 
-$kit = array();
 
-while($row = odbc_fetch_array($detail_commande)) {
-	
-	// largeur des colonnes
+// largeur des colonnes
+if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // devis demandé sans prix
+	$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,QTE_WIDTH,TYPE_CDE_WIDTH));
+else
 	$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,QTE_WIDTH,PUHT_WIDTH,PTHT_WIDTH,TYPE_CDE_WIDTH));
 
+$kit = array();
+while($row = odbc_fetch_array($detail_commande)) {
+	
 	$row_original = $row ;
 	$row =array_map('trim',$row);
 
@@ -112,9 +115,21 @@ while($row = odbc_fetch_array($detail_commande)) {
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ADETBOP1' and CDETA='' and CDCOD LIKE '%$row_entete[NOBON]$row[NOLIG]%' ORDER BY CDLIG") ;
 		while($commentaire_row = odbc_fetch_array($commentaire_res))
-			if ($commentaire_row['CDLIB'])	$designation .= "\n".trim($commentaire_row['CDLIB']);
+			if ($commentaire_row['CDLIB'])
+				$designation .= "\n".trim($commentaire_row['CDLIB']);
 
-		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+			if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // cde demandé sans prix
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
+					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
+					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
+					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+					array('text' => $row['TYCDD']=='SPE'?'S':''	, 'text-align' => 'R') // spécial ou pas
+					)
+				);
+			else
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
 					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
@@ -125,7 +140,6 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => $row['TYCDD']=='SPE'?'S':''	, 'text-align' => 'R') // spécial ou pas
 					)
 				);
-
 		
 		//print_r($kit);exit;
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
@@ -145,8 +159,11 @@ while($row = odbc_fetch_array($detail_commande)) {
 			unset($kit[$row['DET97']]);
 		}
 
-		if ($row['ECOTAXE']) { // l'article contient de l'écotaxe
-			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // pas d'eco taxe a afficher
+
+		} else {
+			if ($row['ECOTAXE']) // l'article contient de l'écotaxe
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 						array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
 						array('text' => '','text-align'=>'R','font-size'=>'8'),
 						array('text' => "Ecotaxe sur l'article $row[CODAR]",'text-align'=>'R','font-size'=>'8'),
@@ -157,21 +174,26 @@ while($row = odbc_fetch_array($detail_commande)) {
 						array('text' => '','text-align'=>'R','font-size'=>'8')
 					)
 				);
-		}
-
+		} // fin si options sans prix
 	}
 }
 
 
-// fin du devis
+// fin de la cde
 if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) // check le saut de page
 	$pdf->AddPage();
 
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(240); // gris clair
-$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
-$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
-$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTBT'])).EURO,1,0,'R',1);
+
+if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde sans prix
+
+} else {
+	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
+	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
+	$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTBT'])).EURO,1,0,'R',1);
+}
+
 
 $pdf->Output();
 
