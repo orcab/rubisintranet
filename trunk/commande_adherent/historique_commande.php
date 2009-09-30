@@ -336,7 +336,8 @@ $(document).ready(function() {
 		<th class="NBLIG">Nb ligne<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="MONTBT">Mt HT Cde<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
-		<th>PDF</th>
+		<th style="vertical-align:top;">PDF<br/>chiffré</th>
+		<th style="vertical-align:top;">PDF</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -442,7 +443,8 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 <?			} ?>
 			<br><a href="javascript:relance_commande('<?=$row['NOBON']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="/intranet/gfx/pdf-icon.png" alt="Edition PDF" /></a></td>
+		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
+		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix.png" alt="Edition PDF" /></a></td>
 	</tr>
 
 

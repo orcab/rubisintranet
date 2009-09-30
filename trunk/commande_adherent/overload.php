@@ -16,7 +16,12 @@ define('PUHT_WIDTH',15);
 define('PTHT_WIDTH', 20);
 define('TYPE_CDE_WIDTH', 5);
 
-define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH) ); // s'appadate à la largeur de la page
+
+if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // devis demandé sans prix
+	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + UNITE_WIDTH + QTE_WIDTH + TYPE_CDE_WIDTH) ); // s'appadate à la largeur de la page
+else
+	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH) ); // s'appadate à la largeur de la page
+
 
 //echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
@@ -108,10 +113,15 @@ class PDF extends FPDF
 		$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
 		$this->Cell(UNITE_WIDTH,8,"Unit.",1,0,'C',1);
 		$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
-		$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
-		$this->Cell(PTHT_WIDTH,8,"TOTAL HT",1,0,'C',1);
+
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis demandé sans prix
+
+		} else {
+			$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
+			$this->Cell(PTHT_WIDTH,8,"TOTAL HT",1,0,'C',1);
+		}
+
 		$this->Cell(TYPE_CDE_WIDTH,8,"S",1,0,'C',1);
-		
 		$this->Ln();
 	}
 
