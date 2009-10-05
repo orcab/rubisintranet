@@ -18,6 +18,10 @@ if (!(isset($_GET['NOBON']) && $_GET['NOBON'])) { ?>
 $NOBON_escape = mysql_escape_string($_GET['NOBON']);
 $NOCLI_escape = mysql_escape_string($_GET['NOCLI']);
 
+$ligne_R = '';
+if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniquement les lignes R
+	$ligne_R = "and TRAIT='R'" ;
+
 $sql_entete = <<<EOT
 select NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,MONTBT,TELCL,TLCCL
 from ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON, ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
@@ -40,6 +44,7 @@ where	NOBON='$NOBON_escape'
 	and BON.NOCLI='$NOCLI_escape'
 	and ETSBE<>'ANN'
 	and BON.AGENC='$LOGINOR_AGENCE'
+	$ligne_R
 order by NOLIG
 EOT;
 
