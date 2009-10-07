@@ -1,6 +1,6 @@
 <?
 
-require_once('../inc/fpdf/fpdf.php');
+require_once('../../inc/fpdf/fpdf.php');
 
 define('PAGE_WIDTH',210);
 define('PAGE_HEIGHT',297);
@@ -12,46 +12,40 @@ define('REF_WIDTH',25);
 define('FOURNISSEUR_WIDTH',25);
 define('UNITE_WIDTH',9);
 define('QTE_WIDTH',12);
-define('PUHT_WIDTH',15);
-define('PTHT_WIDTH', 20);
 define('TYPE_CDE_WIDTH', 5);
+define('NOLIG_WIDTH', 10);
+define('LOCAL_WIDTH', 15);
 
 
-if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // devis demandé sans prix
-	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + UNITE_WIDTH + QTE_WIDTH + TYPE_CDE_WIDTH) ); // s'appadate à la largeur de la page
-else
-	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH) ); // s'appadate à la largeur de la page
+define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + UNITE_WIDTH + QTE_WIDTH + TYPE_CDE_WIDTH + NOLIG_WIDTH+ LOCAL_WIDTH) ); // s'appadate à la largeur de la page
 
-
-//echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
 class PDF extends FPDF
 {
 	//EN-TÊTE
 	function Header()
-	{	global $row_entete,$vendeurs,$SOCIETE ;
+	{	global $row,$vendeurs,$SOCIETE ;
 		
 		// logo gauche et droite en haut de page
 		if (PDF_CDE_ADH_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_CDE_ADH_LOGO_HAUT_GAUCHE,0,0,62);
 		if (PDF_CDE_ADH_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_CDE_ADH_LOGO_HAUT_DROITE,PAGE_WIDTH - 50,0,50);
 
-		// le dépot a livré et les coordonnées du fournisseur
+		// le dépot a livré et les coordonnées du adh
 		//$this->SetXY(70,2);
 		$this->SetFont('helvetica','',10);
 		$this->SetTextColor(0,0,0);
 		$this->SetXY(90,2);
 		$this->MultiCell(60,5,"Coordonnées adhérent :\n".
-				$row_entete['NOMSB'].
-				($row_entete['AD1SB']?"\n$row_entete[AD1SB]":'').
-				($row_entete['AD2SB']?"\n$row_entete[AD2SB]":'').
-				($row_entete['CPOSB']?"\n$row_entete[CPOSB]":'')." ".
-				($row_entete['BUDSB']?$row_entete['BUDSB']:'').
-				($row_entete['TELCL']?"\nTél : $row_entete[TELCL]":'').
-				($row_entete['TLCCL']?"\nFax : $row_entete[TLCCL]":'') );
+				$row['NOMSB'].
+				($row['AD1SB']?"\n$row[AD1SB]":'').
+				($row['AD2SB']?"\n$row[AD2SB]":'').
+				($row['CPOSB']?"\n$row[CPOSB]":'')." ".
+				($row['BUDSB']?$row['BUDSB']:'').
+				($row['TELCL']?"\nTél : $row[TELCL]":'').
+				($row['TLCCL']?"\nFax : $row[TLCCL]":'') );
 
-		//var_dump($row_entete); exit;
+		//var_dump($row); exit;
 					
-			
 		// rectangle en top de page
 		$this->SetDrawColor(0,0,0);
 		$this->Rect(LEFT_MARGIN,TOP_MARGIN -7,PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, 15);
@@ -63,36 +57,36 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','BU',11);
 		$this->Cell(20, 5 ,"Adhérent :");
 		$this->SetFont('helvetica','B',11);
-		$this->Cell(100, 5 ,$row_entete['NOMSB']);
+		$this->Cell(100, 5 ,$row['NOMSB']);
 		
 		// nom Client
 		$this->SetFont('helvetica','',11);
-		$this->Cell(15, 5 ,"Cde du $row_entete[DSECJ]/$row_entete[DSECM]/$row_entete[DSECS]$row_entete[DSECA]");
+		$this->Cell(15, 5 ,"Cde du $row[DSECJ]/$row[DSECM]/$row[DSECS]$row[DSECA]");
 		$this->Ln();
 
 		// N° de bon
 		$this->SetFont('helvetica','B',11);
 		$this->Cell(16, 5 ,"N° Cde : ");
-		$this->Cell(104, 5 ,$row_entete['NOBON']);
+		$this->Cell(104, 5 ,$row['CFCLB']);
 
 		// representant
 		$this->SetFont('helvetica','',11);
 		$this->Cell(30, 5 ,"Date de livraison");
 		$this->SetFont('helvetica','',11);
-		$this->Cell(50, 5 , "$row_entete[DLJSB]/$row_entete[DLMSB]/$row_entete[DLSSB]$row_entete[DLASB]");
+		$this->Cell(50, 5 , "$row[DLJSB]/$row[DLMSB]/$row[DLSSB]$row[DLASB]");
 		$this->Ln();
 
 		// Date de création du devis
 		$this->SetFont('helvetica','BI',11);
 		$this->Cell(20, 5 ,"Suivi par : ");
-		if (trim($row_entete['LIVSB']))
-			$this->Cell(100, 5 , isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']));
+		if (trim($row['LIVSB']))
+			$this->Cell(100, 5 , isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB']));
 		else
 			$this->Cell(100, 5 , '');
 
 		// Référence
 		$this->SetFont('helvetica','',11);
-		$this->Cell(50, 5 ,"Réf : $row_entete[RFCSB]");
+		$this->Cell(50, 5 ,"Réf : $row[RFCSB]");
 		$this->Ln();
 
 		$this->Ln(2);
@@ -103,11 +97,9 @@ class PDF extends FPDF
 		$this->Cell(0,5,"BON DE COMMANDE ADHERENT",0,1,'C');
 		$this->Ln(0.5);
 
-		if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) { // uniquement les lignes R
-			$this->SetFont('helvetica','B',10);
-			$this->Cell(0,5,"ATTENTION LES LIGNES DEJA LIVRES N'APPARAISSENT PAS",0,1,'C');
-			$this->Ln(1);
-		}
+		$this->SetFont('helvetica','B',10);
+		$this->Cell(0,5,"ATTENTION LES LIGNES DEJA LIVRES N'APPARAISSENT PAS",0,1,'C');
+		$this->Ln(1);
 
 		//Entete des articles
 		$this->SetFont('helvetica','B',10);
@@ -119,15 +111,9 @@ class PDF extends FPDF
 		$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
 		$this->Cell(UNITE_WIDTH,8,"Unit.",1,0,'C',1);
 		$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
-
-		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis demandé sans prix
-
-		} else {
-			$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
-			$this->Cell(PTHT_WIDTH,8,"TOTAL HT",1,0,'C',1);
-		}
-
 		$this->Cell(TYPE_CDE_WIDTH,8,"S",1,0,'C',1);
+		$this->Cell(NOLIG_WIDTH,8,"N°Lig",1,0,'C',1);
+		$this->Cell(LOCAL_WIDTH,8,"Local",1,0,'C',1);
 		$this->Ln();
 	}
 
@@ -135,7 +121,7 @@ class PDF extends FPDF
 
 	//PIED DE PAGE
 	function Footer()
-	{	global $row_entete,$SOCIETE ;
+	{	global $row,$SOCIETE ;
 		
 		// texte avev la date
 		$this->SetXY(LEFT_MARGIN,-20);
