@@ -38,7 +38,7 @@ from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBVP1 DEVIS
 where	NOBON='$NOBON_escape'
 	and DEVIS.NOCLI='$NOCLI_escape'
 	and ETSBE<>'ANN'
-	and CODAR<>''
+-- 	and CODAR<>'' -- suite a MAJ rubis v6
 order by NOLIG
 EOT;
 
