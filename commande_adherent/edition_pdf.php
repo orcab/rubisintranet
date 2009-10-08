@@ -31,7 +31,7 @@ where	NOBON='$NOBON_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE
+select NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on	BON.NOFOU=FOURNISSEUR.NOFOU
@@ -123,28 +123,28 @@ while($row = odbc_fetch_array($detail_commande)) {
 			if ($commentaire_row['CDLIB'])
 				$designation .= "\n".trim($commentaire_row['CDLIB']);
 
-			if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // cde demandé sans prix
-				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
-					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
-					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
-					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
-					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
-					array('text' => $row['TYCDD']=='SPE'?'S':''	, 'text-align' => 'R') // spécial ou pas
-					)
-				);
-			else
-				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
-					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
-					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
-					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
-					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
-					array('text' => sprintf('%0.2f',round($row['PRINE'],2)).EURO	, 'text-align' => 'R'), // prix unitaire après remise
-					array('text' => $row['MONHT'].EURO	, 'text-align' => 'R'), // total après remise
-					array('text' => $row['TYCDD']=='SPE'?'S':''	, 'text-align' => 'R') // spécial ou pas
-					)
-				);
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // cde demandé sans prix
+			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
+				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
+				array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
+				array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+				array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
+				)
+			);
+		else
+			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
+				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
+				array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
+				array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+				array('text' => sprintf('%0.2f',round($row['PRINE'],2)).EURO	, 'text-align' => 'R'), // prix unitaire après remise
+				array('text' => $row['MONHT'].EURO	, 'text-align' => 'R'), // total après remise
+				array('text' => $row['TYCDD']=='SPE' ? 'S' :''	, 'text-align' => 'R') // spécial ou pas
+				)
+			);
 		
 		//print_r($kit);exit;
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit

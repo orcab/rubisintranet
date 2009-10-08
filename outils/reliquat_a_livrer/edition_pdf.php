@@ -72,7 +72,7 @@ for($i=0 ; $i<sizeof($ligne_cde_ok) ; $i++) {
 				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
 				array('text' => $row['UNICD']											, 'text-align' => 'C'), // unité
 				array('text' => str_replace('.000','',$row['QTESA'])					, 'text-align' => 'C'), // quantité
-				array('text' => $row['TYCDD']=='SPE'?'S':''								, 'text-align' => 'C'), // spécial ou pas
+				array('text' => $row['TYCDD']=='SPE'?"S\nE":''								, 'text-align' => 'C'), // spécial ou pas
 				array('text' => $row['NOLIG']											, 'text-align' => 'C'), // no de ligne
 				array('text' => $row['LOCAL']											, 'text-align' => 'C')  // localisation
 				)
