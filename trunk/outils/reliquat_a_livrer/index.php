@@ -39,7 +39,7 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 CDE_FOURNISSEUR
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on	CDE_FOURNISSEUR.NOFOU=FOURNISSEUR.NOFOU
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
-			on	CDE_FOURNISSEUR.CFART=STOCK.NOART and STOCK.DEPOT='${LOGINOR_DEPOT}'
+			on	CDE_ADHERENT.CODAR=STOCK.NOART and STOCK.DEPOT='${LOGINOR_DEPOT}'
 
 where		CFDDS='$date[0]' and CFDDA='$date[1]' and CFDDM='$date[2]' and CFDDJ='$date[3]'	-- les bons de la date
 		and CDE_FOURNISSEUR.CFDET=''														-- bon pas annulé
@@ -48,28 +48,36 @@ where		CFDDS='$date[0]' and CFDDA='$date[1]' and CFDDM='$date[2]' and CFDDJ='$da
 		and CDE_FOURNISSEUR.CDDE1='OUI'														-- ligne réceptionnées
 		and CDE_ADHERENT.ETSBE=''															-- bon pas annulé
 		and CDE_ADHERENT.TRAIT='R'															-- ligne non livré
+		and STOCK.DEPOT='${LOGINOR_DEPOT}'													-- pour ne pas doublé les localisations
+		and STOCK.STSTS=''																	-- fiche stock valide
 ORDER BY
 		CDE_FOURNISSEUR.CFCLI ASC,
 		CDE_FOURNISSEUR.CFCLB ASC,
-		STOCK.LOCAL ASC
+		STOCK.LOCAL ASC,
+		CDE_ADHERENT.NOLIG ASC
 EOT;
 		
-	//echo $sql ;// exit;
+	//echo $sql ; exit;
 
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res		= odbc_exec($loginor,$sql) ;
-	$commande_adh = array();
-	$ligne_cde_ok = array();
+	$commande_adh  = array();
+	$ligne_deja_vu = array();
+	$ligne_cde_ok  = array();
 	while($row = odbc_fetch_array($res)) {
 		if ($row['DET26'] == 'O') { // receptionné
 			if (isset($commande_adh[$row['CFCLI'].'.'.$row['CFCLB']])) { // commande deja rencontrée
 				if ($commande_adh[$row['CFCLI'].'.'.$row['CFCLB']] == 1) { // il n'y a pas de ligne F
 					// faire quelques chose pour dire d'imprimer la ligne
-					array_push($ligne_cde_ok,$row);
+					if (!isset($ligne_deja_vu[$row['CFCLI'].'.'.$row['CFCLB'].'.'.$row['NOLIG']]))
+						array_push($ligne_cde_ok,$row);
+					$ligne_deja_vu[$row['CFCLI'].'.'.$row['CFCLB'].'.'.$row['NOLIG']] = TRUE;
 				}
 			} else { // commande pas encore rencontrée
 				$commande_adh[$row['CFCLI'].'.'.$row['CFCLB']] = 1;
-				array_push($ligne_cde_ok,$row);
+				if (!isset($ligne_deja_vu[$row['CFCLI'].'.'.$row['CFCLB'].'.'.$row['NOLIG']]))
+					array_push($ligne_cde_ok,$row);
+				$ligne_deja_vu[$row['CFCLI'].'.'.$row['CFCLB'].'.'.$row['NOLIG']] = TRUE;
 			}
 		} else {
 			$commande_adh[$row['CFCLI'].'.'.$row['CFCLB']] = 0;
