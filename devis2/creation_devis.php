@@ -199,12 +199,12 @@ function insert_ligne(id) {
 								(data.couleur ? '\nCouleur : '+data.couleur:'') +
 								(data.taille ? '\nTaille : '+data.taille:''));
 				tmp.children('input[name^=a_qte]').val(1);
-				tmp.children('input[name^=a_pu]').val((Math.round(data.prix		* 100)/100)); // prix expo
+				tmp.children('input[name^=a_pu]').val((Math.round(data.prix	* 100)/100)); // prix expo
 				tmp.children('span').children('input[name^=a_adh_pu]').val(Math.round(data.px_adh	* 100)/100); // prix adh
 				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_achat_coop	* 100)/100 + 
 														'<br/>adh '	+ Math.round(data.px_adh		* 100)/100 + 
 														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
-														'<br/>pub '	+ Math.round(data.px_public	* 100)/100
+														'<br/>pub '	+ Math.round(data.px_public		* 100)/100
 														);
 
 				if ($('#discret_mode').attr('checked'))
@@ -295,7 +295,7 @@ function sauvegarde_auto() {
 	var data = {};
 	data.what = 'sauvegarde_auto' ;
 	for(var i=0 ; i<document.creation_devis.elements.length ; i++) {
-		if (valeur_deja_vu[document.creation_devis.elements[i].name] == 1) { // on a deja vu la varible ?
+		if (valeur_deja_vu[document.creation_devis.elements[i].name] == 1) { // on a deja vu la variable ?
 
 			//alert(typeof(data[document.creation_devis.elements[i].name]));
 
