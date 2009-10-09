@@ -118,7 +118,7 @@ devis_log("insert_lignes",$id_devis);
 // ENREGISTREMENT DES MOFIDICATIONS ARTICLE DANS LA BASE (OU CREATION)
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_hid_maj'][$i] && $_POST['a_designation'][$i]) { // ARTICLE MIS A JOUR --> A ENREGISTRER
-		$sql =	"REPLACE INTO devis_article2 (fournisseur,reference,designation,px_public,px_coop,date_creation,marge_coop,reference_simple) VALUES (".
+	/*	$sql =	"REPLACE INTO devis_article2 (fournisseur,reference,designation,px_public,px_coop,date_creation,marge_coop,reference_simple) VALUES (".
 					"'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))."',".
 					"'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))."',".
 					"'".mysql_escape_string($_POST['a_designation'][$i])."',".
@@ -128,6 +128,31 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 					"0,". // marge_coop
 					"'".mysql_escape_string(ereg_replace('[^0-9A-Z]','',strtoupper($_POST['a_reference'][$i])))."'".
 				")";
+	*/
+
+		// au cas où l'on crée l'article de toute pièce, on renseigne son fourn, sa ref, sa desi, son prix public et son prix adh
+		$sql =	"INSERT IGNORE devis_article2 (fournisseur,reference,designation,px_public,px_achat_coop,date_creation,marge_coop) VALUES (".
+					"'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))."',".
+					"'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))."',".
+					"'".mysql_escape_string($_POST['a_designation'][$i])."',".
+					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_pu'][$i]))."',".
+					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_adh_pu'][$i]))."',".
+					"NOW(),".
+					"0". // marge_coop
+				")";
+		mysql_query($sql) or die("Erreur dans la mise à jour des articles : ".mysql_error()."<br/>\n$sql");
+
+
+		// au cas ou l'article existe deja, on modifie
+		$sql =	"UPDATE IGNORE devis_article2 SET ".
+					"designation='".mysql_escape_string($_POST['a_designation'][$i])."',".
+					"px_public='".	mysql_escape_string(ereg_replace(',','.',$_POST['a_pu'][$i]))."',".
+					"px_achat_coop='".	mysql_escape_string(ereg_replace(',','.',$_POST['a_adh_pu'][$i]))."',".
+					"marge_coop=0,".
+					"date_creation=NOW()".
+				" WHERE				fournisseur="	."'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))	."'".
+							" AND	reference="		."'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))		."'" ;
+
 		mysql_query($sql) or die("Erreur dans la mise à jour des articles : ".mysql_error()."<br/>\n$sql");
 		devis_log("replace_article",$id_devis,$sql);
 	}

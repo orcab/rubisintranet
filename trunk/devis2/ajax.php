@@ -32,7 +32,7 @@ EOT;
 		foreach ($row as $key => $val) $row[$key] = my_utf8_decode(stripslashes($val));
 		$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
 		$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public']; // on prend le plus petit prix entre le prix expo et le prix public
-		$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix']; // on prend le plus petit prix entre le prix expo et le prix public
+		$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
 		array_push($json,$row);
 	}
 	//fwrite($F,json_encode($json));
