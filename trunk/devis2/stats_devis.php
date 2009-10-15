@@ -19,20 +19,11 @@ define('COL_RATIO',$i++);
 define('COL_MT_CMD',$i++);
 
 $cumul = array('RDV' => array() , 'VISITE' => array(),'PROSPECT' => array() );
-$ftp = ftp_connect(FTP_RDV_HOST);
 
-// Identification avec un nom d'utilisateur et un mot de passe
-$login_result = ftp_login($ftp, FTP_RDV_USER, FTP_RDV_PASS);
-// Vérification de la connexion
-if ((!$ftp) || (!$login_result)) die("La connexion FTP a échoué !");
-
-
-foreach (array('expo_archive.ics','expo.ics') as $fichier) {
-	if (ftp_get($ftp, $fichier, $fichier, FTP_BINARY)) {
-	   // le fichier est bien la, on le traite
+	if ($stream = join('',file('http://www.google.com/calendar/ical/oi3c84064vjruvmkrsbbgn69go%40group.calendar.google.com/private-b5ad0090953fcf19110ac0be6aaeb152/basic.ics'))) { // telecharge le fichier chez google
 		
 		$ical = new iCal();
-		$events = $ical->iCalDecoder($fichier);
+		$events = $ical->iCalStreamDecoder($stream);
 		
 		foreach ($events as $e) {
 			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE|PROSPECT)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
@@ -41,7 +32,7 @@ foreach (array('expo_archive.ics','expo.ics') as $fichier) {
 
 				$nom_cle_start = '';
 				foreach($e as $key=>$val) {
-						if (substr($key,0,8) == 'DTSTART;') {
+						if (substr($key,0,7) == 'DTSTART') {
 							$nom_cle_start = $key;
 							break;
 						}
@@ -60,10 +51,7 @@ foreach (array('expo_archive.ics','expo.ics') as $fichier) {
 	} else {
 		die("Impossible de récupérer le fichier des calendrier");
 	}
-} // for each fichier
 
-// Fermeture du flux FTP
-ftp_close($ftp);
 
 
 // Creating a workbook
