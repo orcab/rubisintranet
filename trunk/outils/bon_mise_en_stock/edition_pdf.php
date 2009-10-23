@@ -19,12 +19,24 @@ where	CFBON='$cfbon_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFCLI,CFPRF,CFCOM,LOCAL,LOCA2,LOCA3,CFPAN,CFMTH
+select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFCLI,CFPRF,CFCOM,LOCAL,LOCA2,LOCA3,CFPAN,CFMTH,
+ENTETE_CDE_CLIENT.RFCSB,
+CLIENT.NOMCL,
+DETAIL_CDE_CLIENT.TRAIT
 from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
 		on		DETAIL.CFART = STOCK.NOART
 			and	STOCK.DEPOT = '$LOGINOR_DEPOT'
 			and	STOCK.STSTS = ''
+	left join AFAGESTCOM.AENTBOP1 ENTETE_CDE_CLIENT
+		on		DETAIL.CFCLB=ENTETE_CDE_CLIENT.NOBON
+			and	DETAIL.CFCLI=ENTETE_CDE_CLIENT.NOCLI
+	left join AFAGESTCOM.ACLIENP1 CLIENT
+		on		DETAIL.CFCLI=CLIENT.NOCLI
+	left join AFAGESTCOM.ADETBOP1 DETAIL_CDE_CLIENT
+		on		DETAIL.CFCLB=DETAIL_CDE_CLIENT.NOBON
+			and DETAIL.CFCLI=DETAIL_CDE_CLIENT.NOCLI
+			and DETAIL.CFCLL=DETAIL_CDE_CLIENT.NOLIG
 where	CFBON	=	'$cfbon_escape'
 	and CFDET	=	''
 	and CFDAG	=	'$LOGINOR_DEPOT'
@@ -61,18 +73,6 @@ while($row = odbc_fetch_array($detail_commande)) {
 	$row_original = $row ;
 	$row =array_map('trim',$row);
 
-	// recherche du nom de l'adh et de la référence si cde associé
-	if ($row['CFCLB'])
-		$ref_adh = trim(e('RFCSB',odbc_fetch_array(odbc_exec($loginor,"select RFCSB from ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 where NOBON='$row[CFCLB]'"))));
-	else 
-		$ref_adh='';
-
-	if ($row['CFCLI'])
-		$nom_adh = trim(e('NOMCL',odbc_fetch_array(odbc_exec($loginor,"select NOMCL from ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 where NOCLI='$row[CFCLI]'"))));
-	else
-		$nom_adh='';
-
-
 	if ($row['CFPRF'] == 9) { // cas d'un commentaire
 		if ($row['CFCOM']) {
 			if (ereg('^ +',$row_original['CFCOM']))// un espace devant le commentaire défini un COMMENTAIRE
@@ -96,17 +96,22 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if ($row['CFDE2'])	$designation .= "\n$row[CFDE2]";
 		if ($row['CFDE3'])	$designation .= "\n$row[CFDE3]";
 		$designation .= " ($row[CFART])";
-		if ($nom_adh)		$designation .= "\nAdh : $nom_adh";
+		if ($row['NOMCL'])	$designation .= "\nAdh : $row[NOMCL]";
 		if ($row['CFCLB'])	$designation .= "\nCommande $row[CFCLB]";
-		if ($ref_adh)		$designation .= "    Réf : $ref_adh";
+		if ($row['RFCSB'])	$designation .= "    Réf : $row[RFCSB]";
 		if ($row['CFCOM'])	$designation .= "\n$row[CFCOM]";
 
 
 		// comparaison de la date de livraison et de la date du jour --> départ immédiat ou non
 		$date_liv	= "$row[CFDLS]$row[CFDLA]$row[CFDLM]$row[CFDLJ]";
 		$today		= date('Ymd');
-		if ($today >= $date_liv && $row['CFCLB'])
-			$designation .= "\n              DEPART IMMEDIAT  à livrer pour le $row[CFDLJ]/$row[CFDLM]/$row[CFDLS]$row[CFDLA]";
+
+		$reliquat = e('RELIQUAT',odbc_fetch_array(odbc_exec($loginor,"select COUNT(NOLIG) as RELIQUAT from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NOBON='$row[CFCLB]' and NOCLI='$row[CFCLI]' and TRAIT='F'"))) >= 1 ? TRUE : FALSE; // regarde s'il des articles ont déjà été livré sur la cde client.
+
+		if		($row['TRAIT'] == 'F')
+			$designation .= "\n              ARTICLE DEJA LIVRE";
+		elseif	($today >= $date_liv && $row['CFCLB'])
+			$designation .= "\n".($reliquat ? '/!\\RELIQUAT/!\\  ':'              ')."DEPART IMMEDIAT  à livrer pour le $row[CFDLJ]/$row[CFDLM]/$row[CFDLS]$row[CFDLA]";
 
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ACFDETP1' and CDETA='' and CDCOD LIKE '%$row_entete[CFBON]$row[CFLIG]%' ORDER BY CDLIG") ;
@@ -116,8 +121,6 @@ while($row = odbc_fetch_array($detail_commande)) {
 		//echo "'$designation'<br>\n";
 
 		
-
-
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => ($row['REFFO'] ? $row['REFFO'] : "$row[CFART]\n(code MCS)") . 
 									($row['CFCLB'] ? "\n\nCommande\nspéciale":'')	,
