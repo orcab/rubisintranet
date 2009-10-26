@@ -25,8 +25,15 @@ where	CFBON='$cfbon_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFPAB,CFRE1,CFRE2,CFRE3,CFTY1,CFTY2,CFTY3,CFPAN,CFMTH,CFDTY,CFCLI,CFPRF,CFCOM
-from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1
+select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFPAB,CFRE1,CFRE2,CFRE3,CFTY1,CFTY2,CFTY3,CFPAN,CFMTH,CFDTY,CFCLI,CFPRF,CFCOM,
+ENTETE_CDE_CLIENT.RFCSB,
+CLIENT.NOMCL
+from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL_CDE_FOURN
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 ENTETE_CDE_CLIENT
+		on		CFCLB=ENTETE_CDE_CLIENT.NOBON
+			and	CFCLI=ENTETE_CDE_CLIENT.NOCLI
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+		on		CFCLI=CLIENT.NOCLI
 where	CFBON='$cfbon_escape'
 	and CFDET<>'ANN'
 	and CFDAG='$LOGINOR_DEPOT'
@@ -63,17 +70,6 @@ while($row = odbc_fetch_array($detail_commande)) {
 	$row_original = $row ;
 	$row =array_map('trim',$row);
 
-	// recherche du nom de l'adh et de la référence si cde associé
-	if ($row['CFCLB'])
-		$ref_adh = trim(e('RFCSB',odbc_fetch_array(odbc_exec($loginor,"select RFCSB from ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 where NOBON='$row[CFCLB]'"))));
-	else 
-		$ref_adh='';
-
-	if ($row['CFCLI'])
-		$nom_adh = trim(e('NOMCL',odbc_fetch_array(odbc_exec($loginor,"select NOMCL from ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 where NOCLI='$row[CFCLI]'"))));
-	else
-		$nom_adh='';
-
 
 	if ($row['CFPRF'] == 9) { // cas d'un commentaire
 		if ($row['CFCOM']) {
@@ -95,9 +91,9 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if ($row['CFDE2'])	$designation .= "\n$row[CFDE2]";
 		if ($row['CFDE3'])	$designation .= "\n$row[CFDE3]";
 		$designation .= " ($row[CFART])";
-		if ($nom_adh)		$designation .= "\nAdh : $nom_adh";
+		if ($row['NOMCL'])	$designation .= "\nAdh : $row[NOMCL]";
 		if ($row['CFCLB'])	$designation .= "\nCommande $row[CFCLB]";
-		if ($ref_adh)		$designation .= "    Réf : $ref_adh";
+		if ($row['RFCSB'])	$designation .= "    Réf : $row[RFCSB]";
 		if ($row['CFCOM'])	$designation .= "\n$row[CFCOM]";
 
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
