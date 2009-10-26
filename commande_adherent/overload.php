@@ -1,5 +1,6 @@
 <?
 
+//require_once('../inc/constant.php');
 require_once('../inc/fpdf/fpdf.php');
 
 define('PAGE_WIDTH',210);
@@ -29,7 +30,7 @@ class PDF extends FPDF
 {
 	//EN-TÊTE
 	function Header()
-	{	global $row_entete,$vendeurs,$SOCIETE ;
+	{	global $row_entete,$vendeurs,$SOCIETE,$jours_mini ;
 		
 		// logo gauche et droite en haut de page
 		if (PDF_CDE_ADH_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_CDE_ADH_LOGO_HAUT_GAUCHE,0,0,62);
@@ -65,6 +66,7 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','B',11);
 		$this->Cell(100, 5 ,$row_entete['NOMSB']);
 		
+
 		// nom Client
 		$this->SetFont('helvetica','',11);
 		$this->Cell(15, 5 ,"Cde du $row_entete[DSECJ]/$row_entete[DSECM]/$row_entete[DSECS]$row_entete[DSECA]");
@@ -85,10 +87,18 @@ class PDF extends FPDF
 		// Date de création du devis
 		$this->SetFont('helvetica','BI',11);
 		$this->Cell(20, 5 ,"Suivi par : ");
+		$vendeur = '';
 		if (trim($row_entete['LIVSB']))
-			$this->Cell(100, 5 , isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']));
-		else
-			$this->Cell(100, 5 , '');
+			$vendeur = isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']);
+
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options']) && $row_entete['TOUCL']) { // on affiche les tournée du client
+			$tournee = array();
+			foreach (str_split($row_entete['TOUCL']) as $id)
+				array_push($tournee,$jours_mini[$id]);
+			$this->Cell(100, 5 , $vendeur.'             Tournée : '.join(',',$tournee));
+		} else {
+			$this->Cell(100, 5 , $vendeur);
+		}
 
 		// Référence
 		$this->SetFont('helvetica','',11);
