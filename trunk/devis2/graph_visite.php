@@ -41,7 +41,8 @@ define('PROSPECT',6);
 				$date_annee = substr($e[$nom_cle_start],0,4) ;
 				$date_mois = substr($e[$nom_cle_start],4,2) ;
 
-				$date = $mois[$date_mois - 1].' '.$date_annee ;
+				//$date = $mois[$date_mois - 1].' '.$date_annee ;
+				$date = $date_annee.'-'.$date_mois;
 				
 				if ($type == 'RDV') {
 					if (isset($cmd_rubis[$date][RDV]))
@@ -68,11 +69,7 @@ define('PROSPECT',6);
 
 
 
-//$bar_rdv_commande = array($cumul['RDV'],$cumul['VISITE']);
-
-//print_r($cmd_rubis);
-//array_multisort($cumul['RDV'], SORT_ASC, SORT_STRING);
-//print_r($cumul);
+ksort($cmd_rubis); // classe les RDV par ordre croissant
 
 $data_RDV = array();
 foreach($cmd_rubis as $vals)
@@ -86,6 +83,16 @@ $data_PROSPECT = array();
 foreach($cmd_rubis as $vals)
 	$data_PROSPECT[] = isset($vals[PROSPECT]) ? $vals[PROSPECT] : 0;
 
+
+// transforme les valeur numrique des mois en string
+$cmd_rubis_string = array();
+foreach($cmd_rubis as $key => $val) {
+	list($date_annee,$date_mois) = explode('-',$key);
+	$cmd_rubis_string[] = $mois[$date_mois - 1].' '.$date_annee ;
+}
+
+//print_r($cmd_rubis);
+//print_r($data_RDV);exit;
 
 
 // Setup the graph
@@ -105,7 +112,7 @@ $graph->yaxis->HideZeroLabel();
 $graph->ygrid->SetFill(true,'#EFEFEF@0.5','#BBCCFF@0.5');
 $graph->xgrid->Show();
 $graph->xaxis->SetLabelAngle(90);
-$graph->xaxis->SetTickLabels(array_keys($cmd_rubis));
+$graph->xaxis->SetTickLabels($cmd_rubis_string);
 
 $graph->legend->SetShadow('gray@0.4',5);
 $graph->legend->SetPos(0.21,0,'right','top');

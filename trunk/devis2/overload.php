@@ -14,20 +14,13 @@ define('STOCK_WIDTH',10);
 define('EXPO_WIDTH',10);
 define('PNHT_WIDTH',20);
 
-/*if (in_array('non_chiffre',$options)) { // non chiffré
-	define('PUHT_WIDTH',0);
-	define('PTHT_WIDTH',0);
-//} else { // chiffré */
-	define('PUHT_WIDTH',20);
-	define('PTHT_WIDTH',20);
-//} 
+define('PUHT_WIDTH',20);
+define('PTHT_WIDTH',20);
+
 
 
 define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) ); // s'appadate à la largeur de la page
-/*
-define('DESIGNATION_DEVIS_NET_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + QTE_WIDTH + PNHT_WIDTH + PUHT_WIDTH + PTHT_WIDTH) ); // s'appadate à la largeur de la page
-define('DESIGNATION_GAMME_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + STOCK_WIDTH + EXPO_WIDTH + PUHT_WIDTH) ); // s'appadate à la largeur de la page
-*/
+
 
 //echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
@@ -39,7 +32,6 @@ class PDF extends FPDF
 		
 		if (in_array('px_adh',$options))
 			$this->Image('gfx/filigranne_devis.png',0 ,0, 210, 297); // filigranne en fond de page
-
 
 		// logo gauche et droite en haut de page si le theme le demande
 		//if (eregi('_avec_entete$',$values['devis.theme'])) {
@@ -100,9 +92,17 @@ class PDF extends FPDF
 		// N° de bon
 		$this->SetFont('helvetica','B',11);
 		$this->Cell(34, 5 ,"BON DE CHOIX n°");
-		$this->Cell(77, 5 , $id_devis );
+		$this->Cell(13 + ($_POST['devis_num_devis_rubis'] ? 0 : 64) , 5 , $id_devis );
+
+		// Devis Loginor
+		if ($_POST['devis_num_devis_rubis']) {
+			$this->SetFont('helvetica','',10);
+			$this->Cell(24, 5 ,"Devis Loginor :");
+			$this->Cell(40, 5 , $_POST['devis_num_devis_rubis'] );
+		}
 
 		// client tel 1
+		$this->SetFont('helvetica','',11);
 		$this->Cell(60, 5 ,my_utf8_decode($_POST['client_telephone']));
 		$this->Ln();
 
@@ -123,7 +123,6 @@ class PDF extends FPDF
 			$this->SetFont('helvetica','B',12);
 			$this->Cell(90, 5 ,"Les prix affichés sont NETS HT Adhérents");
 			$this->SetTextColor(0,0,0);
-			
 		} else {
 			$this->Cell(90);
 		}
@@ -150,35 +149,10 @@ class PDF extends FPDF
 
 		$this->Cell(FOURNISSEUR_WIDTH,8,"Fournisseur",1,0,'C',1);
 
-		/*if (eregi('^devis_net',$values['devis.theme'])) {
-			$this->Cell(DESIGNATION_DEVIS_NET_WIDTH,8,"Désignation",1,0,'C',1);
-			$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
-		//	if (in_array('non_chiffre',$options)) { // non chiffré
-
-		//	} else { // chiffré
-				$this->Cell(PNHT_WIDTH,8,"P.U Net",1,0,'C',1);
-				$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
-				$this->Cell(PTHT_WIDTH,8,"TOTAL HT",1,0,'C',1);
-		//	}
-		} elseif (eregi('^devis',$values['devis.theme'])) { */
-			$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
-			$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
-			/*if (in_array('non_chiffre',$options)) { // non chiffré
-
-			} else { // chiffré */
-				$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
-				$this->Cell(PTHT_WIDTH,8,"TOTAL HT",1,0,'C',1);
-//			}
-		/*} elseif (eregi('^gamme',$values['devis.theme'])) {
-			$this->Cell(DESIGNATION_GAMME_WIDTH,8,"Désignation",1,0,'C',1);
-			$this->Cell(STOCK_WIDTH,8,"stock",1,0,'C',1);
-			$this->Cell(EXPO_WIDTH,8,"expo",1,0,'C',1);
-			if (in_array('non_chiffre',$options)) { // non chiffré
-
-			} else { // chiffré
-				$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
-			}
-		}*/
+		$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
+		$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
+		$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
+		$this->Cell(PTHT_WIDTH,8,"TOTAL HT",1,0,'C',1);
 		$this->Ln();
 	}
 
@@ -194,16 +168,8 @@ class PDF extends FPDF
 		$this->Cell(0,4,'Edition du '.date('d/m/Y').' à '.date('H:i'),0,1,'C');
 
 		$this->SetFont('helvetica','BI',8);
-//		if (eregi('^devis_net',$values['devis.theme'])) {
-			//$this->MultiCell(0,3,PDF_DEVIS_PRIX_NET1,0,'C');
-			//$this->SetFillColor(200,200,200); // gris clair
-			//$this->MultiCell(0,3,PDF_DEVIS_PRIX_NET2,0,'C',1);	
-//		} elseif (eregi('^devis',$values['devis.theme'])) {
-			$this->SetXY(PAGE_WIDTH - RIGHT_MARGIN - 65,-30);
-			$this->MultiCell(65,3,PDF_DEVIS_PRIX_PUBLIC1,0,'C');
-/*		} elseif (eregi('^gamme',$values['devis.theme'])) {
-			$this->MultiCell(0,3,PDF_DEVIS_GAMME1,0,'C');
-		}*/
+		$this->SetXY(PAGE_WIDTH - RIGHT_MARGIN - 65,-30);
+		$this->MultiCell(65,3,PDF_DEVIS_PRIX_PUBLIC1,0,'C');
 
 		// rectangle arrondi en page a gauche avec n° de page
 		$this->SetFont('helvetica','',9);
@@ -278,25 +244,21 @@ class PDF extends FPDF
     }
 
 
-
 	var $widths;
 	var $aligns;
 
 	function SetWidths($w)
-	{
-		//Tableau des largeurs de colonnes
+	{	//Tableau des largeurs de colonnes
 		$this->widths=$w;
 	}
 
 	function SetAligns($a)
-	{
-		//Tableau des alignements de colonnes
+	{	//Tableau des alignements de colonnes
 		$this->aligns=$a;
 	}
 
 	function Row($param)
 	{
-		
 		$data = array();
 		for($i=0 ; $i<sizeof($param) ; $i++)
 			$data[] = isset($param[$i]['text']) ? $param[$i]['text'] : '';
@@ -312,7 +274,6 @@ class PDF extends FPDF
 		//Dessine les cellules
 		for($i=0;$i<count($data);$i++) {
 			$a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L'; // gere l'align
-
 			$this->SetFont(isset($param[$i]['font-family'])?$param[$i]['font-family']:'',isset($param[$i]['font-style'])?$param[$i]['font-style']:'',isset($param[$i]['font-size'])?$param[$i]['font-size']:'');
 			if (isset($param[$i]['font-color']))	$this->SetTextColor($param[$i]['font-color'][0],$param[$i]['font-color'][1],$param[$i]['font-color'][2]);
 			if (isset($param[$i]['text-align']))	$a = $param[$i]['text-align'];
