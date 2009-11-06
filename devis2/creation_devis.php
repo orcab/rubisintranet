@@ -579,8 +579,7 @@ div#sauvegarde {
 </tr>
 <tr>
 	<td class="devis_id">Devis N°<?=$id?></td>
-	<td>
-	</td>
+	<td style="padding-left:10px;">N° devis Rubis <input type="text" size="10" name="devis_num_devis_rubis" TABINDEX="13" value="<?= $modif ? $row_devis['num_devis_rubis']:''?>"/></td>
 	<td></td>
 	<th>Tél / Mobile</th>
 	<td>

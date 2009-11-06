@@ -340,7 +340,9 @@ $(document).ready(function(){
 		<option value="15% (coef 1.17647)">15%</option>
 		<option value="17% (coef 1.20482)">17% (Elec)</option>
 		<option value="18% (coef 1.21951)">18%</option>
+		<option value="19% (coef 1.23457)">19%</option>
 		<option value="20% (coef 1.25000)">20% (Outilage)</option>
+		<option value="21% (coef 1.26582)">21%</option>
 		<option value="25% (coef 1.33000)">25%</option>
 		<option value="Autre (voir Px de Vente)">Autre (préciser)</option>
 	</select> PV : <input type="text" name="px_vente" value="" size="6"><br><br></td></tr>

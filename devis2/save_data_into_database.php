@@ -39,7 +39,8 @@ UPDATE devis SET
 		ville_client='$POST_escaped[client_ville]',
 		tel_client='$POST_escaped[client_telephone]',
 		tel_client2='$POST_escaped[client_telephone2]',
-		email_client='$POST_escaped[client_email]'
+		email_client='$POST_escaped[client_email]',
+		num_devis_rubis='$POST_escaped[devis_num_devis_rubis]'
 WHERE id='$id_devis';
 EOT;
 
@@ -52,7 +53,7 @@ EOT;
 } else {
 	// ENREGISTREMENT DU DEVIS DANS LA BASE
 	$sql = <<<EOT
-		INSERT INTO devis	(`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client)
+		INSERT INTO devis	(`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
 		VALUES (
 			'$date',
 			NOW(),
@@ -65,7 +66,8 @@ EOT;
 			'$POST_escaped[client_ville]',
 			'$POST_escaped[client_telephone]',
 			'$POST_escaped[client_telephone2]',
-			'$POST_escaped[client_email]'
+			'$POST_escaped[client_email]',
+			'$POST_escaped[devis_num_devis_rubis]'
 		)
 EOT;
 
@@ -118,18 +120,7 @@ devis_log("insert_lignes",$id_devis);
 // ENREGISTREMENT DES MOFIDICATIONS ARTICLE DANS LA BASE (OU CREATION)
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_hid_maj'][$i] && $_POST['a_designation'][$i]) { // ARTICLE MIS A JOUR --> A ENREGISTRER
-	/*	$sql =	"REPLACE INTO devis_article2 (fournisseur,reference,designation,px_public,px_coop,date_creation,marge_coop,reference_simple) VALUES (".
-					"'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))."',".
-					"'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))."',".
-					"'".mysql_escape_string($_POST['a_designation'][$i])."',".
-					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_pu'][$i]))."',".
-					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_adh_pu'][$i]))."',".
-					"NOW(),".
-					"0,". // marge_coop
-					"'".mysql_escape_string(ereg_replace('[^0-9A-Z]','',strtoupper($_POST['a_reference'][$i])))."'".
-				")";
-	*/
-
+	
 		// au cas où l'on crée l'article de toute pièce, on renseigne son fourn, sa ref, sa desi, son prix public et son prix adh
 		$sql =	"INSERT IGNORE devis_article2 (fournisseur,reference,designation,px_public,px_achat_coop,date_creation,marge_coop) VALUES (".
 					"'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))."',".
