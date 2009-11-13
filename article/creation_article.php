@@ -286,10 +286,12 @@ $(document).ready(function(){
 </script>
 
 </head>
-<body>
+<body style="margin-left:0px;">
 
 <!-- menu de naviguation -->
 <? include('../inc/naviguation.php'); ?>
+
+<div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Demande de création d'article</div>
 
 <table>
 <tr>
@@ -297,8 +299,8 @@ $(document).ready(function(){
 
 <form method="post" action="creation_article.php" name="creation_article">
 <input type="hidden" name="action" value="creation_article">
-<table style="width:100%;border:solid 2px black;padding:5px;">
 
+<table style="width:100%;padding:5px;">
 <tr><th class="label" style="color:red;font-weight:bold;">Envoyer à :</th>
 <td class="valeur">
 <select name="to" style="color:red;">
@@ -433,6 +435,7 @@ Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
 	<th class="label">Commentaire :<br><small>("urgent" par exemple)</small></th>
 	<td class="valeur"><textarea type="text" name="commentaire" rows="3" cols="40"></textarea></td>
 </tr>
+
 </table>
 </td>
 
