@@ -2,6 +2,7 @@
 ul#tabnav {
     font: bold 11px verdana, arial, sans-serif;
     list-style-type: none;
+	padding:0px;
     padding-bottom: 24px;
     border-bottom: 1px solid #66b9cc;
     margin: 0;
@@ -10,7 +11,7 @@ ul#tabnav {
 ul#tabnav li {
     float: left;
     height: 21px;
-    margin: 2px 2px 0 2px;
+    margin: 2px 1px 0 1px;
 	/*border:solid 1px black;*/
 	padding:0px;
 }
@@ -21,7 +22,7 @@ ul#tabnav li {
 	width:100%;
 	/*border:solid 1px red;*/
 	background-repeat:no-repeat;
-	background-position:6px 3px;
+	background-position:5px 3px;
 }
 
 ul#tabnav li.active {
@@ -34,7 +35,7 @@ ul#tabnav li.active {
     color: #666;
     text-decoration: none;
     padding: 4px;
-	padding-left:32px;
+	padding-left:30px;
 	border:solid 1px #66b9cc;
 	-moz-border-radius:7px 7px 0 0;
 	background-color:#e8f6f8;
