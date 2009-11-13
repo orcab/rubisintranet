@@ -22,7 +22,7 @@ ul#tabnav li {
 	width:100%;
 	/*border:solid 1px red;*/
 	background-repeat:no-repeat;
-	background-position:5px 3px;
+	background-position:4px 3px;
 }
 
 ul#tabnav li.active {
@@ -35,7 +35,7 @@ ul#tabnav li.active {
     color: #666;
     text-decoration: none;
     padding: 4px;
-	padding-left:30px;
+	padding-left:29px;
 	border:solid 1px #66b9cc;
 	-moz-border-radius:7px 7px 0 0;
 	background-color:#e8f6f8;
