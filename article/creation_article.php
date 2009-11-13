@@ -291,7 +291,7 @@ $(document).ready(function(){
 <!-- menu de naviguation -->
 <? include('../inc/naviguation.php'); ?>
 
-<div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Demande de création d'article</div>
+<div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Demande de création d'article</div> 
 
 <table>
 <tr>
