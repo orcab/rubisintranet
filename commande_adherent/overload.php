@@ -90,22 +90,27 @@ class PDF extends FPDF
 		$vendeur = '';
 		if (trim($row_entete['LIVSB']))
 			$vendeur = isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']);
-
-		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options']) && $row_entete['TOUCL']) { // on affiche les tournée du client
-			$tournee = array();
-			foreach (str_split($row_entete['TOUCL']) as $id)
-				array_push($tournee,$jours_mini[$id]);
-			$this->Cell(100, 5 , $vendeur.'             Tournée : '.join(',',$tournee));
-		} else {
-			$this->Cell(100, 5 , $vendeur);
-		}
-
+		$this->Cell(100, 5 , $vendeur);
+	
 		// Référence
 		$this->SetFont('helvetica','',11);
 		$this->Cell(50, 5 ,"Réf : $row_entete[RFCSB]");
 		$this->Ln();
 
-		$this->Ln(2);
+		$this->Ln(1.5);
+
+		// A LIVRER LE
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options']) && $row_entete['TOUCL']) { // on affiche les tournée du client
+			$tournee = array();
+			foreach (str_split($row_entete['TOUCL']) as $id)
+				array_push($tournee,$jours_mini[$id]);
+
+			$this->SetFont('helvetica','B',12);
+			$this->SetTextColor(0,0,255);
+			$this->Cell(0,5,"A LIVRER LE :             ".strtoupper(join('     -     ',$tournee)),0,1,'L');
+			$this->Ln(0.2);
+		}
+
 
 		// titre
 		$this->SetFont('helvetica','B',12);
