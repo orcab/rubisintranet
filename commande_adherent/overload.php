@@ -30,7 +30,7 @@ class PDF extends FPDF
 {
 	//EN-TÊTE
 	function Header()
-	{	global $row_entete,$vendeurs,$SOCIETE,$jours_mini ;
+	{	global $row_entete,$vendeurs,$SOCIETE,$jours_mini,$tournee_chauffeur ;
 		
 		// logo gauche et droite en haut de page
 		if (PDF_CDE_ADH_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_CDE_ADH_LOGO_HAUT_GAUCHE,0,0,62);
@@ -103,7 +103,7 @@ class PDF extends FPDF
 		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options']) && $row_entete['TOUCL']) { // on affiche les tournée du client
 			$tournee = array();
 			foreach (str_split($row_entete['TOUCL']) as $id)
-				array_push($tournee,$jours_mini[$id]);
+				array_push($tournee,$jours_mini[$id].'('.substr($tournee_chauffeur[$row_entete['TOUCL']][$id],0,3).')');
 
 			$this->SetFont('helvetica','B',12);
 			$this->SetTextColor(0,0,255);

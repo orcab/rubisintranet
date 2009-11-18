@@ -2,30 +2,6 @@
 
 include('../../inc/config.php');
 
-
-$tournee_chauffeur = array(
-	'124' =>	array(	'1' => 'PHILIPPE',
-						'2' => 'LAURENT',
-						'4' => 'GILLES'
-				),
-	'134' =>	array(	'1' => 'GILLES',
-						'3' => 'PHILIPPE',
-						'4' => 'LAURENT'
-				),
-	'135' =>	array(	'1' => 'LAURENT',
-						'3' => 'GILLES',
-						'5' => 'PHILIPPE'
-				),
-	'235' =>	array(	'2' => 'PHILIPPE',
-						'3' => 'LAURENT',
-						'5' => 'GILLES'
-				),
-	'245' =>	array(	'2' => 'GILLES',
-						'4' => 'PHILIPPE',
-						'5' => 'LAURENT'
-				)
-);
-
 $demain_ddmmyyyy	= date('d/m/Y' , mktime(0,0,0,date('m'),date('d')+1,date('Y')));
 $date_yyyymmdd		= '';
 $date_ddmmyyyy		= '';
@@ -33,8 +9,6 @@ if (isset($_POST['filtre_date']) && $_POST['filtre_date']) {
 	$date_yyyymmdd = join('-',array_reverse(explode('/',$_POST['filtre_date'])));
 	$date_ddmmyyyy = $_POST['filtre_date'];
 }
-
-
 
 ?>
 <html>
