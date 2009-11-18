@@ -32,6 +32,31 @@ define('TTC2',5.5);
 // jour de la semaine en FR
 $jours_mini = array('Dim','Lun','Mar','Mer','Jeu','Ven','Sam');
 
+// Tournée des chauffeurs
+$tournee_chauffeur = array(
+	'124' =>	array(	'1' => 'PHILIPPE',
+						'2' => 'LAURENT',
+						'4' => 'GILLES'
+				),
+	'134' =>	array(	'1' => 'GILLES',
+						'3' => 'PHILIPPE',
+						'4' => 'LAURENT'
+				),
+	'135' =>	array(	'1' => 'LAURENT',
+						'3' => 'GILLES',
+						'5' => 'PHILIPPE'
+				),
+	'235' =>	array(	'2' => 'PHILIPPE',
+						'3' => 'LAURENT',
+						'5' => 'GILLES'
+				),
+	'245' =>	array(	'2' => 'GILLES',
+						'4' => 'PHILIPPE',
+						'5' => 'LAURENT'
+				)
+);
+
+
 function e($val,$tableau) {
 	return $tableau[$val];
 }
