@@ -32,10 +32,13 @@ if (!isset($_SESSION['anomalie_filtre_autre']))				$_SESSION['anomalie_filtre_au
 if (!isset($_SESSION['anomalie_filtre_etat_a_traiter']))	$_SESSION['anomalie_filtre_etat_a_traiter']	= TRUE;
 if (!isset($_SESSION['anomalie_filtre_etat_en_cours']))		$_SESSION['anomalie_filtre_etat_en_cours']	= TRUE;
 if (!isset($_SESSION['anomalie_filtre_etat_cloture']))		$_SESSION['anomalie_filtre_etat_cloture']	= FALSE;
+if (!isset($_SESSION['anomalie_from_fiche_fournisseur']))	$_SESSION['anomalie_from_fiche_fournisseur']= '';
 
 
 if (isset($_POST['filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $_POST['filtre_date_inf'];
+if (isset($_GET['filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $_GET['filtre_date_inf']; // pour pouvoir y acceder via une url
 if (isset($_POST['filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $_POST['filtre_date_sup'];
+if (isset($_GET['filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $_GET['filtre_date_sup']; // pour pouvoir y acceder via une url
 if (isset($_POST['filtre_adherent']))	$_SESSION['anomalie_filtre_adherent']	= $_POST['filtre_adherent'];
 if (isset($_POST['filtre_fournisseur']))$_SESSION['anomalie_filtre_fournisseur']= $_POST['filtre_fournisseur'];
 if (isset($_GET['filtre_fournisseur'])) $_SESSION['anomalie_filtre_fournisseur']= $_GET['filtre_fournisseur']; // pour pouvoir y acceder via une url
@@ -43,6 +46,7 @@ if (isset($_POST['filtre_createur']))	$_SESSION['anomalie_filtre_createur']	= $_
 if (isset($_POST['filtre_numero']))		$_SESSION['anomalie_filtre_numero']		= $_POST['filtre_numero'];
 if (isset($_POST['filtre_evolution']))	$_SESSION['anomalie_filtre_evolution']	= $_POST['filtre_evolution'];
 if (isset($_GET['filtre_classement']))	$_SESSION['anomalie_filtre_classement'] = $_GET['filtre_classement'];
+if (eregi('detail_fournisseur\.php',$_SERVER['HTTP_REFERER']))  $_SESSION['anomalie_from_fiche_fournisseur'] = $_GET['filtre_fournisseur']; // on arrive des fiches fournisseurs
 
 if (isset($_SERVER['HTTP_REFERER']) && eregi('historique_anomalie.php',$_SERVER['HTTP_REFERER'])) { // si on vient d'une recherche, on modifie les coches
 	if (isset($_POST['action']) && $_POST['action']=='saisie_commentaire'	||	// ne rien faire si l'on vient de saisir un commentaire
@@ -326,7 +330,12 @@ function envoi_formulaire(l_action) {
 
 
 <!-- LIEN POUR LA CREATION DE NOUVELLE ANOMALIE-->
-<div style="text-align:left;margin-bottom:5px;"><input type="button" class="button divers" style="background-image:url(gfx/anomalie_small.png);" onclick="javascript:document.location.href='creation_anomalie.php';" value="Creation d'anomalie" /></div>
+<div style="text-align:left;margin-bottom:5px;margin-top:5px;">
+	<input type="button" class="button divers" style="background-image:url(gfx/anomalie_small.png);" onclick="javascript:document.location.href='creation_anomalie.php';" value="Création d'anomalie" />
+	<? if ($_SESSION['anomalie_from_fiche_fournisseur']) { ?>
+			<input type="button" class="button divers" style="background-image:url(gfx/fiche_fournisseur_mini.png);margin-left:10px;" onclick="javascript:document.location.href='../outils/fiche_fournisseur/detail_fournisseur.php?id=<?=$_SESSION['anomalie_from_fiche_fournisseur']?>';" value="Retour à la fiche fournisseur" />
+	<? } ?>
+</div>
 
 <!-- TABLEAU AVEC LES CDE ET LE MOTEUR DE RECHERCHE -->
 <table id="historique-anomalie" style="width:100%;border:solid 1px black;">
