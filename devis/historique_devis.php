@@ -300,7 +300,7 @@ function calcul_cmd_rubis(id) {
 		<td>Représentant</td>
 		<td>
 			<select name="relance_representant">
-<?			$res  = mysql_query("SELECT * FROM employe ORDER BY prenom ASC");
+<?			$res  = mysql_query("SELECT * FROM employe WHERE printer=0 ORDER BY prenom ASC");
 			while ($row = mysql_fetch_array($res)) { ?>
 					<option value="<?=$row['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row['ip'] ? ' selected':''?>><?=$row['prenom']?></option>
 <?			} ?>

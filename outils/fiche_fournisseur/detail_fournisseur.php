@@ -192,7 +192,7 @@ function sauve_intervention() {
 		<td>Représentant</td>
 		<td>
 			<select name="commentaire_createur">
-<?			$res2  = mysql_query("SELECT * FROM employe ORDER BY prenom ASC");
+<?			$res2  = mysql_query("SELECT * FROM employe WHERE printer=0 ORDER BY prenom ASC");
 			while ($row2 = mysql_fetch_array($res2)) { ?>
 					<option value="<?=$row2['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row2['ip'] ? ' selected':''?>><?=$row2['prenom']?></option>
 <?			} ?>
