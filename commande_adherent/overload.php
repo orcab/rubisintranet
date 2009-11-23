@@ -107,7 +107,7 @@ class PDF extends FPDF
 
 			$this->SetFont('helvetica','B',12);
 			$this->SetTextColor(0,0,255);
-			$this->Cell(0,5,"A LIVRER LE :             ".strtoupper(join('     -     ',$tournee)),0,1,'L');
+			$this->Cell(0,5,"A LIVRER LE :                                 ".strtoupper(join('     -     ',$tournee)),0,1,'L');
 			$this->Ln(0.2);
 		}
 

@@ -1,0 +1,1 @@
+perl insert_fournisseur.pl >> insert_fournisseur.log
