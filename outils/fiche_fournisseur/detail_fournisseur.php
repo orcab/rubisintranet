@@ -1,7 +1,6 @@
 <?
 include('../../inc/config.php');
 
-//define('DEBUG',isset($_POST['debug'])?TRUE:FALSE);
 define('DEBUG',FALSE);
 if (DEBUG) {
 	echo '<pre>$_POST '; print_r($_POST); echo '</pre>';
@@ -12,17 +11,19 @@ $message  = '';
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 
+$droit = recuperer_droit() ;
+
 $id = isset($_GET['id']) ? $_GET['id'] : (isset($_POST['id']) ? $_POST['id'] : '') ;
 
 
 // SAUVE LE COMPLEMENT
-if (isset($_POST['action']) && $_POST['action']=='sauve_complement') { // on a modifié le complement de texte --> on sauve
+if (isset($_POST['action']) && $_POST['action']=='sauve_complement' && ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR)) { // on a modifié le complement de texte --> on sauve
 	$res = mysql_query("UPDATE fournisseur SET info3='".mysql_escape_string($_POST['textarea_complement'])."' WHERE code_rubis='".mysql_escape_string($id)."'") or die("Ne peux pas enregistrer le complément ".mysql_error());
 	//$message = "Le complément d'information a été enregistré";
 }
 
 // SUPPRIME UNE INTERVENTION
-elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset($_GET['id_intervention']) && $_GET['id_intervention']) { // mode delete intervention
+elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset($_GET['id_intervention']) && $_GET['id_intervention'] && ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR)) { // mode delete intervention
 	mysql_query("UPDATE fournisseur_commentaire SET supprime=1 WHERE id=$_GET[id_intervention]") or die("Ne peux pas supprimer l'intervention ".mysql_error());
 	$message = "L'intervention a été correctement supprimée";
 }
@@ -180,9 +181,10 @@ function sauve_intervention() {
 		<td>Type</td>
 		<td>
 			<select name="commentaire_type">
+				<option value="visite_mcs">Visite chez MCS</option>
+				<option value="visite_fournisseur">Visite chez fournisseur</option>
 				<option value="telephone">Téléphone</option>
 				<option value="fax">Fax</option>
-				<option value="visite">Visite en salle</option>
 				<option value="courrier">Courrier</option>
 				<option value="email">Email</option>
 			</select>
@@ -227,8 +229,8 @@ function sauve_intervention() {
 <? } ?>
 
 
-<input type="button" class="button divers hide_when_print" value="Choisir un autre fournisseur" onclick="document.location.href='index.php';" />
-<input type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/icon-anomalie-mini.png);padding-left:30px;margin-left:10px;" value="Voir la liste des anomalies du fournisseur <?=$row['nom']?>" onclick="document.location.href='/intranet/anomalie/historique_anomalie.php?filtre_fournisseur='+escape('<?=$row['nom']?>');" />
+<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/fiche_fournisseur_mini.png);" value="Choisir un autre fournisseur" onclick="document.location.href='index.php';" />
+<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/anomalie_small.png);margin-left:10px;" value="Voir la liste des anomalies du fournisseur <?=$row['nom']?>" onclick="document.location.href='/intranet/anomalie/historique_anomalie.php?filtre_fournisseur='+escape('<?=$row['nom']?>')+'&filtre_date_inf=&filtre_date_sup=';" />
 
 
 <h1>Fiche fournisseur : <?=$row['nom']?></h1>
@@ -243,7 +245,11 @@ function sauve_intervention() {
 		<div><?=str_replace("\n",'<br/>',$row['info_rubis2'])?></div>
 	</fieldset>
 
-	<fieldset style="margin:auto;margin-top:10px;width:84%;"><legend>Complément <img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="complement_fournisseur();" title="Edite le texte"/></legend>
+	<fieldset style="margin:auto;margin-top:10px;width:84%;"><legend>Complément
+<?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
+			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="complement_fournisseur();" title="Edite le texte"/>
+<?		}	?>
+	</legend>
 		<div id="div-complement"><?=stripslashes($row['info3'])?></div>
 		<div id="edit-complement">
 			<textarea id="textarea_complement" name="textarea_complement" rows="10" cols="50" style="width:100%;"><?=stripslashes($row['info3'])?></textarea>
@@ -274,7 +280,10 @@ function sauve_intervention() {
 				</div>
 				<div class="createur"><?=$row_commentaire['createur']?></div>
 				<div class="type">par <?=$row_commentaire['type']?></div>
-				<div class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print"/></div><br/>
+				<?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
+					<div class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" title="Supprimer cette intervention"/></div>
+				<?		}	?>
+				<br/>
 				<div class="commentaire"><?=stripslashes($row_commentaire['commentaire'])?></div>
 			</div>
 <?		} ?>
