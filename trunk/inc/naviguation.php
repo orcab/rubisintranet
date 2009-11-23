@@ -14,6 +14,7 @@ ul#tabnav li {
     margin: 2px 1px 0 1px;
 	/*border:solid 1px black;*/
 	padding:0px;
+	cursor:pointer;
 }
 
 #tabnav div.icon {
