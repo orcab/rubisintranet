@@ -138,7 +138,7 @@ function sauve_intervention() {
 var fournisseurs = new Array();
 <?
 // récupère la liste des fournisseurs
-$res = mysql_query("SELECT id,nom,code_rubis,affiche,(SELECT COUNT(id) FROM fournisseur_commentaire WHERE fournisseur_commentaire.code_fournisseur=fournisseur.code_rubis) AS nb_com FROM fournisseur") or die("ne peux pas retrouver la liste des fournisseurs");
+$res = mysql_query("SELECT id,nom,code_rubis,affiche,(SELECT COUNT(id) FROM fournisseur_commentaire WHERE fournisseur_commentaire.code_fournisseur=fournisseur.code_rubis WHERE supprime=0) AS nb_com FROM fournisseur") or die("ne peux pas retrouver la liste des fournisseurs");
 while($row = mysql_fetch_array($res)) { ?>
 	fournisseurs.push(['<?=addslashes($row['code_rubis'])?>','<?=addslashes($row['nom'])?>',<?=$row['affiche']?>,<?=$row['nb_com']?>]);
 <? } ?>
