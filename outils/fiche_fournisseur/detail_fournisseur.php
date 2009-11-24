@@ -30,8 +30,7 @@ if (isset($_FILES['monfichier'])) { // on tente d'envoyer un fichier
 				$message = "Le déplacement du fichier temporaire '".$_FILES['monfichier']['tmp_name']."' vers '".$destination_dir.'/'.$_FILES['monfichier']['name']."' a échoué";
 		} else
 			$message = "Un fichier existe déjà dans ce répertoire avec ce nom.<br/>Supprimer d'abords ce fichier avant d'envoyer une mise à jour.";
-	} else
-		$message = "Impossible d'envoyer le fichier";
+	}
 }
 
 
