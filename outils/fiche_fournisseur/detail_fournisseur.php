@@ -16,6 +16,25 @@ $droit = recuperer_droit() ;
 $id = isset($_GET['id']) ? $_GET['id'] : (isset($_POST['id']) ? $_POST['id'] : '') ;
 
 
+// UPLOAD d'UN FICHIER
+if (isset($_FILES['monfichier'])) { // on tente d'envoyer un fichier
+	if (is_uploaded_file($_FILES['monfichier']['tmp_name'])) { // il est bien passé
+		$destination_dir = dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id ;
+		if (!file_exists($destination_dir)) 
+			mkdir($destination_dir); // on tente de créer un sous répertoire pour les fichiers
+
+		if (!file_exists($destination_dir.'/'.$_FILES['monfichier']['name'])) { // le fichier existe déjà ?
+			if (rename($_FILES['monfichier']['tmp_name'], $destination_dir.'/'.$_FILES['monfichier']['name'])) // on le copie au bon endroit
+				$message = "Le fichier a été correctement envoyé";
+			else
+				$message = "Le déplacement du fichier temporaire '".$_FILES['monfichier']['tmp_name']."' vers '".$destination_dir.'/'.$_FILES['monfichier']['name']."' a échoué";
+		} else
+			$message = "Un fichier existe déjà dans ce répertoire avec ce nom.<br/>Supprimer d'abords ce fichier avant d'envoyer une mise à jour.";
+	} else
+		$message = "Impossible d'envoyer le fichier";
+}
+
+
 // SAUVE LE COMPLEMENT
 if (isset($_POST['action']) && $_POST['action']=='sauve_complement' && ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR)) { // on a modifié le complement de texte --> on sauve
 	$res = mysql_query("UPDATE fournisseur SET info3='".mysql_escape_string($_POST['textarea_complement'])."' WHERE code_rubis='".mysql_escape_string($id)."'") or die("Ne peux pas enregistrer le complément ".mysql_error());
@@ -44,6 +63,7 @@ $row = mysql_fetch_array($res);
 ?>
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Fiches Fournisseur : <?=$row['nom']?></title>
 <style>
 body { font-family:verdana; font-size:0.9em; }
@@ -67,6 +87,7 @@ div#edit-complement {
 	display:none;
 }
 
+/* style pour la boite de dialogue pour la saisie d'intervention */
 div#intervention {
 	padding:20px;
 	border:solid 2px black;
@@ -74,7 +95,10 @@ div#intervention {
 	background:white;
 	display:none;
 	position:absolute;
+	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
+	-moz-box-shadow: 5px 5px 20px 0px grey;
 }
+
 
 div.date, div.humeur, div.createur, div.type {
 	margin-left:10px;
@@ -92,10 +116,38 @@ div.intervention { /* premiere case intervention */
 	border-bottom:solid 1px grey;
 }
 
-div.commentaire {
+p { 
 	margin-left:10px;
 	text-align:left;
 }
+
+/* style pour les fichier uploader */
+ul.file { list-style-type:none; padding-left:0px; }
+ul.file li { margin:5px 5px 5px 10px; }
+ul.file a { text-decoration:none; color:DarkCyan ; }
+ul.file a:hover { text-decoration:underline; }
+img.icon { margin-right:2px; }
+span.size {
+	color:grey;
+	font-size:0.7em;
+	margin-left:5px;
+}
+
+
+/* style pour la boite de dialogue pour l'upload de fichier */
+div#upload-file {
+	padding:20px;
+	padding-top:5px;
+	border:solid 2px black;
+	-moz-border-radius:10px;
+	background:white;
+	display:none;
+	position:absolute;
+	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
+	-moz-box-shadow: 5px 5px 20px 0px grey;
+}
+div#upload-file h2 { font-size:0.8em; }
+
 
 @media print {
 	.hide_when_print { display:none; }
@@ -117,24 +169,27 @@ div.commentaire {
 </script>
 <script type="text/javascript">
 
-function complement_fournisseur() {
+// affiche a boite de saisie du completment
+function affiche_complement() {
 	$('div#div-complement').hide();
 	$('div#edit-complement').show();
 }
 
-function cache(id) {
+// cache la boite de saisie du completment
+function cache_complement() {
 	$('div#div-complement').show();
 	$('div#edit-complement').hide();
 }
 
+// enresgistre le completment fournisseur
 function sauve_complement() {
 	//alert(document.selecteur.textarea_complement.value);
 	document.selecteur.action.value="sauve_complement";
 	document.selecteur.submit();
 }
 
+// affiche la boite de dialogue de saisie des interventions
 function intervention_fournisseur() {
-
 	var maDate = new Date() ;
 	document.selecteur.commentaire_date.value  = maDate.getDate() + '/' + (maDate.getMonth() + 1) + '/' + maDate.getFullYear();
 	document.selecteur.commentaire_heure.value = maDate.getHours() + ':' + maDate.getMinutes() ;
@@ -146,14 +201,28 @@ function intervention_fournisseur() {
 	document.selecteur.commentaire_commentaire.focus();
 }
 
+// supprime une intervention
 function delete_intervention(id) {
 	if (confirm("Voulez-vous vraiment supprimer cette intervention ?"))
 		document.location.href = 'detail_fournisseur.php?action=delete_intervention&id=' + <?="'$id'"?> + '&id_intervention=' + id  ;
 }
 
+// enregistre une intervention
 function sauve_intervention() {
 	document.selecteur.action.value="saisie_intervention";
 	document.selecteur.submit();
+}
+
+// affiche la boite de dialogue d'upload de fichier
+function affiche_upload() {
+	$('#upload-file').css('top',document.body.scrollTop +100);
+	$('#upload-file').css('left',screen.availWidth / 2 - 300);
+	$('#upload-file').show();
+}
+
+// cache la boite de dialogue d'upload de fichier
+function cache_upload() {
+	$('#upload-file').hide();
 }
 
 </script>
@@ -164,9 +233,18 @@ function sauve_intervention() {
 <? include('../../inc/naviguation.php'); ?>
 
 <!-- formulaire géénral à la page -->
-<form action="detail_fournisseur.php" method="post" name="selecteur" style="margin-top:10px;">
+<form action="detail_fournisseur.php" enctype="multipart/form-data" method="post" name="selecteur" style="margin-top:10px;">
+<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
 <input type="hidden" name="id" value="<?=$id?>"/>
 <input type="hidden" name="action" value=""/>
+
+<!-- boite de dialogue pour l'upload d'un fichier -->
+<div id="upload-file">
+	<h2>Choisissez le fichier à associer (max 5Mo)</h2>
+	<input type="file" name="monfichier" />
+	<input type="submit" class="button valider" value="Envoyer" />
+	<input type="button" class="button annuler" value="Annuler" onclick="cache_upload();" />
+</div>
 
 
 <!-- boite de dialogue pour la intervention fournisseur -->
@@ -247,15 +325,51 @@ function sauve_intervention() {
 
 	<fieldset style="margin:auto;margin-top:10px;width:84%;"><legend>Complément
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="complement_fournisseur();" title="Edite le texte"/>
+			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" title="Edite le texte"/>
 <?		}	?>
 	</legend>
 		<div id="div-complement"><?=stripslashes($row['info3'])?></div>
 		<div id="edit-complement">
 			<textarea id="textarea_complement" name="textarea_complement" rows="10" cols="50" style="width:100%;"><?=stripslashes($row['info3'])?></textarea>
 			<input type="button" class="button valider" onclick="sauve_complement();" value="Enregistrer">
-			<input type="button"  class="button annuler" onclick="cache('complement');" value="Annuler">
+			<input type="button"  class="button annuler" onclick="cache_complement('complement');" value="Annuler">
 		</div>
+	</fieldset>
+
+
+	<fieldset style="margin-top:10px;width:84%;display:inline;floating:left;text-align:left;"><legend>Fichiers attachés
+<?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
+			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" title="Associer un fichier"/>
+<?		}	?>
+	</legend>
+		<ul class="file">
+<?			$d = dir(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id); // l'endroit ou sont stocké les fichiers
+			while (false !== ($file = $d->read())) { 
+				if ($file == '.' || $file == '..') continue ;
+?>				<li><img src="gfx/icons/<?
+				eregi('\.(.+)$',$file,$regs);
+				$ext = $regs[1];
+				switch ($ext) {
+					case 'doc': case 'docx': case 'odt': case 'txt':
+						echo 'doc-docx-odt.png'; break;
+					case 'xls': case 'xlsx': case 'csv': case 'ods':
+						echo 'xls-xlsx-csv-ods.png';  break;
+					case 'pdf':
+						echo 'pdf.png';  break;
+					case 'jpg': case 'jpeg': case 'gif': case 'png': case 'tiff': case 'tif': case 'bmp':
+						echo 'jpg-jpeg-gif-png-tiff-bmp.png';  break;
+					case 'zip': case 'rar': case '7z':
+						echo 'zip-rar-7z.png';  break;
+					default:
+						echo 'file.png'; break;
+				}
+				?>" class="icon" />
+				<a href=""><?=$file?></a>
+				<span class="size">(<?=formatBytes(filesize(dirname($_SERVER['SCRIPT_FILENAME'])."/files/$id/$file"))?>)</span></li>
+<?			} // fin foreach $file
+			$d->close(); // on ferme le répertoire
+?>
+		</ul>
 	</fieldset>
 
 	<fieldset id="liste-intervention" style="margin-top:10px;width:84%;display:inline;floating:left;"><legend>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" title="Ajoute une intervention"/></legend>
@@ -284,7 +398,7 @@ function sauve_intervention() {
 					<div class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" title="Supprimer cette intervention"/></div>
 				<?		}	?>
 				<br/>
-				<div class="commentaire"><?=stripslashes($row_commentaire['commentaire'])?></div>
+				<p class="commentaire"><?=stripslashes($row_commentaire['commentaire'])?></p>
 			</div>
 <?		} ?>
 
@@ -297,4 +411,14 @@ function sauve_intervention() {
 </html>
 <?
 mysql_close($mysql);
+
+
+function formatBytes($bytes, $precision = 2) {
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+    $bytes /= pow(1024, $pow);
+    return round($bytes, $precision) . ' ' . $units[$pow];
+} 
 ?>

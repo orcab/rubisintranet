@@ -72,6 +72,7 @@ function redirect(ou) {
 	</li>
 <?	} ?>
 
+<!--
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/article/historique_creation_article.php")) { // test si le fichier exists ?>
 	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'article/historique_creation_article.php') !== false ?' class="active"':''?>>
 		<div class="libelle">Historique articles</div>
@@ -81,6 +82,7 @@ function redirect(ou) {
 							onmouseout="$(this).prev('div.libelle').css('background','#e8f6f8');">&nbsp;</div>
 	</li>
 <?	} ?>
+-->
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/commande_adherent/historique_commande.php")) { // test si le fichier exists ?>
     <li<?= stripos($_SERVER['SCRIPT_FILENAME'],'commande_adherent/historique_commande.php') !== false ?' class="active"':''?>>
