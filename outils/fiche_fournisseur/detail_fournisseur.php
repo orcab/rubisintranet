@@ -343,31 +343,33 @@ function cache_upload() {
 <?		}	?>
 	</legend>
 		<ul class="file">
-<?			$d = dir(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id); // l'endroit ou sont stocké les fichiers
-			while (false !== ($file = $d->read())) { 
-				if ($file == '.' || $file == '..') continue ;
-?>				<li><img src="gfx/icons/<?
-				eregi('\.(.+)$',$file,$regs);
-				$ext = $regs[1];
-				switch ($ext) {
-					case 'doc': case 'docx': case 'odt': case 'txt':
-						echo 'doc-docx-odt.png'; break;
-					case 'xls': case 'xlsx': case 'csv': case 'ods':
-						echo 'xls-xlsx-csv-ods.png';  break;
-					case 'pdf':
-						echo 'pdf.png';  break;
-					case 'jpg': case 'jpeg': case 'gif': case 'png': case 'tiff': case 'tif': case 'bmp':
-						echo 'jpg-jpeg-gif-png-tiff-bmp.png';  break;
-					case 'zip': case 'rar': case '7z':
-						echo 'zip-rar-7z.png';  break;
-					default:
-						echo 'file.png'; break;
-				}
-				?>" class="icon" />
-				<a href=""><?=$file?></a>
-				<span class="size">(<?=formatBytes(filesize(dirname($_SERVER['SCRIPT_FILENAME'])."/files/$id/$file"))?>)</span></li>
-<?			} // fin foreach $file
-			$d->close(); // on ferme le répertoire
+<?			if (file_exists(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id)) {
+				$d = dir(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id); // l'endroit ou sont stocké les fichiers
+				while (false !== ($file = $d->read())) { 
+					if ($file == '.' || $file == '..') continue ;
+?>					<li><img src="gfx/icons/<?
+					eregi('\.(.+)$',$file,$regs);
+					$ext = $regs[1];
+					switch ($ext) {
+						case 'doc': case 'docx': case 'odt': case 'txt':
+							echo 'doc-docx-odt.png'; break;
+						case 'xls': case 'xlsx': case 'csv': case 'ods':
+							echo 'xls-xlsx-csv-ods.png';  break;
+						case 'pdf':
+							echo 'pdf.png';  break;
+						case 'jpg': case 'jpeg': case 'gif': case 'png': case 'tiff': case 'tif': case 'bmp':
+							echo 'jpg-jpeg-gif-png-tiff-bmp.png';  break;
+						case 'zip': case 'rar': case '7z':
+							echo 'zip-rar-7z.png';  break;
+						default:
+							echo 'file.png'; break;
+					}
+					?>" class="icon" />
+					<a href=""><?=$file?></a>
+					<span class="size">(<?=formatBytes(filesize(dirname($_SERVER['SCRIPT_FILENAME'])."/files/$id/$file"))?>)</span></li>
+<?				} // fin foreach $file
+				$d->close(); // on ferme le répertoire
+			} // fin if file_exists
 ?>
 		</ul>
 	</fieldset>
