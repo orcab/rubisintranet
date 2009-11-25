@@ -364,7 +364,7 @@ function cache_upload() {
 							echo 'file.png'; break;
 					}
 					?>" class="icon" />
-					<a href=""><?=$file?></a>
+					<a href="files/<?="$id/$file"?>" target="_blank"><?=$file?></a>
 					<span class="size">(<?=formatBytes(filesize(dirname($_SERVER['SCRIPT_FILENAME'])."/files/$id/$file"))?>)</span></li>
 <?				} // fin foreach $file
 				$d->close(); // on ferme le répertoire
