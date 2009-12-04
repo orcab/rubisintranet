@@ -78,13 +78,8 @@ h1 {
 	font-size:1.5em;
 }
 
-img.icon {
-	cursor:pointer;
-}
-
-div#edit-complement { 
-	display:none;
-}
+img.icon { cursor:pointer; }
+div#edit-complement { display:none; }
 
 /* style pour la boite de dialogue pour la saisie d'intervention */
 div#intervention {
@@ -98,25 +93,31 @@ div#intervention {
 	-moz-box-shadow: 5px 5px 20px 0px grey;
 }
 
-
-div.date, div.humeur, div.createur, div.type {
-	margin-left:10px;
-	margin-right:10px;
-	float:left;
-	text-align:left;
+table.intervention td {
+	padding:2px;
 	font-size:0.9em;
+	text-align:left;
 }
 
-div.delete_intervention {
-	float:right;
+td.date					{ width:25%; }
+td.humeur				{ width:5%; }
+td.createur				{ width:5%; }
+td.type					{ width:25%; }
+td.delete_intervention	{ width:5%; }
+
+table.intervention tr:first-child { background:#DDD; }
+
+table.intervention { /* premiere case intervention */
+	border:dotted 1px #444;
+	margin-bottom:20px;
+	width:100%;
+	border-spacing: 0px;
+    border-collapse: collapse;
 }
 
-div.intervention { /* premiere case intervention */
-	border-bottom:solid 1px grey;
-}
-
-p { 
-	margin-left:10px;
+td.commentaire {
+	margin-top:25px;
+	margin-left:50px;
 	text-align:left;
 }
 
@@ -150,7 +151,8 @@ div#upload-file h2 { font-size:0.8em; }
 
 @media print {
 	.hide_when_print { display:none; }
-	div#fiche { width:100%; } 
+	div#fiche { width:100%; }
+	
 }
 </style>
 
@@ -378,29 +380,31 @@ function cache_upload() {
 		// récupère la liste des interventions
 		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM fournisseur_commentaire WHERE code_fournisseur='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 
 		while($row_commentaire = mysql_fetch_array($res_commentaire)) { ?>
-			<div class="intervention">
-				<div class="date"><?=$jours_mini[$row_commentaire['date_jour']]?> <?=$row_commentaire['date_formater']?> <?=$row_commentaire['heure_formater']?></div>
-			
-				<div class="humeur">
-<?					switch ($row_commentaire['humeur']) {
-						case 0: ?>&nbsp;<?
-							break;
-						case 1: ?><img src="/intranet/gfx/weather-clear.png" title="Content"><?
-							break;
-						case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" title="Mausade"><?
-							break;
-						case 3: ?><img src="/intranet/gfx/weather-storm.png" title="Enervé"><?
-							break;
-					} ?>
-				</div>
-				<div class="createur"><?=$row_commentaire['createur']?></div>
-				<div class="type">par <?=$row_commentaire['type']?></div>
-				<?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-					<div class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" title="Supprimer cette intervention"/></div>
-				<?		}	?>
-				<br/>
-				<p class="commentaire"><?=stripslashes($row_commentaire['commentaire'])?></p>
-			</div>
+			<table class="intervention">
+				<tr>
+					<td class="date"><?=$jours_mini[$row_commentaire['date_jour']]?> <?=$row_commentaire['date_formater']?> <?=$row_commentaire['heure_formater']?></td>
+					<td class="humeur">
+<?						switch ($row_commentaire['humeur']) {
+							case 0: ?>&nbsp;<?
+								break;
+							case 1: ?><img src="/intranet/gfx/weather-clear.png" title="Content"><?
+								break;
+							case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" title="Mausade"><?
+								break;
+							case 3: ?><img src="/intranet/gfx/weather-storm.png" title="Enervé"><?
+								break;
+						} ?>
+					</td>
+					<td class="createur"><?=$row_commentaire['createur']?></td>
+					<td class="type">par <?=$row_commentaire['type']?></td>
+<?						if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
+							<td class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" title="Supprimer cette intervention"/></td>
+<?						}	?>
+				</tr>
+				<tr>
+					<td class="commentaire" colspan="5"><?=stripslashes($row_commentaire['commentaire'])?></td>
+				</tr>
+			</table>
 <?		} ?>
 
 	</fieldset>
