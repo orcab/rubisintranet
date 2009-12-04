@@ -324,7 +324,7 @@ function cache_upload() {
 
 	<fieldset style="margin:auto;margin-top:10px;width:84%;"><legend>Complément
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" title="Edite le texte"/>
+			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" title="Edite le texte" align="absbottom"/>
 <?		}	?>
 	</legend>
 		<div id="div-complement"><?=stripslashes($row['info3'])?></div>
@@ -338,7 +338,7 @@ function cache_upload() {
 
 	<fieldset style="margin-top:10px;width:84%;display:inline;floating:left;text-align:left;"><legend>Fichiers attachés
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" title="Associer un fichier"/>
+			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" title="Associer un fichier" align="absbottom"/>
 <?		}	?>
 	</legend>
 		<ul class="file">
@@ -373,7 +373,7 @@ function cache_upload() {
 		</ul>
 	</fieldset>
 
-	<fieldset id="liste-intervention" style="margin-top:10px;width:84%;display:inline;floating:left;"><legend>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" title="Ajoute une intervention"/></legend>
+	<fieldset id="liste-intervention" style="margin-top:10px;width:84%;display:inline;floating:left;"><legend>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" title="Ajoute une intervention" align="absbottom"/></legend>
 <?
 		// récupère la liste des interventions
 		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM fournisseur_commentaire WHERE code_fournisseur='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 

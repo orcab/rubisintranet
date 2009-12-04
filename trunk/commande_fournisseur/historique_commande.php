@@ -244,7 +244,7 @@ function envoi_formulaire(l_action) {
 <!-- TABLEAU AVEC LES CDE ET LE MOTEUR DE RECHERCHE -->
 <table id="historique-commande" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;">
-		Historique des commandes fournisseur <input type="checkbox" name="debug"<?=DEBUG?' checked':''?>/>
+		Historique des commandes fournisseur <input type="checkbox" name="debug"<?=DEBUG?' checked':''?> class="hide_when_print"/>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
 		<!-- choix pour les recherches -->
@@ -253,8 +253,8 @@ function envoi_formulaire(l_action) {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['cde_fourn_filtre_date_inf']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;" title="Date selector" class="hide_when_print" />
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';" class="hide_when_print" />
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -276,14 +276,14 @@ function envoi_formulaire(l_action) {
 					</select></td>
 				<td><input type="text" name="filtre_montant" value="<?=$_SESSION['cde_fourn_filtre_montant'] ? $_SESSION['cde_fourn_filtre_montant']:'0' ?>" size="3">&euro;</td>
 
-				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"></td>
+				<td style="text-align:right;"><input type="submit" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"/></td>
 			</tr>
 			<tr>
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['cde_fourn_filtre_date_sup']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_sup.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;" title="Date selector" class="hide_when_print" />
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_sup.value='';" class="hide_when_print" />
 					<script type="text/javascript">
 						Calendar.setup(
 						{
@@ -318,14 +318,14 @@ function envoi_formulaire(l_action) {
 
 	</caption>
 	<tr>
-		<th class="CFBON">N°<br><a href="historique_commande.php?filtre_classement=CFBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=CFBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="CFSER">Achat<br><a href="historique_commande.php?filtre_classement=CFSER ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=CFSER DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NOFOU">Fournisseur<br><a href="historique_commande.php?filtre_classement=NOFOU ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=NOFOU DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="CUMLI">Nb ligne<br><a href="historique_commande.php?filtre_classement=CUMLI ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=CUMLI DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="CFMON">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=CFMON ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=CFMON DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
-		<th>PDF</th>
+		<th class="CFBON">N°<br><a href="historique_commande.php?filtre_classement=CFBON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFBON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="CFSER">Achat<br><a href="historique_commande.php?filtre_classement=CFSER ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFSER DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="NOFOU">Fournisseur<br><a href="historique_commande.php?filtre_classement=NOFOU ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=NOFOU DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="CUMLI">Nb ligne<br><a href="historique_commande.php?filtre_classement=CUMLI ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CUMLI DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="CFMON">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=CFMON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFMON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
+		<th class="hide_when_print">PDF</th>
 	</tr>
 <?
 	$where = array() ;
@@ -419,7 +419,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 <?			} ?>
 			<br><a href="javascript:relance_commande('<?=$row['CFBON']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td style="text-align:center;"><a href="edition_pdf.php?CFBON=<?=$row['CFBON']?>"><img src="/intranet/gfx/pdf-icon.png" alt="Edition PDF" /></a></td>
+		<td style="text-align:center;"><a href="edition_pdf.php?CFBON=<?=$row['CFBON']?>"><img src="/intranet/gfx/pdf-icon.png" alt="Edition PDF" class="hide_when_print"/></a></td>
 	</tr>
 
 
