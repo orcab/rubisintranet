@@ -251,7 +251,7 @@ $(document).ready(function() {
 <!-- TABLEAU AVEC LES CDE ET LE MOTEUR DE RECHERCHE -->
 <table id="historique-commande" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;">
-		Historique des commandes adhérent <input type="checkbox" name="debug"<?=DEBUG?' checked':''?>/>
+		Historique des commandes adhérent <input type="checkbox" name="debug"<?=DEBUG?' checked':''?> class="hide_when_print"/>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
 		<!-- choix pour les recherches -->
@@ -260,8 +260,8 @@ $(document).ready(function() {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['cde_adh_filtre_date_inf']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor:pointer;" title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor:pointer;" title="Date selector" class="hide_when_print"/>
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_inf.value='';"  class="hide_when_print">
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -288,14 +288,14 @@ $(document).ready(function() {
 						<option value="cde_en_cours"<?=$_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours'	?' selected':''?>>Cde en reliquats</option>
 					</select>
 				</td>
-				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"></td>
+				<td style="text-align:right;"><input type="submit" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"></td>
 			</tr>
 			<tr>
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['cde_adh_filtre_date_sup']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_sup.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" class="hide_when_print"/>
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_commande.filtre_date_sup.value='';" class="hide_when_print">
 					<script type="text/javascript">
 						Calendar.setup(
 						{
@@ -327,17 +327,17 @@ $(document).ready(function() {
 	</caption>
 	<thead>
 	<tr>
-		<th class="NOBON">N°<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="DATE">Date<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="DATE">Date Liv<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="LIVSB">Vendeur<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NOMSB">Adhérent<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="RFCSB">Référence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NBLIG">Nb ligne<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="MONTBT">Mt HT Cde<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
-		<th style="vertical-align:top;">PDF<br/>chiffré</th>
-		<th style="vertical-align:top;">PDF</th>
+		<th class="NOBON">N°<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="DATE">Date<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="DATE">Date Liv<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="LIVSB">Vendeur<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="NOMSB">Adhérent<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="RFCSB">Référence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="NBLIG">Nb ligne<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="MONTBT">Mt HT Cde<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
+		<th style="vertical-align:top;" class="hide_when_print">PDF<br/>chiffré</th>
+		<th style="vertical-align:top;" class="hide_when_print">PDF</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -443,8 +443,8 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 <?			} ?>
 			<br><a href="javascript:relance_commande('<?=$row['NOBON']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
-		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix_FR.png" alt="Edition PDF - Ligne F et R" /></a><br/><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix&options[]=ligne_R"><img src="../gfx/pdf-icon_sans_prix_R.png" alt="Edition PDF - Ligne R" style="margin-top:3px;"/></a></td>
+		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
+		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix_FR.png" alt="Edition PDF - Ligne F et R" /></a><br/><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix&options[]=ligne_R"><img src="../gfx/pdf-icon_sans_prix_R.png" alt="Edition PDF - Ligne R" style="margin-top:3px;"/></a></td>
 	</tr>
 
 

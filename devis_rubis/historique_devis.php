@@ -245,7 +245,7 @@ function envoi_formulaire(l_action) {
 <!-- TABLEAU AVEC LES DEVIS ET LE MOTEUR DE RECHERCHE -->
 <table id="historique-devis" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;">
-		Historique des devis rubis <input type="checkbox" name="debug"<?=DEBUG?' checked':''?>/>
+		Historique des devis rubis <input type="checkbox" name="debug"<?=DEBUG?' checked':''?> class="hide_when_print"/>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
 		<!-- choix pour les recherches -->
@@ -254,8 +254,8 @@ function envoi_formulaire(l_action) {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['devis_rubis_filtre_date_inf']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_devis.filtre_date_inf.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_inf" style="vertical-align:middle;cursor: pointer;"title="Date selector" class="hide_when_print" />
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_devis.filtre_date_inf.value='';" class="hide_when_print" />
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -269,7 +269,7 @@ function envoi_formulaire(l_action) {
 					</script>
 				</td>
 				<td style="padding-left:2em;">Client</td>
-				<td><input type="text" name="filtre_client" value="<?=$_SESSION['devis_rubis_filtre_client']?>" size="8"></td>
+				<td><input type="text" name="filtre_client" value="<?=$_SESSION['devis_rubis_filtre_client']?>" size="8"/></td>
 				<td style="padding-left:2em;">Vendeur</td>
 				<td>
 					<select name="filtre_vendeur">
@@ -287,7 +287,7 @@ function envoi_formulaire(l_action) {
 				<td>
 					<input type="text" name="filtre_montant" value="<?=$_SESSION['devis_rubis_filtre_montant'] ? $_SESSION['devis_rubis_filtre_montant']:'0' ?>" size="3">&euro;
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="submit" class="button divers" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer">
+					<input type="submit" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"/>
 				</td>
 
 			</tr>
@@ -295,8 +295,8 @@ function envoi_formulaire(l_action) {
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['devis_rubis_filtre_date_sup']?>" size="8">
-					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" />
-					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_devis.filtre_date_sup.value='';">
+					<img src="../js/jscalendar/calendar.gif" id="trigger_sup" style="vertical-align:middle;cursor: pointer;"title="Date selector" class="hide_when_print" />
+					<img src="/intranet/gfx/delete_micro.gif" style="vertical-align:middle;" onclick="document.historique_devis.filtre_date_sup.value='';" class="hide_when_print" />
 					<script type="text/javascript">
 						Calendar.setup(
 						{
@@ -326,16 +326,16 @@ function envoi_formulaire(l_action) {
 
 	</caption>
 	<tr>
-		<th class="NOBON">N°<br><a href="historique_devis.php?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="DATE">Date<br><a href="historique_devis.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="LIVSB">Rep<br><a href="historique_devis.php?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="RFCSB">Client<br><a href="historique_devis.php?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NOMSB">Artisan<br><a href="historique_devis.php?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="NBLIG">Nb ligne<br><a href="historique_devis.php?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th class="MONTBR">Mt HT Devis<br><a href="historique_devis.php?filtre_classement=MONTBR ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=MONTBR DESC"><img src="/intranet/gfx/desc.png"></a></th>
-		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
-		<th style="vertical-align:top;">PDF<br/>chiffré</th>
-		<th style="vertical-align:top;">PDF</th>
+		<th class="NOBON">N°<br><a href="historique_devis.php?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="DATE">Date<br><a href="historique_devis.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="LIVSB">Rep<br><a href="historique_devis.php?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="RFCSB">Client<br><a href="historique_devis.php?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="NOMSB">Artisan<br><a href="historique_devis.php?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="NBLIG">Nb ligne<br><a href="historique_devis.php?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="MONTBR">Mt HT Devis<br><a href="historique_devis.php?filtre_classement=MONTBR ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=MONTBR DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();" /></th>
+		<th style="vertical-align:top;" class="hide_when_print">PDF<br/>chiffré</th>
+		<th style="vertical-align:top;" class="hide_when_print">PDF</th>
 	</tr>
 <?
 	$where = array() ;
@@ -423,8 +423,8 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 <?			} ?>
 			<br><a href="javascript:relance_devis('<?=$row['NOBON']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
-		<td style="text-align:center;"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix.png" alt="Edition PDF Sans prix" /></a></td>
+		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
+		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix.png" alt="Edition PDF Sans prix" /></a></td>
 	</tr>
 
 
