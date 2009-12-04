@@ -53,11 +53,11 @@ elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && iss
 	$message = "L'intervention a été enregistrée";
 }
 
-
-$res = mysql_query("SELECT * FROM fournisseur WHERE code_rubis='".mysql_escape_string($id)."'") or die("ne peux pas retrouver les détails du fournisseur");
+$res = mysql_query("SELECT * FROM fournisseur WHERE code_rubis='".mysql_escape_string($id)."'") or die("ne peux pas retrouver les détails du fournisseur 1");
+if (mysql_num_rows($res) < 1) { // on n'a pas trouvé de fournisseur avec ce code -> on tente une recherche sur le nom
+	$res = mysql_query("SELECT * FROM fournisseur WHERE nom LIKE '".mysql_escape_string($id)."%'") or die("ne peux pas retrouver les détails du fournisseur 2");
+}
 $row = mysql_fetch_array($res);
-
-
 
 ?>
 <html>

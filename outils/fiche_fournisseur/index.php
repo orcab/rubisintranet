@@ -23,39 +23,37 @@ a img { border:none; }
 input,textarea { border:solid 2px #AAA; }
 fieldset { -moz-border-radius:6px; border:solid 1px grey; }
 
-div.fournisseur {
-	padding:5px;
-	padding-left:20px;
+table#liste-fournisseur {
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+tr.fournisseur > td:first-child { /* premiere case qui contient le nom du fournisseur */
 	border:solid 1px grey;
 	border-top:none;
-	text-align:left;
 	font-weight:bold;
 	background:url(gfx/arrow-mini.png) no-repeat 10px center;
+	padding:3px;
+	padding-left:23px;
 }
 
-div.fournisseur:hover {
-	background-color:#e8f6f8;
+tr.fournisseur > td:nth-child(2) { /* deuxieme case qui contient l'ajout de com' */
+	border:solid 1px grey;
+	border-top:none;
+	background:url(gfx/add-mini.png) no-repeat center -2px;
+	width:30px;
 }
 
-div#liste-fournisseur > div:first-child{ /* premiere case fournisseur */
-	border-top:solid 1px grey;
-}
+tr.fournisseur:hover { background-color:#e8f6f8; }
+tr.fournisseur > td:nth-child(2):hover { background-color:#FFA; } /* deuxieme case qui contient l'ajout de com' */
+table#liste-fournisseur td:first-child, table#liste-fournisseur td:nth-child(2) { border-top:solid 1px grey; } /* premiere et 2eme case fournisseur */
+table#liste-fournisseur { cursor:pointer; }
 
-div.fournisseur > span {
-	cursor:pointer;
-}
-
-div.fournisseur-annule {
+.fournisseur-annule {
 	text-decoration:strike-through;
 	color:#999;
 	font-weight:normal;
 	background:url(gfx/hachure.gif);
-}
-
-img.icon-intervention {
-	float:right;
-	margin:0;
-	margin-right:10px;
 }
 
 div#intervention {
@@ -86,19 +84,22 @@ div.date, div.humeur, div.createur, div.type {
 
 // va chercher dans la liste des fournisseurs, les valeurs qui commence par ce qu'a tapé l'utilisateur
 function affiche_fournisseur() {
-	$('#liste-fournisseur').text('');
+	$('#liste-fournisseur').html('');
 	var query = document.selecteur.recherche.value.toLowerCase() ;
 	if (query.length >= 1) // si au moins deux caractères de renseigné
 		for(i=0; i<fournisseurs.length ; i++) // pour chaque fournisseur
 			//$('#debug').append("'"+fournisseurs[i][0].substr(0,query.length)+"'    '"+query+"'<br>");
-			if (	fournisseurs[i][0].substr(0,query.length).toLowerCase() == query
-				||	fournisseurs[i][1].substr(0,query.length).toLowerCase() == query) // code fournisseur trouvé
+			if (	fournisseurs[i][0].substr(0,query.length) == query
+				||	fournisseurs[i][1].substr(0,query.length) == query) { // code fournisseur trouvé
 				$('#liste-fournisseur').append(
-							'<div class="fournisseur' + (!fournisseurs[i][2] ? ' fournisseur-annule':'') + '">' +
-							'<span onclick="goTo(\''+fournisseurs[i][0]+'\')">' +fournisseurs[i][1] +
-							(fournisseurs[i][3] > 0 ? '&nbsp;&nbsp;('+fournisseurs[i][3]+')' : '') + '</span>' +
-							'<img src="gfx/add-mini.png" onclick="intervention_fournisseur(\''+fournisseurs[i][0]+'\');" class="icon-intervention"/></div>');
-}
+							'<tr class="fournisseur' + (!fournisseurs[i][2] ? ' fournisseur-annule':'') + '">' +
+								'<td onclick="goTo(\''+fournisseurs[i][0]+'\')">' +fournisseurs[i][1].toUpperCase() +
+							(fournisseurs[i][3] > 0 ? '&nbsp;&nbsp;('+fournisseurs[i][3]+')' : '') + '</td>' +
+								'<td onclick="intervention_fournisseur(\'' + fournisseurs[i][0].toUpperCase() + '\');" title="Ajouter une intervention">&nbsp;</td>' +
+							'</tr>'
+					);
+			} // fin if
+}	
 
 
 
@@ -140,7 +141,7 @@ var fournisseurs = new Array();
 // récupère la liste des fournisseurs
 $res = mysql_query("SELECT id,nom,code_rubis,affiche,(SELECT COUNT(id) FROM fournisseur_commentaire WHERE fournisseur_commentaire.code_fournisseur=fournisseur.code_rubis AND fournisseur_commentaire.supprime=0) AS nb_com FROM fournisseur") or die("ne peux pas retrouver la liste des fournisseurs ".mysql_error());
 while($row = mysql_fetch_array($res)) { ?>
-	fournisseurs.push(['<?=addslashes($row['code_rubis'])?>','<?=addslashes($row['nom'])?>',<?=$row['affiche']?>,<?=$row['nb_com']?>]);
+	fournisseurs.push(['<?=addslashes(strtolower($row['code_rubis']))?>','<?=addslashes(strtolower($row['nom']))?>',<?=$row['affiche']?>,<?=$row['nb_com']?>]);
 <? } ?>
 
 </script>
@@ -160,7 +161,7 @@ while($row = mysql_fetch_array($res)) { ?>
 	<caption style="font-weight:bold;">Saisie d'intervention</caption>
 	<tr>
 		<td colspan="3">Fournisseur : <span id="fournisseur"></span></td>
-		<td><input type="text" name="commentaire_date" size="8" maxlength="10"> <input type="text" name="commentaire_heure" size="5" maxlength="5"></td>
+		<td><input type="text" name="commentaire_date" size="8" maxlength="10" /> <input type="text" name="commentaire_heure" size="5" maxlength="5" /></td>
 	</tr>
 	<tr>
 		<td>Type</td>
@@ -181,7 +182,7 @@ while($row = mysql_fetch_array($res)) { ?>
 			while ($row2 = mysql_fetch_array($res2)) { ?>
 					<option value="<?=$row2['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row2['ip'] ? ' selected':''?>><?=$row2['prenom']?></option>
 <?			} ?>
-		</select>
+			</select>
 		</td>
 	</tr>
 	<tr>
@@ -201,8 +202,8 @@ while($row = mysql_fetch_array($res)) { ?>
 	</tr>
 	<tr>
 		<td colspan="4" align="center">
-			<input type="button" class="button valider" onclick="sauve_intervention();" value="Enregistrer">
-			<input type="button"  class="button annuler" onclick="$('#intervention').hide();" value="Annuler">
+			<input type="button" class="button valider" onclick="sauve_intervention();" value="Enregistrer" />
+			<input type="button"  class="button annuler" onclick="$('#intervention').hide();" value="Annuler" />
 		</td>
 	</tr>
 </table>
@@ -219,7 +220,7 @@ while($row = mysql_fetch_array($res)) { ?>
 </fieldset>
 </form>
 
-<div id="liste-fournisseur" style="margin:auto;width:40%;margin-top:10px;"></div>
+<table id="liste-fournisseur" style="margin:auto;width:40%;margin-top:10px;"></div>
 
 <div id="debug"></div>
 
