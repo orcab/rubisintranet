@@ -58,18 +58,14 @@ EOT;
 		}
 
 		if (array_key_exists($row['CFCLI'],$adhs)) { //on a deja rencontré le client
-			// on push dans le tableau existant
 			array_push($adhs[$row['CFCLI']],$row);
 		} else {
-			// on cree un nouveau tableu
 			$adhs[$row['CFCLI']] = array($row);
 		}
 
 		if (array_key_exists($row['LIVSB'],$vendeurs)) { //on a deja rencontré le vendeur
-			// on push dans le tableau existant
 			array_push($vendeurs[$row['LIVSB']],$row);
 		} else {
-			// on cree un nouveau tableu
 			$vendeurs[$row['LIVSB']] = array($row);
 		}
 	}
@@ -164,7 +160,8 @@ EOT;
 					$mail->Relay(SMTP_SERVEUR);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-					$mail->From('rachel.kerzulec@coopmcs.com','Rachel Kerzulec');
+					$mail->AddTo('pascal.herve@coopmcs.com', 'Pascal Herve') or die("Erreur d'ajour de destinataire");
+					$mail->From('elisabeth.binio@coopmcs.com','Elisabeth Binio');
 
 					$mail->Html($html);
 					//echo $row['nom']."\n<br>".$html."<br><br><br>";
