@@ -16,24 +16,6 @@ $droit = recuperer_droit() ;
 $id = isset($_GET['id']) ? $_GET['id'] : (isset($_POST['id']) ? $_POST['id'] : '') ;
 
 
-// UPLOAD d'UN FICHIER
-if (isset($_FILES['monfichier'])) { // on tente d'envoyer un fichier
-	if (is_uploaded_file($_FILES['monfichier']['tmp_name'])) { // il est bien passé
-		$destination_dir = dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id ;
-		if (!file_exists($destination_dir)) 
-			mkdir($destination_dir); // on tente de créer un sous répertoire pour les fichiers
-
-		if (!file_exists($destination_dir.'/'.$_FILES['monfichier']['name'])) { // le fichier existe déjà ?
-			if (rename($_FILES['monfichier']['tmp_name'], $destination_dir.'/'.$_FILES['monfichier']['name'])) // on le copie au bon endroit
-				$message = "Le fichier a été correctement envoyé";
-			else
-				$message = "Le déplacement du fichier temporaire '".$_FILES['monfichier']['tmp_name']."' vers '".$destination_dir.'/'.$_FILES['monfichier']['name']."' a échoué";
-		} else
-			$message = "Un fichier existe déjà dans ce répertoire avec ce nom.<br/>Supprimer d'abords ce fichier avant d'envoyer une mise à jour.";
-	}
-}
-
-
 // SAUVE LE COMPLEMENT
 if (isset($_POST['action']) && $_POST['action']=='sauve_complement' && ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR)) { // on a modifié le complement de texte --> on sauve
 	$res = mysql_query("UPDATE fournisseur SET info3='".mysql_escape_string($_POST['textarea_complement'])."' WHERE code_rubis='".mysql_escape_string($id)."'") or die("Ne peux pas enregistrer le complément ".mysql_error());
@@ -159,6 +141,9 @@ div#upload-file h2 { font-size:0.8em; }
 <style type="text/css">@import url(../../js/boutton.css);</style>
 <script language="javascript" src="../../js/jquery.js"></script>
 <script type="text/javascript" src="../../js/tiny_mce/tiny_mce.js"></script>
+<link href="../../js/uploadify/uploadify.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/uploadify/swfobject.js"></script>
+<script type="text/javascript" src="../../js/uploadify/jquery.uploadify.v2.1.0.min.js"></script>
 <script type="text/javascript">
 	tinyMCE.init({
 		mode : 'textareas',
@@ -226,6 +211,23 @@ function cache_upload() {
 	$('#upload-file').hide();
 }
 
+
+// upload
+$(document).ready(function() {
+	$('#uploadify').uploadify({
+		'scriptData'	 : {'fournisseur':'<?=strtoupper($id)?>'},
+		'uploader'       : '../../js/uploadify/uploadify.swf',
+		'script'         : 'uploadify.php',
+		'cancelImg'      : '../../js/uploadify/cancel.png',
+		'queueID'        : 'fileQueue',
+		'auto'           : true,
+		'multi'          : true,
+		'onAllComplete'  : function() {
+				window.location.reload();
+		}
+	});
+});
+
 </script>
 </head>
 <body>
@@ -241,10 +243,10 @@ function cache_upload() {
 
 <!-- boite de dialogue pour l'upload d'un fichier -->
 <div id="upload-file">
-	<h2>Choisissez le fichier à associer (max 5Mo)</h2>
-	<input type="file" name="monfichier" />
-	<input type="submit" class="button valider" value="Envoyer" />
-	<input type="button" class="button annuler" value="Annuler" onclick="cache_upload();" />
+	<h2>Choisissez le(s) fichier(s) à associer</h2>
+	<div id="fileQueue"></div>
+	<input type="file" name="uploadify" id="uploadify" />
+	<p><input type="button" class="button annuler" value="Annuler" onclick="javascript:jQuery('#uploadify').uploadifyClearQueue();cache_upload();" /></p>
 </div>
 
 

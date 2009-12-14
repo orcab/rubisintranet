@@ -38,7 +38,7 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 			on		BON.CODAR = ARTICLE_FOURNISSEUR.NOART
 				and	BON.NOFOU = ARTICLE_FOURNISSEUR.NOFOU
-		left join AFAGESTCOM.ATABLEP1 TAXE
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 			on BON.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where	NOBON='$NOBON_escape'
 	and BON.NOCLI='$NOCLI_escape'
@@ -169,7 +169,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		} else {
 			if ($row['ECOTAXE']) // l'article contient de l'écotaxe
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-						array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+						array('text' => '','text-align'=>'R','font-size'=>'8'),
 						array('text' => '','text-align'=>'R','font-size'=>'8'),
 						array('text' => "Ecotaxe sur l'article $row[CODAR]",'text-align'=>'R','font-size'=>'8'),
 						array('text' => '','text-align'=>'R','font-size'=>'8'),
