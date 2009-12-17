@@ -50,7 +50,7 @@ while($row = mysql_fetch_array($res)) {
 
 
 // Create the graph. These two calls are always required
-$graph = new Graph(800,400);
+$graph = new Graph(1200,650);
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
 $graph->SetMargin(70,50,30,30);
@@ -64,6 +64,7 @@ $graph->yaxis->SetTitlemargin(50);
 $graph->yaxis->HideZeroLabel();
 $graph->ygrid->SetFill(true,'#EFEFEF@0.5','#BBCCFF@0.5');
 $graph->xgrid->Show();
+$graph->xaxis->SetLabelAngle(90);
 $graph->xaxis->SetTickLabels(array_values($mois));
 
 $graph->legend->SetShadow('gray@0.4',5);
