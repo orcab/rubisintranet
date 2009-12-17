@@ -88,6 +88,10 @@ table#recherche td {
 	padding:2px;
 }
 
+table#historique-commande tr.ligne:nth-of-type(even) {
+	background:#F5F5F5;
+}
+
 div#relance {
 	padding:20px;
 	border:solid 2px black;
@@ -400,7 +404,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 //	$row = odbc_fetch_array($res)
 ?>
 
-	<tr style="background:<?= $i++ & 1 ? '#F5F5F5':'white' ?>">
+	<tr class="ligne">
 		<td class="CFBON"><?=$row['CFBON']?></td>
 		<td class="DATE"><?
 			$date_commande = mktime(0,0,0,$row['CFEDM'],$row['CFEDJ'],$row['CFEDS'].$row['CFEDA']) ;

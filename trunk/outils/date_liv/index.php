@@ -259,7 +259,7 @@ EOT;
 					$mail->Relay(SMTP_SERVEUR);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-					$mail->From('rachel.kerzulec@coopmcs.com','Rachel Kerzulec');
+					$mail->From('elisabeth.binio@coopmcs.com','Elisabeth Binio');
 
 					$mail->Html($html);
 					//echo $row['nom']."\n<br>".$html."<br><br><br>";
@@ -286,6 +286,81 @@ EOT;
 	}
 }
 
+
+elseif (		isset($_POST['what'])
+			&&	$_POST['what'] == 'record_date_liv_in_rubis'
+			&&	isset($_POST['cde_fournisseur']) && $_POST['cde_fournisseur']
+			&&	isset($_POST['date_liv']) && $_POST['date_liv']) {
+	
+	$num_cde = strtoupper(mysql_escape_string($_POST['cde_fournisseur']));
+	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+
+	$sql = <<<EOT
+select	COUNT(CFBON) as NB_BON
+from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFENTP1
+where		CFBON='$num_cde'
+		AND CFEET=''	-- pas annulé
+EOT;
+
+	$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete de recherche des cde fournisseurs : <br/>\n$sql");
+	$row = odbc_fetch_array($res);
+	if ($row['NB_BON'] == 1) {
+		
+		$jour	= '';	$mois	= '';	$annee	= '';	$siecle = '';
+		// examen du format de la date
+		if (strlen($_POST['date_liv']) == 6) { // format jjmmaa
+			$jour	= substr($_POST['date_liv'],0,2);
+			$mois	= substr($_POST['date_liv'],2,2);
+			$siecle = '20';
+			$annee	= substr($_POST['date_liv'],4,2);
+		} elseif (strlen($_POST['date_liv']) == 8) {  // format jjmmaaaa
+			$jour	= substr($_POST['date_liv'],0,2);
+			$mois	= substr($_POST['date_liv'],2,2);
+			$siecle = substr($_POST['date_liv'],4,2);
+			$annee	= substr($_POST['date_liv'],6,2);
+		} elseif (strlen($_POST['date_liv']) == 10) {  // format jj/mm/aaaa
+			list($jour,$mois,$tmp) = explode('/',$_POST['date_liv']);
+			$siecle	= substr($tmp,0,2);
+			$annee	= substr($tmp,2,2);
+		} else {
+			$message .= "<div class=\"message\" style=\"color:red;\">Format de date non reconnu</div>\n";
+		}
+
+		// la date est bonne, on la rentre dans Rubis
+		if ($jour && $mois && $siecle && $annee && preg_match('/^[0-9]{8}$/',"$jour$mois$siecle$annee")) {
+			if ($jour >= 1 && $jour <= 31 && $mois >= 1 && $mois <= 12 && $siecle == '20' && $annee >= 9) {
+				// met à jour l'entete de la commande fournisseur
+				$sql = <<<EOT
+update	${LOGINOR_PREFIX_BASE}GESTCOM.ACFENTP1
+set		CFELS='$siecle', CFELA='$annee', CFELM='$mois', CFELJ='$jour'
+where	CFBON='$num_cde'
+EOT;
+				$res = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans l'entete : <br/>\n$sql");
+
+				// met a jour le détail des lignes
+				$sql = <<<EOT
+update	${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1
+set		CFDLS='$siecle', CFDLA='$annee', CFDLM='$mois', CFDLJ='$jour'
+where	CFBON='$num_cde' and CFPRF='1'
+EOT;
+				$res = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans le détail des lignes : <br/>\n$sql");
+				$message .= "<div class=\"message\" style=\"color:green;\">Date de livraison enregistrée dans Rubis</br>Bon : $num_cde &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date : $jour/$mois/$siecle$annee</div>\n";
+			} else {
+				$message .= "<div class=\"message\" style=\"color:red;\">La date $jour/$mois/$siecle$annee ne semble pas être une date valide</div>\n";
+			}
+		} else {
+			$message .= "<div class=\"message\" style=\"color:red;\">Le format de date n'a pas pu être convertie</div>\n";
+		}
+
+		//echo "\$jour='$jour'   \$mois='$mois'   \$siecle='$siecle'   \$annee='$annee'";
+		
+	} elseif ($row['NB_BON'] > 1) {
+		$message .= "<div class=\"message\" style=\"color:red;\">Il existe plusieurs commandes fournisseur avec ce numéro</div>\n";
+	} elseif ($row['NB_BON'] <= 0) {
+		$message .= "<div class=\"message\" style=\"color:red;\">Il n'existe aucune commande fournisseur avec ce numéro</div>\n";
+	}
+}
+
 ?>
 <html>
 <head>
@@ -298,10 +373,18 @@ body,td {
 	font-size:0.8em;
 }
 
-table#assoc {
+table {
 	width:50%;
-	border-collapse:collapse;
 	border:solid 1px grey;
+	-moz-border-radius:10px 10px;
+	margin:auto;
+}
+
+caption {
+	text-align:left;
+	font-weight:bold;
+	font-size:0.9em;
+	margin-bottom:5px;
 }
 
 table#assoc td {
@@ -310,7 +393,16 @@ table#assoc td {
 	padding-right:3px;
 	vertical-align:top;
 	padding:5px;
-}	
+}
+
+table#assoc {
+	margin-bottom:30px;
+}
+
+table#record {
+	padding-top:5px;
+	padding-bottom:5px;
+}
 
 div.message {
 	text-align:center;
@@ -344,6 +436,26 @@ function send_mise_a_dispo() {
 	}
 }
 
+function record_date_liv_in_rubis() {
+	if (document.association3.cde_fournisseur.value) {
+		if (document.association3.date_liv.value) {
+			document.association3.what.value = 'record_date_liv_in_rubis';
+			return 1;
+		} else {
+			alert("Aucun date de livraison spécifiée");
+			return 0;
+		}
+	} else {
+		alert("Aucun n° de commande fournisseur");
+		return 0;
+	}	
+}
+
+function change_de_input(obj) {
+	if (obj.value.length >= 6)
+		document.association3.date_liv.focus();
+}
+
 function init_focus() {
 <?	if (isset($_POST['what'])) {
 		if ($_POST['what'] == 'date_liv') { ?>
@@ -360,7 +472,8 @@ function init_focus() {
 </head>
 <body onload="init_focus();">
 
-<table id="assoc" align="center">
+<table id="assoc">
+<caption>Prévenir les adhérents par Email</caption>
 <form name="association" method="POST" action="index.php" onsubmit="return send_date_liv();">
 <tr>
 	<td style="width:10%;" nowrap>N° cde fournisseur :</td>
@@ -369,7 +482,7 @@ function init_focus() {
 		<input name="cde_fournisseur" value="" size="8" />
 	</td>
 	<td style="text-align:left;">
-		<input type="submit" class="button valider" value="Prévenir des dates de livraisons"		onclick="send_date_liv();" />
+		<input type="submit" class="button valider" style="background-image:url(../../js/boutton_images/email.gif)" value="Prévenir des dates de livraisons" />
 	</td>
 </tr>
 <? if ($select_fou) { // plusieur fournisseur corresponde, on propose d'en selectionné un ?>
@@ -388,7 +501,7 @@ function init_focus() {
 		<input name="cde_fournisseur" value="" size="8" />
 	</td>
 	<td style="text-align:left;">
-		<input type="submit" class="button valider" value="Prévenir de la mise à dispo du matériel" onclick="send_mise_a_dispo();" />
+		<input type="submit" class="button valider" style="background-image:url(../../js/boutton_images/email.gif)" value="Prévenir de la mise à dispo du matériel" />
 	</td>
 </tr>
 <? if ($select_fou) { // plusieur fournisseur corresponde, on propose d'en selectionné un ?>
@@ -398,7 +511,32 @@ function init_focus() {
 <?  } ?>
 </form>
 
+</table>
 
+
+<table id="record">
+<caption>Enregistrer les dates de livraison dans Rubis</caption>
+<form name="association3" method="POST" action="index.php" onsubmit="return record_date_liv_in_rubis();">
+<tr>
+	<td style="width:10%;vertical-align:top;" nowrap="nowrap">
+		N° cde fournisseur :<br/>
+		Date de livraison :
+	</td>
+	<td style="width:10%;vertical-align:top;" nowrap="nowrap">
+		<input type="hidden" name="what" value="" />
+		<input name="cde_fournisseur" value="" size="8" onkeyup="change_de_input(this);" /><br/>
+		<input name="date_liv" value="" size="8" /><br/>
+		<span style="color:grey;font-size:0.7em;">
+			(25/04/2010)</br>
+			(25042010)</br>
+			(250410)</br>
+		</span>
+	</td>
+	<td style="text-align:left;vertical-align:top;">
+		<input type="submit" class="button valider" value="Enregistrer les dates de livraison dans Rubis" />
+	</td>
+</tr>
+</form>
 </table>
 
 
