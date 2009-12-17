@@ -77,7 +77,7 @@ while($row = mysql_fetch_array($res)) {
 
 
 // Create the graph. These two calls are always required
-$graph = new Graph(800,300);
+$graph = new Graph(1200,650);
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
 $graph->SetMargin(70,50,30,30);
