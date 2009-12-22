@@ -200,7 +200,7 @@ if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde 
 }
 
 
-$pdf->Output();
+$pdf->Output('cde_adh_'.$NOBON_escape.'.pdf','I');
 
 odbc_close($loginor);
 ?>

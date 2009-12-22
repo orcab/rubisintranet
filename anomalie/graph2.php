@@ -53,7 +53,7 @@ while($row = mysql_fetch_array($res)) {
 $graph = new Graph(1200,650);
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
-$graph->SetMargin(70,50,30,30);
+$graph->SetMargin(70,50,30,70);
 $graph->title->Set("Evolution des anomalies");
 
 $graph->SetScale('textlin');
