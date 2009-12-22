@@ -224,7 +224,7 @@ if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devi
 }
 $pdf->Ln();
 
-$pdf->Output();
+$pdf->Output('devis_'.$NOBON_escape,'I');
 
 odbc_close($loginor);
 ?>

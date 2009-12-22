@@ -43,8 +43,6 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 
 		if ($prix <= 0)
 			$pdf->SetFillColor(255,0,0);
-		
-			
 
 			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
 						array('text' => utf8_decode($_POST['a_reference'][$i])	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
@@ -121,5 +119,5 @@ if ($option > 0) { // il y a des options, on balance un disclaimer
 	$pdf->Ln();
 }
 
-$pdf->Output();
+$pdf->Output('devis_'.$id_devis,'I');
 ?>
