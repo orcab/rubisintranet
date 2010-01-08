@@ -13,12 +13,10 @@ $replace_car =	array('a','a','e','e','e','e','e','e','o','o','o','i','i','i','u'
 if ($_GET['what'] == 'complette_via_ref' && isset($_GET['val'])) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR
 	$val = mysql_escape_string(strtoupper($_GET['val'])) ;
 	$sql = <<<EOT
-SELECT	id,reference,designation,marge_coop,
+SELECT	id,reference,designation,remise1,remise2,remise3,remise4,
 		px_public,
-		px_coop,
-		px_achat_coop,
-		(px_achat_coop / (1-(marge_coop/100))) AS px_adh,
-		((px_achat_coop / (1-(marge_coop/100))) * 1.5) AS px_expo,
+		px_coop as px_expo_force,
+		px_achat_coop as px_achat_coop_force,
 		fournisseur,couleur,taille
 FROM	devis_article2
 WHERE	reference LIKE '$val%' OR
@@ -30,9 +28,20 @@ EOT;
 	$json = array();
 	while($row = mysql_fetch_array($res)) {
 		foreach ($row as $key => $val) $row[$key] = my_utf8_decode(stripslashes($val));
+
+		if ($row['px_achat_coop_force'] > 0) // on a forcé un prix d'achat (prix net)
+			$row['px_achat_coop'] = $row['px_achat_coop_force'];
+		else	// pas de prix d'achat renseigné, on calcul a partir des remise sur le prix public
+			$row['px_achat_coop'] = ($row['px_public'] - ($row['px_public'] * $row['remise1']/100) - ($row['px_public'] * $row['remise2']/100) - ($row['px_public'] * $row['remise3']/100) - ($row['px_public'] * $row['remise4']/100)) ;
+
+		$row['px_adh']  = $row['px_achat_coop'] / (1-(MARGE_COOP/100)); // on calcul le prix adh a partir du prix d'achat de la coop
+
+		if ($row['px_expo_force'] > 0) // on a forcé un prix d'expo (rentré par les filles)
+			$row['px_expo'] = $row['px_expo_force'];
+		else
+			$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public']); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
+
 		$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
-		$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public']; // on prend le plus petit prix entre le prix expo et le prix public
-		$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
 		array_push($json,$row);
 	}
 	//fwrite($F,json_encode($json));
@@ -44,12 +53,10 @@ EOT;
 elseif ($_GET['what'] == 'get_detail' && isset($_GET['val'])) { ////// RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
 	$id = mysql_escape_string(strtoupper($_GET['val'])) ;
 	$sql = <<<EOT
-SELECT	id,reference,designation,marge_coop,
+SELECT	id,reference,designation,remise1,remise2,remise3,remise4,
 		px_public,
-		px_coop,
-		px_achat_coop,
-		(px_achat_coop / (1-(marge_coop/100))) AS px_adh,
-		((px_achat_coop / (1-(marge_coop/100))) * 1.5) AS px_expo,
+		px_coop as px_expo_force,
+		px_achat_coop as px_achat_coop_force,
 		fournisseur,couleur,taille
 FROM	devis_article2
 WHERE	id='$id'
@@ -62,8 +69,21 @@ EOT;
 	$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
 	//fwrite($F,"\n\n".serialize($row));
 
-	$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public'];
-	$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
+	if ($row['px_achat_coop_force'] > 0) // on a forcé un prix d'achat (prix net)
+		$row['px_achat_coop'] = $row['px_achat_coop_force'];
+	else	// pas de prix d'achat renseigné, on calcul a partir des remise sur le prix public
+		$row['px_achat_coop'] = ($row['px_public'] - ($row['px_public'] * $row['remise1']/100) - ($row['px_public'] * $row['remise2']/100) - ($row['px_public'] * $row['remise3']/100) - ($row['px_public'] * $row['remise4']/100)) ;
+
+	$row['px_adh']  = $row['px_achat_coop'] / (1-(MARGE_COOP/100)); // on calcul le prix adh a partir du prix d'achat de la coop
+
+	if ($row['px_expo_force'] > 0) // on a forcé un prix d'expo (rentré par les filles)
+		$row['px_expo'] = $row['px_expo_force'];
+	else
+		$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public']); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
+
+
+	//$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public'];
+	//$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
 	echo json_encode($row);
 } // fin RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
 

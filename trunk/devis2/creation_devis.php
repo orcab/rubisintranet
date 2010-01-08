@@ -169,7 +169,7 @@ function draw_page(pageno) {
 						'<td style="padding-right:10px;width:500px;">'		+ all_results[i].designation +
 								(all_results[i].couleur ? '<br/>Couleur : '	+all_results[i].couleur:'') +
 								(all_results[i].taille ? '<br/>Taille : '	+all_results[i].taille:'') +'<td>' +
-						'<td style="font-weight:bold;">' + Math.round(all_results[i].prix * 100)/100 + '&euro;<td>' +
+						'<td style="font-weight:bold;">' + Math.round(all_results[i].px_expo * 100)/100 + '&euro;<td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
@@ -199,13 +199,14 @@ function insert_ligne(id) {
 								(data.couleur ? '\nCouleur : '+data.couleur:'') +
 								(data.taille ? '\nTaille : '+data.taille:''));
 				tmp.children('input[name^=a_qte]').val(1);
-				tmp.children('input[name^=a_pu]').val((Math.round(data.prix	* 100)/100)); // prix expo
+				tmp.children('input[name^=a_pu]').val((Math.round(data.px_expo	* 100)/100)); // prix expo
 				tmp.children('span').children('input[name^=a_adh_pu]').val(Math.round(data.px_adh	* 100)/100); // prix adh
 				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_achat_coop	* 100)/100 + 
 														'<br/>adh '	+ Math.round(data.px_adh		* 100)/100 + 
 														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
 														'<br/>pub '	+ Math.round(data.px_public		* 100)/100
 														);
+		
 
 				if ($('#discret_mode').attr('checked'))
 					$('.discret').show();
