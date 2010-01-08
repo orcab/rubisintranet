@@ -104,6 +104,7 @@ EOT;
 <br/><br/>
 <table border="1" cellpadding="3" cellspacing="0">
 <tr>
+		<th>Adhérent</th>
         <th>N° Cde</th>
         <th>Référence Cde</th>
         <th>Code</th>
@@ -139,6 +140,7 @@ EOT;
 					$lig['REFFO']	= $lig['REFFO'] ? $lig['REFFO'] : '&nbsp;';
 					$html .= <<<EOT
 <tr>
+	<td>$row[nom]</td>
 	<td>$lig[CFCLB]</td>
 	<td>$lig[RFCSB]</td>
 	<td>$lig[CFART]</td>

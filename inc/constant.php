@@ -30,6 +30,12 @@ define('MAX_TIME_ANOMALIE_DELETION', 3600 * 24 ); // 24h
 define('TTC1',19.6);
 define('TTC2',5.5);
 
+
+// coef et marge pratiqué en salle expo
+define('MARGE_COOP',21);	$MARGE_COOP=MARGE_COOP;
+define('COEF_EXPO',1.5);	$COEF_EXPO=COEF_EXPO;
+
+
 // jour de la semaine en FR
 $jours_mini = array('Dim','Lun','Mar','Mer','Jeu','Ven','Sam');
 
