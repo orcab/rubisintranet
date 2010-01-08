@@ -206,7 +206,6 @@ function insert_ligne(id) {
 														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
 														'<br/>pub '	+ Math.round(data.px_public		* 100)/100
 														);
-		
 
 				if ($('#discret_mode').attr('checked'))
 					$('.discret').show();

@@ -39,7 +39,7 @@ EOT;
 		if ($row['px_expo_force'] > 0) // on a forcé un prix d'expo (rentré par les filles)
 			$row['px_expo'] = $row['px_expo_force'];
 		else
-			$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public']); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
+			$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public'] > 0 ? $row['px_public'] : $row['px_adh'] * COEF_EXPO); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
 
 		$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
 		array_push($json,$row);
@@ -79,8 +79,9 @@ EOT;
 	if ($row['px_expo_force'] > 0) // on a forcé un prix d'expo (rentré par les filles)
 		$row['px_expo'] = $row['px_expo_force'];
 	else
-		$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public']); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
+		$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public'] > 0 ? $row['px_public'] : $row['px_adh'] * COEF_EXPO); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
 
+	$row['COEF_EXPO'] = COEF_EXPO;
 
 	//$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public'];
 	//$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
