@@ -164,12 +164,10 @@ function draw_page(pageno) {
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
 		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].id+'\');">' + 
-						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>') + '<td>' +
-						'<td style="color:green;padding-right:10px;">'		+ all_results[i].fournisseur + '<td>' +
-						'<td style="padding-right:10px;width:500px;">'		+ all_results[i].designation +
-								(all_results[i].couleur ? '<br/>Couleur : '	+all_results[i].couleur:'') +
-								(all_results[i].taille ? '<br/>Taille : '	+all_results[i].taille:'') +'<td>' +
-						'<td style="font-weight:bold;">' + Math.round(all_results[i].px_expo * 100)/100 + '&euro;<td>' +
+						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>') + '</td>' +
+						'<td style="color:green;padding-right:10px;">'		+ all_results[i].fournisseur + '</td>' +
+						'<td style="padding-right:10px;width:500px;">'		+ all_results[i].designation + '</td>' +
+						'<td style="font-weight:bold;">' + Math.round(all_results[i].px_expo * 100)/100 + '&euro;</td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
@@ -194,10 +192,7 @@ function insert_ligne(id) {
 				tmp.children('div.modification').hide();
 				tmp.children('input[name^=a_reference]').val(data.reference);
 				tmp.children('input[name^=a_fournisseur]').val(data.fournisseur);
-				tmp.children('textarea[name^=a_designation]').val(
-								data.designation +
-								(data.couleur ? '\nCouleur : '+data.couleur:'') +
-								(data.taille ? '\nTaille : '+data.taille:''));
+				tmp.children('textarea[name^=a_designation]').val(data.designation);
 				tmp.children('input[name^=a_qte]').val(1);
 				tmp.children('input[name^=a_pu]').val((Math.round(data.px_expo	* 100)/100)); // prix expo
 				tmp.children('span').children('input[name^=a_adh_pu]').val(Math.round(data.px_adh	* 100)/100); // prix adh
