@@ -32,7 +32,7 @@ EOT;
 		if ($row['px_achat_coop_force'] > 0) // on a forcé un prix d'achat (prix net)
 			$row['px_achat_coop'] = $row['px_achat_coop_force'];
 		else	// pas de prix d'achat renseigné, on calcul a partir des remise sur le prix public
-			$row['px_achat_coop'] = ($row['px_public'] - ($row['px_public'] * $row['remise1']/100) - ($row['px_public'] * $row['remise2']/100) - ($row['px_public'] * $row['remise3']/100) - ($row['px_public'] * $row['remise4']/100)) ;
+			$row['px_achat_coop'] = $row['px_public'] * ((100-$row['remise1'])/100) * ((100-$row['remise2'])/100) * ((100-$row['remise3'])/100) * ((100-$row['remise4'])/100);
 
 		$row['px_adh']  = $row['px_achat_coop'] / (1-(MARGE_COOP/100)); // on calcul le prix adh a partir du prix d'achat de la coop
 
@@ -63,16 +63,15 @@ WHERE	id='$id'
 EOT;
 	$res = mysql_query($sql);
 
-	//fwrite($F,"\n\nSELECT id,reference,designation,px_public,px_coop,(px_coop / (1-(marge_coop/100))) AS px_adh,(px_coop * 1.5 / (1-(marge_coop/100))) AS px_expo,fournisseur,couleur,taille FROM devis_article2 WHERE id='$id'");
 	$row = mysql_fetch_array($res);
 	foreach ($row as $key => $val) $row[$key] = my_utf8_decode(stripslashes($val));
 	$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
-	//fwrite($F,"\n\n".serialize($row));
-
+	
 	if ($row['px_achat_coop_force'] > 0) // on a forcé un prix d'achat (prix net)
 		$row['px_achat_coop'] = $row['px_achat_coop_force'];
 	else	// pas de prix d'achat renseigné, on calcul a partir des remise sur le prix public
-		$row['px_achat_coop'] = ($row['px_public'] - ($row['px_public'] * $row['remise1']/100) - ($row['px_public'] * $row['remise2']/100) - ($row['px_public'] * $row['remise3']/100) - ($row['px_public'] * $row['remise4']/100)) ;
+		$row['px_achat_coop'] = $row['px_public'] * ((100-$row['remise1'])/100) * ((100-$row['remise2'])/100) * ((100-$row['remise3'])/100) * ((100-$row['remise4'])/100);
+
 
 	$row['px_adh']  = $row['px_achat_coop'] / (1-(MARGE_COOP/100)); // on calcul le prix adh a partir du prix d'achat de la coop
 
@@ -82,6 +81,8 @@ EOT;
 		$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public'] > 0 ? $row['px_public'] : $row['px_adh'] * COEF_EXPO); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
 
 	$row['COEF_EXPO'] = COEF_EXPO;
+
+	//fwrite($F,"\n\n".print_r($row,TRUE));
 
 	//$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public'];
 	//$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
