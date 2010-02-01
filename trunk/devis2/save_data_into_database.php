@@ -1,8 +1,11 @@
 <?
 
-function save_data_into_database() {
+function save_data_into_database($draft = FALSE) {
 
 global $id_devis,$artisan_nom,$date,$artisan_nom_escape,$POST_escaped,$total_devis,$total_devis_adh,$option ;
+
+$table_sufixe = '';
+if ($draft) $table_sufixe = '_draft';
 
 $id_devis = isset($_POST['id_devis']) && $_POST['id_devis'] ? $_POST['id_devis'] : '';
 // SI L'ARTISAN N'EST PAS ADHERENT, ON PREND LE LIBÉLLÉ LIBRE !
@@ -24,9 +27,34 @@ foreach ($_POST as $key => $val)
 // SUPPRESSION DE L'ANCIEN DEVIS S'IL S'AGIT D'UNE MODIFICATION
 if($id_devis) { // mode modification
 	
+	if ($draft) { // on creer le devis brouillon s'il n'existe pas
+		$sql = <<<EOT
+INSERT IGNORE INTO devis_draft (id,`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
+VALUES (
+	'$id_devis',
+	'$date',
+	NOW(),
+	'$POST_escaped[artisan_representant]',
+	'$artisan_nom_escape',
+	'$POST_escaped[client_nom]',
+	'$POST_escaped[client_adresse]',
+	'$POST_escaped[client_adresse2]',
+	'$POST_escaped[client_codepostal]',
+	'$POST_escaped[client_ville]',
+	'$POST_escaped[client_telephone]',
+	'$POST_escaped[client_telephone2]',
+	'$POST_escaped[client_email]',
+	'$POST_escaped[devis_num_devis_rubis]'
+)
+EOT;
+	mysql_query($sql) or die("Erreur dans la creation du devis brouillon : ".mysql_error());
+
+	}
+
+
 	// ENREGISTREMENT DES NOUVELLES INFOS DEVIS DANS LA BASE
 	$sql = <<<EOT
-UPDATE devis SET
+UPDATE devis${table_sufixe} SET
 		`date`='$date',
 		date_maj=NOW(),
 		representant='$POST_escaped[artisan_representant]',
@@ -53,7 +81,7 @@ EOT;
 } else {
 	// ENREGISTREMENT DU DEVIS DANS LA BASE
 	$sql = <<<EOT
-		INSERT INTO devis	(`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
+		INSERT INTO devis${table_sufixe}	(`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
 		VALUES (
 			'$date',
 			NOW(),
@@ -82,11 +110,11 @@ EOT;
 $total_devis		= 0 ;
 $total_devis_adh	= 0 ;
 $option				= 0 ;
-mysql_query("DELETE FROM devis_ligne WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
-devis_log("delete_ligne",$id_devis,$sql);
+mysql_query("DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
+devis_log("delete_ligne",$id_devis,"DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'");
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // ARTICLE SPÉCIFIÉ
-		$sql  = "INSERT INTO devis_ligne (id_devis,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,`option`) VALUES" ;
+		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,`option`) VALUES" ;
 		$sql .= "('$id_devis','".
 				strtoupper(mysql_escape_string(stripslashes($_POST['a_reference'][$i])))."','".
 				strtoupper(mysql_escape_string(stripslashes($_POST['a_fournisseur'][$i])))."','".
@@ -107,7 +135,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		mysql_query($sql) or die("Erreur dans creation des lignes devis : ".mysql_error()."<br>\n$sql");
 		
 	} elseif(!$_POST['a_reference'][$i] && $_POST['a_designation'][$i]) { // cas d'un commentaire
-		$sql  = "INSERT INTO devis_ligne (id_devis,designation) VALUES" ;
+		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,designation) VALUES" ;
 		$sql .= "($id_devis,'".mysql_escape_string($_POST['a_designation'][$i])."')" ;
 
 		mysql_query($sql) or die("Erreur dans creation des lignes devis (titre) : ".mysql_error());
@@ -152,6 +180,14 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 			devis_log("create_article",$id_devis,$sql);
 		}
 	}
+}
+
+
+
+// si on est sur un enregistrement définitif, alors on supprime le brouillon
+if (!$draft) {
+	mysql_query("DELETE FROM devis_ligne_draft WHERE id_devis='$id_devis'") or die("Immpossible de supprimer les lignes devis du brouillon");
+	mysql_query("DELETE FROM devis_draft WHERE id='$id_devis'") or die("Immpossible de supprimer le devis brouillon");
 }
 
 
