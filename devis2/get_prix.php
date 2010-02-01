@@ -11,6 +11,13 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
 
+function ucFirst(str) {
+	if (str.length > 0)
+		return str[0].toUpperCase() + str.substring(1);
+	else
+		return str;
+}
+
 function cache_sugest() {
 	$('div#sugest').hide('normal');
 }
@@ -23,14 +30,11 @@ var recherche = '';
 
 function make_all_bind() {
 
-	// unbind click
-	$('input[name^=a_maj], input[name^=a_opt], img').unbind('click');
-
 	// colorisation des input quand la souris est dessus
-	$('input[type=text], textarea').unbind('blur');
-	$('input[type=text], textarea').unbind('focus');
-	$('input[type=text], textarea').blur(function()	{	$(this).css('background','');	});
-	$('input[type=text], textarea').focus(function(){	$(this).css('background','#e7eef3');	});
+	$('input[name^=a_reference]').unbind('blur');
+	$('input[name^=a_reference]').unbind('focus');
+	$('input[name^=a_reference]').blur(function() {	$(this).css('background','');	});
+	$('input[name^=a_reference]').focus(function(){	$(this).css('background','#e7eef3');	});
 
 	// on doit aller chercher les infos dans la BD et les ramener sur la page
 	$('input[name^=a_reference]').unbind('keyup');
@@ -44,7 +48,10 @@ function make_all_bind() {
 		var div_offset = $(this).offset();
 		var div_height = $(this).height();
 		//alert(recherche + ' ' + recherche.length);
-		if (recherche.length >= 2) { // au moins deux car pour lancer la recherche
+		if (recherche.length >= 3) { // au moins trois car pour lancer la recherche
+			//on affiche le sablier de recherche
+			tr.children('td[class^=fournisseur]').addClass('loading');
+
 			all_results = Array(); // on vide la mémoire des résultats
 
 			// on recherche dans la BD les nouvelles conrerespondances
@@ -59,6 +66,9 @@ function make_all_bind() {
 
 					// placement du div
 					$('div#sugest').css('top',div_offset.top + div_height + 5).css('left',div_offset.left).show('fast');
+
+					//on cache le sablier de recherche
+					tr.children('td[class^=fournisseur]').removeClass('loading');
 				} // fin fonction
 			); // fin getJson
 		}
@@ -103,10 +113,13 @@ function insert_ligne(id) {
 				tmp.children('td[class^=reference]').text(data.reference);
 				tmp.children('td[class^=fournisseur]').text(data.fournisseur);
 				tmp.children('td[class^=designation]').text(data.designation);
+				tmp.children('td[class^=marge_coop]').text( '+' + <?=MARGE_COOP?> + '%' ); // marge de la coop
 				tmp.children('td[class^=px coop]').html((Math.round(data.px_achat_coop	* 100)/100) + '&euro;'); // prix coop
 				tmp.children('td[class^=px adh]').html(	(Math.round(data.px_adh			* 100)/100) + '&euro;'); // prix adh
 				tmp.children('td[class^=px expo]').html((Math.round(data.px_expo		* 100)/100) + '&euro;'); // prix expo
 				tmp.children('td[class^=px pub]').html(	(Math.round(data.px_public		* 100)/100) + '&euro;'); // prix pub
+				tmp.children('td[class^=modification]').html( ucFirst(data.qui) + '<br/>' +
+										(data.date_modification_format ? data.date_modification_format : data.date_creation_format) ); // derniere modif
 
 				$('#lignes tbody').append( pattern_ligne );
 				make_all_bind();
@@ -121,9 +134,11 @@ $pattern_ligne = <<<EOT
 	<td class="fournisseur"></td>
 	<td class="designation"></td>
 	<td class="px coop"></td>
+	<td class="marge_coop"></td>
 	<td class="px adh"></td>
 	<td class="px expo"></td>
 	<td class="px pub"></td>
+	<td class="modification"></td>
 </tr>
 EOT;
 ?>
@@ -229,11 +244,20 @@ span#options {
 	font-size:0.8em;
 }
 
-table#lignes .px { text-align:right; }
+table#lignes .px { text-align:right; padding-right:3px;}
 table#lignes td.coop { color:green; }
 table#lignes td.adh { color:blue; }
 table#lignes td.expo { color:red; font-weight:bold; }
 table#lignes td.pub { color:grey; }
+table#lignes td.modification { text-align:center; }
+table#lignes td.marge_coop { font-size:0.6em; color:grey; text-align:center; }
+
+.loading {
+	background-color:none;
+	background-image:url(gfx/loading4.gif);
+	background-repeat:no-repeat;
+	background-position:top left;
+}
 </style>
 
 <body>
@@ -243,7 +267,7 @@ table#lignes td.pub { color:grey; }
 <div id="sugest"></div><!-- pour la sugestion des résultat ajax -->
 
 <form method="post" action="" name="creation_devis">
-
+<input type="hidden" name="dummy" value="0"/>
 <fieldset id="detail">
     <legend>Consultation des prix :</legend>
 	<table id="lignes">
@@ -253,9 +277,11 @@ table#lignes td.pub { color:grey; }
 			<th class="fournisseur">Fournisseur</th>
 			<th class="designation">Désignation</th>
 			<th class="px coop">Px Coop<sup>ht</sup></th>
+			<th></th>
 			<th class="px adh">Px Adh<sup>ht</sup></th>
 			<th class="px expo">Px Expo<sup>ht</sup></th>
 			<th class="px pub">Px Pub<sup>ht</sup></th>
+			<th class="modification">Dernière<br/>modif par</th>
 		</tr>
 		</thead>
 		<tbody>

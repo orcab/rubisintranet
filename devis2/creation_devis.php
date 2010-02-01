@@ -10,10 +10,16 @@ if (!($droit & PEUT_CREER_DEVIS)) { // n'a pas le droit de faire des devis
 	die("Vos droits ne vous permettent pas d'accéder à cette partie de l'intranet");
 }
 
+$load_draft = FALSE;
+
 // mode creation ou modification ?
 if (isset($_GET['id'])) { // mode modification
 	$id = mysql_escape_string($_GET['id']) ;
 	$modif = TRUE;
+
+	if (isset($_GET['load_draft']) && $_GET['load_draft'] == 1)
+		$load_draft = TRUE;
+
 } else {
 	$representant = '';
 	$res  = mysql_query("SELECT * FROM employe WHERE droit & $PEUT_CREER_DEVIS ORDER BY prenom ASC");
@@ -34,8 +40,22 @@ EOT;
 }
 
 // recherche du l'entete du devis si en modification
+$draft_find = FALSE;
 if($modif) { // modif
-	$res_devis = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d/%m/%Y') AS date_formater,DATE_FORMAT(`date`,'%H:%i') AS heure,DATE_FORMAT(date_maj,'%d/%m/%Y') AS date_maj_formater,CONCAT(DATE_FORMAT(`date`,'%b%y-'),id) AS numero FROM devis WHERE id='$id' LIMIT 0,1") or die("Requete impossible ".mysql_error()) ;
+	$res_devis ;
+
+	// on test si l'on doit recharger un vieux devis
+	if ($load_draft) {
+		$res_devis = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d/%m/%Y') AS date_formater,DATE_FORMAT(`date`,'%H:%i') AS heure,DATE_FORMAT(date_maj,'%d/%m/%Y') AS date_maj_formater,CONCAT(DATE_FORMAT(`date`,'%b%y-'),id) AS numero FROM devis_draft WHERE id='$id' LIMIT 0,1") or die("Requete impossible ".mysql_error()) ;
+
+	} else {
+		// si on trouve un brouillon --> on met la variable draft_find à TRUE
+		if (mysql_num_rows(mysql_query("SELECT id FROM devis_draft WHERE id='$id' LIMIT 0,1")))
+			$draft_find = TRUE;
+
+		$res_devis = mysql_query("SELECT *,DATE_FORMAT(`date`,'%d/%m/%Y') AS date_formater,DATE_FORMAT(`date`,'%H:%i') AS heure,DATE_FORMAT(date_maj,'%d/%m/%Y') AS date_maj_formater,CONCAT(DATE_FORMAT(`date`,'%b%y-'),id) AS numero FROM devis WHERE id='$id' LIMIT 0,1") or die("Requete impossible ".mysql_error()) ;
+	}
+
 	$row_devis = mysql_fetch_array($res_devis);
 }
 
@@ -55,6 +75,16 @@ if($modif) { // modif
 <script type="text/javascript" src="paging.js"></script>
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
+
+var auto_save = true;
+
+<? if ($draft_find) { ?>
+	if (confirm("Un brouillon a été trouvé pour votre devis\nVoulez vous le recharger ?")) {
+		document.location.href="creation_devis.php?id=<?=$id?>&load_draft=1";
+	}
+<? } ?>
+
+
 function affiche_adherent() {
 	var value_selected = document.creation_devis.artisan_nom.options[document.creation_devis.artisan_nom.selectedIndex].value ;
 	if (value_selected == 'NON Adherent' || value_selected == 'CAB 56')
@@ -68,6 +98,7 @@ function cache_sugest() {
 }
 
 function valide_form(mes_options) {
+	auto_save = false;
 	document.creation_devis.les_options.value = mes_options;
 	document.creation_devis.submit();
 }
@@ -87,8 +118,10 @@ function make_all_bind() {
 	// colorisation des input quand la souris est dessus
 	$('input[type=text], textarea').unbind('blur');
 	$('input[type=text], textarea').unbind('focus');
+	$('input[type=text], textarea').unbind('change');
 	$('input[type=text], textarea').blur(function()	{	$(this).css('background','');	});
 	$('input[type=text], textarea').focus(function(){	$(this).css('background','#e7eef3');	});
+	$('input[type=text], textarea').change(function(){	auto_save = true ;	}); // en cas de modif d'une valeur, on réactive l'auto_save
 
 	// ecriture dans les cases editable (designation ou prix)
 	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').unbind('change');
@@ -135,7 +168,7 @@ function make_all_bind() {
 		var div_offset = $(this).offset();
 		var div_height = $(this).height();
 		//alert(recherche + ' ' + recherche.length);
-		if (recherche.length >= 2) { // au moins deux car pour lancer la recherche
+		if (recherche.length >= 3) { // au moins trois car pour lancer la recherche
 			all_results = Array(); // on vide la mémoire des résultats
 
 			// on recherche dans la BD les nouvelles conrerespondances
@@ -300,7 +333,7 @@ function sauvegarde_auto() {
 				data[document.creation_devis.elements[i].name] = new Array();
 				data[document.creation_devis.elements[i].name].push(tmp);
 				data[document.creation_devis.elements[i].name].push(document.creation_devis.elements[i].value);
-			} else { // le tableau est deja crée, il faut lui rajouté une entrée
+			} else { // le tableau est deja crée, il faut lui rajouter une entrée
 				data[document.creation_devis.elements[i].name].push(document.creation_devis.elements[i].value); //is undefined
 			}
 
@@ -310,11 +343,14 @@ function sauvegarde_auto() {
 		valeur_deja_vu[document.creation_devis.elements[i].name] = 1; // on a vu la variable		
 	}
 
-	$.post('ajax.php', data,
-		  function(data){
-			$('#sauvegarde').fadeTo(3000,0);
-			window.setTimeout ("sauvegarde_auto()", 1000*60*2 );  // pour répété l'opération régulièrement toutes les 2min
-		  });
+	// on doit faire une auto_save
+	if (auto_save) {
+		$.post('ajax.php', data,
+			  function(data){
+				$('#sauvegarde').fadeTo(3000,0);
+				window.setTimeout ("sauvegarde_auto()", 1000*60*2 );  // pour répété l'opération régulièrement toutes les 2min
+			  });
+	}
 }
 
 
@@ -358,13 +394,11 @@ $(document).ready(function(){
 
 	window.setTimeout ("sauvegarde_auto()", 1000*60*2 ); // on sauve regulierement
 
-
 }); // fin on document ready
 
 </script>
 
 <style>
-
 body {
 	font-family:verdana;
 	font-size:0.8em;
@@ -615,7 +649,12 @@ div#sauvegarde {
 		</thead>
 		<tbody>
 <?	if ($modif) {
-		$res_detail = mysql_query("SELECT * FROM devis_ligne WHERE id_devis='$id'");
+		$res_detail ;
+		if ($load_draft)
+			$res_detail = mysql_query("SELECT * FROM devis_ligne_draft WHERE id_devis='$id'");
+		else
+			$res_detail = mysql_query("SELECT * FROM devis_ligne WHERE id_devis='$id'");
+
 		while($row_detail = mysql_fetch_array($res_detail)) {
 
 			$custom_ligne = $pattern_ligne;

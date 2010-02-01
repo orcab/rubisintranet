@@ -17,11 +17,11 @@ SELECT	id,reference,designation,remise1,remise2,remise3,remise4,
 		px_public,
 		px_coop as px_expo_force,
 		px_achat_coop as px_achat_coop_force,
-		fournisseur,couleur,taille
+		fournisseur
 FROM	devis_article2
 WHERE	reference LIKE '$val%' OR
 		reference_simple LIKE '$val%'
-ORDER BY designation ASC
+ORDER BY reference ASC
 EOT;
 	$res = mysql_query($sql);
 
@@ -42,6 +42,8 @@ EOT;
 			$row['px_expo'] = min($row['px_adh'] * COEF_EXPO, $row['px_public'] > 0 ? $row['px_public'] : $row['px_adh'] * COEF_EXPO); // on calcul le prix expo a partir du prix d'adh. Si plus grand que px_public --> on prend le prix public
 
 		$row['designation'] = str_replace($search_car,$replace_car,$row['designation']);
+
+		unset($row['remise1'],$row['remise2'],$row['remise3'],$row['remise4'],$row['px_public'],$row['px_expo_force'],$row['px_achat_coop_force']);
 		array_push($json,$row);
 	}
 	//fwrite($F,json_encode($json));
@@ -54,6 +56,9 @@ elseif ($_GET['what'] == 'get_detail' && isset($_GET['val'])) { ////// RECHERCHE
 	$id = mysql_escape_string(strtoupper($_GET['val'])) ;
 	$sql = <<<EOT
 SELECT	id,reference,designation,remise1,remise2,remise3,remise4,
+		qui,
+		DATE_FORMAT(date_modification,'%d/%m/%Y') AS date_modification_format,
+		DATE_FORMAT(date_creation,'%d/%m/%Y') AS date_creation_format,
 		px_public,
 		px_coop as px_expo_force,
 		px_achat_coop as px_achat_coop_force,
@@ -83,9 +88,6 @@ EOT;
 	$row['COEF_EXPO'] = COEF_EXPO;
 
 	//fwrite($F,"\n\n".print_r($row,TRUE));
-
-	//$row['prix'] = $row['px_expo']>0 ? min($row['px_public'],$row['px_expo']) : $row['px_public'];
-	//$row['prix'] = $row['marge_coop'] <= 0 ? $row['px_public'] : $row['prix'];
 	echo json_encode($row);
 } // fin RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
 
@@ -138,7 +140,7 @@ elseif ($_POST['what'] == 'sauvegarde_auto') { ////// SAUVEGARDE_AUTO
 
 	require_once('save_data_into_database.php');
 	// enregistre les données dans la base
-	save_data_into_database();
+	save_data_into_database(TRUE); // sauvegarde en brouillon
 } // fin sauvegarde_auto
 
 
