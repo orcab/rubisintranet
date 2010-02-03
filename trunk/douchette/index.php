@@ -8,6 +8,10 @@ include('../inc/config.php');
 body,td{
 	font-family:verdana;
 	font-size:0.8em;
+	margin:0px;
+	padding:0px;
+	color:white;
+	background-color:black;
 }
 
 a img { 
@@ -16,21 +20,28 @@ a img {
 
 a {
 	text-decoration:none;
+	color:white;
 }
 
 a:hover {
 	text-decoration:underline;
+	color:yellow;
 }
 
 </style>
 
 </head>
-<body style="margin:0px;padding:0px;">
+<body>
 <center>
 <table style="width:70%;text-align:center;border:solid 1px #AAA;">
 <tr>
 	<td></td>
-	<td><a href="add_gencode.php"><img src="gfx/add_gencode.gif"><br>Saisie de GENCODE</a></td>
+	<td><a href="add_gencode.php"><img src="gfx/add_gencode.gif"><br>Saisie de GENCODE</a><br/><br/></td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td><a href="comparateur_prix.php"><img src="gfx/comparateur_prix.png"><br>Comparateur de prix</a></td>
 	<td></td>
 </tr>
 </table>
