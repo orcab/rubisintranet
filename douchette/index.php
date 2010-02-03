@@ -41,7 +41,7 @@ a:hover {
 </tr>
 <tr>
 	<td></td>
-	<td><a href="comparateur_prix.php"><img src="gfx/comparateur_prix.png"><br>Comparateur de prix</a></td>
+	<td><a href="comparateur_prix.php"><img src="gfx/comparateur_prix.gif"><br>Comparateur de prix</a></td>
 	<td></td>
 </tr>
 </table>

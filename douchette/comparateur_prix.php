@@ -5,6 +5,7 @@ session_start();
 $message = '';
 $delete_panier = TRUE;
 
+
 // on vient de saisir un gencode et une référence --> on regarde dans la base si un truc correspond
 if (isset($_POST['what']) && $_POST['what']=='saisie_gencode' && $_POST['reference']) {
 	$loginor    = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
@@ -171,6 +172,15 @@ function init() {
 	else if (document.getElementById('choix'));
 		document.getElementById('choix').focus()
 }
+
+function check_enter_on_gencode(e) {
+	if (e.keyCode == 13) { // on a valider la saisie
+		document.mon_form.reference.value=document.getElementById('reference').innerHTML.replace(/<br *>/i,'');
+		document.mon_form.submit();
+
+		//alert(document.mon_form.reference.value);
+	}
+}
 	
 function check_enter_on_choix(e) {
 	if (e.keyCode == 13) { // on a valider la saisie
@@ -203,8 +213,9 @@ function check_enter_on_choix(e) {
 	<h2 id="titre2"></h2>
 	<h1 id="titre1">Scanner le code</h1>
 	<div style="text-align:center;border:none;">
-		<!--<div id="div_gencode" style="width:80%;height:20px;display:block;" contenteditable="true" onkeyup="check_enter_on_gencode(event)" autocomplete="off"></div>-->
-		<input id="reference" name="reference" style="width:80%;height:20px;" value="" />
+		<div id="reference" style="width:80%;height:20px;display:block;" contenteditable="true" onkeyup="check_enter_on_gencode(event)" autocomplete="off"></div>
+		<input type="hidden" id="reference_hidden" name="reference" value="" />
+		<!--<input id="reference" name="reference" style="width:80%;height:20px;" value="" />-->
 	</div>
 
 
