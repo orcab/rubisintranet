@@ -35,7 +35,12 @@ EOT;
 	} elseif (sizeof($resultats) == 1) { // si un seul résultat, on enregistre le tout dans le systeme
 		
 		// inscrire le produit
-		$_SESSION['panier'][$resultats[0]['NOART']] = 1;
+		if (isset($_SESSION['panier']) && is_array($_SESSION['panier'])) {
+			if (!in_array($resultats[0]['NOART'],$_SESSION['panier']))
+				array_push($_SESSION['panier'],$resultats[0]['NOART']);
+		} else {
+			$_SESSION['panier'] = array($resultats[0]['NOART']);
+		}
 
 		$message = "Choix validé";
 	} elseif (sizeof($resultats) <= 0) { // Aucune référence trouvé dans le systeme --> afficher une erreur
@@ -52,7 +57,12 @@ EOT;
 	$code	= strtoupper(mysql_escape_string(trim($_POST['code'])));
 	
 	// inscrire le produit
-	$_SESSION['panier'][$resultats[0]['NOART']] = 1;
+	if (isset($_SESSION['panier']) && is_array($_SESSION['panier'])) {
+		if (!in_array($resultats[0]['NOART'],$_SESSION['panier']))
+			array_push($_SESSION['panier'],$resultats[0]['NOART']);
+	} else {
+		$_SESSION['panier'] = array($resultats[0]['NOART']);
+	}
 
 	$message = "Choix validé";
 	odbc_close($loginor);
@@ -158,6 +168,7 @@ td.reference {
 	font-weight:bold;
 	font-size:0.9em;
 	color:red;
+	text-align:right;
 }
 
 </style>
@@ -215,7 +226,6 @@ function check_enter_on_choix(e) {
 	<div style="text-align:center;border:none;">
 		<div id="reference" style="width:80%;height:20px;display:block;" contenteditable="true" onkeyup="check_enter_on_gencode(event)" autocomplete="off"></div>
 		<input type="hidden" id="reference_hidden" name="reference" value="" />
-		<!--<input id="reference" name="reference" style="width:80%;height:20px;" value="" />-->
 	</div>
 
 
@@ -257,7 +267,7 @@ function check_enter_on_choix(e) {
 		//print_r($_SESSION['panier']);
 	
 		$where = array();
-		foreach ($_SESSION['panier'] as $key => $val) {
+		foreach ($_SESSION['panier'] as $key) {
 			$where[] = " (A.NOART='".mysql_escape_string($key)."') ";
 		}
 		$where = join(' or ',$where);
@@ -284,12 +294,19 @@ EOT;
 
 	//echo $sql;
 		
+		// on execuite la requete et on stock les résultat en mémoire pour les réafficher dans l'ordre inverse des demandes. (le plus récent en haut)
+		$resultats = array();
 		$res = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete : $sql");
-		//$resultats = array();
+		while($row = odbc_fetch_array($res))
+			$resultats[$row['CODE_ARTICLE']] = $row ;
 ?>
 		<table id="articles">
 
-<?		while($row = odbc_fetch_array($res)) { ?>
+<?		$panier = array_reverse($_SESSION['panier']);
+		//print_r($resultats);
+		foreach($panier as $code_article) {
+			$row = $resultats[$code_article] ;
+?>
 			<tr>
 				<td class="code"><?=$row['CODE_ARTICLE']?></td>
 				<td class="fournisseur"><?=$row['FOURNISSEUR']?></td>

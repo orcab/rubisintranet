@@ -10,6 +10,7 @@ if (DEBUG) {
 $message  = '';
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
+$createur = '';
 
 $droit = recuperer_droit() ;
 
@@ -35,6 +36,15 @@ elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && iss
 	$message = "L'intervention a été enregistrée";
 }
 
+// SUPPRIME UN FICHIER
+elseif(isset($_GET['action']) && $_GET['action']=='delete_fichier' && isset($_GET['path']) && $_GET['path']) { // mode saisie de commentaire fournisseur
+	$true_path = "files/$_GET[path]" ;
+	if (file_exists($true_path) && is_file($true_path) && unlink($true_path))
+		$message = "Le fichier '".basename($true_path)."' a été correctement supprimé";
+	else
+		$message = "Impossible de supprimer le fichier '".basename($true_path)."'";
+}
+
 $res = mysql_query("SELECT * FROM fournisseur WHERE code_rubis='".mysql_escape_string($id)."'") or die("ne peux pas retrouver les détails du fournisseur 1");
 if (mysql_num_rows($res) < 1) { // on n'a pas trouvé de fournisseur avec ce code -> on tente une recherche sur le nom
 	$res = mysql_query("SELECT * FROM fournisseur WHERE nom LIKE '".mysql_escape_string($id)."%'") or die("ne peux pas retrouver les détails du fournisseur 2");
@@ -52,7 +62,6 @@ a img { border:none; }
 input,textarea { border:solid 2px #AAA; }
 fieldset { -moz-border-radius:6px; border:solid 1px grey; }
 legend { font-weight:bold; font-size:0.9em; padding-right:5px;}
-
 
 h1 {
 	text-transform:uppercase;
@@ -187,6 +196,12 @@ function intervention_fournisseur() {
 	document.selecteur.commentaire_commentaire.focus();
 }
 
+// supprime un fichier
+function delete_fichier(path) {
+	if (confirm("Voulez-vous vraiment supprimer ce fichier ?"))
+		document.location.href = 'detail_fournisseur.php?action=delete_fichier&id=' + <?="'$id'"?> + '&path=' + escape(path)   ;
+}
+
 // supprime une intervention
 function delete_intervention(id) {
 	if (confirm("Voulez-vous vraiment supprimer cette intervention ?"))
@@ -241,6 +256,7 @@ $(document).ready(function() {
 <input type="hidden" name="id" value="<?=$id?>"/>
 <input type="hidden" name="action" value=""/>
 
+
 <!-- boite de dialogue pour l'upload d'un fichier -->
 <div id="upload-file">
 	<h2>Choisissez le(s) fichier(s) à associer</h2>
@@ -273,9 +289,14 @@ $(document).ready(function() {
 		<td>Représentant</td>
 		<td>
 			<select name="commentaire_createur">
-<?			$res2  = mysql_query("SELECT * FROM employe WHERE printer=0 ORDER BY prenom ASC");
+<?			$res2  = mysql_query('SELECT * FROM employe WHERE printer=0 ORDER BY prenom ASC');
 			while ($row2 = mysql_fetch_array($res2)) { ?>
-					<option value="<?=$row2['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row2['ip'] ? ' selected':''?>><?=$row2['prenom']?></option>
+					<option value="<?=$row2['prenom']?>"<?
+						if ($_SERVER['REMOTE_ADDR']==$row2['ip']) {
+							echo ' selected' ;
+							$createur = $row2['prenom'];
+						}
+?>><?=$row2['prenom']?></option>
 <?			} ?>
 		</select>
 		</td>
@@ -306,7 +327,7 @@ $(document).ready(function() {
 
 
 <? if ($message) { ?>
-	<div style="color:red;margin-top:10px;text-align:center;font-weight:bold;"><?=$message?></div>
+	<div style="color:red;margin:10px;text-align:center;font-weight:bold;"><?=$message?></div>
 <? } ?>
 
 
@@ -328,7 +349,7 @@ $(document).ready(function() {
 
 	<fieldset style="margin:auto;margin-top:10px;width:84%;"><legend>Complément
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" title="Edite le texte" align="absbottom"/>
+			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" alt="Edite le texte" title="Edite le texte" align="absbottom"/>
 <?		}	?>
 	</legend>
 		<div id="div-complement"><?=stripslashes($row['info3'])?></div>
@@ -342,7 +363,7 @@ $(document).ready(function() {
 
 	<fieldset style="margin-top:10px;width:84%;display:inline;floating:left;text-align:left;"><legend>Fichiers attachés
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" title="Associer un fichier" align="absbottom"/>
+			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" alt="Associer un fichier" title="Associer un fichier" align="absbottom"/>
 <?		}	?>
 	</legend>
 		<ul class="file">
@@ -368,8 +389,10 @@ $(document).ready(function() {
 							echo 'file.png'; break;
 					}
 					?>" class="icon" />
-					<a href="files/<?="$id/$file"?>" target="_blank"><?=$file?></a>
-					<span class="size">(<?=formatBytes(filesize(dirname($_SERVER['SCRIPT_FILENAME'])."/files/$id/$file"))?>)</span></li>
+					<a href="files/<?="$id/$file"?>" target="_blank"><?=$file?></a> 
+					<span class="size">(<?=formatBytes(filesize(dirname($_SERVER['SCRIPT_FILENAME'])."/files/$id/$file"))?>)</span>
+					<img src="gfx/delete.png" alt="Supprimer le fichier" title="Supprimer ce fichier" style="cursor:pointer;" onclick="delete_fichier('<?=str_replace("'","\\'","$id/$file")?>');" />
+					</li>
 <?				} // fin foreach $file
 				$d->close(); // on ferme le répertoire
 			} // fin if file_exists
@@ -377,7 +400,7 @@ $(document).ready(function() {
 		</ul>
 	</fieldset>
 
-	<fieldset id="liste-intervention" style="margin-top:10px;width:84%;display:inline;floating:left;"><legend>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" title="Ajoute une intervention" align="absbottom"/></legend>
+	<fieldset id="liste-intervention" style="margin-top:10px;width:84%;display:inline;floating:left;"><legend>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/></legend>
 <?
 		// récupère la liste des interventions
 		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM fournisseur_commentaire WHERE code_fournisseur='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 
@@ -389,18 +412,20 @@ $(document).ready(function() {
 <?						switch ($row_commentaire['humeur']) {
 							case 0: ?>&nbsp;<?
 								break;
-							case 1: ?><img src="/intranet/gfx/weather-clear.png" title="Content"><?
+							case 1: ?><img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" /><?
 								break;
-							case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" title="Mausade"><?
+							case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" /><?
 								break;
-							case 3: ?><img src="/intranet/gfx/weather-storm.png" title="Enervé"><?
+							case 3: ?><img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" /><?
 								break;
 						} ?>
 					</td>
 					<td class="createur"><?=$row_commentaire['createur']?></td>
 					<td class="type">par <?=$row_commentaire['type']?></td>
-<?						if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
-							<td class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" title="Supprimer cette intervention"/></td>
+<?						if (	($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) ||
+								($row_commentaire['createur'] == $createur && $row_commentaire['temps_ecoule'] <= 3600) // si on est le créateur du com' et que moins d'une heure s'est écoulée
+							) { ?>
+							<td class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" style="cursor:pointer;"  onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" alt="Supprimer cette intervention" title="Supprimer cette intervention"/></td>
 <?						}	?>
 				</tr>
 				<tr>

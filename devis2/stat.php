@@ -1,6 +1,7 @@
 <html>
 <head>
 <title>Stats des devis</title>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <style>
 
 body,td{
@@ -8,17 +9,9 @@ body,td{
 	font-size:0.8em;
 }
 
-a img { 
-	border:none;
-}
-
-a {
-	text-decoration:none;
-}
-
-a:hover {
-	text-decoration:underline;
-}
+a img { border:none; }
+a { text-decoration:none; }
+a:hover { text-decoration:underline; }
 
 </style>
 
@@ -33,11 +26,11 @@ a:hover {
 <br/>
 <img src="graph2.php" style="margin-bottom:20px;" />
 
-<table style="width:50%;text-align:center;border:solid 1px #AAA;">
-<tr>
-	<td><td><a href="stats_devis.php">Télécharger les stats au format Excel</td>
-</tr>
-</table>
+<div style="margin:auto;width:50%;border:solid 1px grey;padding:10px;"><a href="stats_devis.php">Télécharger les stats au format Excel</div>
+
+<br/>
+<img src="graph_adh.php" style="margin-bottom:20px;" />
+
 </center>
 
 </body>

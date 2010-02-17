@@ -104,7 +104,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if ($row['DS2DB'])	$designation .= "\n$row[DS2DB]";
 		if ($row['DS3DB'])	$designation .= "\n$row[DS3DB]";
 		if ($row['CONSA'])	$designation .= "\n$row[CONSA]";
-
+		
 		// gestion des kits
 		if ($row['ARCOM']=='OUI') { // attention article d'un kit, il faut l'enregistré pour le resortir sur le kit
 			if (!isset($kit[$row['DET97']])) // premier article du kit
@@ -126,7 +126,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // cde demandé sans prix
 			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
-				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
+				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
 				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
 				array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 				array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
@@ -136,7 +136,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		else
 			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
-				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 8 ),
+				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
 				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
 				array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 				array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité

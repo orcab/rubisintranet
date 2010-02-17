@@ -155,12 +155,13 @@ function select_vendeur() {
 	}
 	$tmp['LN'] = 'Jean René';
 	$tmp['MAR'] = 'Marc';
+	$tmp['LG'] = 'Laurent G';
 	ksort($tmp);
 
 	$vendeurs = array();
 	$vendeurs['AM,LG,RLF,MAR,CG']   = 'Chauffage';
 	$vendeurs['AG,CLM,JFS,JM,LN']   = 'Sanitaire';
-	$vendeurs['BT,CLH,ELM,JLD,SLN,VN'] = 'Electricité';
+	$vendeurs['BT,CLH,ELM,JLD,SLN,VN,YC'] = 'Electricité';
 	return array_merge($vendeurs,$tmp);
 }
 
