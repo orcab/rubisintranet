@@ -186,8 +186,8 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 
 // si on est sur un enregistrement définitif, alors on supprime le brouillon
 if (!$draft) {
-	mysql_query("DELETE FROM devis_ligne_draft WHERE id_devis='$id_devis'") or die("Immpossible de supprimer les lignes devis du brouillon");
-	mysql_query("DELETE FROM devis_draft WHERE id='$id_devis'") or die("Immpossible de supprimer le devis brouillon");
+	mysql_query("DELETE FROM devis_ligne_draft WHERE id_devis='$id_devis'") or die("Impossible de supprimer les lignes devis du brouillon");
+	mysql_query("DELETE FROM devis_draft WHERE id='$id_devis'") or die("Impossible de supprimer le devis brouillon");
 }
 
 
