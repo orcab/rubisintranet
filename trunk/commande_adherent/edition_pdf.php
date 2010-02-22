@@ -31,7 +31,7 @@ where	NOBON='$NOBON_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26
+select NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26,LOCAL,LOCA2,LOCA3
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on	BON.NOFOU=FOURNISSEUR.NOFOU
@@ -40,6 +40,10 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 				and	BON.NOFOU = ARTICLE_FOURNISSEUR.NOFOU
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 			on BON.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
+			on		BON.CODAR   = STOCK.NOART
+				and	STOCK.DEPOT = '$LOGINOR_DEPOT'
+				and	STOCK.STSTS = ''
 where	NOBON='$NOBON_escape'
 	and BON.NOCLI='$NOCLI_escape'
 	and ETSBE<>'ANN'
@@ -72,10 +76,14 @@ $pdf->SetFillColor(230); // gris clair
 
 
 // largeur des colonnes
-if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // devis demandé sans prix
-	$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,QTE_WIDTH,TYPE_CDE_WIDTH));
-else
+if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis demandé sans prix
+	if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniquement les lignes R
+		$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,LOCAL_WIDTH,UNITE_WIDTH,QTE_WIDTH,TYPE_CDE_WIDTH));
+	else
+		$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,QTE_WIDTH,TYPE_CDE_WIDTH));
+} else {
 	$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,UNITE_WIDTH,QTE_WIDTH,PUHT_WIDTH,PTHT_WIDTH,TYPE_CDE_WIDTH));
+}
 
 $kit = array();
 while($row = odbc_fetch_array($detail_commande)) {
@@ -123,21 +131,33 @@ while($row = odbc_fetch_array($detail_commande)) {
 			if ($commentaire_row['CDLIB'])
 				$designation .= "\n".trim($commentaire_row['CDLIB']);
 
-		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // cde demandé sans prix
+		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde demandé sans prix
+			if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniquement les lignes R
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
+					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
+					array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,'text-align' => 'C', 'font-size' => 10), //localisation
+					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
+					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+					array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
+					)
+				);
+			else
+				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
+					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
+					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
+					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+					array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
+					)
+				);
+		} else { // demandé AVEC prix
 			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
-				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
-				array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
-				array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
-				array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
-				)
-			);
-		else
-			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
-				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
-				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L'),
+				array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
 				array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 				array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
 				array('text' => sprintf('%0.2f',round($row['PRINE'],2)).EURO	, 'text-align' => 'R'), // prix unitaire après remise
@@ -145,6 +165,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 				array('text' => $row['TYCDD']=='SPE' ? 'S' :''	, 'text-align' => 'R') // spécial ou pas
 				)
 			);
+		} // fin avec ou sans prix
 		
 		//print_r($kit);exit;
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
