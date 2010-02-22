@@ -73,7 +73,6 @@ $graph->xaxis->SetLabelMargin(5);
 $graph->xaxis->SetLabelAlign('right','center');
 
 $graph->yaxis->SetLabelAlign('center','bottom');
-
 $graph->yaxis->Hide();
 
 $bplot = new BarPlot($datay);
@@ -91,6 +90,4 @@ $graph->Add($bplot);
 
 // Output line
 $graph->Stroke();
-
-
 ?>
