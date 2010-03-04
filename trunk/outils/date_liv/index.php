@@ -330,11 +330,11 @@ EOT;
 
 		// la date est bonne, on la rentre dans Rubis
 		if ($jour && $mois && $siecle && $annee && preg_match('/^[0-9]{8}$/',"$jour$mois$siecle$annee")) {
-			if ($jour >= 1 && $jour <= 31 && $mois >= 1 && $mois <= 12 && $siecle == '20' && $annee >= 9) {
+			if ($jour >= 1 && $jour <= 31 && $mois >= 1 && $mois <= 12 && $siecle == '20' && $annee >= 10) {
 				// met à jour l'entete de la commande fournisseur
 				$sql = <<<EOT
 update	${LOGINOR_PREFIX_BASE}GESTCOM.ACFENTP1
-set		CFELS='$siecle', CFELA='$annee', CFELM='$mois', CFELJ='$jour'
+set		CFELS='$siecle', CFELA='$annee', CFELM='$mois', CFELJ='$jour', CFCON='OUI'
 where	CFBON='$num_cde'
 EOT;
 				$res = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans l'entete : <br/>\n$sql");
@@ -342,7 +342,7 @@ EOT;
 				// met a jour le détail des lignes
 				$sql = <<<EOT
 update	${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1
-set		CFDLS='$siecle', CFDLA='$annee', CFDLM='$mois', CFDLJ='$jour'
+set		CFDLS='$siecle', CFDLA='$annee', CFDLM='$mois', CFDLJ='$jour', CFCOD='OUI'
 where	CFBON='$num_cde' and CFPRF='1'
 EOT;
 				$res = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans le détail des lignes : <br/>\n$sql");
@@ -531,7 +531,7 @@ function init_focus() {
 		<span style="color:grey;font-size:0.7em;">
 			(25/04/2010)</br>
 			(25042010)</br>
-			(250410)</br>
+			(250410)
 		</span>
 	</td>
 	<td style="text-align:left;vertical-align:top;">
@@ -540,7 +540,6 @@ function init_focus() {
 </tr>
 </form>
 </table>
-
 
 <?= $message ? $message:'' ?>
 </body>
