@@ -151,6 +151,14 @@ span.show_col:hover {
 	border-bottom:solid 1px black;
 }
 
+table#historique-devis tr.ligne:nth-of-type(even) {
+	background:#F5F5F5;
+}
+
+tr.brouillon {
+	color:orange;
+}
+
 </style>
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
@@ -504,7 +512,7 @@ function telecharger_excel(sql) {
 		$where[] = "NOT (num_cmd_rubis IS NULL OR num_cmd_rubis='') AND num_cmd_rubis<>'ANNULE' AND num_cmd_rubis<>'SUSPENDU'";
 
 	$where[] = "supprime=0";			// ne pas afficher les devis supprimé
-	$where[] = "nom_client<>'EDITION'"; // ne pas afficher les devis en cours d'édition
+	//$where[] = "nom_client<>'EDITION'"; // ne pas afficher les devis en cours d'édition
 
 	if ($where)
 		$where = ' WHERE '.join(' AND ',$where);
@@ -548,6 +556,8 @@ EOT;
 	$i = 0 ;
 	
 	while($row = mysql_fetch_array($res)) {
+		$brouillon = FALSE ;
+
 		// on n'affiche pas le devis si l'on a demandé que les relances client
 		if ($_SESSION['devis_expo_filtre_relance']) {
 			if (!strtoupper(trim($row['num_cmd_rubis']))) {
@@ -561,11 +571,39 @@ EOT;
 				continue;
 			}
 		}
+
+		// on teste si le devis a été enregsitré au moins une fois --> sinon on propose un brouillon s'il existe
+		if ($row['nom_client'] == 'EDITION') { // devis jamais enregistré
+			// on va chercher le brouillon
+			$sql2 = <<<EOT
+SELECT	devis_draft.id as id,
+		CONCAT(DATE_FORMAT(devis_draft.`date`,'%b%y-'),devis_draft.id) as numero,
+		(SELECT numero FROM artisan WHERE devis_draft.artisan = artisan.nom) AS num_artisan,
+		DATE_FORMAT(`date`,'%d %b %Y') AS date_formater,
+		DATE_FORMAT(`date`,'%w') AS date_jour,
+		representant,nom_client,ville_client,tel_client,tel_client2,email_client,artisan,UPPER(num_cmd_rubis) as num_cmd_rubis,mtht_cmd_rubis,
+		(SELECT count(id) FROM devis_relance WHERE devis_relance.id_devis=devis_draft.id AND devis_relance.supprime=0) AS nb_relance,
+		(SELECT DATEDIFF(NOW(),`date`) FROM devis_relance WHERE devis_relance.id_devis=devis_draft.id ORDER BY `date` DESC LIMIT 0,1) AS datediff_relance, -- si des relances
+		DATEDIFF(NOW(),`date`) AS datediff_devis,
+		(SELECT SUM(qte * puht) FROM devis_ligne WHERE devis_ligne.id_devis=devis_draft.id) AS ptht
+FROM  devis_draft
+WHERE id=$row[id]
+EOT;
+			$res2 = mysql_query($sql2) or die("Ne peux pas trouver le devis brouillon".mysql_error()."<br>\n$sql2");
+			if (mysql_num_rows($res2) == 1) {
+				$row = mysql_fetch_array($res2);
+				$brouillon = TRUE ;
+			}
+		}
 ?>
 
-	<tr style="background:<?= $i++ & 1 ? '#F5F5F5':'white' ?>">
+
+
+	<tr class="ligne<?= $brouillon ? ' brouillon':'' ?>">
 		<td class="NUMERO"><?=$row['numero']?></td>
-		<td class="DATE"><a name="<?=$row['id']?>"></a><?=$jours_mini[$row['date_jour']]?> <?=$row['date_formater']?></td>
+		<td class="DATE"><a name="<?=$row['id']?>"></a>
+		<?=$jours_mini[$row['date_jour']]?>
+		<?=$row['date_formater']?></td>
 		<td class="REPRESENTANT"><?=my_utf8_decode($row['representant'])?></td>
 		<td class="NOM_CLIENT"><?=my_utf8_decode($row['nom_client'])?></td>
 		<td class="VILLE_CLIENT"><?=$row['ville_client']?></td>
