@@ -139,6 +139,13 @@ div#upload-file {
 }
 div#upload-file h2 { font-size:0.8em; }
 
+div#interventions {
+	-moz-border-radius:6px;
+	border:solid 1px grey;
+	width:86%;
+	margin:auto;
+	margin-top:20px;
+}
 
 @media print {
 	.hide_when_print { display:none; }
@@ -400,7 +407,10 @@ $(document).ready(function() {
 		</ul>
 	</fieldset>
 
-	<fieldset id="liste-intervention" style="margin-top:10px;width:84%;display:inline;floating:left;"><legend>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/></legend>
+	<div id="interventions">
+		<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
+		Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/>
+		</div>
 <?
 		// récupère la liste des interventions
 		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM fournisseur_commentaire WHERE code_fournisseur='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 
@@ -433,8 +443,8 @@ $(document).ready(function() {
 				</tr>
 			</table>
 <?		} ?>
-
-	</fieldset>
+		</div>
+<!--	</fieldset> -->
 </div>
 
 
