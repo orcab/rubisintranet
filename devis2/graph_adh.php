@@ -5,26 +5,29 @@ include('../inc/iCalParser/ical-parser-class.php');
 include ('../inc/jpgraph/src/jpgraph.php');
 include ('../inc/jpgraph/src/jpgraph_bar.php');
 
+define('PLOMBIER',   1 << 0);
+define('ELECTRICIEN',1 << 1);
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
 // charge le nom des adhérents en mémoire
-$adherent = array();  // format $adherent[056089] = 'Machin truc' ;
-$res  = mysql_query('SELECT nom,numero FROM artisan WHERE suspendu=0');
+$adherent = array();  // format $adherent[056089] = array('Nom adhérent',activite adhérent) ;
+$res  = mysql_query('SELECT nom,numero,activite FROM artisan');
 while ($row = mysql_fetch_array($res))
-	$adherent[$row['numero']] = $row['nom'];
+	$adherent[$row['numero']] = array($row['nom'],$row['activite']);
 
-$stats = array(); // format $adherent[056089] = 56 ;
+$stats = array(); // format $adherent[056089] = 56 rdv ;
 
 if ($stream = join('',file('http://www.google.com/calendar/ical/oi3c84064vjruvmkrsbbgn69go%40group.calendar.google.com/private-b5ad0090953fcf19110ac0be6aaeb152/basic.ics'))) { // telecharge le fichier chez google
+//if ($stream = join('',file('expo.ics'))) { // telecharge le fichier chez google
 	
 	$ical = new iCal();
 	$events = $ical->iCalStreamDecoder($stream);
 	
 	foreach ($events as $e) {
 		if (	array_key_exists('SUMMARY',$e)					// début d'evenement
-			&&	preg_match('/^(?:RDV|VISITE|PROSPECT)/i',$e['SUMMARY'])	// RDV, VISITE ou PROSPECT
+			&&	preg_match('/^(?:RDV|VISITE?|PROSPECT)/i',$e['SUMMARY'])	// RDV, VISITE ou PROSPECT
 			&&	preg_match('/(0?56\d{3})/',$e['SUMMARY'],$regs)	// un adhérent est renseigné
 			) {
 		
@@ -49,12 +52,20 @@ arsort($stats); // classe les RDV par ordre croissant
 // Setup the graph
 $datay = array(); //array(2,3,5,8,12,6,3);
 $datax = array(); //array("Jan","Feb","Mar","Apr","May","Jun","Jul");
+$bar_color = array(); // la couleur des barres dépend de l'activite de l'adhérent (#FCD700 plom, #255E7D elec, #71BBE3 both)
 foreach ($stats as $key => $val) {
 	$datay[] = $val;
-	if (isset($adherent[$key]))
-		$datax[] = $adherent[$key]." ($key)";
-	else
-		$datax[] = "Inconnu ($key)";
+	if (isset($adherent[$key])) {
+		$datax[]		= $adherent[$key][0]." ($key)";
+		switch ($adherent[$key][1]) { // activite de l'adherent
+			case PLOMBIER				 : $bar_color[] = '#71BBE3'; break;
+			case ELECTRICIEN			 : $bar_color[] = '#FCD700'; break;
+			case PLOMBIER | ELECTRICIEN  : $bar_color[] = '#255E7D'; break;
+			default						 : $bar_color[] = 'white';
+		}
+	} else {
+		$datax[]		= "Inconnu ($key)";
+	}
 }
 //print_r($datax);
 //print_r($datay);
@@ -75,8 +86,12 @@ $graph->xaxis->SetLabelAlign('right','center');
 $graph->yaxis->SetLabelAlign('center','bottom');
 $graph->yaxis->Hide();
 
+$graph->legend->SetShadow('gray@0.4',5);
+$graph->legend->SetPos(0.21,0,'right','top');
+
+
 $bplot = new BarPlot($datay);
-$bplot->SetFillColor('orange');
+$bplot->SetFillColor($bar_color);
 $bplot->SetWidth(0.5);
 
 $bplot->value->Show();
