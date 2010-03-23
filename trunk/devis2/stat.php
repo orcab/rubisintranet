@@ -31,6 +31,9 @@ a:hover { text-decoration:underline; }
 <br/>
 <img src="graph_adh.php" style="margin-bottom:20px;" />
 
+<br/>
+<img src="graph_act.php" style="margin-bottom:20px;" />
+
 </center>
 
 </body>
