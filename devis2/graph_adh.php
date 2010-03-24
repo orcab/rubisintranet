@@ -56,7 +56,7 @@ $bar_color = array(); // la couleur des barres dépend de l'activite de l'adhéren
 foreach ($stats as $key => $val) {
 	$datay[] = $val;
 	if (isset($adherent[$key])) {
-		$datax[]		= $adherent[$key][0]." ($key)";
+		$datax[]		= $adherent[$key][0]."  $key ";
 		switch ($adherent[$key][1]) { // activite de l'adherent
 			case PLOMBIER				 : $bar_color[] = '#71BBE3'; break;
 			case ELECTRICIEN			 : $bar_color[] = '#FCD700'; break;
@@ -64,7 +64,7 @@ foreach ($stats as $key => $val) {
 			default						 : $bar_color[] = 'white';
 		}
 	} else {
-		$datax[]		= "Inconnu ($key)";
+		$datax[]		= "Inconnu  $key ";
 	}
 }
 //print_r($datax);

@@ -10,11 +10,15 @@ class iCal {
 		preg_match_all('/(BEGIN:VEVENT.*?END:VEVENT)/si', $stream, $result, PREG_PATTERN_ORDER);
 		for ($i = 0; $i < count($result[0]); $i++) {
 			$tmpbyline = explode("\r\n", $result[0][$i]);
-			
+			$last_element = '';
 			foreach ($tmpbyline as $item) {
-				$tmpholderarray = explode(":",$item);
-				if (count($tmpholderarray) > 1) { 
-					$majorarray[$tmpholderarray[0]] = $tmpholderarray[1];
+				if (preg_match('/^\s*(.+?):(.*)/',$item,$regs)) {
+					//print_r($regs);
+					$majorarray[$regs[1]] = $regs[2];
+					$last_element = $regs[1];
+				} else {
+					//print "DEBUG '$item' element non reconnu\n";
+					$majorarray[$last_element] .= "\n$item"; // on rajoute cette ligne au precedent element
 				}
 			}
 			/*
