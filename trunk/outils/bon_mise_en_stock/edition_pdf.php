@@ -22,7 +22,8 @@ $sql_detail = <<<EOT
 select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFCLI,CFPRF,CFCOM,LOCAL,LOCA2,LOCA3,CFPAN,CFMTH,
 ENTETE_CDE_CLIENT.RFCSB,
 CLIENT.NOMCL,
-DETAIL_CDE_CLIENT.TRAIT
+DETAIL_CDE_CLIENT.TRAIT,
+DETAIL.CDDE6 KIT
 from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
 		on		DETAIL.CFART = STOCK.NOART
@@ -113,6 +114,9 @@ while($row = odbc_fetch_array($detail_commande)) {
 		elseif	($today >= $date_liv && $row['CFCLB'])
 			$designation .= "\n".($reliquat ? '/!\\RELIQUAT/!\\  ':'              ')."DEPART IMMEDIAT  à livrer pour le $row[CFDLJ]/$row[CFDLM]/$row[CFDLS]$row[CFDLA]";
 
+		if ($row['KIT'] == 'OUI')
+			$designation .= "\nCeci est un kit composé de :";
+
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ACFDETP1' and CDETA='' and CDCOD LIKE '%$row_entete[CFBON]$row[CFLIG]%' ORDER BY CDLIG") ;
 		while($commentaire_row = odbc_fetch_array($commentaire_res))
@@ -135,8 +139,44 @@ while($row = odbc_fetch_array($detail_commande)) {
 							'text-align' => 'C', 'font-size' => 10) //localisation
 					)
 				);
-	}
-}
+
+		// gestion du détail du kit
+		if ($row['KIT'] == 'OUI') {
+			// on va piocher dans la base loginor le détail du kit pour l'afficher
+			$sql = <<<EOT
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,DESI2,LOCAl,LOCA2,LOCA3
+from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
+					on DETAIL_KIT.NOART=ARTICLE.NOART
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
+					on DETAIL_KIT.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
+				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
+					on		DETAIL_KIT.NOART = STOCK.NOART
+					and	STOCK.DEPOT = '$LOGINOR_DEPOT'
+where		NOKIT='$row[CFART]'
+EOT;
+			$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
+			while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
+				// ici on affiche les détail du kit
+				$ref_kit			= $row_kit['REFFO'] ? $row_kit['REFFO'] : "$row_kit[NOART]\n(code MCS)" ;
+				$designation_kit	= $row_kit['DESI1'].( $row_kit['DESI2'] ? "\n".trim($row_kit['DESI2']) : '')." (".trim($row_kit['NOART']).")" ;
+				$local_kit			= $row_kit['LOCAL'].( $row_kit['LOCA2'] ? "\n$row_kit[LOCA2]":'' ).( $row_kit['LOCA3'] ? "\n$row_kit[LOCA3]":'' );
+				$pdf->Row(	array(
+								array('text' => $ref_kit, 			'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10),
+								array('text' => $designation_kit,	'text-align' => 'L', 'font-size' => 8),
+								array('text' => 'KIT'), // unité
+								array('text' => ''), // PU
+								array('text' => ''), // PT
+								array('text' => str_replace('.0000','',$row_kit['NUCOM']) ,	'text-align' => 'C'), // quantité
+								array('text' => '' ), // case vide
+								array('text' => $local_kit	, 'text-align' => 'C', 'font-size' => 10) //localisation
+							)
+						); // fin row
+
+			} // fin while kit
+		} // fin if kit
+	} // fin if article
+} // fin while ligne en cde
 
 
 if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 100) // check le saut de page

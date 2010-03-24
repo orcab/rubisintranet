@@ -100,8 +100,9 @@ table.intervention tr:first-child { background:#DDD; }
 
 table.intervention { /* premiere case intervention */
 	border:dotted 1px #444;
+	margin:auto;
 	margin-bottom:20px;
-	width:100%;
+	width:95%;
 	border-spacing: 0px;
     border-collapse: collapse;
 }

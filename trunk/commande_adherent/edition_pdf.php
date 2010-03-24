@@ -118,7 +118,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 			if (!isset($kit[$row['DET97']])) // premier article du kit
 				$kit[$row['DET97']] = array();
 
-			$kit[$row['DET97']][] = $designation." x$row[QTESA] (".str_replace('.',',',sprintf('%0.2f',$row['QTESA']*$row['PRINE'])).EURO.")";// on rajoute la piece au kit
+			$kit[$row['DET97']][] = $designation." x".str_replace('.000','',$row['QTESA'])." (".str_replace('.',',',sprintf('%0.2f',$row['QTESA']*$row['PRINE'])).EURO.")";// on rajoute la piece au kit
 			continue;
 		}
 		
