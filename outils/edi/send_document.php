@@ -115,11 +115,11 @@ EOT;
 			$titre = "MCS : Liste des Avoirs au $date_affichable";
 		}
 
-		echo $titre."\n<br>". $html;
+		//echo $titre."\n<br>". $html;
 
 		// TOUT EST PRET, ON ENVOI LE MAIL
-		//if ($titre && $nb_bon) { // quelque chose à envoyer
-		if (0) {
+		if ($titre && $nb_bon) { // quelque chose à envoyer
+		//if (0) {
 			require_once '../../inc/xpm2/smtp.php';
 			$mail = new SMTP;
 			$mail->Delivery('relay');

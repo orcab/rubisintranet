@@ -27,7 +27,7 @@ where
 order by DTBOS asc,DTBOA asc,DTBOM asc,DTBOJ asc,CDE_ENTETE.NOBON asc, CDE_DETAIL.NOLIG ASC
 EOT;
 
-echo $sql_detail;// exit;
+//echo $sql_detail;// exit;
 
 $loginor		= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 $detail_commande= odbc_exec($loginor,$sql_detail) ;
