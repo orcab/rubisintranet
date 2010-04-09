@@ -24,18 +24,9 @@ body,td{
 	font-size:0.8em;
 }
 
-a img { 
-	border:none;
-}
-
-a {
-	text-decoration:none;
-}
-
-a:hover {
-	text-decoration:underline;
-}
-
+a img	{ border:none; }
+a		{ text-decoration:none; }
+a:hover { text-decoration:underline; }
 
 div#dialogue {
 	padding:20px;
@@ -62,17 +53,9 @@ div#detail-utilisateur {
 }
 
 
-div#detail-utilisateur table {
-	font-size:0.6em;
-}
-
-div#detail-utilisateur table th {
-	text-align:left;
-}
-
-div#detail-utilisateur table td,div#detail-utilisateur table th {
-	vertical-align:bottom;
-}
+div#detail-utilisateur table { font-size:0.6em; }
+div#detail-utilisateur table th { text-align:left; }
+div#detail-utilisateur table td,div#detail-utilisateur table th { vertical-align:bottom; }
 
 table#artisan {
 	width:50%;
@@ -126,7 +109,7 @@ function save_frequence(obj) {
 	<caption></caption>
 <?
 $sql = <<<EOT
-SELECT	nom,numero,email,AR,BL,RELIQUAT
+SELECT	nom,numero,email,AR,BL,RELIQUAT,AVOIR
 FROM	artisan
 			left join send_document on artisan.numero = send_document.numero_artisan
 WHERE	
@@ -146,23 +129,27 @@ while($row = mysql_fetch_array($res)) {
 			<th>AR</th>
 			<th>BL</th>
 			<th>RELIQUAT</th>
+			<th>AVOIR</th>
 		</tr>
 <?	} ?>
 	<tr>
 		<td><?=$row['nom']?></td>
 		<td><?=$row['email']?></td>
 	
-<?		foreach (array('AR','BL','RELIQUAT') as $type_doc) { ?>
+<?		foreach (array('AR','BL','RELIQUAT','AVOIR') as $type_doc) { ?>
 			<td>
 				<select name="select_<?=$row['numero']?>_<?=$type_doc?>" onchange="save_frequence(this);change_color(this);">
 					<option style="background:white;" value=""<?=$row[$type_doc]==''?' selected':''?>>Pas d'envoi</option>
+<?				if ($type_doc != 'AVOIR') { ?>
 					<option style="background:yellow;" value="1,2,3,4,5"<?=$row[$type_doc]=='1,2,3,4,5'?' selected':''?>>Quotidien</option>
 					<optgroup style="background-color:#44F;" label="Hebdomadaire">
 						<option style="background:#CCF;" value="1"<?=$row[$type_doc]=='1'?' selected':''?>>Lundi</option>
 						<option style="background:#AAF;" value="2"<?=$row[$type_doc]=='2'?' selected':''?>>Mardi</option>
 						<option style="background:#88F;" value="3"<?=$row[$type_doc]=='3'?' selected':''?>>Mercredi</option>
 						<option style="background:#66F;" value="4"<?=$row[$type_doc]=='4'?' selected':''?>>Jeudi</option>
+<?				} ?>
 						<option style="background:#44F;" value="5"<?=$row[$type_doc]=='5'?' selected':''?>>Vendredi</option>
+<?				if ($type_doc != 'AVOIR') { ?>
 					</optgroup>
 					<optgroup style="background-color:#AF4;" label="Variables">
 						<option style="background:#DFD;" value="1,3,5"<?=$row[$type_doc]=='1,3,5'?' selected':''?>>Lun,Mer,Ven</option>
@@ -173,6 +160,7 @@ while($row = mysql_fetch_array($res)) {
 						<option style="background:#4F4;" value="2,5"<?=$row[$type_doc]=='2,5'?' selected':''?>>Mar,Ven</option>
 						<option style="background:#2F2;" value="3,5"<?=$row[$type_doc]=='3,5'?' selected':''?>>Mer,Ven</option>
 					</optgroup>
+<?				} ?>
 				</select>
 			</td>
 <?		} ?>

@@ -10,13 +10,13 @@ if (isset($_POST['what'])		&& $_POST['what'] == 'save_frequence'	&&
 	) {
 
 		$ancienne_valeurs = array();
-		$row = mysql_fetch_array(mysql_query("SELECT AR,BL,RELIQUAT FROM send_document WHERE numero_artisan='".mysql_escape_string($_POST['numero'])."'"));
-		foreach(array('AR','BL','RELIQUAT') as $key)
+		$row = mysql_fetch_array(mysql_query("SELECT AR,BL,RELIQUAT,AVOIR FROM send_document WHERE numero_artisan='".mysql_escape_string($_POST['numero'])."'"));
+		foreach(array('AR','BL','RELIQUAT','AVOIR') as $key)
 			$ancienne_valeurs[$key] = isset($row[$key]) ? $row[$key] : '';
 
 		$ancienne_valeurs[$_POST['type_doc']] = mysql_escape_string($_POST['val'] ? $_POST['val']:'0'); // on met la nouvelle valeur
 
-		$sql = "REPLACE INTO send_document (AR,BL,RELIQUAT,numero_artisan) VALUES ('$ancienne_valeurs[AR]','$ancienne_valeurs[BL]','$ancienne_valeurs[RELIQUAT]','".mysql_escape_string($_POST['numero'])."')";
+		$sql = "REPLACE INTO send_document (AR,BL,RELIQUAT,AVOIR,numero_artisan) VALUES ('$ancienne_valeurs[AR]','$ancienne_valeurs[BL]','$ancienne_valeurs[RELIQUAT]','$ancienne_valeurs[AVOIR]','".mysql_escape_string($_POST['numero'])."')";
 		if (!mysql_query($sql)) {
 			echo '{debug:"'.$sql.' '.mysql_error().'"}';
 		}

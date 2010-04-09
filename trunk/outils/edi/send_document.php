@@ -16,15 +16,14 @@ $now			= date('Ymd');
 
 // recupère la liste des adhérents ayant un email et leur préférence d'envoi rensignées
 $sql = <<<EOT
-SELECT	nom,numero_artisan,email,AR,BL,RELIQUAT
+SELECT	nom,numero_artisan,email,AR,BL,RELIQUAT,AVOIR
 FROM	artisan,send_document
 WHERE	artisan.numero = send_document.numero_artisan
 	AND email<>'' AND email IS NOT NULL
-	AND (	(AR <>'0' AND AR<>'')
-			OR
-			(BL<>'0' AND BL<>'')
-			OR
-			(RELIQUAT<>'0' AND RELIQUAT<>'')
+	AND (		(AR <>'0'		AND AR<>'')
+			OR	(BL<>'0'		AND BL<>'')
+			OR	(RELIQUAT<>'0'	AND RELIQUAT<>'')
+			OR	(AVOIR<>'0'		AND AVOIR<>'')
 		)
 ORDER	BY nom ASC
 EOT;
@@ -33,7 +32,7 @@ $res = mysql_query($sql) or die ("Ne peux pas récupérer la liste des artisans : 
 while($row = mysql_fetch_array($res)) { // pour chaque artisan
 
 	// pour chaque type de document
-	foreach (array('AR','BL','RELIQUAT') as $type_doc) {
+	foreach (array('AR','BL','RELIQUAT','AVOIR') as $type_doc) {
 		$html = <<<EOT
 <style>
 body,td,caption,th {
@@ -54,31 +53,11 @@ caption {
 	border:solid 1px black;
 }
 
-td,th {
-	border:solid 1px grey;
-}
-
-.code_article {
-	width:80px;
-}
-
-.fournisseur {
-	width:120px;
-}
-
-.qte {
-	width:20px;
-}
-
-.prix {
-}
-
-.tot {
-}
-
-.spe {
-	width:20px;
-}
+td,th { border:solid 1px grey; }
+.code_article { width:80px; }
+.fournisseur { 	width:120px; }
+.qte { 	width:20px; }
+.spe { 	width:20px; }
 </style>
 EOT;
 		
@@ -100,17 +79,15 @@ EOT;
 	
 				if ($day_number > $jour_envoi_precedent) {
 					$delta_jour = $day_number - $jour_envoi_precedent;
-				} elseif ($day_number == $jour_envoi_precedent) {
-					$delta_jour = 1;
 				} else {
 					$delta_jour = 7-($jour_envoi_precedent-$day_number);
 				}
 
 			//	echo "\$delta_jour=$delta_jour\n";
 
-				$date_precedente = date('Ymd',mktime(0,0,0,date('m'),date('d')-$delta_jour,date('Y')));
-				$date_precedente_plus_un = date('d/m/Y',mktime(0,0,0,date('m'),date('d')-$delta_jour+1,date('Y')));
-				$date_jour=date('d/m/Y');
+				$date_precedente			= date('Ymd'  ,mktime(0,0,0,date('m'),date('d')-$delta_jour  ,date('Y')));
+				$date_precedente_plus_un	= date('d/m/Y',mktime(0,0,0,date('m'),date('d')-$delta_jour+1,date('Y')));
+				$date_jour					= date('d/m/Y');
 				$date_affichable = $date_jour==$date_precedente_plus_un ? "du $date_jour" : "du $date_precedente_plus_un au $date_jour";
 				break;
 			}
@@ -132,11 +109,17 @@ EOT;
 			
 			require('RELIQUAT.php');
 			$titre = "MCS : Liste des reliquats au $date_jour";
+		} elseif ($type_doc == 'AVOIR' && in_array($day_number,$jour_envoi)) { // si l'on doit envoyer l'avoir ce jour là
+			
+			require('AVOIR.php');
+			$titre = "MCS : Liste des Avoirs au $date_affichable";
 		}
 
+		echo $titre."\n<br>". $html;
+
 		// TOUT EST PRET, ON ENVOI LE MAIL
-		if ($titre && $nb_bon) { // quelque chose à envoyer
-		//if (0) {
+		//if ($titre && $nb_bon) { // quelque chose à envoyer
+		if (0) {
 			require_once '../../inc/xpm2/smtp.php';
 			$mail = new SMTP;
 			$mail->Delivery('relay');
