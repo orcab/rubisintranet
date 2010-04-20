@@ -129,7 +129,7 @@ h2,h3 {
 	color:red;
 }
 
-table#articles td.ligne2 {
+table#articles td.ligne3 {
 	border:none;
 	border-bottom:dotted 1px lightgreen;
 	font-family:smalls font;
@@ -170,6 +170,9 @@ td.reference {
 	color:red;
 	text-align:right;
 }
+
+table#articles td.mini_maxi { text-align:center; }
+table#articles td.localisation { text-align:right; font-size:10px ;}
 
 </style>
 
@@ -279,7 +282,12 @@ select	A.NOART as CODE_ARTICLE,
 		DESI2 as DESIGNATION2,
 		NOMFO as FOURNISSEUR,
 		REFFO as REF_FOURNISSEUR,
-		ROUND(T.PVEN1,2) as PRIX_NET
+		ROUND(T.PVEN1,2) as PRIX_NET,
+		STSER as SERVI,
+		STOMI as STOCK_MINI,
+		STOMA as STOCK_MAXI,
+		STGES as GESTIONNAIRE,
+		LOCAL as LOCALISATION
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 			left outer join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 A_F
 				on A.NOART=A_F.NOART and A.FOUR1=A_F.NOFOU
@@ -287,8 +295,11 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 				on A_F.NOFOU=F.NOFOU
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 T
 				on A.NOART=T.NOART
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 S
+				on A.NOART=S.NOART
 where	
-		T.AGENC ='${LOGINOR_AGENCE}'
+			T.AGENC ='${LOGINOR_AGENCE}'
+		and S.DEPOT='${LOGINOR_DEPOT}'
 		and ($where)
 EOT;
 
@@ -299,6 +310,8 @@ EOT;
 		$res = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete : $sql");
 		while($row = odbc_fetch_array($res))
 			$resultats[$row['CODE_ARTICLE']] = $row ;
+
+	//	print_r($resultats);
 ?>
 		<table id="articles">
 
@@ -318,6 +331,11 @@ EOT;
 					<div class="desi2"><?=$row['DESIGNATION2']?></div>
 				</td>
 				<td class="prix ligne2" nowrap><?=sprintf('%0.2f',$row['PRIX_NET'])?>&nbsp;&euro;</td>
+			</tr>
+			<tr>
+				<td class="ligne3 servi"><?=$row['GESTIONNAIRE']?> <img src="gfx/<?= $row['SERVI']=='OUI' ? 'accept':'cancel2' ?>.png"></td>
+				<td class="ligne3 mini_maxi">mini:<?=ceil($row['STOCK_MINI'])?> maxi:<?=ceil($row['STOCK_MAXI'])?></td>
+				<td class="ligne3 localisation"><?=$row['LOCALISATION']?></td>
 			</tr>
 <?		} ?>
 		</table>
