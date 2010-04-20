@@ -333,7 +333,7 @@ EOT;
 				<td class="prix ligne2" nowrap><?=sprintf('%0.2f',$row['PRIX_NET'])?>&nbsp;&euro;</td>
 			</tr>
 			<tr>
-				<td class="ligne3 servi"><?=$row['GESTIONNAIRE']?> <img src="gfx/<?= $row['SERVI']=='OUI' ? 'accept':'cancel2' ?>.png"></td>
+				<td class="ligne3 servi"><?=$row['GESTIONNAIRE']?> <img src="gfx/<?= $row['SERVI']=='OUI' ? 'accept':'cancel2' ?>.gif"></td>
 				<td class="ligne3 mini_maxi">mini:<?=ceil($row['STOCK_MINI'])?> maxi:<?=ceil($row['STOCK_MAXI'])?></td>
 				<td class="ligne3 localisation"><?=$row['LOCALISATION']?></td>
 			</tr>
