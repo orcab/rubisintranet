@@ -79,11 +79,7 @@ class PDF extends FPDF
 			$this->Cell(95, 5 , isset($vendeurs[trim($row_entete['CFSER'])]) ? $vendeurs[trim($row_entete['CFSER'])] : trim($row_entete['CFSER']));
 		else
 			$this->Cell(95, 5 , '');
-		
 
-		// code barre du n° de bon fournisseur
-		$this->Code39($this->GetX() - 50, $this->GetY() ,$row_entete['CFBON'],1,5);
-	
 
 		// mis en stock par
 		$this->Cell(11,5,'');
@@ -93,7 +89,10 @@ class PDF extends FPDF
 		$this->Ln();
 		$this->Ln(2);
 
-		// heure d'ouverture
+		// code barre du n° de bon fournisseur
+		$this->Code39(LEFT_MARGIN, $this->GetY()-1 ,$row_entete['CFBON'],1,5);
+
+		// titre du document
 		$this->SetFont('helvetica','B',12);
 		$this->SetTextColor(255,0,0);
 		$this->Cell(0,5,"BON DE MISE EN STOCK",0,1,'C');
