@@ -21,7 +21,7 @@ EOT;
 $sql_detail = <<<EOT
 select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,CFDE1,CFDE2,CFDE3,CFUNI,CFQTE,CFCLI,CFPRF,CFCOM,LOCAL,LOCA2,LOCA3,CFPAN,CFMTH,
 ENTETE_CDE_CLIENT.RFCSB,
-CLIENT.NOMCL,
+CLIENT.NOMCL,CLIENT.NOCLI,
 DETAIL_CDE_CLIENT.TRAIT,
 DETAIL.CDDE6 KIT,
 ARTICLE.GENCO
@@ -127,8 +127,17 @@ while($row = odbc_fetch_array($detail_commande)) {
 		
 		//echo "'$designation'<br>\n";
 
-		$pdf->SetFillColor(0,0,0); // noir
-		$pdf->EAN13(LEFT_MARGIN + REF_WIDTH + UNITE_WIDTH + PU_WIDTH + PT_WIDTH + QTE_WIDTH + DESIGNATION_DEVIS_WIDTH + 1.5, $pdf->GetY(), $row['GENCO'] , 5 , .20 );
+		$y_up_rect = $pdf->GetY();
+
+		// affichage du code barre du produit si c'est pas un kit
+		if ($row['GENCO'] && $row['KIT'] != 'OUI') {
+			$pdf->SetFillColor(0,0,0); // noir
+			$pdf->EAN13(LEFT_MARGIN + REF_WIDTH + UNITE_WIDTH + PU_WIDTH + PT_WIDTH + QTE_WIDTH + DESIGNATION_DEVIS_WIDTH + 1.5, $y_up_rect , $row['GENCO'] , 5 , .20 );
+		}
+
+		
+
+//		$pdf->Write(5,'www.fpdf.org','http://www.fpdf.org');
 
 
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
@@ -146,6 +155,12 @@ while($row = odbc_fetch_array($detail_commande)) {
 					)
 				);
 
+		// si cde spécial, on fait un lien vers le document bon cde "R"
+		if ($row['CFCLB']) {
+			//Link(float x, float y, float w, float h, mixed link)
+			$pdf->Link(LEFT_MARGIN, $y_up_rect , PAGE_WIDTH - (LEFT_MARGIN + RIGHT_MARGIN) , $pdf->GetY(), 'http://'.$_SERVER['SERVER_ADDR'].'/intranet/commande_adherent/edition_pdf.php?NOBON='.$row['CFCLB'].'&NOCLI='.$row['NOCLI'].'&options[]=sans_prix&options[]=ligne_R');
+		}
+			
 
 		// gestion du détail du kit
 		if ($row['KIT'] == 'OUI') {
