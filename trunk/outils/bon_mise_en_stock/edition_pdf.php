@@ -23,7 +23,8 @@ select CFLIG,CFART,CFCLB,CFDDA,CFDDS,CFDDM,CFDDJ,CFDLA,CFDLS,CFDLM,CFDLJ,REFFO,C
 ENTETE_CDE_CLIENT.RFCSB,
 CLIENT.NOMCL,
 DETAIL_CDE_CLIENT.TRAIT,
-DETAIL.CDDE6 KIT
+DETAIL.CDDE6 KIT,
+ARTICLE.GENCO
 from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
 		on		DETAIL.CFART = STOCK.NOART
@@ -38,6 +39,8 @@ from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL
 		on		DETAIL.CFCLB=DETAIL_CDE_CLIENT.NOBON
 			and DETAIL.CFCLI=DETAIL_CDE_CLIENT.NOCLI
 			and DETAIL.CFCLL=DETAIL_CDE_CLIENT.NOLIG
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
+		on		DETAIL.CFART = ARTICLE.NOART
 where	CFBON	=	'$cfbon_escape'
 	and CFDET	=	''
 	and CFDAG	=	'$LOGINOR_DEPOT'
@@ -124,7 +127,10 @@ while($row = odbc_fetch_array($detail_commande)) {
 		
 		//echo "'$designation'<br>\n";
 
-		
+		$pdf->SetFillColor(0,0,0); // noir
+		$pdf->EAN13(LEFT_MARGIN + REF_WIDTH + UNITE_WIDTH + PU_WIDTH + PT_WIDTH + QTE_WIDTH + DESIGNATION_DEVIS_WIDTH + 1.5, $pdf->GetY(), $row['GENCO'] , 5 , .20 );
+
+
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => ($row['REFFO'] ? $row['REFFO'] : "$row[CFART]\n(code MCS)") . 
 									($row['CFCLB'] ? "\n\nCommande\nspéciale":'')	,
@@ -139,6 +145,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 							'text-align' => 'C', 'font-size' => 10) //localisation
 					)
 				);
+
 
 		// gestion du détail du kit
 		if ($row['KIT'] == 'OUI') {
@@ -172,7 +179,6 @@ EOT;
 								array('text' => $local_kit	, 'text-align' => 'C', 'font-size' => 10) //localisation
 							)
 						); // fin row
-
 			} // fin while kit
 		} // fin if kit
 	} // fin if article
