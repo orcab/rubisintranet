@@ -70,7 +70,7 @@ sub print_time {
 
 __DATA__
 CREATE TABLE IF NOT EXISTS `fournisseur` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL auto_increment,
   `code_rubis` varchar(6) NOT NULL,
   `nom` varchar(255) NOT NULL,
   `info_rubis1` text,
@@ -80,4 +80,4 @@ CREATE TABLE IF NOT EXISTS `fournisseur` (
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code_rubis` (`code_rubis`),
   UNIQUE KEY `nom` (`nom`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
