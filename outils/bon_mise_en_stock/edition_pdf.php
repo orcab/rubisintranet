@@ -136,14 +136,10 @@ while($row = odbc_fetch_array($detail_commande)) {
 		}
 
 		
-
-//		$pdf->Write(5,'www.fpdf.org','http://www.fpdf.org');
-
-
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-					array('text' => ($row['REFFO'] ? $row['REFFO'] : "$row[CFART]\n(code MCS)") . 
-									($row['CFCLB'] ? "\n\nCommande\nspéciale":'')	,
-																					'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10 , 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
+					array('text' => ($row['REFFO'] ? $row['REFFO'] : "$row[CFART]\n(code MCS)") .
+									($row['REFFO'] && !$row['CFCLB'] ? "\n " : '') . // si une référence fournisseur sans rien d'autre --> on rajout un \n pour le GENCODE
+									($row['CFCLB'] ? "\nCommande\nspéciale":'')	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($row['REFFO'])>10 ? 8:10 , 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
 					array('text' => $designation		,							'text-align' => 'L', 'font-size' => 8, 'background-color' => array(220,220,220), 'background-fill' => $row['CFCLB'] ? TRUE : FALSE),
 					array('text' => $row['CFUNI']		,							'text-align' => 'C'), // unité
 					array('text' => round($row['CFPAN'],2).EURO		,				'text-align' => 'C'), // PU
@@ -166,7 +162,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if ($row['KIT'] == 'OUI') {
 			// on va piocher dans la base loginor le détail du kit pour l'afficher
 			$sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,DESI2,LOCAl,LOCA2,LOCA3
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,DESI2,LOCAl,LOCA2,LOCA3,GENCO
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
@@ -180,6 +176,8 @@ EOT;
 			$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 			while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
 				// ici on affiche les détail du kit
+				$y_up_rect = $pdf->GetY();
+
 				$ref_kit			= $row_kit['REFFO'] ? $row_kit['REFFO'] : "$row_kit[NOART]\n(code MCS)" ;
 				$designation_kit	= $row_kit['DESI1'].( $row_kit['DESI2'] ? "\n".trim($row_kit['DESI2']) : '')." (".trim($row_kit['NOART']).")" ;
 				$local_kit			= $row_kit['LOCAL'].( $row_kit['LOCA2'] ? "\n$row_kit[LOCA2]":'' ).( $row_kit['LOCA3'] ? "\n$row_kit[LOCA3]":'' );
@@ -194,6 +192,13 @@ EOT;
 								array('text' => $local_kit	, 'text-align' => 'C', 'font-size' => 10) //localisation
 							)
 						); // fin row
+
+				
+				// affichage du code barre du produit si c'est pas un kit
+				if ($row_kit['GENCO']) {
+					$pdf->SetFillColor(0,0,0); // noir
+					$pdf->EAN13(LEFT_MARGIN + REF_WIDTH + UNITE_WIDTH + PU_WIDTH + PT_WIDTH + QTE_WIDTH + DESIGNATION_DEVIS_WIDTH + 1.5, $y_up_rect , $row_kit['GENCO'] , 5 , .20 );
+				}
 			} // fin while kit
 		} // fin if kit
 	} // fin if article
