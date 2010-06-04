@@ -43,19 +43,16 @@ define('CODE_DEPOT_PLESCOP', 'AFA');	$CODE_DEPOT_PLESCOP  = CODE_DEPOT_PLESCOP ;
 define('CODE_DEPOT_CAUDAN',  'AFL');	$CODE_DEPOT_CAUDAN	 = CODE_DEPOT_CAUDAN ;
 
 // le nom de l'agence et le nom du dépot par défaut
-if     (substr($_SERVER['SERVER_ADDR'],0,10) == '10.211.14.') { // PC depuis plescop
+if     (substr($_SERVER['REMOTE_ADDR'],0,10) == '10.211.14.') { // PC depuis plescop
 	define('LOGINOR_AGENCE',CODE_AGENCE_PLESCOP); $LOGINOR_AGENCE = CODE_AGENCE_PLESCOP ;
 	define('LOGINOR_DEPOT',CODE_DEPOT_PLESCOP);   $LOGINOR_DEPOT = CODE_DEPOT_PLESCOP ;
-} elseif (substr($_SERVER['SERVER_ADDR'],0,10) == '10.211.46.') { // PC depuis caudan
+} elseif (in_array($_SERVER['REMOTE_ADDR'],array('5.107.151.203','5.110.198.46','5.106.106.224'))) { // PC depuis caudan
 	define('LOGINOR_AGENCE',CODE_AGENCE_CAUDAN);  $LOGINOR_AGENCE = CODE_AGENCE_CAUDAN ;
 	define('LOGINOR_DEPOT',CODE_DEPOT_CAUDAN);    $LOGINOR_DEPOT = CODE_DEPOT_CAUDAN ;
 } else { // cas par défaut
 	define('LOGINOR_AGENCE',CODE_AGENCE_PLESCOP); $LOGINOR_AGENCE = CODE_AGENCE_PLESCOP ;
 	define('LOGINOR_DEPOT',CODE_DEPOT_PLESCOP);   $LOGINOR_DEPOT = CODE_DEPOT_PLESCOP ;
 }
-
-//$LOGINOR_AGENCE = 'AFL' ;
-//$LOGINOR_DEPOT = 'AFL' ;
 
 
 // jour de la semaine en FR
