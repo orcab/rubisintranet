@@ -24,6 +24,7 @@ if (!isset($_SESSION['cde_adh_filtre_signe_montant']))	$_SESSION['cde_adh_filtre
 if (!isset($_SESSION['cde_adh_filtre_classement'])) $_SESSION['cde_adh_filtre_classement']	= 'NOBON DESC';
 if (!isset($_SESSION['cde_adh_filtre_article']))	$_SESSION['cde_adh_filtre_article']		= '';
 if (!isset($_SESSION['cde_adh_filtre_type_cde']))	$_SESSION['cde_adh_filtre_type_cde']	= '';
+if (!isset($_SESSION['cde_adh_filtre_agence']))		$_SESSION['cde_adh_filtre_agence']	    = LOGINOR_AGENCE;
 
 if (isset($_POST['filtre_date_inf']))	$_SESSION['cde_adh_filtre_date_inf']	= $_POST['filtre_date_inf'];
 if (isset($_POST['filtre_date_sup']))	$_SESSION['cde_adh_filtre_date_sup']	= $_POST['filtre_date_sup'];
@@ -36,6 +37,7 @@ if (isset($_POST['filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_monta
 if (isset($_GET['filtre_classement']))	$_SESSION['cde_adh_filtre_classement']  = $_GET['filtre_classement'];
 if (isset($_POST['filtre_article']))	$_SESSION['cde_adh_filtre_article']		= $_POST['filtre_article'];
 if (isset($_POST['filtre_type_cde']))	$_SESSION['cde_adh_filtre_type_cde']	= $_POST['filtre_type_cde'];
+if (isset($_POST['filtre_agence']))		$_SESSION['cde_adh_filtre_agence']	    = $_POST['filtre_agence'];
 
 
 // ACTION A FAIRE
@@ -101,6 +103,11 @@ div#relance {
 	background:white;
 	display:none;
 	position:absolute;
+}
+
+span.agence  {
+	font-size:1em;
+	font-weight:normal;
 }
 
 @media print {
@@ -256,6 +263,13 @@ $(document).ready(function() {
 <table id="historique-commande" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;">
 		Historique des commandes adhérent <input type="checkbox" name="debug"<?=DEBUG?' checked':''?> class="hide_when_print"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<span class="agence">Agence</span>		
+		<select name="filtre_agence">
+			<option value=""<?=                         $_SESSION['cde_adh_filtre_agence']==''                  ? ' selected':''?>>Toutes agences</option>
+			<option value="<?=CODE_AGENCE_PLESCOP?>"<?= $_SESSION['cde_adh_filtre_agence']==CODE_AGENCE_PLESCOP ? ' selected':''?>>Plescop</option>
+			<option value="<?=CODE_AGENCE_CAUDAN?>" <?= $_SESSION['cde_adh_filtre_agence']==CODE_AGENCE_CAUDAN  ? ' selected':''?>>Caudan</option>
+		</select>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
 		<!-- choix pour les recherches -->
@@ -337,6 +351,7 @@ $(document).ready(function() {
 		<th class="LIVSB">Vendeur<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NOMSB">Adhérent<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="RFCSB">Référence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="AGENC">Agence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CDE_ENTETE.AGENC ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CDE_ENTETE.AGENC DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NBLIG">Nb ligne<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="MONTBT">Mt HT Cde<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=MONTBT DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
@@ -367,7 +382,8 @@ $(document).ready(function() {
 	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] $_SESSION[cde_adh_filtre_montant]" ;
 	$where[] = 'NBLIG > 0' ;
 	$where[] = "ETSEE = ''" ; // commande non annulée
-	$where[] = "CDE_ENTETE.AGENC = '$LOGINOR_AGENCE'" ; // uniquement pour l'agence en cours
+	if ($_SESSION['cde_adh_filtre_agence']) // si une agence de spécifié
+		$where[] = "CDE_ENTETE.AGENC = '$_SESSION[cde_adh_filtre_agence]'" ; // uniquement pour l'agence en cours
 
 	// gere les recherche sur article et type de commande
 	if ($_SESSION['cde_adh_filtre_article'] || $_SESSION['cde_adh_filtre_type_cde']) {
@@ -404,7 +420,7 @@ $(document).ready(function() {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB
+select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,CDE_ENTETE.AGENC
 from $tables
 $where
 order by $ordre
@@ -437,6 +453,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
+		<td class="AGENC" style="text-align:center;"><?= $row['AGENC']==CODE_AGENCE_PLESCOP?'P':($row['AGENC']==CODE_AGENCE_CAUDAN?'C':'Inconnu') ?></td><!-- agence -->
 		<td class="NBLIG" style="text-align:center;"><?=(int)$row['NBLIG']?></td><!-- nombre de ligne -->
 		<td class="MONTBT" style="text-align:right;" nowrap><?=$row['MONTBT']?> &euro;</td><!-- Mt commande -->
 		<td style="text-align:center;"><!-- relance -->

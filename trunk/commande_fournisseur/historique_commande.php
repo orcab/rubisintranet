@@ -12,27 +12,30 @@ $message  = '' ;
 $vendeurs = select_vendeur();
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
-if (!isset($_SESSION['cde_fourn_filtre_date_inf']))	$_SESSION['cde_fourn_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-0,date('Y')));
-if (!isset($_SESSION['cde_fourn_filtre_date_sup']))	$_SESSION['cde_fourn_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
-if (!isset($_SESSION['cde_fourn_filtre_fournisseur']))$_SESSION['cde_fourn_filtre_fournisseur']		= '';
-if (!isset($_SESSION['cde_fourn_filtre_vendeur']))	$_SESSION['cde_fourn_filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
-if (!isset($_SESSION['cde_fourn_filtre_numero']))		$_SESSION['cde_fourn_filtre_numero']		= '';
-if (!isset($_SESSION['cde_fourn_filtre_montant']))	$_SESSION['cde_fourn_filtre_montant']		= 0;
+if (!isset($_SESSION['cde_fourn_filtre_date_inf']))			$_SESSION['cde_fourn_filtre_date_inf']		= $date_inf = date('d/m/Y',mktime(0,0,0,date('m'),date('d')-0,date('Y')));
+if (!isset($_SESSION['cde_fourn_filtre_date_sup']))			$_SESSION['cde_fourn_filtre_date_sup']		= $date_inf = date('d/m/Y',mktime(0,0,0,date('m'),date('d'),date('Y')));
+if (!isset($_SESSION['cde_fourn_filtre_fournisseur']))		$_SESSION['cde_fourn_filtre_fournisseur']	= '';
+if (!isset($_SESSION['cde_fourn_filtre_vendeur']))			$_SESSION['cde_fourn_filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
+if (!isset($_SESSION['cde_fourn_filtre_numero']))			$_SESSION['cde_fourn_filtre_numero']		= '';
+if (!isset($_SESSION['cde_fourn_filtre_montant']))			$_SESSION['cde_fourn_filtre_montant']		= 0;
 if (!isset($_SESSION['cde_fourn_filtre_signe_montant']))	$_SESSION['cde_fourn_filtre_signe_montant'] = '>=';
-if (!isset($_SESSION['cde_fourn_filtre_classement'])) $_SESSION['cde_fourn_filtre_classement']	= 'CFBON DESC';
-if (!isset($_SESSION['cde_fourn_filtre_article']))	$_SESSION['cde_fourn_filtre_article']		= '';
-if (!isset($_SESSION['cde_fourn_filtre_type_cde']))	$_SESSION['cde_fourn_filtre_type_cde']	= '';
+if (!isset($_SESSION['cde_fourn_filtre_classement']))		$_SESSION['cde_fourn_filtre_classement']	= 'CFBON DESC';
+if (!isset($_SESSION['cde_fourn_filtre_article']))			$_SESSION['cde_fourn_filtre_article']		= '';
+if (!isset($_SESSION['cde_fourn_filtre_type_cde']))			$_SESSION['cde_fourn_filtre_type_cde']		= '';
+if (!isset($_SESSION['cde_fourn_filtre_agence']))			$_SESSION['cde_fourn_filtre_agence']	    = LOGINOR_AGENCE;
 
-if (isset($_POST['filtre_date_inf']))	$_SESSION['cde_fourn_filtre_date_inf']	= $_POST['filtre_date_inf'];
-if (isset($_POST['filtre_date_sup']))	$_SESSION['cde_fourn_filtre_date_sup']	= $_POST['filtre_date_sup'];
-if (isset($_POST['filtre_fournisseur']))$_SESSION['cde_fourn_filtre_fournisseur']	= $_POST['filtre_fournisseur'];
-if (isset($_POST['filtre_vendeur']))	$_SESSION['cde_fourn_filtre_vendeur']		= $_POST['filtre_vendeur'];
-if (isset($_POST['filtre_numero']))		$_SESSION['cde_fourn_filtre_numero']		= $_POST['filtre_numero'];
-if (isset($_POST['filtre_montant']))	$_SESSION['cde_fourn_filtre_montant']		= $_POST['filtre_montant'];
+
+if (isset($_POST['filtre_date_inf']))	$_SESSION['cde_fourn_filtre_date_inf']			= $_POST['filtre_date_inf'];
+if (isset($_POST['filtre_date_sup']))	$_SESSION['cde_fourn_filtre_date_sup']			= $_POST['filtre_date_sup'];
+if (isset($_POST['filtre_fournisseur']))$_SESSION['cde_fourn_filtre_fournisseur']		= $_POST['filtre_fournisseur'];
+if (isset($_POST['filtre_vendeur']))	$_SESSION['cde_fourn_filtre_vendeur']			= $_POST['filtre_vendeur'];
+if (isset($_POST['filtre_numero']))		$_SESSION['cde_fourn_filtre_numero']			= $_POST['filtre_numero'];
+if (isset($_POST['filtre_montant']))	$_SESSION['cde_fourn_filtre_montant']			= $_POST['filtre_montant'];
 if (isset($_POST['filtre_signe_montant']))	$_SESSION['cde_fourn_filtre_signe_montant'] = $_POST['filtre_signe_montant'];
-if (isset($_GET['filtre_classement']))	$_SESSION['cde_fourn_filtre_classement']  = $_GET['filtre_classement'];
-if (isset($_POST['filtre_article']))	$_SESSION['cde_fourn_filtre_article']		= $_POST['filtre_article'];
-if (isset($_POST['filtre_type_cde']))	$_SESSION['cde_fourn_filtre_type_cde']	= $_POST['filtre_type_cde'];
+if (isset($_GET['filtre_classement']))	$_SESSION['cde_fourn_filtre_classement']		= $_GET['filtre_classement'];
+if (isset($_POST['filtre_article']))	$_SESSION['cde_fourn_filtre_article']			= $_POST['filtre_article'];
+if (isset($_POST['filtre_type_cde']))	$_SESSION['cde_fourn_filtre_type_cde']			= $_POST['filtre_type_cde'];
+if (isset($_POST['filtre_agence']))		$_SESSION['cde_fourn_filtre_agence']			= $_POST['filtre_agence'];
 
 
 
@@ -99,6 +102,11 @@ div#relance {
 	background:white;
 	display:none;
 	position:absolute;
+}
+
+span.agence  {
+	font-size:1em;
+	font-weight:normal;
 }
 
 @media print {
@@ -249,6 +257,13 @@ function envoi_formulaire(l_action) {
 <table id="historique-commande" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;">
 		Historique des commandes fournisseur <input type="checkbox" name="debug"<?=DEBUG?' checked':''?> class="hide_when_print"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<span class="agence">Agence</span>		
+		<select name="filtre_agence">
+			<option value=""<?=                         $_SESSION['cde_fourn_filtre_agence']==''                  ? ' selected':''?>>Toutes agences</option>
+			<option value="<?=CODE_AGENCE_PLESCOP?>"<?= $_SESSION['cde_fourn_filtre_agence']==CODE_AGENCE_PLESCOP ? ' selected':''?>>Plescop</option>
+			<option value="<?=CODE_AGENCE_CAUDAN?>" <?= $_SESSION['cde_fourn_filtre_agence']==CODE_AGENCE_CAUDAN  ? ' selected':''?>>Caudan</option>
+		</select>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
 		<!-- choix pour les recherches -->
@@ -326,6 +341,7 @@ function envoi_formulaire(l_action) {
 		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="CFSER">Achat<br><a href="historique_commande.php?filtre_classement=CFSER ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFSER DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NOFOU">Fournisseur<br><a href="historique_commande.php?filtre_classement=NOFOU ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=NOFOU DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="CFAGE">Agence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CFAGE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CFAGE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="CUMLI">Nb ligne<br><a href="historique_commande.php?filtre_classement=CUMLI ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CUMLI DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="CFMON">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=CFMON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFMON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
@@ -352,8 +368,10 @@ function envoi_formulaire(l_action) {
 	$where[] = "CFMON $_SESSION[cde_fourn_filtre_signe_montant] $_SESSION[cde_fourn_filtre_montant]" ;
 	$where[] = 'CUMLI > 0' ;
 	$where[] = "CFEET = ''" ; // commande non annulée
-	$where[] = "CFAGE = '$LOGINOR_AGENCE'" ; // uniquement pour l'agence en cours
 	$where[] = "CDFE5 = 'CDE'" ; // on n'affiche pas les préco
+	if ($_SESSION['cde_fourn_filtre_agence']) // si une agence de spécifié
+		$where[] = "CFAGE = '$_SESSION[cde_fourn_filtre_agence]'" ; // uniquement pour l'agence en cours
+	
 
 	// gere les recherche sur article et type de commande
 	if ($_SESSION['cde_fourn_filtre_article'] || $_SESSION['cde_fourn_filtre_type_cde']) {
@@ -387,7 +405,7 @@ function envoi_formulaire(l_action) {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.CFBON),CFEDM,CFEDJ,CFEDS,CFEDA,CFSER,CUMLI,CFMON,FNOMF
+select DISTINCT(CDE_ENTETE.CFBON),CFEDM,CFEDJ,CFEDS,CFEDA,CFSER,CUMLI,CFMON,FNOMF,CFAGE
 from $tables
 $where
 order by $ordre
@@ -413,6 +431,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		?><?=$jour_commande?> <?=$date_formater?></td><!-- date -->
 		<td class="CFSER"><?=isset($vendeurs[trim($row['CFSER'])]) ? $vendeurs[trim($row['CFSER'])] : trim($row['CFSER'])?></td><!-- représentant -->
 		<td class="NFOUN" style="text-align:left;"><?=$row['FNOMF']?></td><!-- fournisseur -->
+		<td class="CFAGE" style="text-align:center;"><?= $row['CFAGE']==CODE_AGENCE_PLESCOP?'P':($row['CFAGE']==CODE_AGENCE_CAUDAN?'C':'Inconnu') ?></td><!-- agence -->
 		<td class="CUMLI" style="text-align:center;"><?=(int)$row['CUMLI']?></td><!-- nombre de ligne -->
 		<td class="CFMON" style="text-align:right;" nowrap><?=$row['CFMON']?> &euro;</td><!-- Mt commande -->
 		<td style="text-align:center;"><!-- relance -->
