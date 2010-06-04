@@ -260,9 +260,10 @@ function envoi_formulaire(l_action) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<span class="agence">Agence</span>		
 		<select name="filtre_agence">
-			<option value=""<?=                         $_SESSION['cde_fourn_filtre_agence']==''                  ? ' selected':''?>>Toutes agences</option>
-			<option value="<?=CODE_AGENCE_PLESCOP?>"<?= $_SESSION['cde_fourn_filtre_agence']==CODE_AGENCE_PLESCOP ? ' selected':''?>>Plescop</option>
-			<option value="<?=CODE_AGENCE_CAUDAN?>" <?= $_SESSION['cde_fourn_filtre_agence']==CODE_AGENCE_CAUDAN  ? ' selected':''?>>Caudan</option>
+			<option value=""<?= $_SESSION['cde_adh_filtre_agence']=='' ? ' selected':''?>>Toutes agences</option>	
+<?			foreach ($AGENCES as $code_agence => $info_agence) { ?>
+				<option value="<?=$code_agence?>"<?= $_SESSION['cde_fourn_filtre_agence']==$code_agence ? ' selected':''?>><?=$info_agence[0]?></option>
+<?			} ?>
 		</select>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
@@ -431,7 +432,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		?><?=$jour_commande?> <?=$date_formater?></td><!-- date -->
 		<td class="CFSER"><?=isset($vendeurs[trim($row['CFSER'])]) ? $vendeurs[trim($row['CFSER'])] : trim($row['CFSER'])?></td><!-- représentant -->
 		<td class="NFOUN" style="text-align:left;"><?=$row['FNOMF']?></td><!-- fournisseur -->
-		<td class="CFAGE" style="text-align:center;"><?= $row['CFAGE']==CODE_AGENCE_PLESCOP?'P':($row['CFAGE']==CODE_AGENCE_CAUDAN?'C':'Inconnu') ?></td><!-- agence -->
+		<td class="CFAGE" style="text-align:center;"><?= $AGENCES[$row['CFAGE']][0] ?></td><!-- agence -->
 		<td class="CUMLI" style="text-align:center;"><?=(int)$row['CUMLI']?></td><!-- nombre de ligne -->
 		<td class="CFMON" style="text-align:right;" nowrap><?=$row['CFMON']?> &euro;</td><!-- Mt commande -->
 		<td style="text-align:center;"><!-- relance -->

@@ -266,9 +266,10 @@ $(document).ready(function() {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<span class="agence">Agence</span>		
 		<select name="filtre_agence">
-			<option value=""<?=                         $_SESSION['cde_adh_filtre_agence']==''                  ? ' selected':''?>>Toutes agences</option>
-			<option value="<?=CODE_AGENCE_PLESCOP?>"<?= $_SESSION['cde_adh_filtre_agence']==CODE_AGENCE_PLESCOP ? ' selected':''?>>Plescop</option>
-			<option value="<?=CODE_AGENCE_CAUDAN?>" <?= $_SESSION['cde_adh_filtre_agence']==CODE_AGENCE_CAUDAN  ? ' selected':''?>>Caudan</option>
+			<option value=""<?= $_SESSION['cde_adh_filtre_agence']=='' ? ' selected':''?>>Toutes agences</option>	
+<?			foreach ($AGENCES as $code_agence => $info_agence) { ?>
+				<option value="<?=$code_agence?>"<?= $_SESSION['cde_adh_filtre_agence']==$code_agence ? ' selected':''?>><?=$info_agence[0]?></option>
+<?			} ?>
 		</select>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
@@ -453,7 +454,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
-		<td class="AGENC" style="text-align:center;"><?= $row['AGENC']==CODE_AGENCE_PLESCOP?'P':($row['AGENC']==CODE_AGENCE_CAUDAN?'C':'Inconnu') ?></td><!-- agence -->
+		<td class="AGENC" style="text-align:center;"><?= $AGENCES[$row['AGENC']][0] ?></td><!-- agence -->
 		<td class="NBLIG" style="text-align:center;"><?=(int)$row['NBLIG']?></td><!-- nombre de ligne -->
 		<td class="MONTBT" style="text-align:right;" nowrap><?=$row['MONTBT']?> &euro;</td><!-- Mt commande -->
 		<td style="text-align:center;"><!-- relance -->

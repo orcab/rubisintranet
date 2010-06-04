@@ -260,9 +260,10 @@ function envoi_formulaire(l_action) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<span class="agence">Agence</span>		
 		<select name="filtre_agence">
-			<option value=""<?=                         $_SESSION['devis_rubis_filtre_agence']==''                  ? ' selected':''?>>Toutes agences</option>
-			<option value="<?=CODE_AGENCE_PLESCOP?>"<?= $_SESSION['devis_rubis_filtre_agence']==CODE_AGENCE_PLESCOP ? ' selected':''?>>Plescop</option>
-			<option value="<?=CODE_AGENCE_CAUDAN?>" <?= $_SESSION['devis_rubis_filtre_agence']==CODE_AGENCE_CAUDAN  ? ' selected':''?>>Caudan</option>
+			<option value=""<?= $_SESSION['cde_adh_filtre_agence']=='' ? ' selected':''?>>Toutes agences</option>	
+<?			foreach ($AGENCES as $code_agence => $info_agence) { ?>
+				<option value="<?=$code_agence?>"<?= $_SESSION['devis_rubis_filtre_agence']==$code_agence ? ' selected':''?>><?=$info_agence[0]?></option>
+<?			} ?>
 		</select>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
@@ -435,7 +436,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="RFCSB"><?=$row['RFCSB']?></td><!-- chantier -->
 		<td class="NOMSB"><?=$row['NOMSB']?></td><!-- artisan -->
-		<td class="AGENC" style="text-align:center;"><?= $row['AGENC']==CODE_AGENCE_PLESCOP?'P':($row['AGENC']==CODE_AGENCE_CAUDAN?'C':'Inconnu') ?></td><!-- agence -->
+		<td class="AGENC" style="text-align:center;"><?= $AGENCES[$row['AGENC']][0] ?></td><!-- agence -->
 		<td class="NBLIG" style="text-align:center;"><?=(int)$row['NBLIG']?></td><!-- nombre de ligne -->
 		<td class="MONTBR" style="text-align:right;" nowrap><?=$row['MONTBR']?> &euro;</td><!-- Mt devis -->
 		<td style="text-align:center;"><!-- relance -->
