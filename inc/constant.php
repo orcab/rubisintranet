@@ -36,6 +36,28 @@ define('MARGE_COOP',21);	$MARGE_COOP=MARGE_COOP;
 define('COEF_EXPO',1.5);	$COEF_EXPO=COEF_EXPO;
 
 
+// code des agences
+define('CODE_AGENCE_PLESCOP','AFA');	$CODE_AGENCE_PLESCOP = CODE_AGENCE_PLESCOP ;
+define('CODE_AGENCE_CAUDAN', 'AFL');	$CODE_AGENCE_CAUDAN	 = CODE_AGENCE_CAUDAN ;
+define('CODE_DEPOT_PLESCOP', 'AFA');	$CODE_DEPOT_PLESCOP  = CODE_DEPOT_PLESCOP ;
+define('CODE_DEPOT_CAUDAN',  'AFL');	$CODE_DEPOT_CAUDAN	 = CODE_DEPOT_CAUDAN ;
+
+// le nom de l'agence et le nom du dépot par défaut
+if     (substr($_SERVER['SERVER_ADDR'],0,10) == '10.211.14.') { // PC depuis plescop
+	define('LOGINOR_AGENCE',CODE_AGENCE_PLESCOP); $LOGINOR_AGENCE = CODE_AGENCE_PLESCOP ;
+	define('LOGINOR_DEPOT',CODE_DEPOT_PLESCOP);   $LOGINOR_DEPOT = CODE_DEPOT_PLESCOP ;
+} elseif (substr($_SERVER['SERVER_ADDR'],0,10) == '10.211.46.') { // PC depuis caudan
+	define('LOGINOR_AGENCE',CODE_AGENCE_CAUDAN);  $LOGINOR_AGENCE = CODE_AGENCE_CAUDAN ;
+	define('LOGINOR_DEPOT',CODE_DEPOT_CAUDAN);    $LOGINOR_DEPOT = CODE_DEPOT_CAUDAN ;
+} else { // cas par défaut
+	define('LOGINOR_AGENCE',CODE_AGENCE_PLESCOP); $LOGINOR_AGENCE = CODE_AGENCE_PLESCOP ;
+	define('LOGINOR_DEPOT',CODE_DEPOT_PLESCOP);   $LOGINOR_DEPOT = CODE_DEPOT_PLESCOP ;
+}
+
+//$LOGINOR_AGENCE = 'AFL' ;
+//$LOGINOR_DEPOT = 'AFL' ;
+
+
 // jour de la semaine en FR
 $jours_mini = array('Dim','Lun','Mar','Mer','Jeu','Ven','Sam');
 
@@ -148,20 +170,33 @@ function my_utf8_decode($string) { // try to convert string (pseudo utf8) to iso
 }
 
 function select_vendeur() {
-	$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
+	$res = mysql_query("SELECT prenom,UCASE(code_vendeur) AS code,groupe FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
 	$tmp = array();
+	$groupes = array();
 	while($row = mysql_fetch_array($res)) {
 		$tmp[$row['code']] = $row['prenom'];
+
+		foreach (explode(',',$row['groupe']) as $g) { // on consrtuit un tableau des groupes
+			$g = trim($g) ;
+			if($g) // si un groupe précisé
+				if (array_key_exists($g,$groupes) && is_array($groupes[$g])) // deja un tableau --> on push le code vendeur
+					array_push($groupes[$g],$row['code']);
+				else						// pas encore un tableau, on le cree avec le code vendeur
+					$groupes[$g] = array($row['code']);
+		}
 	}
-	$tmp['LN'] = 'Jean René';
-	$tmp['MAR'] = 'Marc';
-	$tmp['LG'] = 'Laurent G';
+	
+	$tmp['MAR'] = 'Marc';			array_push($groupes['chauffage'],'MAR');
+	$tmp['LG']  = 'Laurent G';		array_push($groupes['chauffage'],'LG');
+	$tmp['JFS'] = 'Jean Francois';	array_push($groupes['plomberie'],'JFS'); array_push($groupes['sanitaire'],'JFS');
 	ksort($tmp);
 
+	// creation des groupes de vendeurs
 	$vendeurs = array();
-	$vendeurs['AM,LG,RLF,MAR,CG']   = 'Chauffage';
-	$vendeurs['AG,CLM,JFS,JM,LN']   = 'Sanitaire';
-	$vendeurs['BT,CLH,ELM,JLD,SLN,VN,YC'] = 'Electricité';
+	foreach ($groupes as $groupe_name=>$members) {
+		$vendeurs[join(',',$members)] = ucfirst($groupe_name);
+	}
+	
 	return array_merge($vendeurs,$tmp);
 }
 

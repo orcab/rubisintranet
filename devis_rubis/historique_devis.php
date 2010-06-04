@@ -12,30 +12,32 @@ $message  = '' ;
 $vendeurs = select_vendeur();
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
-if (!isset($_SESSION['devis_rubis_filtre_date_inf']))	$_SESSION['devis_rubis_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-7,date('Y')));
-if (!isset($_SESSION['devis_rubis_filtre_date_sup']))	$_SESSION['devis_rubis_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
-if (!isset($_SESSION['devis_rubis_filtre_client']))		$_SESSION['devis_rubis_filtre_client']		= '';
-if (!isset($_SESSION['devis_rubis_filtre_artisan']))	$_SESSION['devis_rubis_filtre_artisan']		= '';
-if (!isset($_SESSION['devis_rubis_filtre_vendeur']))	$_SESSION['devis_rubis_filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
-if (!isset($_SESSION['devis_rubis_filtre_numero']))		$_SESSION['devis_rubis_filtre_numero']		= '';
-if (!isset($_SESSION['devis_rubis_filtre_montant']))	$_SESSION['devis_rubis_filtre_montant']		= 0;
+if (!isset($_SESSION['devis_rubis_filtre_date_inf']))		$_SESSION['devis_rubis_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-7,date('Y')));
+if (!isset($_SESSION['devis_rubis_filtre_date_sup']))		$_SESSION['devis_rubis_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
+if (!isset($_SESSION['devis_rubis_filtre_client']))			$_SESSION['devis_rubis_filtre_client']		= '';
+if (!isset($_SESSION['devis_rubis_filtre_artisan']))		$_SESSION['devis_rubis_filtre_artisan']		= '';
+if (!isset($_SESSION['devis_rubis_filtre_vendeur']))		$_SESSION['devis_rubis_filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
+if (!isset($_SESSION['devis_rubis_filtre_numero']))			$_SESSION['devis_rubis_filtre_numero']		= '';
+if (!isset($_SESSION['devis_rubis_filtre_montant']))		$_SESSION['devis_rubis_filtre_montant']		= 0;
 if (!isset($_SESSION['devis_rubis_filtre_signe_montant']))	$_SESSION['devis_rubis_filtre_signe_montant'] = '>=';
-if (!isset($_SESSION['devis_rubis_filtre_transfere']))	$_SESSION['devis_rubis_filtre_transfere']	= 0;
-if (!isset($_SESSION['devis_rubis_filtre_classement'])) $_SESSION['devis_rubis_filtre_classement']	= 'NOBON DESC';
-if (!isset($_SESSION['devis_rubis_filtre_article']))	$_SESSION['devis_rubis_filtre_article']		= '';
+if (!isset($_SESSION['devis_rubis_filtre_transfere']))		$_SESSION['devis_rubis_filtre_transfere']	= 0;
+if (!isset($_SESSION['devis_rubis_filtre_classement']))		$_SESSION['devis_rubis_filtre_classement']	= 'NOBON DESC';
+if (!isset($_SESSION['devis_rubis_filtre_article']))		$_SESSION['devis_rubis_filtre_article']		= '';
+if (!isset($_SESSION['devis_rubis_filtre_agence']))			$_SESSION['devis_rubis_filtre_agence']	    = LOGINOR_AGENCE;
 
-if (isset($_POST['filtre_date_inf']))	$_SESSION['devis_rubis_filtre_date_inf']	= $_POST['filtre_date_inf'];
-if (isset($_POST['filtre_date_sup']))	$_SESSION['devis_rubis_filtre_date_sup']	= $_POST['filtre_date_sup'];
-if (isset($_POST['filtre_client']))		$_SESSION['devis_rubis_filtre_client']		= $_POST['filtre_client'];
-if (isset($_POST['filtre_artisan']))	$_SESSION['devis_rubis_filtre_artisan']		= $_POST['filtre_artisan'];
-if (isset($_POST['filtre_vendeur']))	$_SESSION['devis_rubis_filtre_vendeur']		= $_POST['filtre_vendeur'];
-if (isset($_POST['filtre_numero']))		$_SESSION['devis_rubis_filtre_numero']		= $_POST['filtre_numero'];
-if (isset($_POST['filtre_montant']))	$_SESSION['devis_rubis_filtre_montant']		= $_POST['filtre_montant'];
-if (isset($_POST['filtre_signe_montant']))	$_SESSION['devis_rubis_filtre_signe_montant'] = $_POST['filtre_signe_montant'];
-if (isset($_POST['filtre_transfere']))	$_SESSION['devis_rubis_filtre_transfere']	= $_POST['filtre_transfere'];
-if (isset($_GET['filtre_classement']))	$_SESSION['devis_rubis_filtre_classement']  = $_GET['filtre_classement'];
-if (isset($_POST['filtre_article']))	$_SESSION['devis_rubis_filtre_article']		= $_POST['filtre_article'];
 
+if (isset($_POST['filtre_date_inf']))	$_SESSION['devis_rubis_filtre_date_inf']			= $_POST['filtre_date_inf'];
+if (isset($_POST['filtre_date_sup']))	$_SESSION['devis_rubis_filtre_date_sup']			= $_POST['filtre_date_sup'];
+if (isset($_POST['filtre_client']))		$_SESSION['devis_rubis_filtre_client']				= $_POST['filtre_client'];
+if (isset($_POST['filtre_artisan']))	$_SESSION['devis_rubis_filtre_artisan']				= $_POST['filtre_artisan'];
+if (isset($_POST['filtre_vendeur']))	$_SESSION['devis_rubis_filtre_vendeur']				= $_POST['filtre_vendeur'];
+if (isset($_POST['filtre_numero']))		$_SESSION['devis_rubis_filtre_numero']				= $_POST['filtre_numero'];
+if (isset($_POST['filtre_montant']))	$_SESSION['devis_rubis_filtre_montant']				= $_POST['filtre_montant'];
+if (isset($_POST['filtre_signe_montant']))	$_SESSION['devis_rubis_filtre_signe_montant']	= $_POST['filtre_signe_montant'];
+if (isset($_POST['filtre_transfere']))	$_SESSION['devis_rubis_filtre_transfere']			= $_POST['filtre_transfere'];
+if (isset($_GET['filtre_classement']))	$_SESSION['devis_rubis_filtre_classement']			= $_GET['filtre_classement'];
+if (isset($_POST['filtre_article']))	$_SESSION['devis_rubis_filtre_article']				= $_POST['filtre_article'];
+if (isset($_POST['filtre_agence']))		$_SESSION['devis_rubis_filtre_agence']				= $_POST['filtre_agence'];
 
 
 // ACTION A FAIRE
@@ -101,6 +103,11 @@ div#relance {
 	background:white;
 	display:none;
 	position:absolute;
+}
+
+span.agence  {
+	font-size:1em;
+	font-weight:normal;
 }
 
 @media print {
@@ -250,6 +257,13 @@ function envoi_formulaire(l_action) {
 <table id="historique-devis" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;">
 		Historique des devis rubis <input type="checkbox" name="debug"<?=DEBUG?' checked':''?> class="hide_when_print"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<span class="agence">Agence</span>		
+		<select name="filtre_agence">
+			<option value=""<?=                         $_SESSION['devis_rubis_filtre_agence']==''                  ? ' selected':''?>>Toutes agences</option>
+			<option value="<?=CODE_AGENCE_PLESCOP?>"<?= $_SESSION['devis_rubis_filtre_agence']==CODE_AGENCE_PLESCOP ? ' selected':''?>>Plescop</option>
+			<option value="<?=CODE_AGENCE_CAUDAN?>" <?= $_SESSION['devis_rubis_filtre_agence']==CODE_AGENCE_CAUDAN  ? ' selected':''?>>Caudan</option>
+		</select>
 		<div style="color:red;"><?= $message ? $message : ''?></div>
 
 		<!-- choix pour les recherches -->
@@ -335,6 +349,7 @@ function envoi_formulaire(l_action) {
 		<th class="LIVSB">Rep<br><a href="historique_devis.php?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="RFCSB">Client<br><a href="historique_devis.php?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NOMSB">Artisan<br><a href="historique_devis.php?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="AGENC">Agence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DEVIS_ENTETE.AGENC ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DEVIS_ENTETE.AGENC DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NBLIG">Nb ligne<br><a href="historique_devis.php?filtre_classement=NBLIG ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=NBLIG DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="MONTBR">Mt HT Devis<br><a href="historique_devis.php?filtre_classement=MONTBR ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_devis.php?filtre_classement=MONTBR DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();" /></th>
@@ -375,6 +390,9 @@ function envoi_formulaire(l_action) {
 		$where[]  = "DEVIS_ENTETE.NOBON=DEVIS_DETAIL.NOBON";
 	}
 
+	if ($_SESSION['devis_rubis_filtre_agence']) // si une agence de spécifié
+		$where[] = "DEVIS_ENTETE.AGENC = '$_SESSION[devis_rubis_filtre_agence]'" ; // uniquement pour l'agence en cours
+
 	$where = $where ? $where = ' where '.join(' and ',$where) : '';
 
 //print_r($_SESSION);
@@ -390,7 +408,7 @@ function envoi_formulaire(l_action) {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(DEVIS_ENTETE.NOBON),DEVIS_ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,NOMSB,NBLIG,MONTBR
+select DISTINCT(DEVIS_ENTETE.NOBON),DEVIS_ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,NOMSB,NBLIG,MONTBR,DEVIS_ENTETE.AGENC
 from $tables
 $where
 order by $ordre
@@ -417,6 +435,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="RFCSB"><?=$row['RFCSB']?></td><!-- chantier -->
 		<td class="NOMSB"><?=$row['NOMSB']?></td><!-- artisan -->
+		<td class="AGENC" style="text-align:center;"><?= $row['AGENC']==CODE_AGENCE_PLESCOP?'P':($row['AGENC']==CODE_AGENCE_CAUDAN?'C':'Inconnu') ?></td><!-- agence -->
 		<td class="NBLIG" style="text-align:center;"><?=(int)$row['NBLIG']?></td><!-- nombre de ligne -->
 		<td class="MONTBR" style="text-align:right;" nowrap><?=$row['MONTBR']?> &euro;</td><!-- Mt devis -->
 		<td style="text-align:center;"><!-- relance -->

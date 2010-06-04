@@ -45,7 +45,7 @@ EOT;
 ?>
 <html>
 <head>
-<title>Envoi des délais de livraison des cde adhérent</title>
+<title>Bon de mise en stock</title>
 
 <style>
 
