@@ -1,7 +1,7 @@
 <?php
 
 $sql_detail = <<<EOT
-select CDE_ENTETE.NOBON,DTBOS,DTBOA,DTBOM,DTBOJ,LIVSB,RFCSB,DLSSB,DLASB,DLMSB,DLJSB,NOLIG,TYCDE,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,NOMFO,REFFO,PRINE,CDE_DETAIL.MONHT,CDE_ENTETE.MONTBT
+select CDE_ENTETE.NOBON,DTBOS,DTBOA,DTBOM,DTBOJ,LIVSB,RFCSB,DLSSB,DLASB,DLMSB,DLJSB,NOLIG,TYCDE,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,NOMFO,REFFO,PRINE,CDE_DETAIL.MONHT,CDE_ENTETE.MONTBT,CDE_DETAIL.AGENC
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE,
 		${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 CDE_DETAIL
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
@@ -14,7 +14,6 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE,
 where	
 		ETSBE<>'ANN'
 	and	ETSEE<>'ANN'
-	and CDE_DETAIL.AGENC='$LOGINOR_AGENCE'
 	and CDE_DETAIL.PROFI='1'
 	and CDE_DETAIL.TRAIT='R'
 	and CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) <= '$now'
@@ -54,10 +53,12 @@ EOT;
 			$total = 0 ;
 		}
 
+$agence = $AGENCES[$row_entete['AGENC']][0];
+
 		$html .= <<<EOT
 <table>
 	<caption style="font-size:1.2em;">
-		Bon n&ordm;$row_entete[NOBON] du $row_entete[DTBOJ]/$row_entete[DTBOM]/$row_entete[DTBOS]$row_entete[DTBOA] servi par $livsb<br/>
+		Bon n&ordm;$row_entete[NOBON] du $row_entete[DTBOJ]/$row_entete[DTBOM]/$row_entete[DTBOS]$row_entete[DTBOA] servi par $livsb ($agence)<br/>
 		R&eacute;f&eacute;rence : $row_entete[RFCSB]<br/>
 		Date de livraison initiale : $row_entete[DLJSB]/$row_entete[DLMSB]/$row_entete[DLSSB]$row_entete[DLASB]
 	</caption>
