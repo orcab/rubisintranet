@@ -35,7 +35,11 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','',10);
 		$this->SetTextColor(0,0,0);
 		//$this->SetWidths(array(30,60));
-		$this->MultiCell(40,5,PDF_CDE_FOURNISSEUR_ENTETE1);
+
+		//Coordonnées de l'agence
+		//$this->MultiCell(40,5,PDF_CDE_FOURNISSEUR_ENTETE1);
+		$coordonnees_agence = "Dépot à livrer :\n$row_entete[AGENCE_NOM]\n$row_entete[AGENCE_ADR1]\n$row_entete[AGENCE_ADR2]\n$row_entete[AGENCE_ADR3]\nTél : $row_entete[AGENCE_TEL]\nFax : $row_entete[AGENCE_FAX]";
+		$this->MultiCell(40,5,$coordonnees_agence);
 		$this->SetXY(110,2);
 		$this->MultiCell(75,5,"Coordonnées fournisseur :\n".$row_entete['FNOMF'].($row_entete['RUEFO']?"\n$row_entete[RUEFO]":'').($row_entete['VILFO']?"\n$row_entete[VILFO]":'')."\n".($row_entete['CPFOU']?$row_entete['CPFOU']:'')." ".($row_entete['BURFO']?$row_entete['BURFO']:'')."\nTél : ".($row_entete['TELFO']?$row_entete['TELFO']:'')."\nFax : ".($row_entete['TLCFO']?$row_entete['TLCFO']:''));
 
