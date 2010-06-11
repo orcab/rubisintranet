@@ -363,7 +363,8 @@ $(document).ready(function() {
 	<tbody>
 <?
 	$where = array() ;
-	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE");
+	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 CDE_ENTETE",
+					"${LOGINOR_PREFIX_BASE}GESTCOM.AGENCEP1 AGENCE");
 	
 	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_inf'])));
 	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_sup'])));
@@ -381,8 +382,10 @@ $(document).ready(function() {
 	if ($_SESSION['cde_adh_filtre_numero'])		$where[] = "CDE_ENTETE.NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_numero'])))."%'" ;
 
 	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] $_SESSION[cde_adh_filtre_montant]" ;
-	$where[] = 'NBLIG > 0' ;
-	$where[] = "ETSEE = ''" ; // commande non annulée
+	$where[] = 'NBLIG > 0' ;						// au moins une ligne sur le bon
+	$where[] = "ETSEE = ''" ;						// commande non annulée
+	$where[] = "CDE_ENTETE.AGENC = AGENCE.AGECO" ;	// jointure bon<->agence
+
 	if ($_SESSION['cde_adh_filtre_agence']) // si une agence de spécifié
 		$where[] = "CDE_ENTETE.AGENC = '$_SESSION[cde_adh_filtre_agence]'" ; // uniquement pour l'agence en cours
 
@@ -421,7 +424,7 @@ $(document).ready(function() {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,CDE_ENTETE.AGENC
+select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,AGELI
 from $tables
 $where
 order by $ordre
@@ -454,7 +457,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
-		<td class="AGENC" style="text-align:center;"><?= $AGENCES[$row['AGENC']][0] ?></td><!-- agence -->
+		<td class="AGENC" style="text-align:center;"><?= ucfirst(strtolower($row['AGELI'])) ?></td><!-- agence -->
 		<td class="NBLIG" style="text-align:center;"><?=(int)$row['NBLIG']?></td><!-- nombre de ligne -->
 		<td class="MONTBT" style="text-align:right;" nowrap><?=$row['MONTBT']?> &euro;</td><!-- Mt commande -->
 		<td style="text-align:center;"><!-- relance -->

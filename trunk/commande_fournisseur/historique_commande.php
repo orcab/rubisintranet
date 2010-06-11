@@ -349,8 +349,9 @@ function envoi_formulaire(l_action) {
 		<th class="hide_when_print">PDF</th>
 	</tr>
 <?
-	$where = array() ;
-	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.ACFENTP1 CDE_ENTETE");
+	$where  = array() ;
+	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.ACFENTP1 CDE_ENTETE",
+					"${LOGINOR_PREFIX_BASE}GESTCOM.AGENCEP1 AGENCE");
 
 	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['cde_fourn_filtre_date_inf'])));
 	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['cde_fourn_filtre_date_sup'])));
@@ -370,6 +371,8 @@ function envoi_formulaire(l_action) {
 	$where[] = 'CUMLI > 0' ;
 	$where[] = "CFEET = ''" ; // commande non annulée
 	$where[] = "CDFE5 = 'CDE'" ; // on n'affiche pas les préco
+	$where[] = "CDE_ENTETE.CFAGE=AGENCE.AGECO" ; // jointure bon<->agence
+
 	if ($_SESSION['cde_fourn_filtre_agence']) // si une agence de spécifié
 		$where[] = "CFAGE = '$_SESSION[cde_fourn_filtre_agence]'" ; // uniquement pour l'agence en cours
 	
@@ -406,7 +409,7 @@ function envoi_formulaire(l_action) {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.CFBON),CFEDM,CFEDJ,CFEDS,CFEDA,CFSER,CUMLI,CFMON,FNOMF,CFAGE
+select DISTINCT(CDE_ENTETE.CFBON),CFEDM,CFEDJ,CFEDS,CFEDA,CFSER,CUMLI,CFMON,FNOMF,AGELI
 from $tables
 $where
 order by $ordre
@@ -432,7 +435,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		?><?=$jour_commande?> <?=$date_formater?></td><!-- date -->
 		<td class="CFSER"><?=isset($vendeurs[trim($row['CFSER'])]) ? $vendeurs[trim($row['CFSER'])] : trim($row['CFSER'])?></td><!-- représentant -->
 		<td class="NFOUN" style="text-align:left;"><?=$row['FNOMF']?></td><!-- fournisseur -->
-		<td class="CFAGE" style="text-align:center;"><?= $AGENCES[$row['CFAGE']][0] ?></td><!-- agence -->
+		<td class="CFAGE" style="text-align:center;"><?= ucfirst(strtolower($row['AGELI'])) ?></td><!-- agence -->
 		<td class="CUMLI" style="text-align:center;"><?=(int)$row['CUMLI']?></td><!-- nombre de ligne -->
 		<td class="CFMON" style="text-align:right;" nowrap><?=$row['CFMON']?> &euro;</td><!-- Mt commande -->
 		<td style="text-align:center;"><!-- relance -->

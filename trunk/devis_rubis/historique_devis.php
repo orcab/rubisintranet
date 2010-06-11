@@ -359,7 +359,8 @@ function envoi_formulaire(l_action) {
 	</tr>
 <?
 	$where = array() ;
-	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.AENTBVP1 DEVIS_ENTETE");
+	$tables = array("${LOGINOR_PREFIX_BASE}GESTCOM.AENTBVP1 DEVIS_ENTETE",
+					"${LOGINOR_PREFIX_BASE}GESTCOM.AGENCEP1 AGENCE");
 	
 	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['devis_rubis_filtre_date_inf'])));
 	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['devis_rubis_filtre_date_sup'])));
@@ -378,6 +379,7 @@ function envoi_formulaire(l_action) {
 
 	$where[] = "MONTBR $_SESSION[devis_rubis_filtre_signe_montant] $_SESSION[devis_rubis_filtre_montant]" ;
 	$where[] = 'NBLIG > 0' ;
+	$where[] = "DEVIS_ENTETE.AGENC = AGENCE.AGECO" ;	// jointure bon<->agence
 
 	// etat du devis
 	if ($_SESSION['devis_rubis_filtre_transfere'] == 1)
@@ -409,7 +411,7 @@ function envoi_formulaire(l_action) {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(DEVIS_ENTETE.NOBON),DEVIS_ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,NOMSB,NBLIG,MONTBR,DEVIS_ENTETE.AGENC
+select DISTINCT(DEVIS_ENTETE.NOBON),DEVIS_ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,NOMSB,NBLIG,MONTBR,AGELI
 from $tables
 $where
 order by $ordre
@@ -436,7 +438,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="RFCSB"><?=$row['RFCSB']?></td><!-- chantier -->
 		<td class="NOMSB"><?=$row['NOMSB']?></td><!-- artisan -->
-		<td class="AGENC" style="text-align:center;"><?= $AGENCES[$row['AGENC']][0] ?></td><!-- agence -->
+		<td class="AGENC" style="text-align:center;"><?= ucfirst(strtolower($row['AGELI'])) ?></td><!-- agence -->
 		<td class="NBLIG" style="text-align:center;"><?=(int)$row['NBLIG']?></td><!-- nombre de ligne -->
 		<td class="MONTBR" style="text-align:right;" nowrap><?=$row['MONTBR']?> &euro;</td><!-- Mt devis -->
 		<td style="text-align:center;"><!-- relance -->
