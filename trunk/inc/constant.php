@@ -23,7 +23,7 @@ define('POLE_INFORMATIQUE'	,1 << 4);
 define('POLE_LITIGE'		,1 << 5);
 define('POLE_AUTRE'			,1 << 6);
 
-// telmps maximum en second dans lequel une anomalie peut etre modifié ou suprimée
+// temps maximum en second dans lequel une anomalie peut etre modifié ou suprimée
 define('MAX_TIME_ANOMALIE_DELETION', 3600 * 24 ); // 24h
 
 // taux de TVA
