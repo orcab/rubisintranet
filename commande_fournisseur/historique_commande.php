@@ -260,7 +260,7 @@ function envoi_formulaire(l_action) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<span class="agence">Agence</span>		
 		<select name="filtre_agence">
-			<option value=""<?= $_SESSION['cde_adh_filtre_agence']=='' ? ' selected':''?>>Toutes agences</option>	
+			<option value=""<?= $_SESSION['cde_fourn_filtre_agence']=='' ? ' selected':''?>>Toutes agences</option>	
 <?			foreach ($AGENCES as $code_agence => $info_agence) { ?>
 				<option value="<?=$code_agence?>"<?= $_SESSION['cde_fourn_filtre_agence']==$code_agence ? ' selected':''?>><?=$info_agence[0]?></option>
 <?			} ?>
