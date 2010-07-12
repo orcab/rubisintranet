@@ -117,7 +117,8 @@ form {
 <script type="text/javascript">
 <?
 	$sql = <<<EOT
-select	DISTINCT(CLIENT.NOCLI),CLIENT.NOMCL,CLIENT.COFIN as COORDS,TOUCL as TOURNEE
+select	DISTINCT(CLIENT.NOCLI),CLIENT.NOMCL,CLIENT.COFIN as COORDS,TOUCL as TOURNEE,
+		CLIENT.AD1CL, CLIENT.AD2CL, CLIENT.RUECL, CLIENT.VILCL, CLIENT.CPCLF, CLIENT.BURCL -- adresse du client
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON,${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 where		CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$date_yyyymmdd'
 		and TYVTE='LIV'
@@ -161,9 +162,7 @@ EOT;
 			array_push($data,$row); // on stock toutes les infos pour plus tard
 		}
 	}
-
 	// ici $data contient toutes les infos de la base loginor
-
 //	print_r($data);
 ?>
 	
@@ -176,12 +175,19 @@ EOT;
 
 	// creation de la carte
 	var map					= new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	// si l'on zoom, il faut effacé les anciennes coordonnées (voir la class overlay)
+	google.maps.event.addListener(map, 'zoom_changed', function() {
+		overlays_bounds = new Array();
+		//document.getElementById('debug').innerHTML += "<b>Efface les bordures</b><br>\n";
+	});
+
 	var directionsDisplay	= new google.maps.DirectionsRenderer( { suppressMarkers: true , preserveViewport:true } );
 		directionsDisplay.setMap(map);
 	var directionsService	= new google.maps.DirectionsService();
 	var markers				= new Array();
 	var overlays			= new Array();
 	var distance			= 0;
+	var geocoder;
 
 	// on s'arrange pour que tous les points de la carte soit visible
 	var bounds = new google.maps.LatLngBounds(	new google.maps.LatLng( <?=$center[MIN_LAT]?>, <?=$center[MIN_LONG]?> ), // sw
@@ -212,11 +218,17 @@ EOT;
 	// pour chaque client a livrer
 <?	foreach ($data as $row) { ?>
 		var pos  = new google.maps.LatLng(<?=$row['LAT']?>, <?=$row['LONG']?>);
-		var name = "<?=htmlentities(trim($row['NOMCL']))?>";
+<?
+		$name = htmlentities(trim($row['NOMCL']));
+		$name_wraped = wordwrap($name,10);
+		$lines = explode("\n",$name_wraped);
+?>
+		var name = "<?=$name?>";
 		// place a little marker on the point
 		markers['<?=$row['NOCLI']?>'] = new google.maps.Marker({ position: pos, map: map, title:name, icon: arrow_icon });
 		// place a sign with name of the adhérent
-		overlays['<?=$row['NOCLI']?>'] = new MyOverlay( { 'map': map, 'text':name, 'width':'65px', 'height':'18px', 'position':pos, 'class':'marker' } );
+
+		overlays['<?=$row['NOCLI']?>'] = new MyOverlay( { 'map': map, 'text':name, 'width':'65px', 'height':9*<?=sizeof($lines)?>+'px', 'position':pos, 'class':'marker' } );
 		//var OverLayMap = new MyOverlay( { 'map': map, 'text':name + "<br/><?=$row['NOCLI']?>", 'width':'65px', 'height':'17px','position':pos,'class':'marker' } );
 
 <?	} // fin for each client

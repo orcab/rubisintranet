@@ -8,6 +8,8 @@ function MyOverlay(options) {
 	this.div_.style.width	= options['width'];
 	this.div_.style.height	= options['height'];
 	this.div_.innerHTML		= options['text'];
+	this.div_.style.position = 'absolute';
+    this.div_.style.display		= 'block';
 };
 
 // MyOverlay is derived from google.maps.OverlayView
@@ -27,32 +29,32 @@ MyOverlay.prototype.draw = function() {
 	this.left = position.x - parseInt(this.div_.style.width)/2 - 2 ;
 	this.top  = position.y - parseInt(this.div_.style.height) - 10 ;
 
-	this.div_.style.position	= 'absolute';
-    this.div_.style.left		= this.left + 'px'; // center
-    this.div_.style.top			= this.top + 'px'; // near bottom
-    this.div_.style.display		= 'block';
-
 	//document.getElementById('debug').innerHTML += 'draw: ' + this.text + ' ' + this.top + "<br>\n";
-	var bounds = {  'top':this.top,
-					'left':this.left,
-					'width':this.width,
-					'height':this.height,
-					'x1':this.left,
-					'y1':this.top,
-					'x2':this.left + this.width.replace(/[^0-9\.]/g,''),
-					'y2':this.top  + this.height.replace(/[^0-9\.]/g,''),
-					'id':this.text
-				};
+	var width  = parseInt(this.width.replace(/[^0-9\.]/g,''));
+	var height = parseInt(this.height.replace(/[^0-9\.]/g,''));
+	var tmp = { 'top':this.top,
+				'left':this.left,
+				'width':width,
+				'height':height,
+				'x1':this.left,
+				'y1':this.top,
+				'x2':this.left + width,
+				'y2':this.top  + height,
+				'id':this.text
+			};
 
-/*	var colide = isColideWith(bounds);
-	if (colide)
-		document.getElementById('debug').innerHTML += this.text+" <b>ColideWith</b>: "+colide+ "<br>\n";
-	else 
-		document.getElementById('debug').innerHTML += this.text+" DontColide<br>\n";
-*/
+    this.div_.style.left	= this.left + 'px'; // center
+	this.div_.style.top		= this.top  + 'px'; // on tente un autre affichage
+
+	var colide = isColideWith(tmp);
+	if (colide) {
+		var decalage = height + 10;
+		this.div_.style.top	= this.top + decalage + 'px'; // on tente un autre affichage
+		tmp.top += decalage;
+	}
 
 	// stocké ici les coords des boites pour les tester au fur et a mesure
-	overlays_bounds.push( bounds );
+	overlays_bounds.push( tmp );
 };
 
 function isColideWith(box1) {
