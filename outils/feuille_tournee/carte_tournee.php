@@ -73,8 +73,8 @@ form {
 </head>
 <body style="margin:0px;">
 <form name="tournee" method="post">
-	<div class="hide_when_print">
-		<select name="chauffeur">
+	<div>
+		Chauffeur : <select name="chauffeur">
 			<option value=""<?= isset($_POST['chauffeur']) && $_POST['chauffeur'] == '' ? ' selected':'' ?>>Tous</option>
 <?			foreach ($chauffeurs as $chauffeur) { ?>
 				<option value="<?=$chauffeur?>"<?= isset($_POST['chauffeur']) && $_POST['chauffeur'] == $chauffeur ? ' selected':'' ?>><?=$chauffeur?></option>
@@ -113,7 +113,7 @@ form {
 <? if ($date_yyyymmdd) {
 	$day_number = date('w',strtotime($date_yyyymmdd)); ?>
 
-<div id="map_canvas" style="width:100%; height:95%;"></div><!-- canvas pour la carte google -->
+<div id="map_canvas" style="width:100%; height:94%;"></div><!-- canvas pour la carte google -->
 <script type="text/javascript">
 <?
 	$sql = <<<EOT

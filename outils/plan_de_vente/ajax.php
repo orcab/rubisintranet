@@ -53,7 +53,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
 			echo "{stock:1,debug:'Impossible de supprimer : ".ereg_replace("'","",mysql_error())."'}";
 		} else {
 			if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
-				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSTS='S' where NOART='$_GET[code_article]'"); // loginor fiche de stock
+				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSTS='S' where NOART='$_GET[code_article]' AND DEPOT='$LOGINOR_DEPOT'"); // loginor fiche de stock
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set ETARE='S' where NOART='$_GET[code_article]'"); // loginor fiche article
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set ETAFE='S' where NOART='$_GET[code_article]'"); // loginor fiche article fournisseur
 			}
@@ -64,7 +64,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
 			echo "{stock:0,debug:'Impossible de creer : ".ereg_replace("'","",mysql_error())."'}";
 		} else {
 			if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
-				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSTS='' where NOART='$_GET[code_article]'"); // loginor fiche de stock
+				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSTS='' where NOART='$_GET[code_article]' AND DEPOT='$LOGINOR_DEPOT'"); // loginor fiche de stock
 				odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set ETARE='' where NOART='$_GET[code_article]'"); // loginor fiche article
 				// on ne reveil pas la fiche ARTICLE FOURNISSEUR pour éviter les erreurs de référence en double pour un meme fournisseur
 			}

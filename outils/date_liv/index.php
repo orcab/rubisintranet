@@ -347,6 +347,33 @@ where	CFBON='$num_cde' and CFPRF='1'
 EOT;
 				$res = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans le détail des lignes : <br/>\n$sql");
 				$message .= "<div class=\"message\" style=\"color:green;\">Date de livraison enregistrée dans Rubis</br>Bon : $num_cde &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date : $jour/$mois/$siecle$annee</div>\n";
+
+				// va chercher les cde adh associée et met a jour les date de livraison si celle si est plus recente que la date spéciifée
+				$sql = <<<EOT
+select	DISTINCT(CFCLB) as NUM_BON_ADH,
+		DLSSB,DLASB,DLMSB,DLJSB -- date de livraison
+from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL_CDE_FOURN
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 ENTETE_CDE_CLIENT
+			on		DETAIL_CDE_FOURN.CFCLB=ENTETE_CDE_CLIENT.NOBON
+where		CFBON='$num_cde'	-- n° de cde fournisseur
+		and CFDET=''			-- ligne pas annulée
+		and CFCLB<>''			-- cde special pour un adh
+EOT;
+				$res = odbc_exec($loginor,$sql)  or die("Impossible de rechercher les cde adhérents associées<br/>\n$sql");
+				while($row = odbc_fetch_array($res)) {
+					$date_liv_adh   = $row['DLSSB'].$row['DLASB'].$row['DLMSB'].$row['DLJSB'];
+					$date_liv_fourn = $siecle.$annee.$mois.$jour;
+					if ($date_liv_fourn > $date_liv_adh) { // si la date de livraison fournisseur est supérieur à la date prévu de livraison adh
+						// on met à jour la cde adh
+						$sql = <<<EOT
+update	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1
+set		DLSSB='$siecle', DLASB='$annee', DLMSB='$mois', DLJSB='$jour'
+where	NOBON='$row[NUM_BON_ADH]'
+EOT;
+						$res2 = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans la cde adhérent : <br/>\n$sql");
+						$message .= "<div class=\"message\" style=\"color:green;\">Commande adhérent $row[NUM_BON_ADH] modifiée</div>\n";
+					}
+				}
 			} else {
 				$message .= "<div class=\"message\" style=\"color:red;\">La date $jour/$mois/$siecle$annee ne semble pas être une date valide</div>\n";
 			}
