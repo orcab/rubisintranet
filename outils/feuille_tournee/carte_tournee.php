@@ -56,7 +56,6 @@ form {
 	font-family:terminal;
 	text-align:center;
 	opacity:0.8;
-	z-index:99;
 }
 
 @media print {
@@ -96,9 +95,9 @@ form {
 		</script>&nbsp;&nbsp;
 		Afficher le tracé
 		<select name="roads_type">
-			<option value=""      <?= isset($_POST['roads_type']) && $_POST['roads_type']==''      ? ' selected' : '' ?>>non</option>
-			<option value="lines" <?= isset($_POST['roads_type']) && $_POST['roads_type']=='lines' ? ' selected' : '' ?>>à vol d'oiseau</option>
-			<option value="roads" <?= !isset($_POST['roads_type'])|| $_POST['roads_type']=='roads' ? ' selected' : '' ?>>par la route</option><!-- cas par défaut -->
+			<option value=""      <?=  isset($_POST['roads_type']) && $_POST['roads_type']==''      ? ' selected' : '' ?>>non</option>
+			<option value="roads" <?=  isset($_POST['roads_type']) && $_POST['roads_type']=='roads' ? ' selected' : '' ?>>par la route</option>
+			<option value="lines" <?= !isset($_POST['roads_type']) || $_POST['roads_type']=='lines' ? ' selected' : '' ?>>à vol d'oiseau</option><!-- cas par défaut -->
 		</select>
 
 		&nbsp;&nbsp;&nbsp;&nbsp;
@@ -173,21 +172,27 @@ EOT;
 		mapTypeId: google.maps.MapTypeId.ROADMAP
 	};
 
-	// creation de la carte
-	var map					= new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	var map					= new google.maps.Map(document.getElementById("map_canvas"), myOptions); // creation de la carte
 	// si l'on zoom, il faut effacé les anciennes coordonnées (voir la class overlay)
-	google.maps.event.addListener(map, 'zoom_changed', function() {
-		overlays_bounds = new Array();
-		//document.getElementById('debug').innerHTML += "<b>Efface les bordures</b><br>\n";
-	});
+	google.maps.event.addListener(map, 'zoom_changed', function() { overlays_bounds = new Array(); });
 
 	var directionsDisplay	= new google.maps.DirectionsRenderer( { suppressMarkers: true , preserveViewport:true } );
 		directionsDisplay.setMap(map);
 	var directionsService	= new google.maps.DirectionsService();
-	var markers				= new Array();
-	var overlays			= new Array();
-	var distance			= 0;
-	var geocoder;
+	var markers				= new Array();	// les petite fleche sous les panneaux
+	var overlays			= new Array(); // les panneaux avec le nom des adhérents
+	var distance			= 0;	// calcule de la distance pour le tracé de la route
+	var circle				= null;	// le cercle de départ de la ligne flotante
+	var ligne				= null; // la ligne flotante
+
+	// gere le tracage de la ligne flottante
+	google.maps.event.addListener(map, 'mousemove', function(e) {
+		if (circle != null) { // si un point de départ de trait a été fait --> on tarce une pseudo ligne aux déplacements de la souris
+			if (ligne != null) ligne.setMap(null) ; // la ligne flotante doit disparaitre
+			// on retrace la ligne flottante
+			ligne = new google.maps.Polyline( { 'map':map , 'path': [e.latLng, circle.getCenter()] , 'strokeOpacity':0.7 , 'strokeColor':'yellow' , 'strokeWeight':3 , 'geodesic':false } );
+		}
+	});
 
 	// on s'arrange pour que tous les points de la carte soit visible
 	var bounds = new google.maps.LatLngBounds(	new google.maps.LatLng( <?=$center[MIN_LAT]?>, <?=$center[MIN_LONG]?> ), // sw
@@ -220,16 +225,35 @@ EOT;
 		var pos  = new google.maps.LatLng(<?=$row['LAT']?>, <?=$row['LONG']?>);
 <?
 		$name = htmlentities(trim($row['NOMCL']));
+		$name = str_replace('&Eacute;','E',$name);
 		$name_wraped = wordwrap($name,10);
 		$lines = explode("\n",$name_wraped);
 ?>
 		var name = "<?=$name?>";
 		// place a little marker on the point
-		markers['<?=$row['NOCLI']?>'] = new google.maps.Marker({ position: pos, map: map, title:name, icon: arrow_icon });
+		markers['<?=$row['NOCLI']?>'] = new google.maps.Marker({ 'position': pos, 'map': map, 'title':name, 'icon': arrow_icon });
 		// place a sign with name of the adhérent
-
 		overlays['<?=$row['NOCLI']?>'] = new MyOverlay( { 'map': map, 'text':name, 'width':'65px', 'height':9*<?=sizeof($lines)?>+'px', 'position':pos, 'class':'marker' } );
-		//var OverLayMap = new MyOverlay( { 'map': map, 'text':name + "<br/><?=$row['NOCLI']?>", 'width':'65px', 'height':'17px','position':pos,'class':'marker' } );
+
+		// gere le tracage de nouvelles route
+		google.maps.event.addListener(markers['<?=$row['NOCLI']?>'], 'mouseover', function() {
+				if	   (circle == null) { // encore aucun cercle de déssiné
+					//on stock le premier cercle
+					circle = new google.maps.Circle({ 'center':this.getPosition(), 'fillColor':'yellow', 'fillOpacity':0.5 , 'map':map , 'radius':500, 'strokeColor':'black', 'strokeOpacity':0.5, 'strokeWeight':2 });
+				} else { // deja un cercle de dessiné
+					// si c'est le meme, on ne fait rien
+					if (circle.getCenter() == this.getPosition()) {
+						// ne rien faire
+					} else { // un autre point --> on dessine un trait et on supprime les cercles
+						draw_lines( [ this.getPosition(), circle.getCenter() ] );
+						ligne.setMap(null); // la ligne flotante doit disparaitre
+					}
+					// dans tous les cas on supprime l'ancien point
+					circle.setMap(null);
+					circle = null
+				}
+		});
+
 
 <?	} // fin for each client
 	odbc_close($loginor);
@@ -253,7 +277,7 @@ EOT;
 	while (sizeof($not_served_client) >= 1) { // tant qu'il reste des destination non servi
 	//for($i=1 ; $i<=4 ; $i++) { // test avec 10 destinations
 		$best_vector_dist = 10000000000000000000;	// loin, tres loin ...
-		$best_cli	   = '';		// client le plus proche du départ
+		$best_cli	      = '';						// client le plus proche du départ
 		
 		foreach ($not_served_client as $dest) { // pour le départ, on cherche la meilleur destination dans la liste des disponibles
 			// sqrt ( (Xb - Xa)² + (Yb -Ya)² )
@@ -286,13 +310,24 @@ EOT;
 
 
 
+	/*function draw_lines(step) {
+		new google.maps.Polyline( { 'map':map , 'path': step , 'strokeOpacity':0.3 , 'strokeColor':'#00F' , 'strokeWeight':3 , 'geodesic':false } );
+	}*/
+
 	function draw_lines(step) {
-		new google.maps.Polyline( { 'map':map , 'path': step , 'strokeOpacity':0.7 , 'strokeColor':'#00F' , 'strokeWeight':3 , 'geodesic':false } );
+		var start_point = step[0];
+		for(var i=1 ; i<step.length ; i++) {
+			var maLine = new google.maps.Polyline( { 'map':map , 'path': [start_point,step[i]] , 'strokeOpacity':0.5 , 'strokeColor':'#00F' , 'strokeWeight':3 , 'geodesic':false } );
+			google.maps.event.addListener(maLine, 'click', function() { this.setMap(null); }); // supprime la ligne si l'on click dessus
+			google.maps.event.addListener(maLine, 'mouseover', function() { this.setOptions( {'strokeOpacity':0.2} ) }); // supprime la ligne si l'on click dessus
+			google.maps.event.addListener(maLine, 'mouseout',  function() { this.setOptions( {'strokeOpacity':0.5} ) }); // supprime la ligne si l'on click dessus
+			start_point = step[i];
+		}
 	}
 
 
 	function draw_roads(from,to) {
-		var directionsDisplay	= new google.maps.DirectionsRenderer( { suppressMarkers: true , preserveViewport:true } );
+		var directionsDisplay	= new google.maps.DirectionsRenderer( { suppressMarkers: true , preserveViewport:true , 'polylineOptions':{ 'strokeOpacity':0.3 } } );
 			directionsDisplay.setMap(map);
 		var directionsService	= new google.maps.DirectionsService();
 
