@@ -15,9 +15,7 @@ if (isset($_POST['filtre_date']) && $_POST['filtre_date']) {
 <head>
 	<title></title>
 <style>
-body {
-	font-family:verdana;
-}
+body { font-family:verdana; }
 
 table#tournee {
 	border:solid 1px black;
@@ -27,17 +25,10 @@ table#tournee {
 	page-break-after:always;
 }
 
-table#tournee td,table#tournee th {
-	border:solid 1px black;
-}
-
-table#tournee th {
-	background-color:#F2F2F2;
-}
-
-table#tournee td {
-	height:60px;
-}
+table#tournee td,table#tournee th { border:solid 1px black; }
+table#tournee th { background-color:#F2F2F2; }
+table#tournee td { height:1.5cm; }
+table#tournee td.adresse { height:0.5cm; }
 
 @media print {
 	.hide_when_print { display:none; }
@@ -79,10 +70,10 @@ if ($date_yyyymmdd) {
 	$day_number = date('w',strtotime($date_yyyymmdd));
 
 	$sql = <<<EOT
-select	CLIENT.NOCLI,CLIENT.NOMCL,TOUCL,NOBON,ENT32,NINT1,NINT2,NINT3,NINT4,NINT5,NINT6
+select	CLIENT.NOCLI,CLIENT.NOMCL,TOUCL,NOBON,ENT32,NINT1,NINT2,NINT3,NINT4,NINT5,NINT6,
+		CLIENT.AD1CL, CLIENT.AD2CL, CLIENT.RUECL, CLIENT.VILCL, CLIENT.CPCLF, CLIENT.BURCL -- adresse du client
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON,${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
-where
-		CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$date_yyyymmdd'
+where	CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$date_yyyymmdd'
 		and TYVTE='LIV'
 		and FACAV='F'
 		and ETSEE=''
@@ -121,16 +112,27 @@ EOT;
 
 				if (!isset($livraison[$chauf]))
 					$livraison[$chauf] = array();
-					
-				$livraison[$chauf][] = array(	'nom_adh'=>$row['NOMCL'],
-												'no_bon'=>$row['NOBON'],
-												'prepa'	=>$row['ENT32'],
-												'colis'	=>ereg_replace('^0+','',trim($row['NINT1'])),
-												'pal'	=>ereg_replace('^0+','',trim($row['NINT2'])),
-												'ce'	=>ereg_replace('^0+','',trim($row['NINT3'])),
-												'paroi'	=>ereg_replace('^0+','',trim($row['NINT4'])),
-												'pvc'	=>ereg_replace('^0+','',trim($row['NINT5'])),
-												'cu'	=>ereg_replace('^0+','',trim($row['NINT6'])),
+				
+				// affichage de l'adresse de livraison
+				$adr = array();
+				if (trim($row['AD1CL'])) $adr[] = trim($row['AD1CL']);
+				if (trim($row['AD2CL'])) $adr[] = trim($row['AD2CL']);
+				if (trim($row['RUECL'])) $adr[] = trim($row['RUECL']);
+				if (trim($row['VILCL'])) $adr[] = trim($row['VILCL']);
+				if (trim($row['CPCLF'])) $adr[] = trim($row['CPCLF']);
+				if (trim($row['BURCL'])) $adr[] = trim($row['BURCL']);
+				$adr = "DEPOT: ".join(', ',$adr);
+
+				$livraison[$chauf][] = array(	'nom_adh'	=>	$row['NOMCL'],
+												'adr_adh'	=>	$adr,
+												'no_bon'	=>	$row['NOBON'],
+												'prepa'		=>	$row['ENT32'],
+												'colis'		=>	ereg_replace('^0+','',trim($row['NINT1'])),
+												'pal'		=>	ereg_replace('^0+','',trim($row['NINT2'])),
+												'ce'		=>	ereg_replace('^0+','',trim($row['NINT3'])),
+												'paroi'		=>	ereg_replace('^0+','',trim($row['NINT4'])),
+												'pvc'		=>	ereg_replace('^0+','',trim($row['NINT5'])),
+												'cu'		=>	ereg_replace('^0+','',trim($row['NINT6'])),
 											);
 			} // fin si nb_ligne a livré >0
 	}
@@ -142,6 +144,7 @@ EOT;
 
 	//$livraison = array('GILLES' => array( array('CAB 56 ','F80107') ));
 
+	$old_adh = '';
 	foreach ($livraison as $chauf=>$tournee) { ?>
 
 		<table id="tournee">
@@ -163,7 +166,11 @@ EOT;
 			</tr>
 
 <?		$i=0;
-		foreach ($tournee as $val) { ?>
+		foreach ($tournee as $val) {	
+			if ($val['nom_adh'] != $old_adh) { // nouvelle adh --> on affiche l'adresse de livraison
+?>
+				<tr><td colspan="7" class="adresse"><?=$val['adr_adh']?></td></tr>
+<?			} ?>
 			<tr style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
 				<td><?=$val['prepa']?></td>
 				<td><?=$val['nom_adh']?></td>
@@ -182,12 +189,14 @@ EOT;
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 			</tr>
-<?			$i++;
+<?
+			$old_adh = $val['nom_adh'];
+			$i++;
 		} // fin for tournée
 
 		while (($i%15) > 0) {
 			//echo "\$i=$i    \$i%16=".($i%16)."<br>\n"; ?>
-			<tr style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
+		<!--	<tr style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
@@ -195,7 +204,7 @@ EOT;
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
-			</tr>
+			</tr> -->
 <?			$i++;
 		}
 	} // fin foreah chauffeur ?>
