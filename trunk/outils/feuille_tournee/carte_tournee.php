@@ -214,7 +214,7 @@ EOT;
 
 	// déclare l'image de la petite fleche
 	var arrow_icon = new google.maps.MarkerImage('gfx/arrow.png',
-						new google.maps.Size(2,6),// This marker is 20 pixels wide by 32 pixels tall.
+						new google.maps.Size(20,20),// This marker is 20 pixels wide by 32 pixels tall.
 						new google.maps.Point(0,0),// The origin for this image is 0,0.		
 						new google.maps.Point(1,6)// The anchor for this image is center bottom
 					)
@@ -254,12 +254,30 @@ EOT;
 				}
 		});
 
-
 <?	} // fin for each client
 	odbc_close($loginor);
 ?>
 
-	//overlays['056065'].getCoords(); // malheureusement, appellé avant draw() !
+	// gere le tracage de nouvelles route
+	google.maps.event.addListener(markers['MCS'], 'mouseover', function() {
+			if	   (circle == null) { // encore aucun cercle de déssiné
+				//on stock le premier cercle
+				circle = new google.maps.Circle({ 'center':this.getPosition(), 'fillColor':'yellow', 'fillOpacity':0.5 , 'map':map , 'radius':500, 'strokeColor':'black', 'strokeOpacity':0.5, 'strokeWeight':2 });
+			} else { // deja un cercle de dessiné
+				// si c'est le meme, on ne fait rien
+				if (circle.getCenter() == this.getPosition()) {
+					// ne rien faire
+				} else { // un autre point --> on dessine un trait et on supprime les cercles
+					draw_lines( [ this.getPosition(), circle.getCenter() ] );
+					ligne.setMap(null); // la ligne flotante doit disparaitre
+				}
+				// dans tous les cas on supprime l'ancien point
+				circle.setMap(null);
+				circle = null
+			}
+	});
+
+
 
 	var intermediaires = new Array();
 	intermediaires.push( markers['MCS'].getPosition() ); // start of the lines
@@ -327,8 +345,7 @@ EOT;
 
 
 	function draw_roads(from,to) {
-		var directionsDisplay	= new google.maps.DirectionsRenderer( { suppressMarkers: true , preserveViewport:true , 'polylineOptions':{ 'strokeOpacity':0.3 } } );
-			directionsDisplay.setMap(map);
+		var directionsDisplay	= new google.maps.DirectionsRenderer( { 'map':map, 'suppressMarkers': true , 'preserveViewport':true , 'polylineOptions':{ 'strokeOpacity':0.3 } } );
 		var directionsService	= new google.maps.DirectionsService();
 
 		var request = {
