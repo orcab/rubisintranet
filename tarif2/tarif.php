@@ -55,7 +55,8 @@ $PAGE_DE_GARDE = array(
 	'00L'=>array(),
 	'00M'=>array('gaz.png','#DB8931,#814D17,#FFFFFF,#814D17,#FFFFFF,#000000,#814D17,#FFFFFF'),
 	'00N'=>array(),'00P'=>array(),'00Q'=>array(),'00R'=>array(),
-	'00S'=>array()
+	'00S'=>array(),
+	'00X'=>array()
 );
 // remplissage des valeurs non renseignées
 foreach ($PAGE_DE_GARDE as $act=>$tab)
