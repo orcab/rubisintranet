@@ -41,24 +41,24 @@ $jours_mini = array('Dim','Lun','Mar','Mer','Jeu','Ven','Sam');
 
 // Tournée des chauffeurs
 $tournee_chauffeur = array(
-	'124' =>	array(	'1' => 'PHILIPPE',
+	'124' =>	array(	'1' => 'CHRISTOPHE',
 						'2' => 'LAURENT',
 						'4' => 'GILLES'
 				),
 	'134' =>	array(	'1' => 'GILLES',
-						'3' => 'PHILIPPE',
+						'3' => 'CHRISTOPHE',
 						'4' => 'LAURENT'
 				),
 	'135' =>	array(	'1' => 'LAURENT',
 						'3' => 'GILLES',
-						'5' => 'PHILIPPE'
+						'5' => 'CHRISTOPHE'
 				),
-	'235' =>	array(	'2' => 'PHILIPPE',
+	'235' =>	array(	'2' => 'CHRISTOPHE',
 						'3' => 'LAURENT',
 						'5' => 'GILLES'
 				),
 	'245' =>	array(	'2' => 'GILLES',
-						'4' => 'PHILIPPE',
+						'4' => 'CHRISTOPHE',
 						'5' => 'LAURENT'
 				)
 );
@@ -164,8 +164,9 @@ function select_vendeur() {
 		}
 	}
 	
+	$tmp['WEB'] = 'Web';
 	$tmp['MAR'] = 'Marc';			array_push($groupes['chauffage'],'MAR');
-	$tmp['LG']  = 'Laurent G';		array_push($groupes['chauffage'],'LG');
+	$tmp['LG']  = 'Laurent G.';		array_push($groupes['chauffage'],'LG');
 	$tmp['JFS'] = 'Jean Francois';	array_push($groupes['plomberie'],'JFS'); array_push($groupes['sanitaire'],'JFS');
 	ksort($tmp);
 
