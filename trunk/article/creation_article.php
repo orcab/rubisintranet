@@ -337,15 +337,23 @@ $(document).ready(function(){
 	Marge : 
 	<select name="marge">
 		<option value=""></option>
-		<option value="10% (coef 1.11111)">10% (Electromenager)</option>
+		<option value="10% (coef 1.11111)">10%</option>
+		<option value="11%">11% (Electromenager)</option>
 		<option value="12% (coef 1.13636)">12%</option>
+		<option value="13%">13%</option>
+		<option value="14%">14%</option>
 		<option value="15% (coef 1.17647)">15%</option>
-		<option value="17% (coef 1.20482)">17% (Elec)</option>
-		<option value="18% (coef 1.21951)">18%</option>
+		<option value="16%">16%</option>
+		<option value="17% (coef 1.20482)">17%</option>
+		<option value="18% (coef 1.21951)">18% (Elec)</option>
 		<option value="19% (coef 1.23457)">19%</option>
-		<option value="20% (coef 1.25000)">20% (Outilage)</option>
-		<option value="21% (coef 1.26582)">21%</option>
+		<option value="20% (coef 1.25000)">20% </option>
+		<option value="21% (coef 1.26582)">21% (Outillage)</option>
+		<option value="22%">22%</option>
+		<option value="23%">23%</option>
+		<option value="24%">24%</option>
 		<option value="25% (coef 1.33000)">25%</option>
+		<option value="26%">26%</option>
 		<option value="Autre (voir Px de Vente)">Autre (préciser)</option>
 	</select> PV : <input type="text" name="px_vente" value="" size="6"><br><br></td></tr>
 
