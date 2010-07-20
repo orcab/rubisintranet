@@ -44,16 +44,20 @@ a:hover {
 		<a href="feuille_tournee/feuille_tournee.php">Feuille de tournée</a><br/>
 		<a href="feuille_tournee/carte_tournee.php">Carte de tournée</a>
 	</td>
-	<td style="width:50%;padding-bottom:20px;"><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
+	<td style="width:50%;padding-bottom:20px;">
+		<!--<a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a>-->
+	</td>
 </tr>
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="date_liv/index.php"><img src="date_liv/gfx/date2mail.png"><br>Prévenir adh des dates de livraison<br/>ou de mise à dispo</a></td>
 	<td>
-		<img src="tarif_a_venir/gfx/tarif_a_venir.png"><br/><del>Comparaison de tarif</del><br/>
-		<a href="tarif_a_venir/index.php"><del>A venir</del></a></del><br/>
-		<a href="tarif_a_venir/time_machine.php"><del>Anciens tarifs</del></a>
+		<img src="tarif_a_venir/gfx/tarif_a_venir.png"><br/>Comparaison de tarif<br/>
+		<a href="tarif_a_venir/tarif_a_venir_v7.php">A venir</a><br/>
+<!--		<a href="tarif_a_venir/time_machine.php"><del>Anciens tarifs</del></a>  -->
 	</td>
-	<td style="width:50%;padding-bottom:20px;"><a href="cde_spe_non_livre/index.php"><img src="cde_spe_non_livre/gfx/cde_spe_non_livre.png"><br>Suivi des cde sp&eacute;cial</a></td>
+	<td style="width:50%;padding-bottom:20px;">
+		<!--<a href="cde_spe_non_livre/index.php"><img src="cde_spe_non_livre/gfx/cde_spe_non_livre.png"><br>Suivi des cde sp&eacute;cial</a>-->
+	</td>
 </tr>
 
 <tr>

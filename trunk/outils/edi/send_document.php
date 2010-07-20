@@ -7,12 +7,23 @@ include('../../inc/config.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 
-
 // Liste des vendeur
 $vendeurs = select_vendeur();
 
-$day_number     = date('w');
-$now			= date('Ymd');
+
+$arguments = array();
+if (isset($argv)) { // des param en lignes de commandes car l'on veut forcé un artisan et une date
+	foreach ($argv as $t)
+		if (preg_match('/^date=(\d{4}-\d{2}-\d{2})$/i',$t,$regs))
+			$arguments['date'] = $regs[1];
+		else if (preg_match('/^artisan=(.+)$/i',$t,$regs))
+			$arguments['artisan'] = $regs[1];
+}
+
+$day_number     = isset($arguments['date']) ? date('w',  strtotime($arguments['date'])) : date('w');   // soit un jour imposé, soit aujourd'hui par défaut
+$now			= isset($arguments['date']) ? date('Ymd',strtotime($arguments['date'])) : date('Ymd'); // soit un jour imposé, soit aujourd'hui par défaut
+
+$where_artisan  = isset($arguments['artisan']) ? " AND artisan.numero='$arguments[artisan]' " : '' ;
 
 // recupère la liste des adhérents ayant un email et leur préférence d'envoi rensignées
 $sql = <<<EOT
@@ -25,6 +36,7 @@ WHERE	artisan.numero = send_document.numero_artisan
 			OR	(RELIQUAT<>'0'	AND RELIQUAT<>'')
 			OR	(AVOIR<>'0'		AND AVOIR<>'')
 		)
+	$where_artisan
 ORDER	BY nom ASC
 EOT;
 
@@ -64,8 +76,8 @@ EOT;
 		//trouve le dernier jour d'envoi, pour n'envoyer que les BL entre la derniere fois et aujourd'hui
 		$jour_envoi = explode(',',$row[$type_doc]);
 
-	//	print_r($jour_envoi);
-	//	echo "\$day_number=$day_number\n";
+		//print_r($jour_envoi);
+		//echo "\$day_number=$day_number\n";
 
 		for($i=0 ; $i<sizeof($jour_envoi) ; $i++) { // on parcours le tableau des jours
 			if ($jour_envoi[$i] == $day_number) { // on arrive sur la case du jour concerné
@@ -73,9 +85,10 @@ EOT;
 				if ($i > 0) // pas sur le premier jour
 					$jour_envoi_precedent = $jour_envoi[$i-1];
 				else // sur le premier jour du tableau --> on prend le dernier, pile cyclique
-					$jour_envoi_precedent = $jour_envoi[sizeof($i)-1];
+					$jour_envoi_precedent = $jour_envoi[sizeof($jour_envoi)-1];
 
-			//	echo "\$jour_envoi_precedent=$jour_envoi_precedent\n";
+				//echo "\$i=$i\n";
+				//echo "\$jour_envoi_precedent=$jour_envoi_precedent\n";
 	
 				if ($day_number > $jour_envoi_precedent) {
 					$delta_jour = $day_number - $jour_envoi_precedent;
@@ -83,12 +96,18 @@ EOT;
 					$delta_jour = 7-($jour_envoi_precedent-$day_number);
 				}
 
-			//	echo "\$delta_jour=$delta_jour\n";
+				//echo "\$delta_jour=$delta_jour\n";
 
-				$date_precedente			= date('Ymd'  ,mktime(0,0,0,date('m'),date('d')-$delta_jour  ,date('Y')));
-				$date_precedente_plus_un	= date('d/m/Y',mktime(0,0,0,date('m'),date('d')-$delta_jour+1,date('Y')));
-				$date_jour					= date('d/m/Y');
+				$Ymd = isset($arguments['date']) ? date('Ymd',strtotime($arguments['date'])) : date('Ymd');
+				$Y				= substr($Ymd,0,4);
+				$m				= substr($Ymd,4,2);
+				$d				= substr($Ymd,6,2);
+				$date_precedente		= date('Ymd'  , mktime(0,0,0,$m, $d - $delta_jour  , $Y));
+				$date_precedente_plus_un= date('d/m/Y', mktime(0,0,0,$m, $d - $delta_jour + 1 , $Y));
+				$date_jour				= "$d/$m/$Y";
 				$date_affichable = $date_jour==$date_precedente_plus_un ? "du $date_jour" : "du $date_precedente_plus_un au $date_jour";
+
+				//echo "\$date_affichable=$date_affichable\n";
 				break;
 			}
 		}
