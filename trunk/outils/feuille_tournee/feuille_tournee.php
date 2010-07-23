@@ -28,7 +28,7 @@ table#tournee {
 table#tournee td,table#tournee th { border:solid 1px black; }
 table#tournee th { background-color:#F2F2F2; }
 table#tournee td { height:1.5cm; }
-table#tournee td.adresse { height:0.5cm; }
+table#tournee td.adresse { height:0.5cm; font-size:0.8em; }
 
 @media print {
 	.hide_when_print { display:none; }
@@ -71,7 +71,9 @@ if ($date_yyyymmdd) {
 
 	$sql = <<<EOT
 select	CLIENT.NOCLI,CLIENT.NOMCL,TOUCL,NOBON,ENT32,NINT1,NINT2,NINT3,NINT4,NINT5,NINT6,
-		CLIENT.AD1CL, CLIENT.AD2CL, CLIENT.RUECL, CLIENT.VILCL, CLIENT.CPCLF, CLIENT.BURCL -- adresse du client
+		CLIENT.AD1CL, CLIENT.AD2CL, CLIENT.RUECL, CLIENT.VILCL, CLIENT.CPCLF, CLIENT.BURCL, -- adresse du client
+		CLIENT.TELCL as TEL1, CLIENT.TELCC as TEL2, CLIENT.TLXCL as TEL3,
+		(select count(ETSBE) from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where  NOBON=BON.NOBON and	NOCLI=BON.NOCLI and TRAIT='F' and PROFI='1' and ETSBE='') as NB_LIGNE_A_LIVRE
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON,${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 where	CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$date_yyyymmdd'
 		and TYVTE='LIV'
@@ -81,7 +83,7 @@ where	CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$
 order by TOUCL ASC, NOMCL ASC
 EOT;
 
-//echo "<div style='color:red;'>$sql</div>";
+//echo "<div style='color:red;'>$sql</div>";exit;
 
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res		= odbc_exec($loginor,$sql) ;
@@ -89,7 +91,7 @@ EOT;
 	$livraison = array();
 	while($row = odbc_fetch_array($res)) {
 
-			$sql = <<<EOT
+/*		$sql = <<<EOT
 select count(ETSBE) as NB_LIGNE_A_LIVRE
 from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1
 where 
@@ -100,10 +102,11 @@ where
 	and ETSBE=''
 EOT;
 			$res_detail	= odbc_exec($loginor,$sql) ;
+
 			$row_detail	= odbc_fetch_array($res_detail);
 			//print_r($row_detail); exit;
-
-			if ($row_detail['NB_LIGNE_A_LIVRE'] > 0) {
+*/
+			if ($row['NB_LIGNE_A_LIVRE'] > 0) {
 
 				if (isset($tournee_chauffeur[$row['TOUCL']][$day_number]))
 					$chauf = $tournee_chauffeur[$row['TOUCL']][$day_number];
@@ -121,6 +124,11 @@ EOT;
 				if (trim($row['VILCL'])) $adr[] = trim($row['VILCL']);
 				if (trim($row['CPCLF'])) $adr[] = trim($row['CPCLF']);
 				if (trim($row['BURCL'])) $adr[] = trim($row['BURCL']);
+
+				if (preg_match('/^\s*0[67]/',$row['TEL1'])) $adr[] = trim($row['TEL1']); // si le n° commence par un 06 ou 07
+				if (preg_match('/^\s*0[67]/',$row['TEL2'])) $adr[] = trim($row['TEL2']); // si le n° commence par un 06 ou 07
+				if (preg_match('/^\s*0[67]/',$row['TEL3'])) $adr[] = trim($row['TEL3']); // si le n° commence par un 06 ou 07
+
 				$adr = "DEPOT: ".join(', ',$adr);
 
 				$livraison[$chauf][] = array(	'nom_adh'	=>	$row['NOMCL'],
