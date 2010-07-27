@@ -25,10 +25,12 @@ table#tournee {
 	page-break-after:always;
 }
 
-table#tournee td,table#tournee th { border:solid 1px black; }
+table#tournee td { border:dotted 1px black; }
+table#tournee th { border:solid 1px black; }
 table#tournee th { background-color:#F2F2F2; }
 table#tournee td { height:1.5cm; }
-table#tournee td.adresse { height:0.5cm; font-size:0.8em; }
+table#tournee td.adresse { height:0.5cm; font-size:0.8em; background-color:#F5F5F5; }
+table#tournee tr.separateur { border-top:solid 3px black; }
 
 @media print {
 	.hide_when_print { display:none; }
@@ -72,14 +74,19 @@ if ($date_yyyymmdd) {
 	$sql = <<<EOT
 select	CLIENT.NOCLI,CLIENT.NOMCL,TOUCL,NOBON,ENT32,NINT1,NINT2,NINT3,NINT4,NINT5,NINT6,
 		CLIENT.AD1CL, CLIENT.AD2CL, CLIENT.RUECL, CLIENT.VILCL, CLIENT.CPCLF, CLIENT.BURCL, -- adresse du client
-		CLIENT.TELCL as TEL1, CLIENT.TELCC as TEL2, CLIENT.TLXCL as TEL3,
+		CLIENT.TELCL as TEL1, CLIENT.TELCC as TEL2, CLIENT.TLXCL as TEL3,					-- tel du client
+		ADR_LIV.NOMLV as LIV_NOM, ADR_LIV.AD1LV as LIV_ADR1, ADR_LIV.AD2LV as LIV_ADR2, ADR_LIV.RUELV as LIV_ADR3, ADR_LIV.VILLV as LIV_COORDS, ADR_LIV.CPOLV as LIV_CP, ADR_LIV.BURLV as LIV_VILLE,  -- adresse de livraison
+		ADR_LIV.TELLV as LIV_TEL1, ADR_LIV.TLXLV as LIV_TEL2,
 		(select count(ETSBE) from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where  NOBON=BON.NOBON and	NOCLI=BON.NOCLI and TRAIT='F' and PROFI='1' and ETSBE='') as NB_LIGNE_A_LIVRE
-from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON,${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+				on BON.NOCLI=CLIENT.NOCLI
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ALIVADP1 ADR_LIV
+				on BON.NOCLI=ADR_LIV.NOCLI and ADR_LIV.NOLIV='DEPOT'
 where	CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$date_yyyymmdd'
 		and TYVTE='LIV'
 		and FACAV='F'
 		and ETSEE=''
-		and BON.NOCLI=CLIENT.NOCLI
 order by TOUCL ASC, NOMCL ASC
 EOT;
 
@@ -90,23 +97,7 @@ EOT;
 
 	$livraison = array();
 	while($row = odbc_fetch_array($res)) {
-
-/*		$sql = <<<EOT
-select count(ETSBE) as NB_LIGNE_A_LIVRE
-from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1
-where 
-		NOBON='$row[NOBON]'
-	and	NOCLI='$row[NOCLI]'
-	and TRAIT='F'
-	and PROFI='1'
-	and ETSBE=''
-EOT;
-			$res_detail	= odbc_exec($loginor,$sql) ;
-
-			$row_detail	= odbc_fetch_array($res_detail);
-			//print_r($row_detail); exit;
-*/
-			if ($row['NB_LIGNE_A_LIVRE'] > 0) {
+			if ($row['NB_LIGNE_A_LIVRE'] > 0) { // si au moins une ligne a livrer
 
 				if (isset($tournee_chauffeur[$row['TOUCL']][$day_number]))
 					$chauf = $tournee_chauffeur[$row['TOUCL']][$day_number];
@@ -118,18 +109,29 @@ EOT;
 				
 				// affichage de l'adresse de livraison
 				$adr = array();
-				if (trim($row['AD1CL'])) $adr[] = trim($row['AD1CL']);
-				if (trim($row['AD2CL'])) $adr[] = trim($row['AD2CL']);
-				if (trim($row['RUECL'])) $adr[] = trim($row['RUECL']);
-				if (trim($row['VILCL'])) $adr[] = trim($row['VILCL']);
-				if (trim($row['CPCLF'])) $adr[] = trim($row['CPCLF']);
-				if (trim($row['BURCL'])) $adr[] = trim($row['BURCL']);
+				if (trim($row['LIV_COORDS'])) { // si un dépot est précisé dans les adr de livraison --> on livre au dépot et non pas a l'adresse de facturation
+					if (trim($row['LIV_NOM']))	$adr[] = trim($row['LIV_NOM']);
+					if (trim($row['LIV_ADR1']))	$adr[] = trim($row['LIV_ADR1']);
+					if (trim($row['LIV_ADR2']))	$adr[] = trim($row['LIV_ADR2']);
+					if (trim($row['LIV_ADR3']))	$adr[] = trim($row['LIV_ADR3']);
+					if (trim($row['LIV_CP']))	$adr[] = trim($row['LIV_CP']);
+					if (trim($row['LIV_VILLE']))$adr[] = trim($row['LIV_VILLE']);
+					if (trim($row['LIV_TEL1'])) $adr[] = trim($row['LIV_TEL1']); // si le n° commence par un 06 ou 07
+					if (trim($row['LIV_TEL2'])) $adr[] = trim($row['LIV_TEL2']); // si le n° commence par un 06 ou 07
 
-				if (preg_match('/^\s*0[67]/',$row['TEL1'])) $adr[] = trim($row['TEL1']); // si le n° commence par un 06 ou 07
-				if (preg_match('/^\s*0[67]/',$row['TEL2'])) $adr[] = trim($row['TEL2']); // si le n° commence par un 06 ou 07
-				if (preg_match('/^\s*0[67]/',$row['TEL3'])) $adr[] = trim($row['TEL3']); // si le n° commence par un 06 ou 07
+				} else { // on livre a l'adresse de facturation
+					if (trim($row['AD1CL'])) $adr[] = trim($row['AD1CL']);
+					if (trim($row['AD2CL'])) $adr[] = trim($row['AD2CL']);
+					if (trim($row['RUECL'])) $adr[] = trim($row['RUECL']);
+					if (trim($row['VILCL'])) $adr[] = trim($row['VILCL']);
+					if (trim($row['CPCLF'])) $adr[] = trim($row['CPCLF']);
+					if (trim($row['BURCL'])) $adr[] = trim($row['BURCL']);
+					if (trim($row['TEL1'])) $adr[] = trim($row['TEL1']); // si le n° commence par un 06 ou 07
+					if (trim($row['TEL2'])) $adr[] = trim($row['TEL2']); // si le n° commence par un 06 ou 07
+					if (trim($row['TEL3'])) $adr[] = trim($row['TEL3']); // si le n° commence par un 06 ou 07
+				}
 
-				$adr = "DEPOT: ".join(', ',$adr);
+				$adr = "Adr liv : ".join(', ',$adr);
 
 				$livraison[$chauf][] = array(	'nom_adh'	=>	$row['NOMCL'],
 												'adr_adh'	=>	$adr,
@@ -177,7 +179,7 @@ EOT;
 		foreach ($tournee as $val) {	
 			if ($val['nom_adh'] != $old_adh) { // nouvelle adh --> on affiche l'adresse de livraison
 ?>
-				<tr><td colspan="7" class="adresse"><?=$val['adr_adh']?></td></tr>
+				<tr class="separateur"><td colspan="7" class="adresse"><?=$val['adr_adh']?></td></tr>
 <?			} ?>
 			<tr style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
 				<td><?=$val['prepa']?></td>
@@ -201,20 +203,6 @@ EOT;
 			$old_adh = $val['nom_adh'];
 			$i++;
 		} // fin for tournée
-
-		while (($i%15) > 0) {
-			//echo "\$i=$i    \$i%16=".($i%16)."<br>\n"; ?>
-		<!--	<tr style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-				<td>&nbsp;</td>
-			</tr> -->
-<?			$i++;
-		}
 	} // fin foreah chauffeur ?>
 	</table>
 <?	odbc_close($loginor);
