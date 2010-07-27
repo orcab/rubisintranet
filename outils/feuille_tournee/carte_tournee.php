@@ -116,16 +116,22 @@ form {
 <script type="text/javascript">
 <?
 	$sql = <<<EOT
-select	DISTINCT(CLIENT.NOCLI),CLIENT.NOMCL,CLIENT.COFIN as COORDS,TOUCL as TOURNEE,
-		CLIENT.AD1CL, CLIENT.AD2CL, CLIENT.RUECL, CLIENT.VILCL, CLIENT.CPCLF, CLIENT.BURCL -- adresse du client
-from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON,${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+select	DISTINCT(CLIENT.NOCLI),CLIENT.NOMCL,TOUCL as TOURNEE,
+		CLIENT.COFIN as COORDS,			-- coords de l'adresse de facturation
+		ADR_LIV.VILLV as LIV_COORDS		-- coords de l'adresse de livraison
+from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+				on BON.NOCLI=CLIENT.NOCLI
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ALIVADP1 ADR_LIV
+				on BON.NOCLI=ADR_LIV.NOCLI and ADR_LIV.NOLIV='DEPOT'
 where		CONCAT(DLSSB,CONCAT(DLASB,CONCAT('-',CONCAT(DLMSB,CONCAT('-',DLJSB)))))='$date_yyyymmdd'
 		and TYVTE='LIV'
 		and FACAV='F'
 		and ETSEE=''
-		and BON.NOCLI=CLIENT.NOCLI
 order by NOMCL ASC
 EOT;
+
+//echo "<div style='color:red;'>$sql</div>";exit;
 
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res		= odbc_exec($loginor,$sql) ;
@@ -133,6 +139,9 @@ EOT;
 	$center		= array(47.683087,47.683087, -2.801085, -2.801085); // min lat, max lat, min long, max long centré sur MCS
 	define('MIN_LAT',0);	define('MAX_LAT',1);	define('MIN_LONG',2);	define('MAX_LONG',3);
 	while($row = odbc_fetch_array($res)) {
+		if (trim($row['LIV_COORDS'])) // une adresse de livraison est spécifié, on remplace celle de facturation
+			$row['COORDS'] = $row['LIV_COORDS'];
+
 		if (isset($tournee_chauffeur[$row['TOURNEE']][$day_number]))
 			$chauf = $tournee_chauffeur[$row['TOURNEE']][$day_number];
 		else
