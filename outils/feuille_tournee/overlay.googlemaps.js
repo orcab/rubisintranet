@@ -57,13 +57,15 @@ MyOverlay.prototype.draw = function() {
 	overlays_bounds.push( tmp );
 };
 
-
 MyOverlay.prototype.getDiv = function() {
 	return this.div_;
 };
 
+
 function isColideWith(box1) {
-	for each (box2 in overlays_bounds) { // pour chaque cadre deja enregistré
+	for(var i=0 ; i<overlays_bounds.length ; i++) {
+		var box2 = overlays_bounds[i];
+	//for each (box2 in overlays_bounds) { // pour chaque cadre deja enregistré
 		// TOP LEFT colide
 		if			(box2.x2 >= box1.x1 && box2.x2 <= box1.x2 && 
 					 box2.y2 >= box1.y1 && box2.y2 <= box1.y2) {
