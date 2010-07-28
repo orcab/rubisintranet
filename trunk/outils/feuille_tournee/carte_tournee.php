@@ -48,10 +48,8 @@ form {
 	background-color:#FF776B;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
-	border-radius: 5px;
 	border:solid 2px black;
 	color:black;
-	/*color:#005500;*/
 	font-size:0.5em;
 	font-family:terminal;
 	text-align:center;
@@ -81,7 +79,7 @@ form {
 			<option value="non_definit"<?= isset($_POST['chauffeur']) && $_POST['chauffeur'] == 'non_definit' ? ' selected':'' ?>>Non définit</option>
 		</select>
 		<input type="text" id="filtre_date" name="filtre_date" value="<?=$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy?>" size="8">
-		<button id="trigger_date" style="background:url('../../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.tournee.filtre_date.value='';">
+		<button id="trigger_date" style="background:url('../../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.tournee.filtre_date.value='';">
 		<script type="text/javascript">
 		  Calendar.setup(
 			{
@@ -101,7 +99,7 @@ form {
 		</select>
 
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="submit" class="button valider" value="Afficher">
+		<input type="submit" class="button valider" value="Afficher" />
 <?	if (isset($_POST['roads_type']) && $_POST['roads_type']=='roads') { ?>
 		&nbsp;&nbsp;Distance : <span id="distance"></span>
 <?	} ?>
@@ -230,38 +228,55 @@ EOT;
 
 
 	// pour chaque client a livrer
-<?	foreach ($data as $row) { ?>
-		var pos  = new google.maps.LatLng(<?=$row['LAT']?>, <?=$row['LONG']?>);
-<?
-		$name = htmlentities(trim($row['NOMCL']));
+<?	$lat_long = array(); // on parcours une premiere fois les résultats pour voir ceux qui ont un point en commun (on ne peut pas faire de modif à la volée)
+	foreach ($data as $row) {
+		$name = htmlentities(trim($row['NOMCL']));						// on nettoi un peu le texte a afficher
 		$name = str_replace('&Eacute;','E',$name);
-		$name_wraped = wordwrap($name,10);
-		$lines = explode("\n",$name_wraped);
-?>
-		var name = "<?=$name?>";
-		// place a little marker on the point
-		markers['<?=$row['NOCLI']?>'] = new google.maps.Marker({ 'position': pos, 'map': map, 'title':name, 'icon': arrow_icon });
-		// place a sign with name of the adhérent
-		overlays['<?=$row['NOCLI']?>'] = new MyOverlay( { 'map': map, 'text':name, 'width':'65px', 'height':9*<?=sizeof($lines)?>+'px', 'position':pos, 'class':'marker' } );
+		$row['NOMCL'] = $name;
+		$lines = sizeof(explode("\n",wordwrap($name,10)));				// on calcul le nombre de ligne necessaire pour 10 car d'affichage
+		$row['lignes'] = $lines ;										// stock le nombre de ligne de texte
+		if (array_key_exists($row['LAT'].'/'.$row['LONG'],$lat_long)) { // point deja existant --> on modifie le pere
+			
+			$pere = $row['LAT'].'/'.$row['LONG'];
+			$lat_long[$pere]['NOMCL'] .= "<br/>+ $name" ;
+			
+			$lat_long[$pere]['lignes']+= $lines;
 
-		// gere le tracage de nouvelles route
-		google.maps.event.addListener(markers['<?=$row['NOCLI']?>'], 'mouseover', function() {
-				if	   (circle == null) { // encore aucun cercle de déssiné
-					//on stock le premier cercle
-					circle = new google.maps.Circle({ 'center':this.getPosition(), 'fillColor':'yellow', 'fillOpacity':0.5 , 'map':map , 'radius':500, 'strokeColor':'black', 'strokeOpacity':0.5, 'strokeWeight':2 });
-				} else { // deja un cercle de dessiné
-					// si c'est le meme, on ne fait rien
-					if (circle.getCenter() == this.getPosition()) {
-						// ne rien faire
-					} else { // un autre point --> on dessine un trait et on supprime les cercles
-						draw_lines( [ this.getPosition(), circle.getCenter() ] );
-						ligne.setMap(null); // la ligne flotante doit disparaitre
+	//		echo "//\$\$ \$pere['NOMCL']='"+$lat_long[$pere]['NOMCL']+"'\n";
+
+		} else {
+			$lat_long[$row['LAT'].'/'.$row['LONG']] = $row;				// on enregistre pour réutiliser plus tard
+		}		
+	}
+	
+	// itere sur les point a afficher (les doublons ont été evaqué plus haut)
+	foreach ($lat_long as $id => $row) {
+?>
+			var pos  = new google.maps.LatLng(<?=$row['LAT']?>, <?=$row['LONG']?>);
+			var name = "<?=$lat_long[$row['LAT'].'/'.$row['LONG']]['NOMCL']?>";
+			// place a little marker on the point
+			markers['<?=$row['NOCLI']?>'] = new google.maps.Marker({ 'position': pos, 'map': map, 'title':name, 'icon': arrow_icon });
+			// place a sign with name of the adhérent
+			overlays['<?=$row['NOCLI']?>'] = new MyOverlay( { 'map': map, 'text':name, 'width':'65px', 'height':10*<?=$lat_long[$row['LAT'].'/'.$row['LONG']]['lignes']?>+'px', 'position':pos, 'class':'marker' } );
+
+			// gere le tracage de nouvelles route
+			google.maps.event.addListener(markers['<?=$row['NOCLI']?>'], 'mouseover', function() {
+					if	   (circle == null) { // encore aucun cercle de déssiné
+						//on stock le premier cercle
+						circle = new google.maps.Circle({ 'center':this.getPosition(), 'fillColor':'yellow', 'fillOpacity':0.5 , 'map':map , 'radius':500, 'strokeColor':'black', 'strokeOpacity':0.5, 'strokeWeight':2 });
+					} else { // deja un cercle de dessiné
+						// si c'est le meme, on ne fait rien
+						if (circle.getCenter() == this.getPosition()) {
+							// ne rien faire
+						} else { // un autre point --> on dessine un trait et on supprime les cercles
+							draw_lines( [ this.getPosition(), circle.getCenter() ] );
+							ligne.setMap(null); // la ligne flotante doit disparaitre
+						}
+						// dans tous les cas on supprime l'ancien point
+						circle.setMap(null);
+						circle = null
 					}
-					// dans tous les cas on supprime l'ancien point
-					circle.setMap(null);
-					circle = null
-				}
-		});
+			});
 
 <?	} // fin for each client
 	odbc_close($loginor);
@@ -293,7 +308,7 @@ EOT;
 <?	
 	// draw the roads
 	$not_served_client = array();
-	foreach ($data as $row) $not_served_client[$row['NOCLI']] = $row;
+	foreach ($lat_long as $id => $row) $not_served_client[$row['NOCLI']] = $row;
 	//$not_served_client = array(	'056035' => {NOM=>'toto'} ,
 	//						'056067' =>  ...)
 

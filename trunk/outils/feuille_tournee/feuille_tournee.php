@@ -62,7 +62,7 @@ table#tournee tr.separateur { border-top:solid 3px black; }
 		  );
 		</script>
 
-		<input type="submit" class="button valider" value="Afficher">
+		<input type="submit" class="button valider" value="Afficher" />
 	</div>
 </form>
 
@@ -107,6 +107,13 @@ EOT;
 				if (!isset($livraison[$chauf]))
 					$livraison[$chauf] = array();
 				
+				// supprime les '.' des n° de téléphones
+				$row['LIV_TEL1']	= str_replace('.',' ',$row['LIV_TEL1']);
+				$row['LIV_TEL2']	= str_replace('.',' ',$row['LIV_TEL2']);
+				$row['TEL1']		= str_replace('.',' ',$row['TEL1']);
+				$row['TEL2']		= str_replace('.',' ',$row['TEL2']);
+				$row['TEL3']		= str_replace('.',' ',$row['TEL3']);
+
 				// affichage de l'adresse de livraison
 				$adr = array();
 				if (trim($row['LIV_COORDS'])) { // si un dépot est précisé dans les adr de livraison --> on livre au dépot et non pas a l'adresse de facturation
