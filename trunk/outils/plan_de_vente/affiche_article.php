@@ -72,6 +72,23 @@ table#article td {
 	font-size:11px;
 }
 
+/* affichage des stocks */
+table#article td.stock {
+	background-position:center 2px;
+	background-repeat:no-repeat;
+	width:30px;
+	text-align:center;
+}
+table#article td.s0 { background-image:url('gfx/stock-0.png'); }
+table#article td.s1 { background-image:url('gfx/stock-1.png'); }
+table#article td.s2 { background-image:url('gfx/stock-2.png'); }
+table#article td.s3 { background-image:url('gfx/stock-3.png'); }
+
+table#article td.stock img { margin-top:20px; }
+
+
+
+
 div#dialogue {
 	padding:20px;
 	border:solid 2px black;
@@ -513,6 +530,8 @@ function valider_nouveau_chemin() {
 		<th class="fournisseur">Fournisseur<a href="affiche_article.php?order=fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="ref_fournisseur" nowrap>Ref<a href="affiche_article.php?order=ref_fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=ref_fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="designation">Désignation<a href="affiche_article.php?order=designation ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=designation DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="stock_afa">Plescop</th>
+		<th class="stock_afl">Caudan</th>
 		<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 			<th></th>
 		<? } ?>
@@ -524,8 +543,19 @@ function valider_nouveau_chemin() {
 		<? } ?>
 	</tr>
 <?	
-	
-	$sql = "SELECT code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif FROM article WHERE " ;
+	$sql = <<<EOT
+SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif,
+		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
+		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
+		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
+		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFL') as stock_afl,
+		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as mini_afl,
+		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as reappro_afl
+FROM	article A
+WHERE	SUSPENDU=''
+		and
+
+EOT;
 
 	if (isset($_SESSION['chemin'])) { // recherche par chemin
 		$sql .= "chemin='".mysql_escape_string($_SESSION['chemin'])."'";
@@ -573,6 +603,27 @@ function valider_nouveau_chemin() {
 				} else {
 						echo trim($row['designation']);
 				}	?></pre>
+			</td>
+			<!-- gestion des stock -->
+			<td class="stock <?
+				if		($row['stock_afa'] == '')	echo "s0";									// pas stocké
+				elseif  ($row['stock_afa'] <= 0)	echo "s1";									// en rupture
+				elseif  ($row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) echo "s2";	// en dessous du mini
+				else								echo "s3";									// au dessus du mini
+			?>">
+<?			if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
+				<img src="gfx/reappro.png"/>
+<?			} ?>
+</td>
+			<td class="stock <?
+				if		($row['stock_afl'] == '')	echo "s0";									// pas stocké
+				elseif  ($row['stock_afl'] <= 0)	echo "s1";									// en rupture
+				elseif  ($row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) echo "s2";	// en dessous du mini
+				else								echo "s3";									// au dessus du mini
+			?>">
+<?			if ($row['reappro_afl'] > 0) { // reappro de stock en cours ?>
+				<img src="gfx/reappro.png"/>
+<?			} ?>
 			</td>
 			<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 				<td><input type="checkbox" name="checkbox_<?=$row['code_article']?>" /></td>
