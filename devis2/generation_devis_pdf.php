@@ -119,5 +119,5 @@ if ($option > 0) { // il y a des options, on balance un disclaimer
 	$pdf->Ln();
 }
 
-$pdf->Output('devis_'.$id_devis.'.pdf','I');
+$pdf->Output('devis_'.$id_devis.'('.crc32(uniqid()).').pdf','I');
 ?>

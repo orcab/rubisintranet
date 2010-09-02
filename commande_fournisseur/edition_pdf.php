@@ -144,7 +144,7 @@ $pdf->Cell(REF_WIDTH ,7,'',1,0,'',1);
 $pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"Date d'échéance : $row_entete[CFEEJ]/$row_entete[CFEEM]/$row_entete[CFEES]$row_entete[CFEEA]",1,0,'L',1);
 $pdf->Ln();
 
-$pdf->Output('cde_four_'.$cfbon_escape.'.pdf','I');
+$pdf->Output('cde_four_'.$cfbon_escape.'('.crc32(uniqid()).').pdf','I');
 
 odbc_close($loginor);
 ?>
