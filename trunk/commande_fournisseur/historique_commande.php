@@ -153,7 +153,8 @@ function delete_relance(id) {
 }
 
 function liste_relance(id) {
-	document.getElementById('relance_commande_' + id).style.display = document.getElementById('relance_commande_' + id).style.display == 'table-row' ? 'none' : 'table-row' ;
+	var el = $('#relance_commande_' + id);
+	el.css('display', el.css('display') == 'table-row' ? 'none' : 'table-row') ;
 }
 
 function liste_toute_relance() {
@@ -167,14 +168,7 @@ function liste_toute_relance() {
 		what = 'none';
 	}
 
-	for(i=0 ; i<tr_elements.length ; i++) {
-		if (tr_elements[i]['id'].match(/^relance_commande_\w+$/))
-			tr_elements[i].style.display = what ;
-	}
-}
-
-function cache(id) {
-	$('#'+id).hide();
+	$('tr[id^=relance_commande_]').css('display',what); // afficher ou cacher les lignes
 }
 
 function envoi_formulaire(l_action) {
@@ -245,7 +239,7 @@ function envoi_formulaire(l_action) {
 		<td colspan="4"><textarea id="relance_commentaire" name="relance_commentaire" rows="6" cols="50" style="width:100%"></textarea></td>
 	</tr>
 	<tr>
-		<td colspan="4" align="center"><input type="button" class="button valider" onclick="envoi_formulaire('saisie_relance');" value="Enregistrer"> <input type="button"  class="button annuler" onclick="cache('relance');" value="Annuler"></td>
+		<td colspan="4" align="center"><input type="button" class="button valider" onclick="envoi_formulaire('saisie_relance');" value="Enregistrer"> <input type="button"  class="button annuler" onclick="$('#relance').hide();" value="Annuler"></td>
 	</tr>
 </table>
 </div>
@@ -340,6 +334,7 @@ function envoi_formulaire(l_action) {
 	<tr>
 		<th class="CFBON">N°<br><a href="historique_commande.php?filtre_classement=CFBON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFBON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="DATE">Date<br><a href="historique_commande.php?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="DATE_CONFIRMATION">Confirmée<br><a href="historique_commande.php?filtre_classement=DATE_CONFIRMATION ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=DATE_CONFIRMATION DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="CFSER">Achat<br><a href="historique_commande.php?filtre_classement=CFSER ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=CFSER DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NOFOU">Fournisseur<br><a href="historique_commande.php?filtre_classement=NOFOU ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="historique_commande.php?filtre_classement=NOFOU DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="CFAGE">Agence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CFAGE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CFAGE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
@@ -403,13 +398,18 @@ function envoi_formulaire(l_action) {
 		$ordre = 'CFEDS DESC, CFEDA DESC, CFEDM DESC, CFEDJ DESC';
 	elseif	($_SESSION['cde_fourn_filtre_classement'] == 'DATE ASC')
 		$ordre = 'CFEDS ASC, CFEDA ASC, CFEDM ASC, CFEDJ ASC';
+	elseif	($_SESSION['cde_fourn_filtre_classement'] == 'DATE_CONFIRMATION ASC')
+		$ordre = 'CFCON DESC, CFELS ASC, CFELA ASC, CFELM ASC, CFELJ ASC';
+	elseif	($_SESSION['cde_fourn_filtre_classement'] == 'DATE_CONFIRMATION DESC')
+		$ordre = 'CFCON DESC, CFELS DESC, CFELA DESC, CFELM DESC, CFELJ DESC';
 	else
 		$ordre = $_SESSION['cde_fourn_filtre_classement'];
 
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.CFBON),CFEDM,CFEDJ,CFEDS,CFEDA,CFSER,CUMLI,CFMON,FNOMF,AGELI
+select DISTINCT(CDE_ENTETE.CFBON),CFEDM,CFEDJ,CFEDS,CFEDA,CFSER,CUMLI,CFMON,FNOMF,AGELI,
+CFCON as CONFIRMATION, CFELJ,CFELM,CFELS,CFELA
 from $tables
 $where
 order by $ordre
@@ -433,6 +433,14 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			$date_formater = date('d M Y',$date_commande);
 			$jour_commande = $jours_mini[date('w',$date_commande)];		
 		?><?=$jour_commande?> <?=$date_formater?></td><!-- date -->
+		<td class="DATE_CONFIRMATION">
+<?			if ($row['CONFIRMATION']=='OUI') { // commande confirmée ?>
+<?				$date_commande = mktime(0,0,0,$row['CFELM'],$row['CFELJ'],$row['CFELS'].$row['CFELA']) ;
+				$date_formater = date('d M Y',$date_commande);
+				$jour_commande = $jours_mini[date('w',$date_commande)];		
+				?><img src="gfx/asterisk.gif" /> <?=$jour_commande?> <?=$date_formater?>
+<?			} ?>
+		</td><!-- date -->
 		<td class="CFSER"><?=isset($vendeurs[trim($row['CFSER'])]) ? $vendeurs[trim($row['CFSER'])] : trim($row['CFSER'])?></td><!-- représentant -->
 		<td class="NFOUN" style="text-align:left;"><?=$row['FNOMF']?></td><!-- fournisseur -->
 		<td class="CFAGE" style="text-align:center;"><?= ucfirst(strtolower($row['AGELI'])) ?></td><!-- agence -->
