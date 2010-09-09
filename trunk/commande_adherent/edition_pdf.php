@@ -133,7 +133,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde demandé sans prix
 			if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniquement les lignes R
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+					array('text' => $row['CODAR']."\n#".$row['NOLIG']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
 					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,'text-align' => 'C', 'font-size' => 10), //localisation
@@ -144,7 +144,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 				);
 			else
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-					array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
+					array('text' => $row['CODAR']."\n#".$row['NOLIG']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
 					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
