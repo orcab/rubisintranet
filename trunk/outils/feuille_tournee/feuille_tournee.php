@@ -40,16 +40,48 @@ table#tournee tr.separateur { border-top:solid 3px black; }
 
 <style type="text/css">@import url(../../js/boutton.css);</style>
 <style type="text/css">@import url(../../js/jscalendar/calendar-brown.css);</style>
+<script type="text/javascript" src="../../js/jquery.js"></script>
 <script type="text/javascript" src="../../js/jscalendar/calendar.js"></script>
 <script type="text/javascript" src="../../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../../js/jscalendar/calendar-setup.js"></script>
+
+<script language="javascript">
+
+function modifie_date_liv(prepa,nobon,nocli) {
+	if (prepa == 'CLH' && !confirm("Bon fait par CHL, voulez vous vraiment l'exclure de la tournée ?")) {
+		return ;
+	} else {
+		// faire un appel ajax pour modifier la date de livraison du bon au dimanche precedent.
+		$('#exclure-'+nobon+'-'+nocli).attr('value','Patientez ...').css('background-image',"url('../../gfx/loading5.gif')"); // fait patientez
+
+<?		//calcule la date du dimanche precedent
+		$date_time		= strtotime($date_yyyymmdd);
+		$day_number		= date('w',$date_time);
+		
+		$last_sunday = date('d/m/Y' , mktime(0,0,0,	date('m',$date_time),
+													date('d',$date_time)-$day_number,
+													date('Y',$date_time)));
+?>
+		$.ajax({
+			url: 'ajax.php',
+			type: 'GET',
+			data: 'what=modifie_date_liv&nobon='+nobon+'&nocli='+nocli+'&date_ddmmyyyy=<?=$last_sunday?>',
+			success: function(result){
+						var json = eval('(' + result + ')') ;
+						//if (json['debug']) alert(''+json['debug']);
+						$('#exclure-'+nobon+'-'+nocli).hide(); // efface le bouton
+					}	
+		});
+	}
+}
+</script>
 
 </head>
 <body>
 <form name="tournee" method="post">
 	<div class="hide_when_print">
 		<input type="text" id="filtre_date" name="filtre_date" value="<?=$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy?>" size="8">
-		<button id="trigger_date" style="background:url('../../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.tournee.filtre_date.value='';">
+		<button id="trigger_date" style="background:url('../../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.tournee.filtre_date.value='';">
 		<script type="text/javascript">
 		  Calendar.setup(
 			{
@@ -64,7 +96,7 @@ table#tournee tr.separateur { border-top:solid 3px black; }
 
 		<input type="submit" class="button valider" value="Afficher" />
 	</div>
-</form>
+
 
 <?
 
@@ -141,6 +173,7 @@ EOT;
 				$adr = "Adr liv : ".join(', ',$adr);
 
 				$livraison[$chauf][] = array(	'nom_adh'	=>	$row['NOMCL'],
+												'no_cli'	=>	$row['NOCLI'],
 												'adr_adh'	=>	$adr,
 												'no_bon'	=>	$row['NOBON'],
 												'prepa'		=>	$row['ENT32'],
@@ -204,7 +237,15 @@ EOT;
 				</td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
-				<td>&nbsp;</td>
+				<td><input	type="button"
+							id="exclure-<?=$val['no_bon']?>-<?=$val['no_cli']?>"
+							class="button annuler hide_when_print"
+<?							if ($val['prepa'] == 'CLH') { // si c'est un bon a CLH, on change l'apparence ?>
+							style="color:grey;background-image:url('../../js/boutton_images/cancel-grey.png');"
+<?							} ?>
+							value="Exclure"
+							onclick="modifie_date_liv('<?=$val['prepa']?>','<?=$val['no_bon']?>','<?=$val['no_cli']?>');" />
+				</td><!-- commentaire + bouton de suppression du bon -->
 			</tr>
 <?
 			$old_adh = $val['nom_adh'];
@@ -216,5 +257,6 @@ EOT;
 } // fin if date
 ?>
 
+</form>
 </body>
 </html>
