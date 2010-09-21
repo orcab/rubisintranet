@@ -661,7 +661,14 @@ EOT;
 				<? } ?>
 			</td>
 			<!-- prix net -->
-			<td class="prix_net" nowrap><?= sprintf("%0.2f",($row['conditionnement'] > 1) ? $row['conditionnement']*$row['prix_net'] : $row['prix_net']) ?>€</td>
+			<td class="prix_net" nowrap><?
+				if ($row['conditionnement'] > 1) {
+					printf('%d%s x %0.2f&euro;', $row['conditionnement'], $row['unite'], $row['prix_net'] );
+					printf('<br/><small>%0.2f&euro;</small>',$row['conditionnement']*$row['prix_net']);
+				} else {
+					printf('%0.2f&euro;',$row['prix_net']);
+				} ?>
+			</td>
 			<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 				<td align="center">			
 					<a class="info"><span>Suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=isset($_SESSION['chemin'])?$_SESSION['chemin']:''?>');"></a>
