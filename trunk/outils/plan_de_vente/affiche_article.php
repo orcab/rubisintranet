@@ -140,6 +140,9 @@ td strong {
 	color:green;
 }
 
+strong.condi {
+	color:black;
+}
 
 </style>
 <style type="text/css">@import url(../../js/boutton.css);</style>
@@ -530,6 +533,7 @@ function valider_nouveau_chemin() {
 		<th class="fournisseur">Fournisseur<a href="affiche_article.php?order=fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="ref_fournisseur" nowrap>Ref<a href="affiche_article.php?order=ref_fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=ref_fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="designation">Désignation<a href="affiche_article.php?order=designation ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=designation DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="">Unité</th>
 		<th class="stock_afa">Plescop</th>
 		<th class="stock_afl">Caudan</th>
 		<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
@@ -544,7 +548,7 @@ function valider_nouveau_chemin() {
 	</tr>
 <?	
 	$sql = <<<EOT
-SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif,
+SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif,conditionnement,unite,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
@@ -588,11 +592,15 @@ EOT;
 			$row['code_article'] = trim($row['code_article']);
 ?>
 		<tr id="<?=$row['code_article']?>">
+			<!-- code article -->
 			<td class="code_article"><a href="javascript:detail_article('<?=$row['code_article']?>');" class="info"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['code_article']) : $row['code_article']?><span>Afficher les détails de l'article</span></a></td>
+			<!-- fournisseur -->
 			<td class="fournisseur" style="font-size:9px;"><?=wordwrap($row['fournisseur'], 20, "<br />\n")?></td>
+			<!-- ref fournisseur -->
 			<td class="ref_fournisseur" style="font-size:9px;">
 				<?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['ref_fournisseur']) : $row['ref_fournisseur']?>
 			</td>
+			<!-- designation -->
 			<td class="designation" style="font-size:9px;">
 				<pre><?	if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
 					$designation = $row['designation'];
@@ -603,7 +611,12 @@ EOT;
 				} else {
 						echo trim($row['designation']);
 				}	?></pre>
+				<!-- condtionnement et unité -->
+<?				if ($row['conditionnement'] > 1) { ?>
+					<strong class="condi">Vendu par <?=$row['conditionnement']?><?=$row['unite']?></strong>
+<?				} ?>
 			</td>
+			
 			<!-- gestion des stock -->
 			<td class="stock <?
 				if		($row['stock_afa'] == '')	echo "s0";									// pas stocké
@@ -614,7 +627,7 @@ EOT;
 <?			if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
 				<img src="gfx/reappro.png"/>
 <?			} ?>
-</td>
+			</td>
 			<td class="stock <?
 				if		($row['stock_afl'] == '')	echo "s0";									// pas stocké
 				elseif  ($row['stock_afl'] <= 0)	echo "s1";									// en rupture
@@ -628,6 +641,7 @@ EOT;
 			<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 				<td><input type="checkbox" name="checkbox_<?=$row['code_article']?>" /></td>
 			<? } ?>
+			<!-- servi sur stock -->
 			<td class="servi_sur_stock" align="center">
 				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 					<a class="info"><span>Changer "servi" de l'article</span>
@@ -637,6 +651,7 @@ EOT;
 					</a>
 				<? } ?>
 			</td>
+			<!-- sur tarif -->
 			<td class="sur_tarif" align="center">
 				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 					<a class="info"><span>Changer l'édition sur tarif papier de l'article</span>
@@ -646,7 +661,8 @@ EOT;
 					</a>
 				<? } ?>
 			</td>
-			<td class="prix_net" nowrap><?=$row['prix_net']?>€</td>
+			<!-- prix net -->
+			<td class="prix_net" nowrap><?= sprintf("%0.2f",($row['conditionnement'] > 1) ? $row['conditionnement']*$row['prix_net'] : $row['prix_net']) ?>€</td>
 			<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 				<td align="center">			
 					<a class="info"><span>Suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=isset($_SESSION['chemin'])?$_SESSION['chemin']:''?>');"></a>
