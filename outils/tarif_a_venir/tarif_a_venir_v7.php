@@ -8,6 +8,7 @@ require_once '../../inc/Spreadsheet/Excel/Writer.php';
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 
+$today_yyyymmdd = date('Ymd');
 
 //////////////////////////////////// GENERATION DU FICHIER EXCEL ////////////////////////:
 if (isset($_POST['provenance']) && $_POST['provenance']) {
@@ -27,6 +28,8 @@ select
 	REFFO as REF_FOURNISSEUR,
 	CONCAT(PRVDJ,CONCAT('/',CONCAT(PRVDM,CONCAT('/',CONCAT(PRVDS,PRVDA))))) as DATE_APPLICATION_PR,
 	CONCAT(PVEDJ,CONCAT('/',CONCAT(PVEDM,CONCAT('/',CONCAT(PVEDS,PVEDA))))) as DATE_APPLICATION_PV,
+	CONCAT(PRVDS,CONCAT(PRVDA,CONCAT(PRVDM,PRVDJ))) as DATE_APPLICATION_PR_YYYYMMDD,
+	CONCAT(PVEDS,CONCAT(PVEDA,CONCAT(PVEDM,PVEDJ))) as DATE_APPLICATION_PV_YYYYMMDD,
 	RMRV1 as REMISE1,RMRV2 as REMISE2,RMRV3 as REMISE3, PNRVT as PRIX_REVIENT,
 	COEF1 as COEF, PVEN1 as PRIX_VENTE,
 	PR.PRV03 as TYPE_PR,
@@ -47,11 +50,14 @@ where
 		and PV.AGENC='$LOGINOR_AGENCE'
 	and PR.NOART=ARTICLE.NOART
 		and PR.AGENC='$LOGINOR_AGENCE'
---and ARTICLE.NOART='02023140'
-and NOMFO='AIRPAC'
-	and ((PR.PRV03='E' AND PV.PVT09='E') -- tarif encours
-			OR
-		(PR.PRV03='A' AND PV.PVT09='A')) -- tarif a venir
+--	and ARTICLE.NOART='02023140'
+--	and ((PR.PRV03='E' AND PV.PVT09='E') -- tarif encours
+--			OR
+--		(PR.PRV03='A' AND PV.PVT09='A')) -- tarif a venir
+	and (CONCAT(PRVDS,CONCAT(PRVDA,CONCAT(PRVDM,PRVDJ))) > '$today_yyyymmdd' OR PR.PRV03='E')
+	and (CONCAT(PVEDS,CONCAT(PVEDA,CONCAT(PVEDM,PVEDJ))) > '$today_yyyymmdd' OR PV.PVT09='E')
+--	and CONCAT(PRVDS,CONCAT(PRVDA,CONCAT(PRVDM,PRVDJ)))=CONCAT(PVEDS,CONCAT(PVEDA,CONCAT(PVEDM,PVEDJ)))
+	and PR.PRV03=PV.PVT09
 	$where
 ORDER BY
 	ARTICLE.NOART ASC, TYPE_PR DESC, PRVDS DESC, PRVDA DESC, PRVDM DESC, PRVDJ DESC
@@ -134,7 +140,8 @@ EOT;
 			$tarif_encours['prix_vente']	= $row['PRIX_VENTE'];
 			continue;
 
-		} elseif ($row['TYPE_PR'] == 'A' && $row['TYPE_PV'] == 'A') { // tarif a venir --> on affiche
+	//	} elseif ($row['TYPE_PR'] == 'A' && $row['TYPE_PV'] == 'A') { // tarif a venir --> on affiche
+		} elseif ($row['DATE_APPLICATION_PR_YYYYMMDD'] > $today_yyyymmdd || $row['DATE_APPLICATION_PV_YYYYMMDD'] > $today_yyyymmdd) { // tarif a venir --> on affiche
 		
 			$worksheet->write( $i, NO_ARTICLE,			trim($row['NO_ARTICLE'])  ,$format_article);
 			$worksheet->write( $i, DESIGNATION ,		trim(trim($row['DESIGNATION1']).' '.trim($row['DESIGNATION2']).' '.trim($row['DESIGNATION3'])),$format_cell);
@@ -237,7 +244,7 @@ function valid_form(quoi) {
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 
-<h1>Comparaison des prix a venir v7</h1>
+<h1>Comparaison des prix à venir v7</h1>
 
 <form name="tarif" method="post" action="<?=$_SERVER['PHP_SELF']?>" style="margin-top:10px;">
 	<input type="hidden" name="provenance" value=""/>
