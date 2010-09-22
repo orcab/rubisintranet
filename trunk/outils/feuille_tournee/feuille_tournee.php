@@ -48,7 +48,7 @@ table#tournee tr.separateur { border-top:solid 3px black; }
 <script language="javascript">
 
 function modifie_date_liv(prepa,nobon,nocli) {
-	if (prepa == 'CLH' && !confirm("Bon fait par CHL, voulez vous vraiment l'exclure de la tournée ?")) {
+	if (prepa == 'CLH' && !confirm("Bon fait par CLH, voulez vous vraiment l'exclure de la tournée ?")) {
 		return ;
 	} else {
 		// faire un appel ajax pour modifier la date de livraison du bon au dimanche precedent.
@@ -69,7 +69,7 @@ function modifie_date_liv(prepa,nobon,nocli) {
 			success: function(result){
 						var json = eval('(' + result + ')') ;
 						//if (json['debug']) alert(''+json['debug']);
-						$('#exclure-'+nobon+'-'+nocli).hide(); // efface le bouton
+						$('#bon-'+nobon+'-'+nocli).hide(); // efface la ligne
 					}	
 		});
 	}
@@ -221,7 +221,7 @@ EOT;
 ?>
 				<tr class="separateur"><td colspan="7" class="adresse"><?=$val['adr_adh']?></td></tr>
 <?			} ?>
-			<tr style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
+			<tr id="bon-<?=$val['no_bon']?>-<?=$val['no_cli']?>" style="background-color:<?=$i&1?'#FBFBFB':'white'?>;">
 				<td><?=$val['prepa']?></td>
 				<td><?=$val['nom_adh']?></td>
 				<td><?=$val['no_bon']?></td>

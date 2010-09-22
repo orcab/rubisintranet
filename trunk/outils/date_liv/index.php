@@ -350,11 +350,12 @@ EOT;
 
 				// va chercher les cde adh associée et met a jour les date de livraison si celle si est plus recente que la date spéciifée
 				$sql = <<<EOT
-select	DISTINCT(CFCLB) as NUM_BON_ADH,
+select	DISTINCT(CFCLB) as NUM_BON_ADH,CFCLI,
 		DLSSB,DLASB,DLMSB,DLJSB -- date de livraison
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 DETAIL_CDE_FOURN
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 ENTETE_CDE_CLIENT
 			on		DETAIL_CDE_FOURN.CFCLB=ENTETE_CDE_CLIENT.NOBON
+				and DETAIL_CDE_FOURN.CFCLI=ENTETE_CDE_CLIENT.NOCLI
 where		CFBON='$num_cde'	-- n° de cde fournisseur
 		and CFDET=''			-- ligne pas annulée
 		and CFCLB<>''			-- cde special pour un adh
@@ -368,7 +369,7 @@ EOT;
 						$sql = <<<EOT
 update	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1
 set		DLSSB='$siecle', DLASB='$annee', DLMSB='$mois', DLJSB='$jour'
-where	NOBON='$row[NUM_BON_ADH]'
+where	NOBON='$row[NUM_BON_ADH]' and NOCLI='$row[CFCLI]'
 EOT;
 						$res2 = odbc_exec($loginor,$sql)  or die("Impossible d'enregistrer la date de livraison dans la cde adhérent : <br/>\n$sql");
 						$message .= "<div class=\"message\" style=\"color:green;\">Commande adhérent $row[NUM_BON_ADH] modifiée</div>\n";
