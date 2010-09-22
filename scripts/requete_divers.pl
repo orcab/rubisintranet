@@ -3,7 +3,6 @@
 use Data::Dumper;
 use Win32::ODBC;
 use strict ;
-use Config::IniFiles;
 require 'Phpconst2perlconst.pm';
 use Phpconst2perlconst ;
 use constant PROGRESSBAR_SIZE => 20;
