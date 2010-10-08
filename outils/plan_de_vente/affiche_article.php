@@ -79,14 +79,12 @@ table#article td.stock {
 	width:30px;
 	text-align:center;
 }
-table#article td.s0 { background-image:url('gfx/stock-0.png'); }
-table#article td.s1 { background-image:url('gfx/stock-1.png'); }
-table#article td.s2 { background-image:url('gfx/stock-2.png'); }
-table#article td.s3 { background-image:url('gfx/stock-3.png'); }
+table#article td.s0 { background-image:url('gfx/stock2-0.png'); }
+table#article td.s1 { background-image:url('gfx/stock2-1.png'); }
+table#article td.s2 { background-image:url('gfx/stock2-2.png'); }
+table#article td.s3 { background-image:url('gfx/stock2-3.png'); }
 
 table#article td.stock img { margin-top:20px; }
-
-
 
 
 div#dialogue {
