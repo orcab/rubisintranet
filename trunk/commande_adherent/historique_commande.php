@@ -358,6 +358,7 @@ $(document).ready(function() {
 		<th>Relances<br><input name="button_affiche_relance" type="button" class="button divers hide_when_print" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
 		<th style="vertical-align:top;" class="hide_when_print">PDF<br/>chiffré</th>
 		<th style="vertical-align:top;" class="hide_when_print">PDF</th>
+		<th style="vertical-align:top;" class="hide_when_print">Etiq</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -470,6 +471,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		</td>
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix_FR.png" alt="Edition PDF - Ligne F et R" /></a><br/><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix&options[]=ligne_R"><img src="../gfx/pdf-icon_sans_prix_R.png" alt="Edition PDF - Ligne R" style="margin-top:3px;"/></a></td>
+		<td style="text-align:center;" class="hide_when_print"><a href="edition_etiquette.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="gfx/icon_etiquette.png" alt="Edition Etiquette" /></a></td>
 	</tr>
 
 
@@ -517,7 +519,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td colspan="4">
 			Nombre de lignes : <?=$total_ligne?>
 		</td>
-		<td colspan="6">
+		<td colspan="9">
 			Total des montants : <?=$total_montant?> &euro;
 		</td>
 	</tr>
