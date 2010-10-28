@@ -40,15 +40,14 @@ $pdf->SetTextColor(0);
 $pdf->SetFont('helvetica','B',32);
 
 
-$pdf->Cell(0,10,$row_entete['NOMSB']);
-$pdf->Ln(30);
+$pdf->MultiCell(0,10,$row_entete['NOMSB']);
+$pdf->SetY(113);
 
-$pdf->Cell(0,10,$row_entete['RFCSB']);
-$pdf->Ln(30);
+$pdf->MultiCell(0,10,$row_entete['RFCSB']);
+$pdf->SetY(150);
 
 $pdf->SetFont('helvetica','B',40);
 $pdf->Cell(0,10,strtoupper($NOBON_escape));
-
 
 $pdf->Output('etiquette_'.$NOBON_escape.'('.crc32(uniqid()).').pdf','I');
 

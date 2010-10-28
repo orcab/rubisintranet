@@ -46,7 +46,7 @@ if (isset($_POST['filtre_createur']))	$_SESSION['anomalie_filtre_createur']	= $_
 if (isset($_POST['filtre_numero']))		$_SESSION['anomalie_filtre_numero']		= $_POST['filtre_numero'];
 if (isset($_POST['filtre_evolution']))	$_SESSION['anomalie_filtre_evolution']	= $_POST['filtre_evolution'];
 if (isset($_GET['filtre_classement']))	$_SESSION['anomalie_filtre_classement'] = $_GET['filtre_classement'];
-if (eregi('detail_fournisseur\.php',$_SERVER['HTTP_REFERER']))  $_SESSION['anomalie_from_fiche_fournisseur'] = $_GET['filtre_fournisseur']; // on arrive des fiches fournisseurs
+if (isset($_SERVER['HTTP_REFERER']) && eregi('detail_fournisseur\.php',$_SERVER['HTTP_REFERER']))  $_SESSION['anomalie_from_fiche_fournisseur'] = $_GET['filtre_fournisseur']; // on arrive des fiches fournisseurs
 
 if (isset($_SERVER['HTTP_REFERER']) && eregi('historique_anomalie.php',$_SERVER['HTTP_REFERER'])) { // si on vient d'une recherche, on modifie les coches
 	if (isset($_POST['action']) && $_POST['action']=='saisie_commentaire'	||	// ne rien faire si l'on vient de saisir un commentaire
@@ -132,6 +132,16 @@ EOT;
 a img { border:none; }
 
 input,textarea { border:solid 2px #AAA; }
+
+div#blackscreen {
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:100%;
+	height:100%;
+	background-color:rgba(0,0,0,0.6);
+	display:none;
+}
 
 table#historique-anomalie th { border:solid 1px grey; background:#DDD;font-size:0.8em; }
 
@@ -219,7 +229,10 @@ function commentaire_anomalie(numero) {
 	$('#commentaire_numero').text(numero) ;
 	$('#commentaire').css('top',document.body.scrollTop +100);
 	$('#commentaire').css('left',screen.availWidth / 2 - 300);
-	$('#commentaire').show();
+
+	$('#blackscreen').fadeIn( 500 ,function() {
+		$('#commentaire').show();
+	});
 
 	document.historique_anomalie.commentaire_commentaire.focus();
 }
@@ -252,6 +265,7 @@ function liste_toute_commentaire() {
 
 function cache(id) {
 	$('#'+id).hide();
+	$('#blackscreen').fadeOut(500);
 }
 
 function envoi_formulaire(l_action) {
@@ -265,6 +279,8 @@ function envoi_formulaire(l_action) {
 </SCRIPT>
 </head>
 <body>
+
+<div id="blackscreen"></div>
 
 <!-- menu de naviguation -->
 <? include('../inc/naviguation.php'); ?>
@@ -349,7 +365,7 @@ function envoi_formulaire(l_action) {
 				<td>Date de départ</td>
 				<td>
 					<input type="text" id="filtre_date_inf" name="filtre_date_inf" value="<?=$_SESSION['anomalie_filtre_date_inf']?>" size="8">
-					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_inf.value='';">
+					<button id="trigger_inf" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_inf.value='';">
 					<script type="text/javascript">
 					  Calendar.setup(
 						{
@@ -379,7 +395,7 @@ function envoi_formulaire(l_action) {
 				<td>Date de fin</td>
 				<td>
 					<input type="text" id="filtre_date_sup" name="filtre_date_sup" value="<?=$_SESSION['anomalie_filtre_date_sup']?>" size="8">
-					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;) no-repeat left top;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_sup.value='';">
+					<button id="trigger_sup" style="background:url('../js/jscalendar/calendar.gif') no-repeat left top;border:none;cursor:pointer;">&nbsp;</button><img src="/intranet/gfx/delete_micro.gif" onclick="document.historique_anomalie.filtre_date_sup.value='';">
 					<script type="text/javascript">
 						Calendar.setup(
 						{
