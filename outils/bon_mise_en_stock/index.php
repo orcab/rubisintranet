@@ -29,10 +29,7 @@ EOT;
 
 	//si la commande ne correspond qu'a un seul fourn --> on affiche le bon de mise a dispo
 	if (sizeof($four) == 1) {
-				
 		include('edition_pdf.php');
-
-
 	}
 	elseif (sizeof($four) > 1) { // cas ou plusieurs fournisseur ont le meme n° de cde
 		$select_fou = "<select name=\"no_fou\">";
