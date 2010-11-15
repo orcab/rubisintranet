@@ -130,7 +130,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 		$y_up_rect = $pdf->GetY();
 
 		// affichage du code barre du produit si c'est pas un kit
-		if ($row['GENCO'] && $row['KIT'] != 'OUI') {
+		if (preg_match('/^\d{13}$/',$row['GENCO']) && $row['KIT'] != 'OUI') {
 			$pdf->SetFillColor(0,0,0); // noir
 			$pdf->EAN13(LEFT_MARGIN + REF_WIDTH + UNITE_WIDTH + PU_WIDTH + PT_WIDTH + QTE_WIDTH + DESIGNATION_DEVIS_WIDTH + 1.5, $y_up_rect , $row['GENCO'] , 5 , .20 );
 		}
