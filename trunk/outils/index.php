@@ -24,6 +24,10 @@ a:hover {
 	text-decoration:underline;
 }
 
+img:hover {
+	-moz-transform: scale(1.1);
+}
+
 </style>
 
 </head>

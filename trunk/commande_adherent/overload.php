@@ -84,6 +84,10 @@ class PDF extends FPDF
 		$this->Cell(16, 5 ,"N° Cde : ");
 		$this->Cell(104, 5 ,$row_entete['NOBON']);
 
+		//Link(float x, float y, float w, float h, mixed link)
+		//$this->Rect(LEFT_MARGIN,TOP_MARGIN -7,PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, 15);
+		$this->Link(LEFT_MARGIN, TOP_MARGIN -7 , PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN, 15, 'http://'.$_SERVER['SERVER_ADDR'].'/intranet/commande_adherent/edition_etiquette.php?NOBON='.$row_entete['NOBON'].'&NOCLI='.$row_entete['NOCLI']);
+
 		// representant
 		$this->SetFont('helvetica','',11);
 		$this->Cell(30, 5 ,"Date de livraison");

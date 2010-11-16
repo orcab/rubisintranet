@@ -9,6 +9,10 @@ $database	= mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 <head>
 <title>Edition du catalogue papier</title>
 <style type="text/css">@import url(../js/activite.css);</style>
+<style type="text/css">@import url(../js/boutton.css);</style>
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script language="JavaScript" SRC="../js/mobile.style.js"></script>
+
 <style>
 
 body,td{
@@ -19,7 +23,6 @@ body,td{
 a img { border:none; }
 a {	text-decoration:none; }
 a:hover { text-decoration:underline; }
-label { cursor:pointer; }
 
 option { font-size:0.7em; }
 
@@ -36,7 +39,6 @@ option.n4 { padding-left:30px;color:#999; }
 option.n5 { padding-left:40px;color:#BBB; }
 
 </style>
-<style type="text/css">@import url(../js/boutton.css);</style>
 
 <script language="javascript">
 <!--
@@ -82,12 +84,12 @@ EOT;
 <?				} ?>
 		</select><br/>
 		<div id="path">&nbsp;</div>
-		<div style="text-align:left;width:30%;"><label for="page_de_garde"><input id="page_de_garde" type="checkbox" name="page_de_garde" checked="checked" /> Ajouter les pages de garde</label></div>
-		<div style="text-align:left;width:30%;"><label for="index_ref"><input id="index_ref" type="checkbox" name="index_ref" /> Ajouter l'index des références fabriquant</label></div>
-		<div style="text-align:left;width:30%;"><label for="index_code"><input id="index_code" type="checkbox" name="index_code" /> Ajouter l'index des codes <?=SOCIETE?></label></div>
-		<div style="text-align:left;width:30%;"><label for="sommaire"><input id="sommaire" type="checkbox" name="sommaire" /> Ajouter le sommaire</label></div>
-		<div style="text-align:left;width:30%;"><label for="equipe"><input id="equipe" type="checkbox" name="equipe" /> Ajouter l'&eacute;quipe</label></div>
-		<div style="text-align:left;width:30%;"><label for="prix_a_venir"><input id="prix_a_venir" type="checkbox" name="prix_a_venir"  checked="checked" /> Prix à venir (si disponible)</label></div>
+		<label for="page_de_garde"	class="mobile mobile-block mobile-checked"	style="width:25em;"><input id="page_de_garde"	type="checkbox" name="page_de_garde" checked="checked"	/>Ajouter les pages de garde</label>
+		<label for="index_ref"		class="mobile mobile-block"					style="width:25em;"><input id="index_ref"		type="checkbox" name="index_ref"						/>Ajouter l'index des références fabriquant</label>
+		<label for="index_code"		class="mobile mobile-block"					style="width:25em;"><input id="index_code"		type="checkbox" name="index_code"						/>Ajouter l'index des codes <?=SOCIETE?></label>
+		<label for="sommaire"		class="mobile mobile-block"					style="width:25em;"><input id="sommaire"		type="checkbox" name="sommaire"							/>Ajouter le sommaire</label>
+		<label for="equipe"			class="mobile mobile-block"					style="width:25em;"><input id="equipe"			type="checkbox" name="equipe"							/>Ajouter l'&eacute;quipe</label>
+		<label for="prix_a_venir"	class="mobile mobile-block mobile-checked"	style="width:25em;"><input id="prix_a_venir"	type="checkbox" name="prix_a_venir"  checked="checked"	/>Prix à venir (si disponible)</label>
 		<br/>
 		<input type="submit" class="button valider pdf" value="Editer en PDF"/>
 		<div style="font-size:0.8em;">(attention certaine activit&eacute; peuvent demander un temps de traitement tr&egrave;s long)</div>

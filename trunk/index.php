@@ -28,6 +28,11 @@ a:hover {
 	text-decoration:underline;
 }
 
+img:hover {
+	-moz-transform: scale(1.1);
+}
+
+
 </style>
 
 <script type="text/javascript" src="js/jquery.js"></script>
