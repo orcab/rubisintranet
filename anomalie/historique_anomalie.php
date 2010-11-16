@@ -203,8 +203,9 @@ table#historique-anomalie table.commentaire caption {
 <script type="text/javascript" src="../js/jscalendar/calendar.js"></script>
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
-<SCRIPT LANGUAGE="JavaScript" SRC="../js/jquery.js"></SCRIPT>
-<SCRIPT LANGUAGE="JavaScript" SRC="../js/data_dumper.js"></SCRIPT>
+<script language="JavaScript" SRC="../js/jquery.js"></script>
+<script language="JavaScript" SRC="../js/mobile.style.js"></script>
+<script language="JavaScript" SRC="../js/data_dumper.js"></script>
 <script type="text/javascript" src="../js/tiny_mce/tiny_mce.js"></script>
 <script type="text/javascript">
 	tinyMCE.init({
@@ -273,7 +274,6 @@ function envoi_formulaire(l_action) {
 	document.historique_anomalie.submit();
 	return true;
 }
-
 
 //-->
 </SCRIPT>
@@ -414,20 +414,20 @@ function envoi_formulaire(l_action) {
 				<td style="text-align:left;"><input type="text" name="filtre_numero" value="<?=$_SESSION['anomalie_filtre_numero']?>" size="8"></td>
 			</tr>
 			<tr>
-				<td colspan="7">
-					<input type="checkbox" id="filtre_logistique" name="filtre_logistique" <?=$_SESSION['anomalie_filtre_logistique'] ? 'checked="on"':''?>/><label for="filtre_logistique">Logistique</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_commerce" name="filtre_commerce" <?=$_SESSION['anomalie_filtre_commerce'] ? 'checked="on"':''?>/><label for="filtre_commerce">Commerce</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_exposition" name="filtre_exposition" <?=$_SESSION['anomalie_filtre_exposition'] ? 'checked="on"':''?>/><label for="filtre_exposition">Exposition</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_administratif" name="filtre_administratif" <?=$_SESSION['anomalie_filtre_administratif'] ? 'checked="on"':''?>/><label for="filtre_administratif">Administratif</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_informatique" name="filtre_informatique" <?=$_SESSION['anomalie_filtre_informatique'] ? 'checked="on"':''?>/><label for="filtre_informatique">Informatique</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_litige" name="filtre_litige" <?=$_SESSION['anomalie_filtre_litige'] ? 'checked="on"':''?>/><label for="filtre_litige">Litige</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_autre" name="filtre_autre" <?=$_SESSION['anomalie_filtre_autre'] ? 'checked="on"':''?>/><label for="filtre_autre">Autre</label>
+				<td colspan="7" style="padding-top:5px;">
+					<label class="mobile<?=$_SESSION['anomalie_filtre_logistique']		? ' mobile-checked':''?>" for="filtre_logistique"	><input type="checkbox" id="filtre_logistique"		name="filtre_logistique"	<?=$_SESSION['anomalie_filtre_logistique']		? 'checked="on"':''?>/>Logistique</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_commerce']		? ' mobile-checked':''?>" for="filtre_commerce"		><input type="checkbox" id="filtre_commerce"		name="filtre_commerce"		<?=$_SESSION['anomalie_filtre_commerce']		? 'checked="on"':''?>/>Commerce</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_exposition']		? ' mobile-checked':''?>" for="filtre_exposition"	><input type="checkbox" id="filtre_exposition"		name="filtre_exposition"	<?=$_SESSION['anomalie_filtre_exposition']		? 'checked="on"':''?>/>Exposition</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_administratif']	? ' mobile-checked':''?>" for="filtre_administratif"><input type="checkbox" id="filtre_administratif"	name="filtre_administratif" <?=$_SESSION['anomalie_filtre_administratif']	? 'checked="on"':''?>/>Administratif</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_informatique']	? ' mobile-checked':''?>" for="filtre_informatique"	><input type="checkbox" id="filtre_informatique"	name="filtre_informatique"	<?=$_SESSION['anomalie_filtre_informatique']	? 'checked="on"':''?>/>Informatique</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_litige']			? ' mobile-checked':''?>" for="filtre_litige"		><input type="checkbox" id="filtre_litige"			name="filtre_litige"		<?=$_SESSION['anomalie_filtre_litige']			? 'checked="on"':''?>/>Litige</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_autre']			? ' mobile-checked':''?>" for="filtre_autre"		><input type="checkbox" id="filtre_autre"			name="filtre_autre"			<?=$_SESSION['anomalie_filtre_autre']			? 'checked="on"':''?>/>Autre</label>
 				</td>
 			<tr>
-				<td colspan="7">
-					<input type="checkbox" id="filtre_etat_a_traiter" name="filtre_etat_a_traiter" <?=$_SESSION['anomalie_filtre_etat_a_traiter'] ? 'checked="on"':''?>/><label for="filtre_etat_a_traiter">A traiter</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_etat_en_cours" name="filtre_etat_en_cours" <?=$_SESSION['anomalie_filtre_etat_en_cours'] ? 'checked="on"':''?>/><label for="filtre_etat_en_cours">En cours</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<input type="checkbox" id="filtre_etat_cloture" name="filtre_etat_cloture" <?=$_SESSION['anomalie_filtre_etat_cloture'] ? 'checked="on"':''?>/><label for="filtre_etat_cloture">Cloturé</label>
+				<td colspan="7" style="padding-top:10px;padding-bottom:10px;">
+					<label class="mobile<?=$_SESSION['anomalie_filtre_etat_a_traiter']	? ' mobile-checked':''?>" for="filtre_etat_a_traiter"	><input type="checkbox" id="filtre_etat_a_traiter"	name="filtre_etat_a_traiter"	<?=$_SESSION['anomalie_filtre_etat_a_traiter'] ? 'checked="on"':''?>/>A traiter</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_etat_en_cours']	? ' mobile-checked':''?>" for="filtre_etat_en_cours"	><input type="checkbox" id="filtre_etat_en_cours"	name="filtre_etat_en_cours"		<?=$_SESSION['anomalie_filtre_etat_en_cours'] ? 'checked="on"':''?>	/>En cours</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_etat_cloture']	? ' mobile-checked':''?>" for="filtre_etat_cloture"		><input type="checkbox" id="filtre_etat_cloture"	name="filtre_etat_cloture"		<?=$_SESSION['anomalie_filtre_etat_cloture'] ? 'checked="on"':''?>	/>Cloturé</label>
 				</td>
 			</tr>
 		</table>

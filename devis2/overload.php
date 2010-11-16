@@ -31,7 +31,7 @@ class PDF extends FPDF
 	{	global $values,$SOCIETE,$options,$_POST,$id_devis,$date ;
 		
 		if (in_array('px_adh',$options))
-			$this->Image('gfx/filigranne_devis.png',0 ,0, 210, 297); // filigranne en fond de page
+			$this->Image('gfx/filigranne_devis.png',0 ,0, PAGE_WIDTH, PAGE_HEIGHT); // filigranne en fond de page
 
 		// logo gauche et droite en haut de page si le theme le demande
 		//if (eregi('_avec_entete$',$values['devis.theme'])) {

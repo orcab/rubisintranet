@@ -356,9 +356,11 @@ class PDF extends FPDF
 		//Add or control the check digit
 		if(strlen($barcode)==12)
 			$barcode.=$this->GetCheckDigit($barcode);
-		elseif(!$this->TestCheckDigit($barcode))
-			$this->Error('Incorrect check digit');
-		//Convert digits to bars
+		elseif(!$this->TestCheckDigit($barcode)) {
+			//$this->Error('Incorrect check digit');
+			echo "Lib Code39: Incorrect check digit\n";
+			return;
+		}
 		$codes=array(
 			'A'=>array(
 				'0'=>'0001101', '1'=>'0011001', '2'=>'0010011', '3'=>'0111101', '4'=>'0100011',
@@ -461,8 +463,10 @@ class PDF extends FPDF
     for($i=0; $i<strlen($code); $i++){
         $char = $code[$i];
         if(!isset($barChar[$char])){
-            $this->Error('Invalid character in barcode: '.$char);
-        }
+				//$this->Error('Invalid character in barcode: '.$char);
+				echo 'Lib Code39: Invalid character in barcode: '.$char."\n";
+				return;
+			}
         $seq = $barChar[$char];
         for($bar=0; $bar<9; $bar++){
             if($seq[$bar] == 'n'){

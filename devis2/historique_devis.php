@@ -165,8 +165,9 @@ tr.brouillon {
 <script type="text/javascript" src="../js/jscalendar/calendar.js"></script>
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
-<SCRIPT LANGUAGE="JavaScript" SRC="../js/jquery.js"></SCRIPT>
-<SCRIPT LANGUAGE="JavaScript" SRC="../js/data_dumper.js"></SCRIPT>
+<script language="JavaScript" SRC="../js/jquery.js"></script>
+<script language="JavaScript" SRC="../js/mobile.style.js"></script>
+<script language="JavaScript" SRC="../js/data_dumper.js"></script>
 <script type="text/javascript" src="../js/tiny_mce/tiny_mce.js"></script>
 <script type="text/javascript">
 	tinyMCE.init({
@@ -426,12 +427,7 @@ function telecharger_excel(sql) {
 			<tr>
 				<td>Jour sans relance</td>
 				<td><input type="text" name="filtre_jour_relance" value="<?=$_SESSION['devis_expo_filtre_jour_relance']?>" size="1"></td>
-				<td style="text-align:right;"><label for="filtre_relance">Afficher uniquement les relances : </label></td>
-				<td><input id="filtre_relance" type="checkbox" name="filtre_relance" value="on"<?=$_SESSION['devis_expo_filtre_relance'] ? ' checked':''?>></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
+				<td colspan="6" style="text-align:center;padding-bottom:5px;"><label for="filtre_relance" class="mobile<?=$_SESSION['devis_expo_filtre_relance'] ? ' mobile-checked':''?>"><input id="filtre_relance" type="checkbox" name="filtre_relance" value="on"<?=$_SESSION['devis_expo_filtre_relance'] ? ' checked':''?>/>Afficher uniquement les relances</label></td>
 				<td>
 					<select name="filtre_commande">
 						<option value="devis"<?=$_SESSION['devis_expo_filtre_commande']=='devis'?' selected':''?>>Afficher uniquement devis</option>

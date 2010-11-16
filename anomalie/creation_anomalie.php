@@ -253,6 +253,7 @@ select#completion_fourn {
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
 <script type="text/javascript" src="../js/jquery.js"></script>
+<script language="JavaScript" SRC="../js/mobile.style.js"></script>
 <script type="text/javascript" src="../js/tiny_mce/tiny_mce.js"></script>
 <script type="text/javascript">
 	tinyMCE.init({
@@ -522,13 +523,13 @@ $(document).ready(function(){
 		<th>Pôle<br/>concerné(s)</th>
 		<td colspan="2">
 <?			if (($id && $can_edit) || !$id) { ?>
-				<input type="checkbox" id="pole_logistique" name="pole_logistique" <?= ($id && $row_anomalie['pole'] & POLE_LOGISTIQUE) ? 'checked="on"':'' ?>/> <label for="pole_logistique">Logistique</label><br/>
-				<input type="checkbox" id="pole_commerce" name="pole_commerce" <?= ($id && $row_anomalie['pole'] & POLE_COMMERCE) ? 'checked="on"' : '' ?>/> <label for="pole_commerce">Commerce</label><br/>
-				<input type="checkbox" id="pole_exposition" name="pole_exposition" <?= ($id && $row_anomalie['pole'] & POLE_EXPOSITION) ? 'checked="on"':'' ?>/> <label for="pole_exposition">Exposition</label><br/>
-				<input type="checkbox" id="pole_administratif" name="pole_administratif" <?= ($id && $row_anomalie['pole'] & POLE_ADMINISTRATIF) ? 'checked="on"':'' ?>/> <label for="pole_administratif">Administratif</label><br/>
-				<input type="checkbox" id="pole_informatique" name="pole_informatique" <?= ($id && $row_anomalie['pole'] & POLE_INFORMATIQUE) ? 'checked="on"':'' ?>/> <label for="pole_informatique">Informatique</label><br/>
-				<input type="checkbox" id="pole_litige" name="pole_litige" <?= ($id && $row_anomalie['pole'] & POLE_LITIGE) ? 'checked="on"':'' ?>/> <label for="pole_litige">Litige</label><br/>
-				<input type="checkbox" id="pole_autre" name="pole_autre" <?= ($id && $row_anomalie['pole'] & POLE_AUTRE) ? 'checked="on"':'' ?>/> <label for="pole_autre">Autres</label> (précisez)
+				<label for="pole_logistique"	class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_LOGISTIQUE)	?' mobile-checked':'' ?>"><input type="checkbox" id="pole_logistique"		name="pole_logistique"		<?=($id && $row_anomalie['pole'] & POLE_LOGISTIQUE) ?	'checked="on"':'' ?>/>Logistique</label>
+				<label for="pole_commerce"		class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_COMMERCE)		?' mobile-checked':'' ?>"><input type="checkbox" id="pole_commerce"			name="pole_commerce"		<?=($id && $row_anomalie['pole'] & POLE_COMMERCE) ?		'checked="on"':'' ?>/>Commerce</label>
+				<label for="pole_exposition"	class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_EXPOSITION)	?' mobile-checked':'' ?>"><input type="checkbox" id="pole_exposition"		name="pole_exposition"		<?=($id && $row_anomalie['pole'] & POLE_EXPOSITION) ?	'checked="on"':'' ?>/>Exposition</label>
+				<label for="pole_administratif" class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_ADMINISTRATIF)?' mobile-checked':'' ?>"><input type="checkbox" id="pole_administratif"	name="pole_administratif"	<?=($id && $row_anomalie['pole'] & POLE_ADMINISTRATIF) ?'checked="on"':'' ?>/>Administratif</label>
+				<label for="pole_informatique"	class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_INFORMATIQUE) ?' mobile-checked':'' ?>"><input type="checkbox" id="pole_informatique"		name="pole_informatique"	<?=($id && $row_anomalie['pole'] & POLE_INFORMATIQUE) ?	'checked="on"':'' ?>/>Informatique</label>
+				<label for="pole_litige"		class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_LITIGE)		?' mobile-checked':'' ?>"><input type="checkbox" id="pole_litige"			name="pole_litige"			<?=($id && $row_anomalie['pole'] & POLE_LITIGE) ?		'checked="on"':'' ?>/>Litige</label>
+				<label for="pole_autre"			class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_AUTRE)		?' mobile-checked':'' ?>"><input type="checkbox" id="pole_autre"			name="pole_autre"			<?=($id && $row_anomalie['pole'] & POLE_AUTRE) ?		'checked="on"':'' ?>/>Autres (précisez)</label>
 <?			} else { ?>
 				<?= $row_anomalie['pole'] & POLE_LOGISTIQUE		? 'Logisitique<br/>':'' ?>
 				<input type="hidden" name="pole_logistique"		value="<?=$row_anomalie['pole']&POLE_LOGISTIQUE?'on':''?>" />
