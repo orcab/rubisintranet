@@ -18,7 +18,7 @@ $|=1;
 print print_time()."START\n";
 
 # charge la config en mémoire
-my $cfg  = new Config::IniFiles( -file => "pop2rubis.ini" , -nocase=>1 ) or die "Impossible de charger le fichier de config 'pop2rubis.ini'";
+my $cfg  = new Config::IniFiles( -file => 'pop2rubis.ini' , -nocase=>1 ) or die "Impossible de charger le fichier de config 'pop2rubis.ini'";
 my $data = {} ;
 
 
@@ -50,7 +50,7 @@ if (defined($authentification) && $authentification > 0) {
 		my $subject   = $cfg->val('pop3','valid_subject');
 
 		# procedure de la validation que l'email est bien une commande
-		if ($email->header('To')		eq $cfg->val('pop3','valid_to') && $email->header('Subject')	=~ m/^$subject/i) { # ok l'email est valide, on l'examine
+		if ($email->header('To') eq $cfg->val('pop3','valid_to') && $email->header('Subject') =~ m/^$subject/i) { # ok l'email est valide, on l'examine
 			my ($code_client) = ($email->header('Subject') =~ m/\((.+?)\)$/i);
 			my $code_cab = '';
 			if ($code_client =~ /^CAB(\d+)$/i) {
@@ -60,7 +60,7 @@ if (defined($authentification) && $authentification > 0) {
 
 
 			my $ligne = 1;
-			print print_time()."Commande found ($msgnum). Parsing,";
+			print print_time()."Commande found from $code_client Parsing,";
 			$data->{$messageId} = {	'SNOCLI'=>$code_client,
 									'SNTBOS'=>'', 'SNTBOA'=>'', 'SNTBOM'=>'', 'SNTBOJ'=>'', # date du bon
 									'SNTLIS'=>'', 'SNTLIA'=>'', 'SNTLIM'=>'', 'SNTLIJ'=>'', # date de livraison
@@ -91,7 +91,7 @@ if (defined($authentification) && $authentification > 0) {
 
 				} elsif (/^\s*adresse\s*de livraison\s*=(.*)/i) { # adresse de livraison
 					my $adr_liv = $1;
-					$adr_liv =~ s/< *br *\/ *?>//ig; # supprime les <br> dans le texte
+					$adr_liv =~ s/< *br *\/? *>//ig; # supprime les <br> dans le texte
 					$Text::Wrap::columns	= 55;
 					$Text::Wrap::separator	= "\x0D" ;
 					foreach my $tmp (split(/\x0D/,  wrap('','',$adr_liv)  )) { # pour chaque ligne de commentaire
@@ -119,7 +119,7 @@ if (defined($authentification) && $authentification > 0) {
 				} elsif (/^\s*commentaire\s*=(.*)/i) { # commentaire sur la commande
 					#on vérifie que le com ne fait pas plus de 60 caractere de long --> sinon on coupe (on rajoute un \x0D)
 					my $com = $1;
-					$com =~ s/< *br *\/ *?>//ig; # supprime les <br> dans le texte
+					$com =~ s/< *br *\/? *>//ig; # supprime les <br> dans le texte
 					$Text::Wrap::columns	= 55;
 					$Text::Wrap::separator	= "\x0D" ;
 					foreach my $tmp (split(/\x0D/,  wrap('','',$com)  )) { # pour chaque ligne de commentaire
