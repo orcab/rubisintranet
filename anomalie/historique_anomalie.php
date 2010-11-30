@@ -180,6 +180,7 @@ div#commentaire {
 	background:white;
 	display:none;
 	position:absolute;
+	z-index:99;
 }
 
 table#historique-anomalie table.commentaire td {
