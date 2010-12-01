@@ -10,13 +10,12 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 // Liste des vendeur
 $vendeurs = select_vendeur();
 
-
 $arguments = array();
-if (isset($argv)) { // des param en lignes de commandes car l'on veut forcé un artisan et une date
+if (isset($argv)) { // des param en lignes de commandes car l'on veut forcer un artisan et une date
 	foreach ($argv as $t)
-		if (preg_match('/^date=(\d{4}-\d{2}-\d{2})$/i',$t,$regs))
+		if (preg_match('/^--date=(\d{4}-\d{2}-\d{2})$/i',$t,$regs))
 			$arguments['date'] = $regs[1];
-		else if (preg_match('/^artisan=(.+)$/i',$t,$regs))
+		else if (preg_match('/^--artisan=(.+)$/i',$t,$regs))
 			$arguments['artisan'] = $regs[1];
 }
 
@@ -25,7 +24,7 @@ $now			= isset($arguments['date']) ? date('Ymd',strtotime($arguments['date'])) :
 
 $where_artisan  = isset($arguments['artisan']) ? " AND artisan.numero='$arguments[artisan]' " : '' ;
 
-// recupère la liste des adhérents ayant un email et leur préférence d'envoi rensignées
+// recupère la liste des adhérents ayant un email et leur préférence d'envoi renseignées
 $sql = <<<EOT
 SELECT	nom,numero_artisan,email,AR,BL,RELIQUAT,AVOIR
 FROM	artisan,send_document
@@ -115,21 +114,20 @@ EOT;
 
 		$titre ='';  $nb_bon = 0 ;
 		if ($type_doc == 'AR' && in_array($day_number,$jour_envoi)) {
-			
 			require('AR.php');
 			$titre = "MCS : Liste des Acuses de reception $date_affichable";
 
-		} elseif ($type_doc == 'BL' && in_array($day_number,$jour_envoi)) {
 
+		} elseif ($type_doc == 'BL' && in_array($day_number,$jour_envoi)) {
 			require('BL.php');
 			$titre = "MCS : Liste des Bons de livraison $date_affichable";
 
+
 		} elseif ($type_doc == 'RELIQUAT' && in_array($day_number,$jour_envoi)) { // si l'on doit envoyer le reliquat ce jour là
-			
 			require('RELIQUAT.php');
 			$titre = "MCS : Liste des reliquats au $date_jour";
+
 		} elseif ($type_doc == 'AVOIR' && in_array($day_number,$jour_envoi)) { // si l'on doit envoyer l'avoir ce jour là
-			
 			require('AVOIR.php');
 			$titre = "MCS : Liste des Avoirs au $date_affichable";
 		}
@@ -142,10 +140,10 @@ EOT;
 			require_once '../../inc/xpm2/smtp.php';
 			$mail = new SMTP;
 			$mail->Delivery('relay');
-			$mail->Relay(SMTP_SERVEUR);
+			$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 			//$mail->AddTo('benjamin.poulain@coopmcs.com', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
 			$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-			$mail->From('benjamin.poulain@coopmcs.com');
+			$mail->From('no-reply@coopmcs.com');
 
 			$mail->Html($html);
 			$sent = $mail->Send($titre);

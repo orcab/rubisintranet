@@ -32,7 +32,6 @@ tr.fournisseur > td:first-child { /* premiere case qui contient le nom du fourni
 	border:solid 1px grey;
 	border-top:none;
 	font-weight:bold;
-	background:url(gfx/arrow-mini.png) no-repeat 10px center;
 	padding:3px;
 	padding-left:23px;
 }
@@ -44,8 +43,18 @@ tr.fournisseur > td:nth-child(2) { /* deuxieme case qui contient l'ajout de com'
 	width:30px;
 }
 
-tr.fournisseur:hover { background-color:#e8f6f8; }
-tr.fournisseur > td:nth-child(2):hover { background-color:#FFA; } /* deuxieme case qui contient l'ajout de com' */
+tr.fournisseur			{	background-image:-moz-linear-gradient( top , #fdfdfd, #eee );	}
+tr.fournisseur:hover	{
+	color:white;
+	text-shadow:grey 0px -1px;
+	-moz-box-shadow: 0 0 9px #6a9dca;
+	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
+}
+
+/* supprime la bordure entre le nom et le numero de l'artisan */
+tr.fournisseur > td:first-child { border-right:none; }
+tr.fournisseur > td:nth-child(2) { border-left:none; }
+
 table#liste-fournisseur td:first-child, table#liste-fournisseur td:nth-child(2) { border-top:solid 1px grey; } /* premiere et 2eme case fournisseur */
 table#liste-fournisseur { cursor:pointer; }
 
