@@ -61,6 +61,7 @@ img:hover {
 	</td>
 	<td style="width:50%;padding-bottom:20px;">
 		<!--<a href="cde_spe_non_livre/index.php"><img src="cde_spe_non_livre/gfx/cde_spe_non_livre.png"><br>Suivi des cde sp&eacute;cial</a>-->
+		<a href="fiche_adherent/index.php"><img src="fiche_adherent/gfx/fiche_adherent.png"><br>Fiches adhérents</a>
 	</td>
 </tr>
 
