@@ -74,6 +74,7 @@ if($modif) { // modif
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
 <script type="text/javascript" src="paging.js"></script>
 <script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/mobile.style.js"></script>
 <script language="javascript">
 
 var auto_save = true;
@@ -617,9 +618,7 @@ div#sauvegarde {
 	</td>
 </tr>
 <tr>
-	<td><input type="checkbox" id="discret_mode" name="discret_mode" /><label for="discret_mode" style="font-size:0.8em;">Mode spécial</label></td>
-	<td></td>
-	<td></td>
+	<td colspan="3"><label for="discret_mode" class="mobile"><input type="checkbox" id="discret_mode" name="discret_mode"/>Mode spécial</label></td>
 	<th>Email</th>
 	<td>
 		<input type="text" name="client_email" TABINDEX="13" value="<?= $modif ? $row_devis['email_client']: ''?>" size="45">
