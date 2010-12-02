@@ -36,7 +36,7 @@ while(($row_stat	= odbc_fetch_array($res_stat)) && ($i++<7)) {
 // Set the basic parameters of the graph 
 $graph = new PieGraph(500,510);
 //$graph->SetMargin(100,100,100,100);
-$graph->title->Set('CA 7 premieres activités');
+$graph->title->Set('CA 7 premieres activités sur 12 derniers mois');
 $graph->title->SetFont(FF_FONT1,FS_BOLD);
 $graph->SetShadow();
 $graph->SetBox(true,array(0,0,0),1);
@@ -57,7 +57,7 @@ $p1->value->SetColor('black');
 $p1->value->Show();
 
 // Setup the title on the center circle
-$p1->midtitle->Set("CA par activité\nen Keuros");
+$p1->midtitle->Set("CA par activité\nen Keuros\nsur 12 derniers mois");
 $p1->midtitle->SetFont(FF_ARIAL,FS_NORMAL,13);
 
 // Set color for mid circle
