@@ -3,6 +3,8 @@
 include('../inc/config.php');
 require_once('overload.php');
 
+//error_reporting(E_ALL ^ E_NOTICE);
+
 define('DEBUG',isset($_GET['debug'])?TRUE:FALSE);
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
@@ -90,6 +92,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 	$row_original = $row ;
 	$row =array_map('trim',$row);
 
+	//echo $row['CODAR'];
+
 	if ($row['PROFI'] == 9) { // cas d'un commentaire
 		if ($row['CONSA']) {
 			if (ereg('^ +',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
@@ -131,7 +135,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 				$designation .= "\n".trim($commentaire_row['CDLIB']);
 
 		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde demandé sans prix
-			if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniquement les lignes R
+
+			if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) { // uniquement les lignes R
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => $row['CODAR']."\n#".$row['NOLIG']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
@@ -140,9 +145,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
 					array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
-					)
-				);
-			else
+					));
+			} else {
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => $row['CODAR']."\n#".$row['NOLIG']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
@@ -150,9 +154,11 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
 					array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
-					)
-				);
+					));
+			}
+
 		} else { // demandé AVEC prix
+
 			$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 				array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 				array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
@@ -162,14 +168,36 @@ while($row = odbc_fetch_array($detail_commande)) {
 				array('text' => sprintf('%0.2f',round($row['PRINE'],2)).EURO	, 'text-align' => 'R'), // prix unitaire après remise
 				array('text' => $row['MONHT'].EURO	, 'text-align' => 'R'), // total après remise
 				array('text' => $row['TYCDD']=='SPE' ? 'S' :''	, 'text-align' => 'R') // spécial ou pas
-				)
-			);
+				));
+
 		} // fin avec ou sans prix
 		
 		//print_r($kit);exit;
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
-			foreach ($kit[$row['DET97']] as $ligne)
-				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+			foreach ($kit[$row['DET97']] as $ligne) {
+				if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis demandé sans prix
+					if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) { // uniquement les lignes R
+						$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+								array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8')
+							));
+					} else {
+						$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+								array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+								array('text' => '','text-align'=>'R','font-size'=>'8'),
+							));
+					}
+				} else {
+					$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 								array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
 								array('text' => '','text-align'=>'R','font-size'=>'8'),
 								array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
@@ -178,9 +206,9 @@ while($row = odbc_fetch_array($detail_commande)) {
 								array('text' => '','text-align'=>'R','font-size'=>'8'),
 								array('text' => '','text-align'=>'R','font-size'=>'8'),
 								array('text' => '','text-align'=>'R','font-size'=>'8')
-							)
-						);
-			
+							));
+				}
+			} // fin kit
 			unset($kit[$row['DET97']]);
 		}
 
