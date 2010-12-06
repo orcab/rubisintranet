@@ -188,6 +188,15 @@ div#interventions {
 	margin-top:20px;
 }
 
+div#statistiques {
+	-moz-border-radius:6px;
+	border:solid 1px grey;
+	width:99%;
+	margin:auto;
+	margin-top:20px;
+	text-align:center;
+}
+
 select#commentaire_type option {
 	padding-left:20px;
 	background-repeat:no-repeat;
@@ -236,6 +245,31 @@ div#blackscreen {
 <script type="text/javascript" src="../../js/uploadify/swfobject.js"></script>
 <script type="text/javascript" src="../../js/uploadify/jquery.uploadify.v2.1.0.min.js"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+
+<!-- pour le slider -->
+<script type="text/javascript" src="../../js/jquery.ui.all.js"></script>
+<script type="text/javascript" src="../../js/slider2/selectToUISlider.jQuery.js"></script>
+<link type="text/css" href="../../js/theme/ui.core.css" rel="Stylesheet" />	
+<link rel="stylesheet" href="../../js/slider2/ui.theme.css" type="text/css" title="ui-theme" />
+<link rel="stylesheet" href="../../js/theme/ui.slider.css" type="text/css" />
+<link rel="Stylesheet" href="../../js/slider2/ui.slider.extras.css" type="text/css" />
+
+<style type="text/css">
+	/*form { margin: 0 30px;}*/
+	fieldset#slider { border:0; margin-top: 1em;}
+	.ui-slider {clear: both; top: 15px;}
+</style>
+<script type="text/javascript">
+$(function(){
+	$('select#valueA, select#valueB').selectToUISlider({
+		labels: 10
+	});
+});
+</script>
+
+
+
+
 <script type="text/javascript">
 	tinyMCE.init({
 		mode : 'textareas',
@@ -725,12 +759,76 @@ EOT;
 		</div>
 </div>
 
-<fieldset style="margin:auto;margin-top:10px;width:88%;text-align:center;"><legend>Statisitiques <img src="gfx/stats.png"/></legend>
-<img src="graph_ca_nbbon.php?numero_artisan=<?=$id?>"/><br/><br/>
-<img src="graph_emp_liv.php?numero_artisan=<?=$id?>"/>
-<img src="graph_emp_liv_ca.php?numero_artisan=<?=$id?>"/>
-<img src="graph_activite_pie.php?numero_artisan=<?=$id?>"/>
-</fieldset>
+
+<div id="statistiques">
+	<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
+	Statisitiques <img src="gfx/stats.png"/>
+	</div>
+	<fieldset id="slider" style="margin-bottom:30px;font-size:0.7em;">
+		<label for="valueA" class="sentence" style="display:none;">Depuis :</label>
+
+		<select name="valueA" id="valueA" style="display:none;">
+<?			$mois_mini = array('Jan','Fev','Mar','Avr','Mai','Jui','Jul','Aou','Sep','Oct','Nov','Dec');
+			$mois_start = '';
+			for($i=2006 ; $i <= date('Y') ; $i++) {
+				for($j=0 ; $j<sizeof($mois_mini) ; $j++) {	?>
+					<option value="<?=sprintf('%02d',$j+1)."/$i"?>" <?
+						if ($i+1 == date('Y') && $j+1 == date('m')) {
+							echo 'selected="selected"';
+							$mois_start = $i.sprintf('%02d',$j+1);
+						} else {
+							echo '';
+						}
+					?>><?=$mois_mini[$j]." $i"?></option>
+<?						if ($i == date('Y') && $j+1 == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
+				}
+			}
+?>		</select>
+
+		<label for="valueB" class="sentence" style="display:none;">Jusqu'à :</label>
+		<select name="valueB" id="valueB" style="display:none;">
+<?			$mois_end	= '';
+			for($i=2006 ; $i <= date('Y') ; $i++) {
+				for($j=0 ; $j<sizeof($mois_mini) ; $j++) {	?>
+					<option value="<?=sprintf('%02d',$j+1)."/$i"?>" <?
+						if ($i == date('Y') && $j+1 == date('m')) {
+							echo 'selected="selected"';
+							$mois_end	= $i.sprintf('%02d',$j+1);
+						} else {
+							echo '';
+						}
+					?>><?=$mois_mini[$j]." $i"?></option>
+<?						if ($i == date('Y') && $j+1 == date('m')) break; // pour ne pas afficher les mois de l'année en cours qui ne sont pas passé
+				}
+			}
+?>		</select>
+	
+		<input type="button" class="button valider" value="Afficher" style="margin-top:40px;" onclick="reload_stats();"/>
+	</fieldset>
+
+<script>
+
+function reload_stats() {
+	var tmp	= document.selecteur.valueA.options[document.selecteur.valueA.selectedIndex].value.split(/\//);
+	var mois_start	= tmp[1].toString() + tmp[0].toString();
+	var tmp	= document.selecteur.valueB.options[document.selecteur.valueB.selectedIndex].value.split(/\//);
+	var mois_end	= tmp[1].toString() + tmp[0].toString();
+	//alert(mois_start);
+	
+	$('#graph_ca_nbbon')	.attr('src','graph_ca_nbbon.php?numero_artisan=<?=$id?>&mois_start='+mois_start+'&mois_end='+mois_end);
+	$('#graph_emp_liv')		.attr('src','graph_emp_liv.php?numero_artisan=<?=$id?>&mois_start='+mois_start+'&mois_end='+mois_end);
+	$('#graph_emp_liv_ca')	.attr('src','graph_emp_liv_ca.php?numero_artisan=<?=$id?>&mois_start='+mois_start+'&mois_end='+mois_end);
+	$('#graph_activite_pie').attr('src','graph_activite_pie.php?numero_artisan=<?=$id?>&mois_start='+mois_start+'&mois_end='+mois_end);
+}
+
+</script>
+	
+
+<img id="graph_ca_nbbon" src="graph_ca_nbbon.php?numero_artisan=<?=$id?>&mois_start=<?=$mois_start?>&mois_end=<?=$mois_end?>"/><br/><br/>
+<img id="graph_emp_liv" src="graph_emp_liv.php?numero_artisan=<?=$id?>&mois_start=<?=$mois_start?>&mois_end=<?=$mois_end?>"/>
+<img id="graph_emp_liv_ca" src="graph_emp_liv_ca.php?numero_artisan=<?=$id?>&mois_start=<?=$mois_start?>&mois_end=<?=$mois_end?>"/>
+<img id="graph_activite_pie" src="graph_activite_pie.php?numero_artisan=<?=$id?>&mois_start=<?=$mois_start?>&mois_end=<?=$mois_end?>"/>
+</div>
 
 </form>
 </body>

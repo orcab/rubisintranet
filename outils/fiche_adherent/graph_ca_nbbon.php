@@ -6,8 +6,8 @@ include('../../inc/jpgraph/src/jpgraph_bar.php');
 
 $mois = array('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec');
 
-$previous_month = date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')));
-$one_year_ago	= date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')-1));
+$previous_month = isset($_GET['mois_end'])		&& $_GET['mois_end']	? $_GET['mois_end']		: date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')));
+$one_year_ago	= isset($_GET['mois_start'])	&& $_GET['mois_start']	? $_GET['mois_start']	: date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')-1));
 
 $loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
@@ -68,7 +68,9 @@ $graph = new Graph(800,300);
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
 $graph->SetMargin(70,50,50,60);
-$graph->title->Set('Evolution des 12 derniers mois');
+$date_split_start	= array(substr($one_year_ago,0,4),substr($one_year_ago,4,2));
+$date_split_end		= array(substr($previous_month,0,4),substr($previous_month,4,2));
+$graph->title->Set("Evolution du $date_split_start[1]/$date_split_start[0]\nau $date_split_end[1]/$date_split_end[0]");
 
 $graph->SetScale('textlin');
 $graph->SetY2Scale('lin');

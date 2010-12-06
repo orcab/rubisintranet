@@ -4,8 +4,8 @@ include('../../inc/config.php');
 require_once ('../../inc/jpgraph-3.5.0b1/src/jpgraph.php');
 require_once ('../../inc/jpgraph-3.5.0b1/src/jpgraph_pie.php');
 
-$previous_month = date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')));
-$one_year_ago	= date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')-1));
+$previous_month = isset($_GET['mois_end'])		&& $_GET['mois_end']	? $_GET['mois_end']		: date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')));
+$one_year_ago	= isset($_GET['mois_start'])	&& $_GET['mois_start']	? $_GET['mois_start']	: date('Ym',mktime(0, 0, 0, date('m')-1,date('d'),date('Y')-1));
 
 $sql = <<<EOT
 select	SUM(MONHT) as CA, FAMILLE.ACFLI as LIBELLE_FAMILLE,FAMILLE.AFCAC as CODE_FAMILLE
@@ -36,7 +36,7 @@ while(($row_stat	= odbc_fetch_array($res_stat)) && ($i++<7)) {
 // Set the basic parameters of the graph 
 $graph = new PieGraph(500,510);
 //$graph->SetMargin(100,100,100,100);
-$graph->title->Set('CA 7 premieres activités sur 12 derniers mois');
+$graph->title->Set('CA 7 premieres activités');
 $graph->title->SetFont(FF_FONT1,FS_BOLD);
 $graph->SetShadow();
 $graph->SetBox(true,array(0,0,0),1);
@@ -57,7 +57,9 @@ $p1->value->SetColor('black');
 $p1->value->Show();
 
 // Setup the title on the center circle
-$p1->midtitle->Set("CA par activité\nen Keuros\nsur 12 derniers mois");
+$date_split_start	= array(substr($one_year_ago,0,4),substr($one_year_ago,4,2));
+$date_split_end		= array(substr($previous_month,0,4),substr($previous_month,4,2));
+$p1->midtitle->Set("CA par activité\nen Keuros\ndu $date_split_start[1]/$date_split_start[0] \nau $date_split_end[1]/$date_split_end[0]");
 $p1->midtitle->SetFont(FF_ARIAL,FS_NORMAL,13);
 
 // Set color for mid circle
