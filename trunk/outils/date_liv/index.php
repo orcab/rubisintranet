@@ -543,7 +543,7 @@ function init_focus() {
 
 </table>
 
-
+<!--
 <table id="record">
 <caption>Enregistrer les dates de livraison dans Rubis</caption>
 <form name="association3" method="POST" action="index.php" onsubmit="return record_date_liv_in_rubis();">
@@ -568,7 +568,7 @@ function init_focus() {
 </tr>
 </form>
 </table>
-
+-->
 <?= $message ? $message:'' ?>
 </body>
 </html>
