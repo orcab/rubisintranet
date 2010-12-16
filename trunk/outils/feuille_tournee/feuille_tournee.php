@@ -199,11 +199,19 @@ EOT;
 
 		<table id="tournee">
 			<tr>
-				<th colspan="7">Feuille de tournée</th>
+				<th colspan="6">Feuille de tournée</th>
+				<th rowspan="3">
+				Commentaire
+				<img src="../../gfx/qrcode.php?text=<?
+					echo urlencode(json_encode(array(	't'=>'feuille_tournee',
+														'b'=>join('-',array_reverse(explode('/',$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy))),
+														'c'=>$chauf,
+														'd'=>time())));
+				?>" style="float:right;"/></th>
 			</tr>
 			<tr>
 				<th colspan="4">Du : <?=$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy?></th>
-				<th colspan="3">Chauffeur : <?=$chauf?></th>
+				<th colspan="2">Chauffeur : <?=$chauf?></th>
 			</tr>
 			<tr>
 				<th style="width:6%;">Prépa</th>
@@ -212,7 +220,6 @@ EOT;
 				<th style="width:12%;">NB colis</th>
 				<th style="width:3%;">C</th>
 				<th style="width:20%;">NB colis déposé + sign</th>
-				<th>Commentaire</th>
 			</tr>
 
 <?		$i=0;
