@@ -2,6 +2,7 @@
 
 //require_once('../inc/constant.php');
 require_once('../inc/fpdf/fpdf.php');
+require_once('../inc/qrcode/qrcode.class.php');
 
 define('PAGE_WIDTH',210);
 define('PAGE_HEIGHT',297);
@@ -165,6 +166,12 @@ class PDF extends FPDF
 	function Footer()
 	{	global $row_entete,$SOCIETE ;
 		
+		// qrcode du fichier
+		$json = array('t'=>'cdecli','b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo());
+		$qrcode = new QRcode(json_encode($json), 'H'); // error level : L, M, Q, H
+		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
+		$qrcode->displayFPDF($this, RIGHT_MARGIN -7, PAGE_HEIGHT-22, 20);
+
 		// texte avev la date
 		$this->SetXY(LEFT_MARGIN,-20);
 		$this->SetFont('helvetica','',9);

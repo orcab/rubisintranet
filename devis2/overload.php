@@ -1,5 +1,6 @@
 <?
 require_once('../inc/fpdf/fpdf.php');
+require_once('../inc/qrcode/qrcode.class.php');
 
 define('PAGE_WIDTH',210);
 define('PAGE_HEIGHT',297);
@@ -17,10 +18,7 @@ define('PNHT_WIDTH',20);
 define('PUHT_WIDTH',20);
 define('PTHT_WIDTH',20);
 
-
-
 define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) ); // s'appadate à la largeur de la page
-
 
 //echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
@@ -32,6 +30,20 @@ class PDF extends FPDF
 		
 		if (in_array('px_adh',$options))
 			$this->Image('gfx/filigranne_devis.png',0 ,0, PAGE_WIDTH, PAGE_HEIGHT); // filigranne en fond de page
+
+		// qrcode du fichier
+		$nom_artisan = '';
+		if		($_POST['artisan_nom'] == 'NON Adherent')
+			$nom_artisan = my_utf8_decode($_POST['artisan_nom_libre']);
+		elseif  ($_POST['artisan_nom'] == 'CAB 56')
+			$nom_artisan = 'CAB 56 : ' . my_utf8_decode($_POST['artisan_nom_libre']);
+		else
+			$nom_artisan = my_utf8_decode($_POST['artisan_nom']);
+
+		$json = array('t'=>'devis_expo','b'=>$id_devis,'c'=>$nom_artisan,'d'=>time(),'p'=>$this->PageNo());
+		$qrcode = new QRcode(json_encode($json), 'H'); // error level : L, M, Q, H
+		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
+		$qrcode->displayFPDF($this, (PAGE_WIDTH / 2) - 10 , 0, 20);
 
 		// logo gauche et droite en haut de page si le theme le demande
 		//if (eregi('_avec_entete$',$values['devis.theme'])) {
@@ -53,7 +65,7 @@ class PDF extends FPDF
 		$this->Cell(21, 5 ,"ARTISAN :");
 		$this->SetFont('helvetica','B',11);
 		if		($_POST['artisan_nom'] == 'NON Adherent')
-			$this->Cell(90, 5 , $_POST['artisan_nom_libre']);
+			$this->Cell(90, 5 , my_utf8_decode($_POST['artisan_nom_libre']));
 		elseif ($_POST['artisan_nom'] == 'CAB 56')
 			$this->Cell(90, 5 , 'CAB 56 : ' . my_utf8_decode($_POST['artisan_nom_libre']));
 		else
