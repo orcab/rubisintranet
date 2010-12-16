@@ -348,7 +348,10 @@ $(document).ready(function() {
 <div id="fiche" style="margin:auto;width:80%;text-align:center;">
 
 	<fieldset style="width:40%;display:inline;floating:left;"><legend>Coordonnées (Rubis)</legend>
-		<div><?=str_replace("\n",'<br/>',$row['info_rubis1'])?></div>
+		<div style="float:left;"><?=str_replace("\n",'<br/>',$row['info_rubis1'])?></div>
+		<img src="../../gfx/qrcode.php?text=<?
+					echo urlencode(json_encode(array('t'=>'fiche_fournisseur','c'=>$id,'d'=>time())));
+				?>" style="float:right;"/>
 	</fieldset>
 
 	<fieldset style="margin-top:10px;width:40%;display:inline;floating:left;"><legend>Représentant (Rubis)</legend>

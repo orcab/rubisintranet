@@ -606,7 +606,11 @@ EOT;
 ?>
 	<fieldset style="width:47%;display:inline;floating:left;"><legend>Coordonnées (Rubis)</legend>
 		<table class="coordonnees-rubis" style="width:100%;">
-			<tr><td>Code Rubis :</td><td><?=$id?></td></tr>
+			<tr><td>Code Rubis :</td><td><?=$id?></td>
+				<td rowspan="15"><img src="../../gfx/qrcode.php?text=<?
+					echo urlencode(json_encode(array('t'=>'fiche_adherent','c'=>$id,'d'=>time())));
+				?>"/></td>
+			</tr>
 			<tr><td>Email :</td><td><?=$row['email']?></td></tr>
 			<tr><td>Tél bureau :</td><td><?=$row['tel1']?></td></tr>
 			<tr><td>Fax bureau :</td><td><?=$row['tel2']?></td></tr>
