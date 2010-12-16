@@ -1,7 +1,6 @@
 <?
-
 require_once('../../inc/fpdf/fpdf.php');
-require_once('../../inc/fpdf/fpdf.php');
+require_once('../../inc/qrcode/qrcode.class.php');
 
 define('PAGE_WIDTH',210);
 define('PAGE_HEIGHT',297);
@@ -133,6 +132,11 @@ class PDF extends FPDF
 		$this->SetXY(LEFT_MARGIN,-60);
 		$this->Cell(0,5,"Commentaire :",0,1,'L');
 
+		// qrcode du fichier
+		$json = array('t'=>'bon_mise_stock','b'=>$row_entete['CFBON'],'c'=>$row_entete['NOFOU'],'d'=>time(),'p'=>$this->PageNo());
+		$qrcode = new QRcode(json_encode($json), 'H'); // error level : L, M, Q, H
+		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
+		$qrcode->displayFPDF($this, LEFT_MARGIN, PAGE_HEIGHT-53, 20);
 
 		// texte avev la date
 		$this->SetXY(LEFT_MARGIN,-20);

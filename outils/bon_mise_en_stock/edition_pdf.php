@@ -208,7 +208,7 @@ EOT;
 if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 100) // check le saut de page
 	$pdf->AddPage();
 
-$pdf->Output();
+$pdf->Output('bon_stock_'.$cfbon_escape.'('.crc32(uniqid()).').pdf','I');
 
 odbc_close($loginor);
 ?>
