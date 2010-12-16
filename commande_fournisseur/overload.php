@@ -126,7 +126,7 @@ class PDF extends FPDF
 	{	global $row_entete,$SOCIETE ;
 		
 		// qrcode du fichier
-		$json = array('t'=>'cdefour','b'=>$row_entete['CFBON'],'c'=>$row_entete['NOFOU'],'d'=>time(),'p'=>$this->PageNo());
+		$json = array('t'=>'cde_fournisseur','b'=>$row_entete['CFBON'],'c'=>$row_entete['NOFOU'],'d'=>time(),'p'=>$this->PageNo());
 		$qrcode = new QRcode(json_encode($json), 'H'); // error level : L, M, Q, H
 		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
 		$qrcode->displayFPDF($this, RIGHT_MARGIN -7, PAGE_HEIGHT-22, 20);
