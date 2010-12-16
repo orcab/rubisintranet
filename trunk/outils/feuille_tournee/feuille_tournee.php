@@ -32,8 +32,11 @@ table#tournee td { height:1.5cm; }
 table#tournee td.adresse { height:0.5cm; font-size:0.8em; background-color:#F5F5F5; }
 table#tournee tr.separateur { border-top:solid 3px black; }
 
+img.qrcode { display:none; }
+
 @media print {
 	.hide_when_print { display:none; }
+	img.qrcode { display:block; }
 }
 
 </style>
@@ -207,7 +210,7 @@ EOT;
 														'b'=>join('-',array_reverse(explode('/',$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy))),
 														'c'=>$chauf,
 														'd'=>time())));
-				?>" style="float:right;"/></th>
+				?>" style="float:right;" class="qrcode"/></th>
 			</tr>
 			<tr>
 				<th colspan="4">Du : <?=$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy?></th>

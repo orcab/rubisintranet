@@ -229,8 +229,11 @@ div#blackscreen {
 	z-index:199;
 }
 
+img.qrcode { display:none; }
+
 @media print {
 	.hide_when_print { display:none; }
+	img.qrcode { display:block; }
 	div#fiche { width:100%; }
 	
 }
@@ -609,7 +612,7 @@ EOT;
 			<tr><td>Code Rubis :</td><td><?=$id?></td>
 				<td rowspan="15"><img src="../../gfx/qrcode.php?text=<?
 					echo urlencode(json_encode(array('t'=>'fiche_adherent','c'=>$id,'d'=>time())));
-				?>"/></td>
+				?>" class="qrcode"/></td>
 			</tr>
 			<tr><td>Email :</td><td><?=$row['email']?></td></tr>
 			<tr><td>Tél bureau :</td><td><?=$row['tel1']?></td></tr>
