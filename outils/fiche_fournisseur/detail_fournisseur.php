@@ -148,8 +148,11 @@ div#interventions {
 	margin-top:20px;
 }
 
+img.qrcode { display:none; }
+
 @media print {
 	.hide_when_print { display:none; }
+	img.qrcode { display:block; }
 	div#fiche { width:100%; }
 	
 }
@@ -351,7 +354,7 @@ $(document).ready(function() {
 		<div style="float:left;"><?=str_replace("\n",'<br/>',$row['info_rubis1'])?></div>
 		<img src="../../gfx/qrcode.php?text=<?
 					echo urlencode(json_encode(array('t'=>'fiche_fournisseur','c'=>$id,'d'=>time())));
-				?>" style="float:right;"/>
+				?>" style="float:right;" class="qrcode"/>
 	</fieldset>
 
 	<fieldset style="margin-top:10px;width:40%;display:inline;floating:left;"><legend>Représentant (Rubis)</legend>
