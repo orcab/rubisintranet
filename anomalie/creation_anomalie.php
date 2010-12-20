@@ -239,9 +239,12 @@ select#completion_fourn {
 	display:none;
 }
 
+img.qrcode { display:none; }
+
 @media print {
 	.hide_when_print { display:none; }
 	table.anomalie { width:100%; }
+	img.qrcode { display:block; }
 	td.mceToolbar  { display:none; }
 	
 }
@@ -439,12 +442,17 @@ $(document).ready(function(){
 <? if ($id) { ?>
 	<tr>
 		<th>N° d'anomalie :</th>
-		<td colspan="2"><?=$id?></td>
+		<td><?=$id?></td>
+		<td rowspan="7">
+			<img src="../gfx/qrcode.php?text=<?
+					echo urlencode(json_encode(array('t'=>'fiche_anomalie','c'=>$id,'d'=>time())));
+			?>"/>
+		</td>
 	</tr>
 <?	} ?>
 	<tr>
 		<th>Créateur</th>
-		<td colspan="2">
+		<td>
 <?			if ($id) { // mode modif ?>
 				<?=$row_anomalie['createur']?>
 <?			} else { ?>
@@ -463,7 +471,7 @@ $(document).ready(function(){
 	</tr>
 	<tr>
 		<th>Date de création</th>
-		<td colspan="2">
+		<td>
 			<? if ($id) { // mode modif ?>
 				<?=$row_anomalie['date_creation_formatee']?>
 			<? } else { ?>
@@ -486,7 +494,7 @@ $(document).ready(function(){
 	</tr>
 	<tr>
 		<th>Adhérent</th>
-		<td colspan="2">
+		<td>
 <?			if (($id && $can_edit) || !$id) { ?>
 				<select name="artisan">
 					<option value="">Choississez un adhérent</option>
@@ -508,7 +516,7 @@ $(document).ready(function(){
 	</tr>
 	<tr>
 		<th>Fournisseur</th>
-		<td colspan="2">
+		<td>
 <?			if (($id && $can_edit) || !$id) { ?>
 				<input type="text" name="fournisseur" size="15" value="<?= $id ? $row_anomalie['fournisseur']:'' ?>" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);" />
 				<br/>
@@ -521,7 +529,7 @@ $(document).ready(function(){
 	</tr>
 	<tr>
 		<th>Pôle<br/>concerné(s)</th>
-		<td colspan="2">
+		<td>
 <?			if (($id && $can_edit) || !$id) { ?>
 				<label for="pole_logistique"	class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_LOGISTIQUE)	?' mobile-checked':'' ?>"><input type="checkbox" id="pole_logistique"		name="pole_logistique"		<?=($id && $row_anomalie['pole'] & POLE_LOGISTIQUE) ?	'checked="on"':'' ?>/>Logistique</label>
 				<label for="pole_commerce"		class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_COMMERCE)		?' mobile-checked':'' ?>"><input type="checkbox" id="pole_commerce"			name="pole_commerce"		<?=($id && $row_anomalie['pole'] & POLE_COMMERCE) ?		'checked="on"':'' ?>/>Commerce</label>
@@ -550,7 +558,7 @@ $(document).ready(function(){
 	</tr>
 	<tr>
 		<th>Evolution</th>
-		<td colspan="2">
+		<td>
 			<select name="evolution">
 				<option value="0" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_red.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==0)) ? 'selected="selected"':'' ?>>A traiter</option>
 				<option value="1" style="padding-left:30px;height:20px;background:white url(/intranet/gfx/feu_yellow.png) no-repeat left;" <?= ($id && ($row_anomalie['evolution']==1)) ? 'selected="selected"':'' ?>>En cours</option>
