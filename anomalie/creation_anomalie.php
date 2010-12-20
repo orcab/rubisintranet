@@ -444,9 +444,11 @@ $(document).ready(function(){
 		<th>N° d'anomalie :</th>
 		<td><?=$id?></td>
 		<td rowspan="7">
+		<?	if ($id) { ?>
 			<img src="../gfx/qrcode.php?text=<?
-					echo urlencode(json_encode(array('t'=>'fiche_anomalie','c'=>$id,'d'=>time())));
-			?>"/>
+					echo urlencode(json_encode(array('t'=>'fiche_anomalie','c'=>$row_anomalie['artisan'],'b'=>$id,'d'=>time())));
+			?>" class="qrcode"/>
+		<?	} ?>
 		</td>
 	</tr>
 <?	} ?>
