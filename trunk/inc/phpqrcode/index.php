@@ -1,5 +1,4 @@
-<?php    
-/*
+<?php    /*
  * PHP QR Code encoder
  *
  * Exemplatory usage
@@ -22,8 +21,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
     
-    echo "<h1>PHP QR Code</h1><hr/>";
-    
+    echo "<h1>PHP QR Code</h1><hr/>";    
     //set it to writable location, a place for temp generated PNG files
     $PNG_TEMP_DIR = dirname(__FILE__).DIRECTORY_SEPARATOR.'temp'.DIRECTORY_SEPARATOR;
     
@@ -34,8 +32,7 @@
     
     //ofcourse we need rights to create temp dir
     if (!file_exists($PNG_TEMP_DIR))
-        mkdir($PNG_TEMP_DIR);
-    
+        mkdir($PNG_TEMP_DIR);    
     
     $filename = $PNG_TEMP_DIR.'test.png';
     
@@ -49,27 +46,18 @@
     if (isset($_REQUEST['size']))
         $matrixPointSize = min(max((int)$_REQUEST['size'], 1), 10);
 
-
     if (isset($_REQUEST['data'])) { 
     
         //it's very important!
         if (trim($_REQUEST['data']) == '')
             die('data cannot be empty! <a href="?">back</a>');
-            
-        // user data
-        $filename = $PNG_TEMP_DIR.'test'.md5($_REQUEST['data'].'|'.$errorCorrectionLevel.'|'.$matrixPointSize).'.png';
-        QRcode::png($_REQUEST['data'], $filename, $errorCorrectionLevel, $matrixPointSize, 2);    
-        
-    } else {    
+                    // user data
+        $filename = $PNG_TEMP_DIR.'test'.md5($_REQUEST['data'].'|'.$errorCorrectionLevel.'|'.$matrixPointSize).'.png';        QRcode::png($_REQUEST['data'], $filename, $errorCorrectionLevel, $matrixPointSize, 2);    
+            } else {    
     
-        //default data
-        echo 'You can provide data in GET parameter: <a href="?data=like_that">like that</a><hr/>';    
-        QRcode::png('PHP QR Code :)', $filename, $errorCorrectionLevel, $matrixPointSize, 2);    
-        
-    }    
-        
-    //display generated file
-    echo '<img src="'.$PNG_WEB_DIR.basename($filename).'" /><hr/>';  
+        //default data        echo 'You can provide data in GET parameter: <a href="?data=like_that">like that</a><hr/>';            QRcode::png('PHP QR Code :)', $filename, $errorCorrectionLevel, $matrixPointSize, 2);    
+            }            
+    //display generated file    echo '<img src="'.$PNG_WEB_DIR.basename($filename).'" /><hr/>';  
     
     //config form
     echo '<form action="index.php" method="post">
@@ -88,7 +76,4 @@
     echo '</select>&nbsp;
         <input type="submit" value="GENERATE"></form><hr/>';
         
-    // benchmark
-    QRtools::timeBenchmark();    
-
-    
+    // benchmark    QRtools::timeBenchmark();        
