@@ -394,12 +394,11 @@ $(document).ready(function() {
 	if ($row['geo_coords']) { // s'il a des coordonées géographique
 		list($lat,$lng) = explode(',',ereg_replace('[^0-9\.\,\-]','',$row['geo_coords']));// on nettoi et éclate les coords géo
 ?>
-		var myOptions = {
+		var map	= new google.maps.Map(document.getElementById('map_canvas'), {
 			zoom: 10,											// Pour afficher le Morbihan
 			center: new google.maps.LatLng(47.694974, -3),		// centré sur VANNES
 			mapTypeId: google.maps.MapTypeId.ROADMAP
-		};
-		var map	= new google.maps.Map(document.getElementById('map_canvas'), myOptions);
+		});
 
 		// marker adhérent
 		var m_adh = new google.maps.Marker({
@@ -419,6 +418,11 @@ $(document).ready(function() {
 						new google.maps.Point(13,7)// center de l'image
 					)
 		});
+
+		var bounds = new google.maps.LatLngBounds();
+		bounds.extend(m_adh.getPosition());
+		bounds.extend(m_mcs.getPosition());
+		map.fitBounds(bounds);
 
 		// trace la route entre l'adh et MCS
 		draw_roads(m_mcs.getPosition() , m_adh.getPosition());
@@ -448,7 +452,6 @@ $(document).ready(function() {
 				else if (status == google.maps.DirectionsStatus.ZERO_RESULTS)				{	alert('ZERO_RESULTS'); }
 			});
 		} // fin draw_roads
-
 <?	} // fin si coords_geo ?>
 
 });
