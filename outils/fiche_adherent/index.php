@@ -117,15 +117,17 @@ const NOM_ARTISAN		= 1;
 const SUSPENDU_ARTISAN	= 2;
 const NB_COM_ARTISAN	= 3;
 const FAVORIS_ARTISAN	= 4;
+const NOM_ARTISAN_RECHERCHE = 5;
 
 // va chercher dans la liste des artisans, les valeurs qui commence par ce qu'a tapé l'utilisateur
 function affiche_artisan() {
 	$('#liste-artisan').html('');	// efface le tableau de résultat
-	var query = document.selecteur.recherche.value.toLowerCase() ;
+	var query = document.selecteur.recherche.value.toLowerCase().replace(/[^0-9a-z ]/,'') ;
 	if (query.length >= 1) // si au moins un caractère de renseigné
 		for(i=0; i<artisans.length ; i++) // pour chaque artisan
-			if (	artisans[i][CODE_ARTISAN].indexOf(query) > -1	// code artisan trouvé
-				||	artisans[i][NOM_ARTISAN].indexOf(query) > -1) // nom artisan trouvé
+			if (	artisans[i][NOM_ARTISAN_RECHERCHE].indexOf(query) > -1 // nom artisan trouvé
+				||	artisans[i][NOM_ARTISAN].indexOf(query) > -1
+				||	artisans[i][CODE_ARTISAN].indexOf(query) > -1)// code artisan trouvé
 						draw_row_artisan('liste-artisan',artisans[i]); // ajoute une ligne aux tableaux de résultat
 }	
 
@@ -184,7 +186,9 @@ while($row = mysql_fetch_array($res)) { ?>
 					'<?=addslashes(strtolower($row['nom']))?>',
 					<?= !$row['suspendu'] ?>,
 					<?=$row['nb_com']?>,
-					<?=$row['favoris']?>]
+					<?=$row['favoris']?>,
+					'<?=preg_replace('/[^0-9a-z ]/i','',strtolower($row['nom']))?>'
+					]
 	);
 <? } ?>
 
