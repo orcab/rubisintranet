@@ -377,8 +377,8 @@ function envoi_formulaire(l_action) {
 	}
 	if ($_SESSION['devis_rubis_filtre_numero'])		$where[] = "NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['devis_rubis_filtre_numero'])))."%'" ;
 
-	$where[] = "MONTBR $_SESSION[devis_rubis_filtre_signe_montant] $_SESSION[devis_rubis_filtre_montant]" ;
-	$where[] = 'NBLIG > 0' ;
+	$where[] = "MONTBR $_SESSION[devis_rubis_filtre_signe_montant] '$_SESSION[devis_rubis_filtre_montant]'" ;
+	$where[] = "NBLIG > '0'" ;
 	$where[] = "DEVIS_ENTETE.AGENC = AGENCE.AGECO" ;	// jointure bon<->agence
 
 	// etat du devis

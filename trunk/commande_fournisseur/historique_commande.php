@@ -362,8 +362,8 @@ function envoi_formulaire(l_action) {
 	}
 	if ($_SESSION['cde_fourn_filtre_numero'])		$where[] = "CDE_ENTETE.CFBON like '".strtoupper(trim(mysql_escape_string($_SESSION['cde_fourn_filtre_numero'])))."%'" ;
 
-	$where[] = "CFMON $_SESSION[cde_fourn_filtre_signe_montant] $_SESSION[cde_fourn_filtre_montant]" ;
-	$where[] = 'CUMLI > 0' ;
+	$where[] = "CFMON $_SESSION[cde_fourn_filtre_signe_montant] '$_SESSION[cde_fourn_filtre_montant]'" ;
+	$where[] = "CUMLI > '0'" ;
 	$where[] = "CFEET = ''" ; // commande non annulée
 	$where[] = "CDFE5 = 'CDE'" ; // on n'affiche pas les préco
 	$where[] = "CDE_ENTETE.CFAGE=AGENCE.AGECO" ; // jointure bon<->agence

@@ -382,8 +382,8 @@ $(document).ready(function() {
 	if ($_SESSION['cde_adh_filtre_reference'])	$where[] = "RFCSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_reference']))."%'" ;
 	if ($_SESSION['cde_adh_filtre_numero'])		$where[] = "CDE_ENTETE.NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_numero'])))."%'" ;
 
-	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] $_SESSION[cde_adh_filtre_montant]" ;
-	$where[] = 'NBLIG > 0' ;						// au moins une ligne sur le bon
+	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] '$_SESSION[cde_adh_filtre_montant]'" ;
+	$where[] = "NBLIG > '0'" ;						// au moins une ligne sur le bon
 	$where[] = "ETSEE = ''" ;						// commande non annulée
 	$where[] = "CDE_ENTETE.AGENC = AGENCE.AGECO" ;	// jointure bon<->agence
 
