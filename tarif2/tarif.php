@@ -33,6 +33,16 @@ define('IMAGE_WIDTH',40);
 define('IMAGE_PATH','images/' );
 define('PAGE_DE_GARDE_PATH',IMAGE_PATH.'page_de_garde/' );
 
+// pour les pages d'index
+define('INDEX_CELL_HEIGHT',4);
+define('INDEX_FONT_SIZE',8);
+define('INDEX_REF_WIDTH',20);
+define('INDEX_PRIX_WIDTH',16);
+define('INDEX_PAGE_WIDTH',8);
+define('INDEX_CELL_SPACING',7);
+define('INDEX_TOP_MARGIN',15);
+define('INDEX_LEFT_MARGIN',6);
+
 $section_deja_dans_toc = array();
 $TOC = array(); // pour la table des matieres
 $REFERENCE = array(); // pour la table d'index des reference fabriquant
@@ -113,16 +123,18 @@ select
 		CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) as CHEMIN,
 		REFFO,PVEN1,
 		CDKIT,
-		XPVE1 as PRIX_VENTE_VENIR,
+--		XPVE1 as PRIX_VENTE_VENIR,
 		TANU0 as ECOTAXE
 from	
 		${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 			left outer join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 				on ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
-			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
-				on ARTICLE.NOART=TARIF.NOART
-			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
-				on ARTICLE.NOART=TARIF_VENIR.NOART
+--			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
+--				on ARTICLE.NOART=TARIF.NOART
+--			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
+--				on ARTICLE.NOART=TARIF_VENIR.NOART
+			left join AFAGESTCOM.ATARPVP1 TARIF
+				on ARTICLE.NOART=TARIF.NOART and TARIF.PVT09='E'	-- tarif en cours
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 				on ARTICLE.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where $condition
@@ -148,7 +160,7 @@ $old_activite= '';
 $lien = 1 ;
 while($row = odbc_fetch_array($res)) {
 	$row['ECOTAXE'] = $row['ECOTAXE'] ? sprintf('%0.2f',$row['ECOTAXE']):0;
-	$prix_de_base	= $row['PRIX_VENTE_VENIR'] && isset($_POST['prix_a_venir']) && $_POST['prix_a_venir'] ? $row['PRIX_VENTE_VENIR'] : $row['PVEN1'];
+	$prix_de_base	= isset($_POST['prix_a_venir']) && $row['PRIX_VENTE_VENIR'] && $_POST['prix_a_venir'] ? $row['PRIX_VENTE_VENIR'] : $row['PVEN1'];
 	$row['CHEMIN']	= ereg_replace('[ \.]*$','',$row['CHEMIN']);
 	$row['NOART']	= trim($row['NOART']);
 	$row['DESI1']	= trim($row['DESI1']);
@@ -281,16 +293,20 @@ while($row = odbc_fetch_array($res)) {
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,XPVE1 as PRIX_VENTE_VENIR,TANU0 as ECOTAXE
+select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,
+--			XPVE1 as PRIX_VENTE_VENIR,
+			TANU0 as ECOTAXE
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 					on DETAIL_KIT.NOART=ARTICLE.NOART
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 					on DETAIL_KIT.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
-				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
-					on ARTICLE.NOART=TARIF.NOART
-				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
-					on ARTICLE.NOART=TARIF_VENIR.NOART
+--				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 TARIF
+--					on ARTICLE.NOART=TARIF.NOART
+--				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIXP1 TARIF_VENIR
+--					on ARTICLE.NOART=TARIF_VENIR.NOART
+				left join AFAGESTCOM.ATARPVP1 TARIF
+					on ARTICLE.NOART=TARIF.NOART and TARIF.PVT09='E'	-- tarif en cours
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 					on ARTICLE.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where		NOKIT='$row[NOART]'
@@ -298,7 +314,7 @@ EOT;
 		$res_kit = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete kit : $sql");
 		while($row_kit = odbc_fetch_array($res_kit)) { // on parcours les articles du kit et on les enregistre pour plus tard
 			$row_kit['ECOTAXE'] = $row_kit['ECOTAXE'] ?  sprintf('%0.2f',$row_kit['ECOTAXE']):0;
-			$prix_de_base	 = $row_kit['PRIX_VENTE_VENIR'] && isset($_POST['prix_a_venir']) && $_POST['prix_a_venir'] ? $row_kit['PRIX_VENTE_VENIR'] : $row_kit['PVEN1'];
+			$prix_de_base	 = isset($_POST['prix_a_venir']) && $row_kit['PRIX_VENTE_VENIR'] && $_POST['prix_a_venir'] ? $row_kit['PRIX_VENTE_VENIR'] : $row_kit['PVEN1'];
 			$noart			.= "\n   ".trim($row_kit['NOART']).( $row_kit['SERST']=='NON' ? ' *' :'' );
 			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
 

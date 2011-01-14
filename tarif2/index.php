@@ -89,7 +89,7 @@ EOT;
 		<label for="index_code"		class="mobile mobile-block"					style="width:25em;"><input id="index_code"		type="checkbox" name="index_code"						/>Ajouter l'index des codes <?=SOCIETE?></label>
 		<label for="sommaire"		class="mobile mobile-block"					style="width:25em;"><input id="sommaire"		type="checkbox" name="sommaire"							/>Ajouter le sommaire</label>
 		<label for="equipe"			class="mobile mobile-block"					style="width:25em;"><input id="equipe"			type="checkbox" name="equipe"							/>Ajouter l'&eacute;quipe</label>
-		<label for="prix_a_venir"	class="mobile mobile-block mobile-checked"	style="width:25em;"><input id="prix_a_venir"	type="checkbox" name="prix_a_venir"  checked="checked"	/>Prix à venir (si disponible)</label>
+<!--		<label for="prix_a_venir"	class="mobile mobile-block mobile-checked"	style="width:25em;"><input id="prix_a_venir"	type="checkbox" name="prix_a_venir"  checked="checked"	/>Prix à venir (si disponible)</label>-->
 		<br/>
 		<input type="submit" class="button valider pdf" value="Editer en PDF"/>
 		<div style="font-size:0.8em;">(attention certaine activit&eacute; peuvent demander un temps de traitement tr&egrave;s long)</div>
