@@ -12,14 +12,7 @@ $colonne = 0 ;
 $ligne=0;
 $page_actuel = 0;
 $restaure_font_size = 0 ;
-define('INDEX_CELL_HEIGHT',4);
-define('INDEX_FONT_SIZE',8);
-define('INDEX_REF_WIDTH',20);
-define('INDEX_PRIX_WIDTH',16);
-define('INDEX_PAGE_WIDTH',8);
-define('INDEX_CELL_SPACING',7);
-define('INDEX_TOP_MARGIN',15);
-define('INDEX_LEFT_MARGIN',6);
+
 $pdf->SetFont('helvetica','',INDEX_FONT_SIZE);
 $pdf->SetTextColor($style[RED_ARTICLE],$style[GREEN_ARTICLE],$style[BLUE_ARTICLE]);
 $pdf->SetDrawColor($style[RED_PAGE],$style[GREEN_PAGE],$style[BLUE_PAGE]);
