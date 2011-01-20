@@ -79,6 +79,38 @@ table#liste-artisan-favoris > caption {
 	text-shadow:grey 0px -1px;
 }
 
+/* table des adhérents non visité */
+table#liste-artisan-non-visite  {
+	width:200px;
+	font-size:0.7em;
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+table#liste-artisan-non-visite  > caption {
+	color:white;
+	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
+	font-weight:bold;
+	text-transform:uppercase;
+	padding:3px;
+	text-shadow:grey 0px -1px;
+}
+
+table#liste-artisan-non-visite td {
+	border:solid 1px grey;
+	text-align:left;
+	padding-left:5px;
+	background-image:-moz-linear-gradient( top , #fdfdfd, #eee );
+	cursor:pointer;
+}
+
+table#liste-artisan-non-visite td:hover {
+	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
+	color:white;
+	text-shadow:grey 0px -1px;
+	-moz-box-shadow: 0 0 9px #6a9dca;
+}
+
 .artisan-annule {
 	text-decoration:line-through;
 	color:#999;
@@ -209,6 +241,29 @@ $(document).ready(function(){
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 
+<table id="liste-artisan-non-visite" style="float:right;">
+	<caption>Non visité depuis 1 an</caption>
+<?
+// récupère la liste des artisans non visité depuis 1 an
+$sql = <<<EOT
+SELECT	nom,artisan.numero,
+		UNIX_TIMESTAMP((SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan' ORDER BY date_creation DESC LIMIT 0,1)) AS last_visite
+FROM	artisan
+WHERE		suspendu=0
+ORDER BY nom ASC
+EOT;
+$now = time();
+$one_year_in_second = 60*60*24*365;
+$res = mysql_query($sql) or die("ne peux pas retrouver la liste des artisans non visité ".mysql_error());
+while($row = mysql_fetch_array($res)) {
+		$date_diff = $row['last_visite'] ? $now - $row['last_visite'] : $one_year_in_second;
+?>	
+<?	if ($date_diff >= $one_year_in_second) { ?>
+		<tr><td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?> <?=$row['last_visite']?></td></tr>
+<?	}
+} ?>
+</table>
+
 <form action="index.php" method="post" name="selecteur" style="margin:auto;width:20%;margin-top:10px;">
 
 <fieldset><legend>Rechercher un artisan</legend>
@@ -219,7 +274,7 @@ $(document).ready(function(){
 <table id="liste-artisan" style="margin:auto;width:40%;margin-top:10px;"></table>
 
 <table id="liste-artisan-favoris" style="margin:auto;width:40%;margin-top:10px;">
-<caption>FAVORIS</caption>
+	<caption>FAVORIS</caption>
 </table>
 
 <div id="debug"></div>
