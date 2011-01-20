@@ -554,7 +554,7 @@ div#sauvegarde {
 	<td>
 		<select name="artisan_nom" onchange="affiche_adherent();" TABINDEX="2">
 			<option value="NON Adherent">Artisan NON ADHERENT</option>
-<?			$res  = mysql_query("SELECT nom FROM artisan WHERE suspendu='0' ORDER BY nom ASC");
+<?			$res  = mysql_query("SELECT nom FROM artisan WHERE suspendu='0' ORDER BY nom ASC") or die("Ne peux pas récupérer la liste des adhérents ".mysql_error());
 			$a_trouve_artisan = FALSE ;
 			while ($row = mysql_fetch_array($res)) {
 				if ($modif) { //modif ?>

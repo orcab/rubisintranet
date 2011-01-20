@@ -614,7 +614,7 @@ $(document).ready(function(){
 		<td style="text-align:center;padding-bottom:10px;" colspan="3">
 			<input type="button" class="button valider" onclick="envoi_formulaire();" value="Enregistrer">&nbsp;&nbsp;&nbsp;&nbsp;
 			<input type="button" class="button annuler" onclick="document.location.href='historique_anomalie.php';" value="Annuler">&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="button" class="button divers" style="background-image:url(/intranet/gfx/printer.png);" onclick="envoi_impression();" value="Imprimer">&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="button" class="button printer divers" onclick="envoi_impression();" value="Imprimer">&nbsp;&nbsp;&nbsp;&nbsp;
 			<? if ($id && $can_edit) { // mode modif ?>
 				<input type="button" class="button divers" style="background-image:url(/intranet/gfx/cross.png);" onclick="delete_anomalie();" value="Supprimer l'anomalie">
 			<? } ?>
