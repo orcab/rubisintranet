@@ -21,8 +21,8 @@ init_kml();
 my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE};
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 
-print print_time()."Select des artisans actif ...";
-$loginor->Sql("select NOCLI,NOMCL,COMC1,AD1CL,AD2CL,RUECL,COFIN,CPCLF,BURCL,TELCL,TELCC,TLCCL,TLXCL,DICN1,DICN2 from ${prefix_base_rubis}GESTCOM.ACLIENP1 where CATCL='1' and ETCLE<>'S' and NOMCL<>'ADHERENT'"); # regarde les artisans actif
+print print_time()."Select des artisans ...";
+$loginor->Sql("select ETCLE,NOCLI,NOMCL,COMC1,AD1CL,AD2CL,RUECL,COFIN,CPCLF,BURCL,TELCL,TELCC,TLCCL,TLXCL,DICN1,DICN2 from ${prefix_base_rubis}GESTCOM.ACLIENP1 where CATCL='1' and NOMCL<>'ADHERENT'"); # regarde les artisans actif
 print "OK\n";
 
 
@@ -47,11 +47,11 @@ while($loginor->FetchRow()) {
 	my	$activite  = 0 ;
 		$activite |= $row{'DICN1'} ? PLOMBIER    : 0 ;
 		$activite |= $row{'DICN2'} ? ELECTRICIEN : 0 ;
-	#print "$row{NOCLI} : DICN1=$row{DICN1}    DICN2=$row{DICN2}   \$activite=$activite\n";
 
 	$mysql->query("INSERT INTO artisan (numero,nom,suspendu,email,tel1,tel2,tel3,tel4,adr1,adr2,adr3,cp,ville,activite,geo_coords) VALUES (".
 					$mysql->quote($row{'NOCLI'}).",".
-					$mysql->quote($row{'NOMCL'}).",0,".
+					$mysql->quote($row{'NOMCL'}).",".
+					($row{'ETCLE'} eq 'S' ? 1 : 0).",".					# artisan suspendu
 					lc($mysql->quote($row{'COMC1'})).",".
 					$mysql->quote($row{'TELCL'}).",".
 					$mysql->quote($row{'TELCC'}).",".

@@ -154,9 +154,10 @@ if (defined($authentification) && $authentification > 0) {
 }
 $pop3->quit;
 
-
-#print Dumper($data);
-#exit;
+if ($debug) {
+	print Dumper($data);
+	exit;
+}
 
 # génération du fichier CSV
 CSV:
