@@ -5,4 +5,9 @@ $(document).ready(function() {
 		else
 			$(this).parents('label').removeClass('mobile-checked');
 	});
+
+	$('label.mobile > input[type=checkbox]').each(function(){
+		if(this.checked)
+			$(this).parents('label').addClass('mobile-checked');
+	});
 });

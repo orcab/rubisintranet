@@ -32,13 +32,12 @@ input.annuler:hover {
 	-webkit-border-radius:6px;
 }
 
-input.pdf {
-	background-image:url('../js/boutton_images/pdf.png');
-}
-
-input.excel {
-	background-image:url('../js/boutton_images/excel.gif');
-}
+input.printer	{ background-image:url('../js/boutton_images/printer.png'); }
+input.pdf		{ background-image:url('../js/boutton_images/pdf.png');		}
+input.excel		{ background-image:url('../js/boutton_images/excel.gif');	}
+input.search	{ background-image:url('../js/boutton_images/search.png');	}
+input.rotate-left	{ background-image:url('../js/boutton_images/rotateleft.png');	}
+input.rotate-right	{ background-image:url('../js/boutton_images/rotateright.png');	}
 
 input.divers {
 	color:black;
