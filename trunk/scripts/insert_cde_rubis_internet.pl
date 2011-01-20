@@ -287,9 +287,6 @@ print "OK\n";
 my $old_bon = ''; my $i=0;
 my $somme		= 0;
 my $nb_reliquat = 0 ;
-use constant PAS_DISPO				=> 0;
-use constant PARTIELLEMENT_DISPO	=> 1;
-use constant COMPLETEMENT_DISPO		=> 2;
 my $lignes_recu = 0;
 print print_time()."Insertion des reliquats dans la base SQLite ...";
 while($loginor->FetchRow()) {
@@ -308,8 +305,12 @@ while($loginor->FetchRow()) {
 	}
 
 	my $date_dispo = '';
-	if ($row{'QTREC'} == $row{'QTESA'}) { # si quantié receptionnée == quantité commandée --> matos dispo
+	if ($row{'QTREC'} == $row{'QTESA'} && $row{'TYCDD'} eq 'SPE') { # si quantié receptionnée == quantité commandée --> matos dispo
 		$date_dispo = "$row{DDISS}$row{DDISA}-$row{DDISM}-$row{DDISJ}";
+		$lignes_recu++;
+	}
+
+	if ($row{'TYCDD'} eq 'STO') { # matos en stock, donc forcement recu
 		$lignes_recu++;
 	}
 
