@@ -293,8 +293,8 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 				on A.NOART=A_F.NOART and A.FOUR1=A_F.NOFOU
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 F
 				on A_F.NOFOU=F.NOFOU
-			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARIFP1 T
-				on A.NOART=T.NOART
+			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARPVP1 T
+				on A.NOART=T.NOART and T.PVT09='E'						-- tarif en cours
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 S
 				on A.NOART=S.NOART
 where	
@@ -311,7 +311,7 @@ EOT;
 		while($row = odbc_fetch_array($res))
 			$resultats[$row['CODE_ARTICLE']] = $row ;
 
-	//	print_r($resultats);
+		//print_r($resultats);
 ?>
 		<table id="articles">
 

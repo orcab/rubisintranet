@@ -15,8 +15,8 @@ if (isset($_POST['id_article_creer']) && isset($_POST['code_article_creer'])) { 
 			$mail = new SMTP;
 			$mail->Delivery('relay');
 			$mail->Relay('smtp.wanadoo.fr');
-			$mail->AddTo($row_article['de_la_part'], "") or die("Erreur d'ajour de destinataire");
-			$mail->From('emilie.lenouail@coopmcs.com');
+			$mail->AddTo($row_article['de_la_part'], "Creation article") or die("Erreur d'ajour de destinataire");
+			$mail->From('no-reply@coopmcs.com');
 			$html = <<<EOT
 L'article <b>$row_article[titre]</b> a été créer. Son code est <b>$row_article[code_article]</b>
 EOT;
