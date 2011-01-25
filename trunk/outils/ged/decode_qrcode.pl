@@ -18,7 +18,8 @@ use File::Basename;
 use File::Find;
 use File::Copy; #move
 use File::Path;	#mkpath
-use Mysql;
+eval { require Net::Mysql; }; # charge le module MySQL mais en fonction des version de Perl, il peut être délocalisé dans 'Net'
+require Mysql if ($@);
 use threads;
 use Thread::Semaphore;
 use BarcodeScanner;
