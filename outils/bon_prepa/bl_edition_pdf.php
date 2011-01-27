@@ -133,7 +133,8 @@ $flag_header_prepare = false;	// pour voir s'il l'on a deja affiché la section d
 // largeur des colonnes
 $pdf->SetWidths(array(CODAR_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_WIDTH,UNITE_WIDTH,QTE_WIDTH,PU_WIDTH,TOTAL_WIDTH,TYPE_CDE_WIDTH));
 
-$total_bon = 0 ;
+$total_bon_livre	= 0 ;
+$total_bon_reliquat = 0 ;
 $kit = array();
 while($row = odbc_fetch_array($detail_commande)) {
 	
@@ -191,7 +192,10 @@ while($row = odbc_fetch_array($detail_commande)) {
 					)
 		);
 
-		$total_bon += $row['MONHT'];
+		if ($row['TRAIT'] == 'R')
+			$total_bon_reliquat += $row['MONHT'];
+		else
+			$total_bon_livre	+= $row['MONHT'];
 
 
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
@@ -241,8 +245,11 @@ if ($arguments['prix']) {
 	if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage();// check le saut de page
 	$pdf->SetFont('helvetica','B',10);
 	$pdf->SetFillColor(240); // gris clair
-	$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT",1,0,'R',1);
-	$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon)).EURO,1,0,'R',1);
+	$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT DES ARTICLES LIVRES",1,0,'R',1);
+	$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon_livre)).EURO,1,0,'R',1);
+	if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage();// check le saut de page
+	$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT DES ARTICLES EN RELIQUAT",1,0,'R',1);
+	$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon_reliquat)).EURO,1,0,'R',1);
 }
 
 odbc_close($loginor);
