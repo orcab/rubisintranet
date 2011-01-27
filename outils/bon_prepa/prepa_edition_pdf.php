@@ -273,22 +273,19 @@ if (isset($arguments['printer'])	&& $arguments['printer'] &&
 
 	// imprime le nombre de copy spécifier
 	for($i=1 ; $i<=$arguments['copy'] ; $i++) {
-		fwrite(STDERR , print_time()."Sending to printer copy $i '$arguments[printer]'... ");
+		fwrite(STDERR , print_time()."Sending to printer copy $i '$arguments[printer]'\n");
 		system('"'.$arguments['foxit_path'].'" -t '.$filename.' '.$arguments['printer']);# envoie le fichier PDF vers l'imprimante
-		fwrite(STDERR , "ok\n");
 	}
 
 	// deux exemplaire pour un bon de retour
 	if (BON_DE_RETOUR) {
-		fwrite(STDERR , print_time()."Sending to printer another copy '$arguments[printer]'... ");
+		fwrite(STDERR , print_time()."Sending to printer another copy '$arguments[printer]'\n");
 		system('"'.$arguments['foxit_path'].'" -t '.$filename.' '.$arguments['printer']);# envoie le fichier PDF vers l'imprimante
-		fwrite(STDERR , "ok\n");
 	}
 	
 	// supprime le fichier PDF
-	fwrite(STDERR , print_time()."Deleting PDF file... ");
+	fwrite(STDERR , print_time()."Deleting PDF file\n");
 	unlink($filename) or die("Impossible de supprimer le fichier PDF $filename");# supprime le fichier PDF
-	fwrite(STDERR , "ok\n");
 }
 
 
