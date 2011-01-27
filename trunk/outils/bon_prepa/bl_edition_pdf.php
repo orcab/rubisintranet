@@ -241,15 +241,18 @@ if (sizeof($info_colisage)) { // si des infos de colisage renseignées
 
 // valorisation du BL
 if ($arguments['prix']) {
-	// fin de la cde
-	if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage();// check le saut de page
 	$pdf->SetFont('helvetica','B',10);
 	$pdf->SetFillColor(240); // gris clair
-	$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT DES ARTICLES LIVRES",1,0,'R',1);
-	$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon_livre)).EURO,1,0,'R',1);
-	if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage();// check le saut de page
-	$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT DES ARTICLES EN RELIQUAT",1,0,'R',1);
-	$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon_reliquat)).EURO,1,0,'R',1);
+	if ($total_bon_livre) {
+		if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage();// check le saut de page
+		$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT DES ARTICLES LIVRES",1,0,'R',1);
+		$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon_livre)).EURO,1,0,'R',1);
+	}
+	if ($total_bon_reliquat) {
+		if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage();// check le saut de page
+		$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH,7,"MONTANT TOTAL HT DES ARTICLES EN RELIQUAT",1,0,'R',1);
+		$pdf->Cell(TOTAL_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_bon_reliquat)).EURO,1,0,'R',1);
+	}
 }
 
 odbc_close($loginor);
