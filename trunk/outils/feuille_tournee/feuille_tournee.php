@@ -226,7 +226,8 @@ EOT;
 			</tr>
 
 <?		$i=0;
-		foreach ($tournee as $val) {	
+		//echo sizeof($tournee);
+		foreach ($tournee as $val) {
 			if ($val['nom_adh'] != $old_adh) { // nouvelle adh --> on affiche l'adresse de livraison
 ?>
 				<tr class="separateur"><td colspan="7" class="adresse"><?=$val['adr_adh']?></td></tr>
@@ -255,6 +256,16 @@ EOT;
 <?							} ?>
 							value="Exclure"
 							onclick="modifie_date_liv('<?=$val['prepa']?>','<?=$val['no_bon']?>','<?=$val['no_cli']?>');" />
+
+				<!-- QRCode répêté toutes les 10 lignes sauf sur la premiere et en fin de tournée -->
+<?				if ((($i % 10) == 0 && $i > 0) || ($i+1)==sizeof($tournee)) { ?>
+					<img src="../../gfx/qrcode.php?text=<?
+						echo urlencode(json_encode(array(	't'=>'feuille_tournee',
+															'b'=>join('-',array_reverse(explode('/',$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy))),
+															'c'=>$chauf,
+															'd'=>time())));
+					?>" style="float:right;" class="qrcode"/>
+<?				} ?>				
 				</td><!-- commentaire + bouton de suppression du bon -->
 			</tr>
 <?
