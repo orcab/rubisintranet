@@ -103,7 +103,7 @@ sub scanne_image {
 
 		################################### ON LANCE UNE RECHERCHE DE CODE BARRE #########################
 		print print_time()."Scanning '".basename($_)."'\n";
-		my $scan		= new BarcodeScanner(-filename => $File::Find::name, -zbar => $ini->val(qw/PATH zbar/));
+		my $scan		= new BarcodeScanner(-filename => $_, -zbar => $ini->val(qw/PATH zbar/));
 		my $barcodes	= $scan->scan(qw/qrcode/);
 		
 		################################### ON A TROUVE UN CODE BARRE #########################
