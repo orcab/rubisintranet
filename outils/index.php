@@ -66,7 +66,9 @@ img:hover {
 </tr>
 
 <tr>
-	<td><a href="reliquat_a_livrer/index.php"><img src="reliquat_a_livrer/gfx/reliquat_a_livrer.png"><br>Reliquats à préparer et livrer</a></td>
+	<td><!--<a href="reliquat_a_livrer/index.php"><img src="reliquat_a_livrer/gfx/reliquat_a_livrer.png"><br>Reliquats à préparer et livrer</a>-->
+		<a href="tableau_livraison/historique_commande.php">Tableau de bords des livraisons</a>
+	</td>
 	<td><a href="bon_mise_en_stock/index.php"><img src="bon_mise_en_stock/gfx/bon_mise_en_stock.png"><br>Bon de mise en stock</a></td>
 	<td><a href="fiche_fournisseur/index.php"><img src="fiche_fournisseur/gfx/fiche_fournisseur.png"><br>Fiches Fournisseurs</a></td>
 </tr>
