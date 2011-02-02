@@ -23,6 +23,7 @@ use threads;
 use Thread::Semaphore;
 use BarcodeScanner;
 use Win32::Console::ANSI;
+use Data::Uniqid qw ( luniqid );
 my %tattri = qw/all_attributes_off 0 bold_on 1 underscore_on 4 reverse_video_on 7 concealed_on 8 bold_off 21 underscore_off 24 reverse_video_off 27 concealed_off 28/;
 my %fcolor = qw/black 30 red 31 green 32 yellow 33 blue 34 magenta 35 cyan 36 white 37/;
 my %bcolor = qw/black 40 red 41 green 42 yellow 43 blue 44 magenta 45 cyan 46 white 47/;
@@ -86,6 +87,11 @@ print print_time()."END\n\n";
 
 sub scanne_image {
 		my $sema_ref = shift;
+
+		# premiere chose à faire --> renommer le fichier avec un uniqid pour éviter les conflits de fichiers
+		my $uniqid = luniqid;
+		move($_,DIRECTORY_TO_SCAN."/$uniqid.jpg") or die "Impossible de renommer le fichier '$_' ($!)";
+		$_ = DIRECTORY_TO_SCAN."/$uniqid.jpg";
 
 		my $filename_escape = quotify(basename($_));
 		
