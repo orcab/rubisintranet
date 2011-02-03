@@ -158,6 +158,8 @@ function detail_article(code_article) {
 	$('#detail_article_designation3').html('');
 	document.article.detail_article_gestionnaire.selectedIndex=0;
 	document.article.detail_article_localisation.value='';
+	document.article.detail_article_localisation2.value='';
+	document.article.detail_article_localisation3.value='';
 	document.article.detail_article_mini.value='';
 	document.article.detail_article_maxi.value='';
 	document.article.detail_article_alerte.value='';
@@ -166,6 +168,8 @@ function detail_article(code_article) {
 	$('#detail_article_code_article').text(code_article);
 	$('#detail_article_gestionnaire').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_localisation').css('background','url(gfx/loading5.gif) no-repeat center center');
+	$('#detail_article_localisation2').css('background','url(gfx/loading5.gif) no-repeat center center');
+	$('#detail_article_localisation3').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_mini').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_alerte').css('background','url(gfx/loading5.gif) no-repeat center center');
 	$('#detail_article_maxi').css('background','url(gfx/loading5.gif) no-repeat center center');
@@ -192,6 +196,10 @@ function detail_article(code_article) {
 
 						$('#detail_article_localisation').css('background','white');
 						document.article.detail_article_localisation.value=$.trim(json['localisation']);
+						$('#detail_article_localisation2').css('background','white');
+						document.article.detail_article_localisation2.value=$.trim(json['localisation2']);
+						$('#detail_article_localisation3').css('background','white');
+						document.article.detail_article_localisation3.value=$.trim(json['localisation3']);
 						$('#detail_article_mini').css('background','white');
 						document.article.detail_article_mini.value=$.trim(json['mini']);
 						$('#detail_article_alerte').css('background','white');
@@ -301,6 +309,8 @@ function valider_detail_article() {
 			data:	'what=valider_detail_article&code_article='+ $.trim($('#detail_article_code_article').text()) +
 					'&gestionnaire='+$.trim(document.article.detail_article_gestionnaire.options[document.article.detail_article_gestionnaire.selectedIndex].value)+
 					'&localisation='+$.trim(document.article.detail_article_localisation.value)+
+					'&localisation2='+$.trim(document.article.detail_article_localisation2.value)+
+					'&localisation3='+$.trim(document.article.detail_article_localisation3.value)+
 					'&mini='+$.trim(document.article.detail_article_mini.value)+
 					'&maxi='+$.trim(document.article.detail_article_maxi.value)+
 					'&alerte='+$.trim(document.article.detail_article_alerte.value)+
@@ -431,7 +441,15 @@ function valider_nouveau_chemin() {
 	</tr>
 	<tr>
 		<th>Localisation</th>
-		<td><input type="text" name="detail_article_localisation" id="detail_article_localisation" size="8"></td>
+		<td><input type="text" name="detail_article_localisation" id="detail_article_localisation" size="8" maxlength="12"></td>
+	</tr>
+	<tr>
+		<th>Localisation 2</th>
+		<td><input type="text" name="detail_article_localisation2" id="detail_article_localisation2" size="8" maxlength="12"></td>
+	</tr>
+	<tr>
+		<th>Localisation 3</th>
+		<td><input type="text" name="detail_article_localisation3" id="detail_article_localisation3" size="8" maxlength="12"></td>
 	</tr>
 	<tr>
 		<th>Stock mini</th>
