@@ -5,5 +5,5 @@ $texte = isset($_GET['text']) && $_GET['text'] ? $_GET['text']:'';
 
 $texte = preg_replace('/\\\"/','"',$texte); // supprime les \" par "
 #echo $texte;
-QRcode::png($texte,false,'H',1.2);
+QRcode::png($texte,false,'L',1.5);
 ?>

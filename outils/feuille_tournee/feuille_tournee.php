@@ -208,7 +208,7 @@ EOT;
 				<img src="../../gfx/qrcode.php?text=<?
 					echo urlencode(json_encode(array(	't'=>'feuille_tournee',
 														'b'=>join('-',array_reverse(explode('/',$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy))),
-														'c'=>$chauf,
+														'u'=>$login_chauffeur[$chauf],
 														'd'=>time())));
 				?>" style="float:right;" class="qrcode"/></th>
 			</tr>
@@ -259,10 +259,11 @@ EOT;
 
 				<!-- QRCode répêté toutes les 10 lignes sauf sur la premiere et en fin de tournée -->
 <?				if ((($i % 10) == 0 && $i > 0) || ($i+1)==sizeof($tournee)) { ?>
+					<span style="font-size:0.8em;"><?=$login_chauffeur[$chauf]?></span>
 					<img src="../../gfx/qrcode.php?text=<?
 						echo urlencode(json_encode(array(	't'=>'feuille_tournee',
 															'b'=>join('-',array_reverse(explode('/',$date_ddmmyyyy?$date_ddmmyyyy:$demain_ddmmyyyy))),
-															'c'=>$chauf,
+															'u'=>$login_chauffeur[$chauf],
 															'd'=>time())));
 					?>" style="float:right;" class="qrcode"/>
 <?				} ?>				

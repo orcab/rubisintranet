@@ -64,6 +64,13 @@ $tournee_chauffeur = array(
 				)
 );
 
+$login_chauffeur = array(
+	'PHILIPPE'		=>'AFPR',
+	'LAURENT'		=>'AFLH',
+	'GILLES'		=>'AFGH',
+	'CHRISTOPHE'	=>'AFCLM',
+	'Non définit'	=>'AF'
+);
 
 function e($val,$tableau) {
 	return $tableau[$val];
