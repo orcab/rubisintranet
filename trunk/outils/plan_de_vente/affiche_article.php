@@ -330,6 +330,13 @@ function valider_detail_article() {
 <? } // fin peut modifier article ?>
 
 
+/* imprime une etiquette en PDF destinée a une palette pour le dépot */
+function generate_etiquette_article() {
+	var code_article = $.trim($('#detail_article_code_article').text());
+	document.location.href="edition_etiquette.php?code_article="+code_article+"&qte="+prompt("Quelle quantité ?");
+	//alert($.trim($('#detail_article_code_article').text()));
+}
+
 <? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 function tout_selectionner() {
 	for(i=0 ; i<document.article.elements.length ; i++)
@@ -473,7 +480,10 @@ function valider_nouveau_chemin() {
 		<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 			<td><input value="Valider" class="button valider" type="button" onclick="valider_detail_article();"></td>
 		<? } ?>
-		<td><input value="Annuler" class="button annuler" type="button" onclick="$('#detail-article').hide();"></td>
+		<td>
+			<input value="Annuler" class="button annuler" type="button" onclick="$('#detail-article').hide();">
+			<input value="Imprimer etiquette" class="button printer divers" type="button" onclick="generate_etiquette_article();">
+		</td>
 	</tr>
 	
 </table>
