@@ -46,19 +46,20 @@ $pdf->SetTextColor(0);
 $pdf->SetFont('helvetica','B',38);
 
 $interligne = 14;
-$oldY = 50;
+$oldY = 25;
 
-$pdf->SetY(50);
+$pdf->SetY($oldY);
 $pdf->MultiCell(0,10,$row_entete['NOMFO'],0);
 
-$pdf->SetY($oldY += $interligne);
+$pdf->SetY($oldY += $interligne + 8);
 $pdf->MultiCell(0,10,$row_entete['REFFO'],0);
 
 $pdf->SetY($oldY += $interligne);
 $pdf->MultiCell(0,10,$row_entete['DESI1'],0);
 
+$pdf->SetFont('helvetica','B',60);
 $pdf->SetY($oldY += $interligne * 2);
-$pdf->MultiCell(0,10,$row_entete['NOART']."        QTE: $qte_escape",0);
+$pdf->MultiCell(0,10,$row_entete['NOART']." QTE: $qte_escape",0);
 
 $pdf->SetY($oldY += $interligne);
 $pdf->EAN13(LEFT_MARGIN, $oldY , $row_entete['EAN13'] , 40 , 2 );
