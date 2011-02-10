@@ -33,6 +33,11 @@ class PDF extends FPDF
 		if (PDF_CDE_ADH_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_CDE_ADH_LOGO_HAUT_DROITE,PAGE_WIDTH - 50,0,50);
 		*/
 
+		//QRCode en haut a droite
+		$json = array('t'=>(BON_DE_RETOUR ? 'bon_retour':'bon_preparation'),'b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo(),'u'=>$arguments['user']);
+		$qrcode = new QRcode(json_encode($json), 'L'); // error level : L, M, Q, H
+		$qrcode->displayFPDF($this, PAGE_WIDTH - 22, 2, 20);
+
 		// le dépot a livré et les coordonnées du fournisseur
 		$this->SetFont('helvetica','',10);
 		$this->SetTextColor(0,0,0);
