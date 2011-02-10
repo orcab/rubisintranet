@@ -155,6 +155,35 @@ div#getInfos th, div#getInfos td {
 
 div#getInfos td { text-align:left; }
 
+/* grand cadre avec toutes les propositions */
+#liste-tiers {
+	border:solid 1px black;
+	background:white;
+}
+
+/* une ligne de proposition */
+.tiers {
+	cursor:pointer;
+}
+
+/* une ligne de proposition suspendu */
+.tiers-suspendu {
+	text-decoration:line-through;
+	color:#999;
+	font-weight:normal;
+	background:url(gfx/hachure.gif);
+}
+
+.tiers-type-1 { background:white;	} /* artisan */
+.tiers-type-2 { background:lightgrey;	} 
+.tiers-type-3 { background:orange;	} /* employe */
+.tiers-type-4 { background:lime;	} /* coop */
+.tiers-type-5 { background:pink;	} 
+.tiers-type-6 { background:yellow;	} /* fournisseur */
+
+.tiers-code { color:green; font-weight:bold;}
+.tiers-nom	{ color:black; }
+
 div.calendar { z-index:201; }
 
 div#blackscreen {
@@ -229,6 +258,40 @@ function verif_formulaire() {
 	return 1;
 }
 
+
+// va chercher dans la liste des tiers, les valeurs qui commence par ce qu'a tapé l'utilisateur
+function affiche_tiers(texte) {
+	//alert(texte);
+	$('#liste-tiers').html('').show();	// efface le div de résultat
+	var query = texte.toUpperCase().replace(/[^0-9a-z ]/i,'') ;
+	if (query.length >= 2) { // si au moins un caractère de renseigné
+		for(i=0; i<tiers.length ; i++) { // pour chaque tiers
+			if (	tiers[i][2].indexOf(query) > -1 // nom artisan trouvé
+				||	tiers[i][1].indexOf(query) > -1
+				||	tiers[i][0].indexOf(query) > -1) { // code artisan trouvé
+						//draw_row_artisan('liste-artisan',artisans[i]); // ajoute une ligne aux tableaux de résultat
+
+				$('#liste-tiers').append('<div class="tiers tiers-type-' + tiers[i][4] + (tiers[i][3] ? ' tiers-suspendu':'') + '" onclick="valide_tiers(\''+tiers[i][0]+'\')"><span class="tiers-code">'+tiers[i][0]+'</span> <span class="tiers-nom">'+tiers[i][1]+'</span></div>');
+			}
+		}
+	}
+}
+
+function valide_tiers(tiers) {
+	$('#liste-tiers').hide();
+	document.rejected.document_key2.value=tiers;
+}
+
+// stock la liste des artisans
+var tiers = new Array();
+<?
+// récupère la liste des tiers
+$res = mysql_query("SELECT	* FROM tiers") or die("ne peux pas retrouver la liste des tiers ".mysql_error());
+while($row = mysql_fetch_array($res)) { ?>
+	tiers.push(['<?=addslashes(strtoupper($row['code']))?>','<?=addslashes(strtoupper($row['nom']))?>','<?=preg_replace('/[^0-9a-z ]/i','',strtoupper($row['nom']))?>',<?=$row['suspendu']?>,<?=$row['type']?>]);
+<? } ?>
+
+
 $(document).ready(function(){
 	// binding
 	$('.document').bind('mouseenter', function(event) {
@@ -294,7 +357,13 @@ $(document).ready(function(){
 		</td></tr>
 		<tr><th>Page</th>				<td id="document_page"><input type="text" name="document_page" size="2" value=""/></td></tr>
 		<tr><th>N° de document</th>		<td id="document_key1"><input type="text" name="document_key1" size="6" value=""/></td></tr>
-		<tr><th>N° du tier</th>			<td id="document_key2"><input type="text" name="document_key2" size="6" value=""/></td></tr>
+		<tr><th style="vertical-align:top;">N° du tier</th>			<td id="document_key2">
+			<input type="text" name="document_key2" onkeyup="affiche_tiers(this.value)" size="6" value="" autocomplete="off"/>
+			<span style="background:orange;color:black;">Emplo</span>
+			<span style="background:yellow;color:black;">Fourn</span>
+			<span style="background:pink;color:black;">Perso</span>
+			<div id="liste-tiers" style="display:none;"></div>
+		</td></tr>
 		<tr>
 			<td colspan="2" style="text-align:center;">
 				<input type="submit" class="button valider" onclick="save_getInfos();" value="Enregistrer">
