@@ -60,7 +60,7 @@ my	$cfg = new Phpconst2perlconst(-file => '../../inc/config.php');
 
 # le sémaphore permet de réguler le nombre de jobs en simultané, bloquant le processus principal tant qu'il n'y a pas de place de libre
 #my $semaphore = Thread::Semaphore->new($ini->val(qw/THEARDS number_of_threads/)); # a corrigé
-my $semaphore = Thread::Semaphore->new($ini->val(3); # precise le nombre de jobs simultanés
+my $semaphore = Thread::Semaphore->new($ini->val(3)); # precise le nombre de jobs simultanés
 
 # on fait le traitement en boucle
 while(1) {
