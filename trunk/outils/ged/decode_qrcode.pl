@@ -60,7 +60,7 @@ my	$cfg = new Phpconst2perlconst(-file => '../../inc/config.php');
 
 # le sémaphore permet de réguler le nombre de jobs en simultané, bloquant le processus principal tant qu'il n'y a pas de place de libre
 #my $semaphore = Thread::Semaphore->new($ini->val(qw/THEARDS number_of_threads/)); # a corrigé
-my $semaphore = Thread::Semaphore->new($ini->val(3)); # precise le nombre de jobs simultanés
+my $semaphore = Thread::Semaphore->new(3); # precise le nombre de jobs simultanés
 
 # on fait le traitement en boucle
 while(1) {
@@ -72,7 +72,8 @@ while(1) {
 
 # chaque fois que l'on trouve un fichier
 sub wanted {
-	if (/\.(?:jpe?g|pdf)$/i) { #fichier Jpeg ou PDF
+	if (	/\.(?:jpe?g|pdf)$/i						#fichier Jpeg ou PDF
+		&&	$File::Find::dir !~ /\/pdf2img$/i) {	#si pas dans un sous répertoire d'extraction
 
 		# avons nous une place de libre ?
 		$semaphore->down();
@@ -95,29 +96,42 @@ sub scanne_document {
 		my $sema_ref = shift;
 
 		# detecte le type de fichier jpeg ou pdf
-		my ($filename_without_extension,$file_extension) = (/(.+?)\.([^\.]+?)$/);
+		my ($file_extension) = (basename($File::Find::name) =~ /\.([^\.]+?)$/);
 
 		# premiere chose à faire --> renommer le fichier avec un uniqid pour éviter les conflits de fichiers
 		my $uniqid = luniqid;
 		move($_,DIRECTORY_TO_SCAN."/$uniqid.$file_extension") or die "Impossible de renommer le fichier '$_' ($!)";
 		$_ = DIRECTORY_TO_SCAN."/$uniqid.$file_extension";
-		my ($filename_without_extension,$file_extension) = (/(.+?)\.([^\.]+?)$/);
+		my ($file_extension) = (basename($File::Find::name) =~ /\.([^\.]+?)$/);
+
+		#print "'$file_extension'\n";exit;
 
 		################################### CONVERTI LES PDF EN JPG #########################
 		if (lc($file_extension) eq 'pdf') { # si le document est de type PDF, on le converti en jpg avant tout traitement !
+			# on converti dans un sous répertoire pour ne pas avoir de probleme de création de fichier pendant qu'on essai de le renommer
+			mkpath(DIRECTORY_TO_SCAN.'/pdf2img') if !-d DIRECTORY_TO_SCAN.'/pdf2img'; # cree le répertoire d'extraction
+
 			# on appel le logiciel de convertion de ImageMagick qui utilise lui meme la librairie GS (version 9 minimum)
 			print print_time()."Converting '".basename($_)."' into JPG\n";
 			my $cmd = join(' ',
 						'"'.$imagemagick.'"',									# le programme de conversion
 						'-density 300',											# 300 DPI
 						'"'.$_.'"',												# le fichier PDF a convertir
-						'"'.$filename_without_extension.'.jpg"'					# le nouveau fichier JPG
+						'"'.DIRECTORY_TO_SCAN.'/pdf2img/'.basename($_).'.jpg"'	# le nouveau fichier JPG dans un sous répertoire
 				);
 			`$cmd`;
-			unlink($_);								# supprime l'ancien PDF
-			$_ = "$filename_without_extension.jpg";	# hack $_ avec le nouveau nom de fichier
-			#$_ =~ s/\\/\//g;
-			#print $cmd; exit;
+			#print $cmd;
+			unlink($_);	# supprime l'ancien PDF
+
+			# les fichiers JPG sont extrait dans le sous répertoire, on les réenvoi dans le répertoire de scan pour analyse
+			opendir(DIR,DIRECTORY_TO_SCAN.'/pdf2img') or die "Impossible d'ouvrir le sous répertoire '".DIRECTORY_TO_SCAN."/pdf2img'";
+			while(my $file = readdir(DIR)) {
+				if (-f DIRECTORY_TO_SCAN."/pdf2img/$file") { # c'est un fichier, on le déplace un cran au dessus pour analyse
+					move(DIRECTORY_TO_SCAN.'/pdf2img/'.$file,DIRECTORY_TO_SCAN.'/'.$file);
+				}
+			}
+			closedir DIR;
+			return;
 		}
 
 		my $filename_escape = quotify(basename($_));
@@ -125,7 +139,7 @@ sub scanne_document {
 		my	$directory_date_unix_style		= strftime("%Y/%m/%d", localtime);
 		my	$directory_date_windows_style	= $directory_date_unix_style;
 			$directory_date_windows_style	=~ s/\//\\/g;
-		my $directory_thumbnail = '';
+		my	$directory_thumbnail = '';
 
 		################################### ON LANCE UNE RECHERCHE DE CODE BARRE #########################
 		print print_time()."Scanning '".basename($_)."'\n";
