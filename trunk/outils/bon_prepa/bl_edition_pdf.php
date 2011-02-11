@@ -6,6 +6,7 @@ require_once('bl_overload.php');
 // read commande line argument
 $arguments = array();
 $arguments['copy']		= 1 ;
+$arguments['ged']		= 0 ;
 $arguments['duplicata'] = false ;
 $arguments['prix']		= false ;
 $arguments['user']		= '' ;
@@ -28,6 +29,8 @@ foreach($argv as $a) {
 		$arguments['user'] = $matches[1];
 	} elseif (preg_match('/^--copy=(\d+)$/',$a,$matches)) {
 		$arguments['copy'] = $matches[1];
+	} elseif (preg_match('/^--ged=(\d+)$/',$a,$matches)) {
+		$arguments['ged'] = $matches[1];
 	}
 
 }
@@ -260,6 +263,11 @@ odbc_close($loginor);
 $filename = 'bon_livraison_'.$arguments['nobon'].'('.crc32(uniqid()).').pdf';	# defnit un nom de fchier unique
 $pdf->Output($filename,'F');												# creer le fichier PDF
 fwrite(STDERR , print_time()."File '$filename' generated\n");
+
+if (isset($arguments['ged']) && $arguments['ged']) { // envoi une copie du document dans la GED
+	fwrite(STDERR , print_time()."Sending to GED\n");
+	copy($filename,"../ged/temp/$filename");
+}
 
 if (isset($arguments['printer'])	&& $arguments['printer'] &&
 	isset($arguments['foxit_path']) && $arguments['foxit_path']) { // imprimante et foxit de spécifier	
