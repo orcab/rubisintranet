@@ -39,11 +39,16 @@ use constant {
 die "Ne peux pas trouver le fichier de configuration 'decode_qrcode.ini' ($!)"	if !-e 'decode_qrcode.ini';
 my $ini	= new Config::IniFiles (-file => 'decode_qrcode.ini') or die "erreur dans la lecture du fichier ini";
 
-die "Ne peux pas trouver l'application 'IrfanView' dans '".	$ini->val(qw/PATH irfanview/)."' ($!)"	if !-e $ini->val(qw/PATH irfanview/);
-die "Ne peux pas trouver l'application 'zbar' dans '".		$ini->val(qw/PATH zbar/)."' ($!)"		if !-e $ini->val(qw/PATH zbar/);
+die "Ne peux pas trouver l'application 'IrfanView' dans '".		$ini->val(qw/PATH irfanview/)."' ($!)"		if !-e $ini->val(qw/PATH irfanview/);
+die "Ne peux pas trouver l'application 'zbar' dans '".			$ini->val(qw/PATH zbar/)."' ($!)"			if !-e $ini->val(qw/PATH zbar/);
+die "Ne peux pas trouver l'application 'ImageMagick' dans '".	$ini->val(qw/PATH imagemagick/)."' ($!)"	if !-e $ini->val(qw/PATH imagemagick/);
+die "Ne peux pas trouver la librairie 'GhostScript' dans 'C:/Program Files/gs'"								if !-d 'C:/Program Files/gs';
 
 my	$irfanview = $ini->val(qw/PATH irfanview/);
 	$irfanview =~ s/\//\\/g;
+
+my	$imagemagick = $ini->val(qw/PATH imagemagick/);
+	$imagemagick =~ s/\//\\/g;
 
 my	$getcwd = getcwd;
 	$getcwd =~ s/\//\\/g;
@@ -66,13 +71,13 @@ while(1) {
 
 # chaque fois que l'on trouve un fichier
 sub wanted {
-	if (/\.(?:jpe?g|png|gif)$/i) { #fichier JPEG ou PNG
+	if (/\.(?:jpe?g|pdf)$/i) { #fichier Jpeg ou PDF
 
 		# avons nous une place de libre ?
 		$semaphore->down();
 
 		# si le sémaphore est a 0, le processus principal va se bloquer en attendant une nouvelle place
-		my $thr = threads->create("scanne_image", \$semaphore );
+		my $thr = threads->create("scanne_document", \$semaphore );
 		# détache le job du thread principal, rend la main au thread principal
 		$thr->detach();
 
@@ -85,20 +90,40 @@ print print_time()."END\n\n";
 
 
 
-sub scanne_image {
+sub scanne_document {
 		my $sema_ref = shift;
+
+		# detecte le type de fichier jpeg ou pdf
+		my ($filename_without_extension,$file_extension) = (/(.+?)\.([^\.]+?)$/);
 
 		# premiere chose à faire --> renommer le fichier avec un uniqid pour éviter les conflits de fichiers
 		my $uniqid = luniqid;
-		move($_,DIRECTORY_TO_SCAN."/$uniqid.jpg") or die "Impossible de renommer le fichier '$_' ($!)";
-		$_ = DIRECTORY_TO_SCAN."/$uniqid.jpg";
+		move($_,DIRECTORY_TO_SCAN."/$uniqid.$file_extension") or die "Impossible de renommer le fichier '$_' ($!)";
+		$_ = DIRECTORY_TO_SCAN."/$uniqid.$file_extension";
+		my ($filename_without_extension,$file_extension) = (/(.+?)\.([^\.]+?)$/);
+
+		################################### CONVERTI LES PDF EN JPG #########################
+		if (lc($file_extension) eq 'pdf') { # si le document est de type PDF, on le converti en jpg avant tout traitement !
+			# on appel le logiciel de convertion de ImageMagick qui utilise lui meme la librairie GS (version 9 minimum)
+			print print_time()."Converting '".basename($_)."' into JPG\n";
+			my $cmd = join(' ',
+						'"'.$imagemagick.'"',									# le programme de conversion
+						'-density 300',											# 300 DPI
+						'"'.$_.'"',												# le fichier PDF a convertir
+						'"'.$filename_without_extension.'.jpg"'					# le nouveau fichier JPG
+				);
+			`$cmd`;
+			unlink($_);								# supprime l'ancien PDF
+			$_ = "$filename_without_extension.jpg";	# hack $_ avec le nouveau nom de fichier
+			#$_ =~ s/\\/\//g;
+			#print $cmd; exit;
+		}
 
 		my $filename_escape = quotify(basename($_));
 		
-		my $directory_date_unix_style = strftime("%Y/%m/%d", localtime);
-		my	$directory_date_windows_style = $directory_date_unix_style;
-			$directory_date_windows_style =~ s/\//\\/g;
-		################################### CREE REPERTOIRE DE LA MINIATURE #########################
+		my	$directory_date_unix_style		= strftime("%Y/%m/%d", localtime);
+		my	$directory_date_windows_style	= $directory_date_unix_style;
+			$directory_date_windows_style	=~ s/\//\\/g;
 		my $directory_thumbnail = '';
 
 		################################### ON LANCE UNE RECHERCHE DE CODE BARRE #########################
