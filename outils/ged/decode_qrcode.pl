@@ -111,26 +111,31 @@ sub scanne_document {
 			# on converti dans un sous répertoire pour ne pas avoir de probleme de création de fichier pendant qu'on essai de le renommer
 			mkpath(DIRECTORY_TO_SCAN.'/pdf2img') if !-d DIRECTORY_TO_SCAN.'/pdf2img'; # cree le répertoire d'extraction
 
+			# deplacement du pdf dans un sous répertoire pour qu'il ne soit pas traité par un autre semaphore
+			move($_,DIRECTORY_TO_SCAN.'/pdf2img/'.basename($_));
+
 			# on appel le logiciel de convertion de ImageMagick qui utilise lui meme la librairie GS (version 9 minimum)
 			print print_time()."Converting '".basename($_)."' into JPG\n";
 			my $cmd = join(' ',
 						'"'.$imagemagick.'"',									# le programme de conversion
 						'-density 300',											# 300 DPI
-						'"'.$_.'"',												# le fichier PDF a convertir
+						'"'.DIRECTORY_TO_SCAN.'/pdf2img/'.basename($_).'"',		# le fichier PDF a convertir
 						'"'.DIRECTORY_TO_SCAN.'/pdf2img/'.basename($_).'.jpg"'	# le nouveau fichier JPG dans un sous répertoire
 				);
 			`$cmd`;
 			#print $cmd;
-			unlink($_);	# supprime l'ancien PDF
+			unlink(DIRECTORY_TO_SCAN.'/pdf2img/'.basename($_));	# supprime l'ancien PDF
 
 			# les fichiers JPG sont extrait dans le sous répertoire, on les réenvoi dans le répertoire de scan pour analyse
 			opendir(DIR,DIRECTORY_TO_SCAN.'/pdf2img') or die "Impossible d'ouvrir le sous répertoire '".DIRECTORY_TO_SCAN."/pdf2img'";
 			while(my $file = readdir(DIR)) {
-				if (-f DIRECTORY_TO_SCAN."/pdf2img/$file") { # c'est un fichier, on le déplace un cran au dessus pour analyse
+				if (-f DIRECTORY_TO_SCAN."/pdf2img/$file" && $file =~ /\.jpe?g$/i) { # c'est un fichier JPG, on le déplace un cran au dessus pour analyse
 					move(DIRECTORY_TO_SCAN.'/pdf2img/'.$file,DIRECTORY_TO_SCAN.'/'.$file);
 				}
 			}
 			closedir DIR;
+
+			$$sema_ref->up(); # on libere un threads
 			return;
 		}
 
