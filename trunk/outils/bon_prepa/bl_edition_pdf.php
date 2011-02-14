@@ -181,7 +181,15 @@ while($row = odbc_fetch_array($detail_commande)) {
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ADETBOP1' and CDETA='' and CDCOD LIKE '%$row_entete[NOBON]$row[NOLIG]%' ORDER BY CDLIG") ;
 		while($commentaire_row = odbc_fetch_array($commentaire_res))
 			if ($commentaire_row['CDLIB'])
-				$designation .= "\n".trim($commentaire_row['CDLIB']);
+				$designation .= "\n".trim($commentaire_row['CDLIB']);	
+
+		if ($row['TRAIT'] == 'R') {
+			$total_bon_reliquat += $row['MONHT'];
+			$pdf->SetFillColor(235);
+		} else {
+			$total_bon_livre	+= $row['MONHT'];
+			$pdf->SetFillColor(255);
+		}
 
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 						array('text' => $row['CODAR']	, 'font-style' => 'B',					'text-align' => 'C', 'font-size' => 10 ),
@@ -194,11 +202,6 @@ while($row = odbc_fetch_array($detail_commande)) {
 						array('text' => ($row['TYCDD']=='SPE' && $row['TRAIT']=='R'? 'S':''),'text-align' => 'C') // spécial ou pas
 					)
 		);
-
-		if ($row['TRAIT'] == 'R')
-			$total_bon_reliquat += $row['MONHT'];
-		else
-			$total_bon_livre	+= $row['MONHT'];
 
 
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
@@ -217,6 +220,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 			
 			unset($kit[$row['DET97']]);
 		}
+
+		$pdf->SetFillColor(255);
 	}
 } // fin while article
 
@@ -236,6 +241,7 @@ if ($row_entete['NB_PAROI'] > 0)	array_push($info_colisage,$row_entete['NB_PAROI
 if ($row_entete['NB_PVC'] > 0)		array_push($info_colisage,$row_entete['NB_PVC']." botte".				($row_entete['NB_PVC']>1?'s':'')." de PVC");
 if ($row_entete['NB_CUIVRE'] > 0)	array_push($info_colisage,$row_entete['NB_CUIVRE']." botte".			($row_entete['NB_CUIVRE']>1?'s':'')." de cuivre");
 if (sizeof($info_colisage)) { // si des infos de colisage renseignées
+	$pdf->SetFillColor(245);
 	if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) $pdf->AddPage(); // check le saut de page
 	$pdf->SetFont('helvetica','B',11);
 	$pdf->Cell(CODAR_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_WIDTH + UNITE_WIDTH + QTE_WIDTH + PU_WIDTH + TOTAL_WIDTH + TYPE_CDE_WIDTH,7,"Info de colisage : ".join(' / ',$info_colisage),1,0,'C',1);
