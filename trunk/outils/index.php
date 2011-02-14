@@ -49,6 +49,7 @@ img:hover {
 		<a href="feuille_tournee/carte_tournee.php">Carte de tournée</a>
 	</td>
 	<td style="width:50%;padding-bottom:20px;">
+		<a href="http://10.211.14.10/intranet/outils/ged/"><img src="ged/gfx/ged_icon.png"><br>GED</a>
 		<!--<a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a>-->
 	</td>
 </tr>
