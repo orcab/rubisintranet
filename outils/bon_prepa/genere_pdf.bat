@@ -1,1 +1,0 @@
-"c:/easyphp/php5/php" -c "c:/easyphp/apache/php.ini" bl_edition_pdf_test.php "--nocli=056093" "--nobon=JA02WS" "--lignes=01008228,01004082"
