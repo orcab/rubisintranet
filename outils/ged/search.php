@@ -10,16 +10,7 @@ $message  = '' ;
 if (DEBUG) { echo "<pre>" ; print_r($_POST) ; echo "</pre>\n"; }
 
 $key1 = isset($_POST['key1']) ? $_POST['key1']:''; // n° de bon
-$key2 = '';
-
-$type_tier = '';
-if		 (isset($_POST['tier_adh']) && $_POST['tier_adh']) { // un adh a été selectionné
-	$key2 = $_POST['tier_adh'];
-	$type_tier = 'adh';
-} elseif (isset($_POST['tier_fourn']) && $_POST['tier_fourn']) { // un fournisseur a été selectionné
-	$key2 = $_POST['tier_fourn'];
-	$type_tier = 'fourn';
-}
+$key2 = isset($_POST['key2']) ? $_POST['key2']:''; // n° de bon
 
 ?>
 <html>
@@ -38,16 +29,11 @@ a > img { border:none; }
 div#main { margin:5px; }
 
 select {
-	font-size:0.7em;
+	font-size:0.8em;
 	font-family:verdana;
 }
 
-option.no_document {
-	color:#AAA;
-	font-style:italic;
-}
-
-option.suspendu {
+option.tiers-suspendu {
 	color:#AAA;
 	font-style:italic;
 	text-decoration:line-through;
@@ -203,7 +189,7 @@ function count_documents() {
 	<tr>
 		<td>N° de bon&nbsp;<input type="text" name="key1" value="<?=$key1?>" style="margin-right:2em;width:6em;"/></td>
 		<td>
-			<select name="tier_adh">
+<!--			<select name="tier_adh">
 				<option value="">Choix adhérent</option>
 <?				$res_count = mysql_query("SELECT key2,count(id) as nb_document FROM ged_document GROUP BY key2") or die("Ne peux pas récupérer le comptage des nombre de document par adhérent ".mysql_error());
 				$nb_document_per_adh = array();
@@ -227,13 +213,46 @@ function count_documents() {
 					</option>
 <?				} ?>
 			</select>
+-->
+
+		<select name="key2">
+			<option value="">Choix du tiers</option>
+			<optgroup label="Cession">
+<?				$old_type = "0";
+				$i=0;
+				$res = mysql_query("SELECT * FROM tiers ORDER BY `type` ASC, nom ASC") or die("Ne peux pas récupérer la liste des tiers".mysql_error());
+				while ($row = mysql_fetch_array($res)) {
+					if ($row['type'] != $old_type && $i>0) { ?>
+						</optgroup><optgroup label="<?
+							switch($row['type']) {
+								case '1' :	echo "Adhérents"; break;
+								case '2' :	echo "Adhérents perso"; break;
+								case '3' :	echo "Employés"; break;
+								case '4' :	echo "Coopérative"; break;
+								case '6' :	echo "Fournisseurs"; break;
+								default:	echo "Divers"; break;
+							}
+					?>">
+<?					} ?>
+					<option	value="<?=$row['code']?>"
+						class="<?=$row['suspendu']?'tiers-suspendu':''?> tiers-type-<?=$row['type']?>"
+						<?=($key2==$row['code'])?' selected="selected"':''?>
+						>
+						<?=$row['nom']?>
+					</option>
+<?					$i++;
+					 $old_type = $row['type'];
+				} ?>
+				</optgroup>
+		</select>
+
 		</td>
 		<td><input type="submit" class="button valider" value="Rechercher"/></td>
 	</tr>
 	<tr>
 		<td><input type="button" class="button" value="Plus d'options" style="background-image:url(../../js/boutton_images/document.png);" onclick="$('#more_options').toggle('fast');"/></td>
 		<td>
-			<select name="tier_fourn">
+<!--			<select name="tier_fourn">
 				<option value="">Choix fournisseur</option>
 <?				$res  = mysql_query("SELECT code_rubis,nom FROM fournisseur ORDER BY nom ASC") or die("Ne peux pas récupérer la liste des fournisseurs ".mysql_error());
 				$fournisseurs = array();
@@ -248,6 +267,7 @@ function count_documents() {
 					</option>
 <?				} ?>
 			</select>
+-->
 		</td>
 		<td></td>
 	</tr>
