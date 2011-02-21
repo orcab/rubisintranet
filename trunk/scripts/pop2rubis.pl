@@ -130,7 +130,9 @@ if (defined($authentification) && $authentification > 0) {
 
 
 				} elsif (/^\s*article_(.+?)\s*=(.*)/i) { # article avec sa qte
-					push @{$data->{$messageId}->{'articles'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>$1,  'SENTYP'=>'',  'SENQTE'=>$2, 'SENCSA'=>''} ;
+					my ($code,$qte) = ($1,$2);
+					$qte =~ s/\./,/g; # pour les chiffre flotant, transforme les "." en ",".
+					push @{$data->{$messageId}->{'articles'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>$code,  'SENTYP'=>'',  'SENQTE'=>$qte, 'SENCSA'=>''} ;
 					$ligne += 2;
 				}
 			}
