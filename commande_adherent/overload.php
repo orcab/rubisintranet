@@ -14,7 +14,7 @@ define('REF_WIDTH',25);
 define('FOURNISSEUR_WIDTH',25);
 define('LOCAL_WIDTH', 20);
 define('UNITE_WIDTH',9);
-define('QTE_WIDTH',12);
+define('QTE_WIDTH',20);
 define('PUHT_WIDTH',15);
 define('PTHT_WIDTH', 20);
 define('TYPE_CDE_WIDTH', 5);

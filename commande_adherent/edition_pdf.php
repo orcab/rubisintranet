@@ -33,7 +33,8 @@ where	NOBON='$NOBON_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26,LOCAL,LOCA2,LOCA3
+select	NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26,LOCAL,LOCA2,LOCA3,
+		DDISS,DDISA,DDISM,DDISJ
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on	BON.NOFOU=FOURNISSEUR.NOFOU
@@ -143,7 +144,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,'text-align' => 'C', 'font-size' => 10), //localisation
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
-					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+					array('text' => str_replace('.000','',$row['QTESA']).($row['DET26']=='O' && $row['TYCDD']=='SPE'?"\n$row[DDISJ]/$row[DDISM]/$row[DDISS]$row[DDISA]":'')		, 'text-align' => 'C'), // quantité
 					array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
 					));
 			} else {
@@ -152,7 +153,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
 					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
-					array('text' => str_replace('.000','',$row['QTESA'])		, 'text-align' => 'C'), // quantité
+					array('text' => str_replace('.000','',$row['QTESA']).($row['DET26']=='O' && $row['TYCDD']=='SPE'?"\n$row[DDISJ]/$row[DDISM]/$row[DDISS]$row[DDISA]":'')		, 'text-align' => 'C'), // quantité
 					array('text' => $row['TYCDD']=='SPE' ? 'S'.($row['DET26']=='O'?"\nE":'') : ''	, 'text-align' => 'R') // spécial ou pas
 					));
 			}
