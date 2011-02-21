@@ -22,7 +22,7 @@ use constant {
 
 $|=1;								# pour ne pas flusher directement les sortie print
 
-my %skip	= qw/init 0 delete 0 bon 0 devis 0 reliquat 0 compress 0 upload 0/;
+my %skip	= qw/init 0 delete 0 bon 0 devis 0 compress 0 upload 0/;
 my %options = ();
 GetOptions (\%options, 'skip=s','all','help|?','version','dbname=s','from=s','to=s') or die ;
 
@@ -74,15 +74,19 @@ END_INIT: ;
 goto END_BON if $skip{'bon'};
 # bon de commande ###########################################################################################################"
 # suppression des anciens bon
-if (!$skip{'delete'}) {
-	print print_time()."Suppression des lignes de bon ...";
-	if (exists $options{'from'} && exists $options{'to'}) {
-		$sqlite->do("DELETE FROM cde_rubis WHERE date_bon >= '$options{from}' and date_bon <= '$options{to}'") ;
-	} else {
-		$sqlite->do("DELETE FROM cde_rubis WHERE date_maj >= '$thirty_days_ago'") ;
-	}
-	print "OK\n";
-}
+#if (!$skip{'delete'}) {
+#	print print_time()."Suppression des lignes de bon ...";
+#	if (exists $options{'from'} && exists $options{'to'}) {
+#		$sqlite->do("DELETE FROM cde_rubis WHERE date_bon >= '$options{from}' and date_bon <= '$options{to}'") ;
+#	} else {
+#		$sqlite->do("DELETE FROM cde_rubis WHERE date_maj >= '$thirty_days_ago'") ;
+#	}
+#	print "OK\n";
+#}
+
+#$sqlite->commit;
+#$sqlite->disconnect();
+#goto END;
 
 print print_time()."Select des lignes de bon ...";
 my $where_date_bon = '';
@@ -157,6 +161,10 @@ while($loginor->FetchRow()) {
 		$nb_dispo = 0;
 		$montant_dispo = 0;
 
+		# supprime l'ancien bon et le détail grace au trigger
+		$sqlite->do("DELETE FROM cde_rubis WHERE numero_bon='$row{NOBON}' and numero_artisan='$row{NOCLI}'");
+		if ($sqlite->err()) { die "$DBI::errstr\n"; }
+
 		# insert la nouvelle entete de commande
 		$sqlite->do("INSERT OR IGNORE INTO cde_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,montant_dispo,reference,agence,nb_livre,nb_prepa,nb_dispo) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',0,$row{MONTBT},0,'$row{RFCSB}','$row{AGELI}','0','0','0')");
 		if ($sqlite->err()) { die "$DBI::errstr\n"; }
@@ -210,15 +218,15 @@ END_BON: ;
 goto END_DEVIS if $skip{'devis'};
 # devis ###########################################################################################################"
 # suppression des anciens devis
-if (!$skip{'delete'}) {
-	print print_time()."Suppression des devis ...";
-	if (exists $options{'from'} && exists $options{'to'}) {
-		$sqlite->do("DELETE FROM devis_rubis WHERE date_bon >= '$options{from}' and date_bon <= '$options{to}'") ;
-	} else {
-		$sqlite->do("DELETE FROM devis_rubis WHERE date_maj >= '$thirty_days_ago'");
-	}
-	print "OK\n";
-}
+#if (!$skip{'delete'}) {
+#	print print_time()."Suppression des devis ...";
+#	if (exists $options{'from'} && exists $options{'to'}) {
+#		$sqlite->do("DELETE FROM devis_rubis WHERE date_bon >= '$options{from}' and date_bon <= '$options{to}'") ;
+#	} else {
+#		$sqlite->do("DELETE FROM devis_rubis WHERE date_maj >= '$thirty_days_ago'");
+#	}
+#	print "OK\n";
+#}
 
 print print_time()."Select des devis ...";
 my $where_date_devis = '';
@@ -278,6 +286,11 @@ while($loginor->FetchRow()) {
 	$designation		= $row{'CONSA'} ? "$row{CONSA}":$designation;
 
 	if ($old_bon ne "$row{NOBON}.$row{NOCLI}") { #nouveau
+		# supprime l'ancien bon et le détail grace au trigger
+		$sqlite->do("DELETE FROM cde_rubis WHERE numero_bon='$row{NOBON}' and numero_artisan='$row{NOCLI}'");
+		if ($sqlite->err()) { die "$DBI::errstr\n"; }
+
+		# insert le nouveau
 		$sqlite->do("INSERT OR IGNORE INTO devis_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,reference,agence) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',$row{NBLIG},$row{MONTBT},'$row{RFCSB}','$row{AGELI}')");
 		if ($sqlite->err()) { die "$DBI::errstr\n"; }
 	}
