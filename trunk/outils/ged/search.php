@@ -189,32 +189,6 @@ function count_documents() {
 	<tr>
 		<td>N° de bon&nbsp;<input type="text" name="key1" value="<?=$key1?>" style="margin-right:2em;width:6em;"/></td>
 		<td>
-<!--			<select name="tier_adh">
-				<option value="">Choix adhérent</option>
-<?				$res_count = mysql_query("SELECT key2,count(id) as nb_document FROM ged_document GROUP BY key2") or die("Ne peux pas récupérer le comptage des nombre de document par adhérent ".mysql_error());
-				$nb_document_per_adh = array();
-				while ($row = mysql_fetch_array($res_count))
-					$nb_document_per_adh[$row['key2']] = $row['nb_document'];
-
-				$adherents = array();
-				$res  = mysql_query("SELECT numero,nom,suspendu FROM artisan ORDER BY nom ASC") or die("Ne peux pas récupérer la liste des adhérents ".mysql_error());
-				while ($row = mysql_fetch_array($res)) {
-					$adherents[$row['numero']] = $row['nom'];
-?>
-					<option		value="<?=$row['numero']?>"
-						class="
-						<?=$row['suspendu']?'suspendu ':''?>
-						<?=!isset($nb_document_per_adh[$row['numero']])?' no_document':''?>
-						"
-						<?=($type_tier=='adh' && $key2==$row['numero'])?' selected="selected"':'' ?>
-						>
-						<?=$row['nom']?>
-						<?= isset($nb_document_per_adh[$row['numero']])?' ('.$nb_document_per_adh[$row['numero']].')':'' ?>
-					</option>
-<?				} ?>
-			</select>
--->
-
 		<select name="key2">
 			<option value="">Choix du tiers</option>
 			<optgroup label="Cession">
@@ -245,30 +219,12 @@ function count_documents() {
 				} ?>
 				</optgroup>
 		</select>
-
 		</td>
 		<td><input type="submit" class="button valider" value="Rechercher"/></td>
 	</tr>
 	<tr>
 		<td><input type="button" class="button" value="Plus d'options" style="background-image:url(../../js/boutton_images/document.png);" onclick="$('#more_options').toggle('fast');"/></td>
-		<td>
-<!--			<select name="tier_fourn">
-				<option value="">Choix fournisseur</option>
-<?				$res  = mysql_query("SELECT code_rubis,nom FROM fournisseur ORDER BY nom ASC") or die("Ne peux pas récupérer la liste des fournisseurs ".mysql_error());
-				$fournisseurs = array();
-				while ($row = mysql_fetch_array($res)) {
-					$fournisseurs[$row['code_rubis']] = $row['nom'];
-?>
-					<option		value="<?=$row['code_rubis']?>"
-						<?=($type_tier=='fourn' && $key2==$row['code_rubis'])?' selected="selected"':'' ?>
-						>
-						<?=$row['nom']?>
-						<?= isset($nb_document_per_adh[$row['code_rubis']])?' ('.$nb_document_per_adh[$row['code_rubis']].')':'' ?>
-					</option>
-<?				} ?>
-			</select>
--->
-		</td>
+		<td></td>
 		<td></td>
 	</tr>
 	</table>
