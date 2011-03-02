@@ -211,9 +211,8 @@ while ($row = mysql_fetch_array($res)) {
 }//Fin de la boucle while
 $output = 'output'.uniqid().'.pdf' ;
 $pdf->Output($output, 'F');
-// system('"'.FOXIT_PATH.'" -t "'.$output.'" "'.PRINTER.'"');
-// unlink($output);
-//$message = "Impression terminée, vous pouvez la récupérer à l'accueil." ;
+system('"'.FOXIT_PATH.'" -t "'.$output.'" "'.PRINTER.'"');
+unlink($output);
 $message = base64_encode ("Impression terminée, vous pouvez la récupérer à l'accueil.");
 
 echo <<<EOT
