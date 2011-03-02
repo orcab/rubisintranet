@@ -135,7 +135,7 @@ function initialize() {
 			$infowindow .= $row['adr2'] ? htmlentities($row['adr2'])."<br/>" : '';
 			$infowindow .= $row['adr3'] ? htmlentities($row['adr3'])."<br/>" : '';
 			$infowindow .= htmlentities($row['cp']).' <strong>'.htmlentities($row['ville']).'</strong>';
-			$infowindow .= $row['tel1'] ? '<br/>'.htmlentities("Téléphone : $row[tel1]") : '';
+			$infowindow .= $row['tel1'] ? '<br/>Téléphone : '.htmlentities($row['tel1']) : '';
 			$infowindow .= '</address>' ;
 			$infowindow .= $row['email'] ? 'Contacter par email : <a href=\\"mailto:'.$row['email'].'\\">'.$row['email'].'</a>' : '';		
 	?>

@@ -145,49 +145,49 @@ function ZoomOutControl(controlDiv, map) {
 //Legend des markers
 function LegendControl(controlDiv, map) {
 	$(controlDiv).html('<div><img src="images/10_adhplombier-mini.png"/>  Plombier &amp; Chauffagiste</br><img src="images/10_adhelectricien-mini.png"/>  Electricien</br><img src="images/10_adhboth-mini.png"/>  Plombier &amp; Electricien</div>');
-	$(controlDiv).css({	"-moz-border-radius":"1em 1em 1em 1em",
-						"background-color":"rgba(255, 255, 255, 0.7)",
-						"vertical-align" : "middle",
-						"padding":"10px",
-						"margin":"6px"
+	$(controlDiv).css({	'-moz-border-radius':'1em 1em 1em 1em',
+						'background-color':'rgba(255, 255, 255, 0.7)',
+						'vertical-align' : 'middle',
+						'padding':'10px',
+						'margin':'6px'
 					});
 }
 
 //Fonction du bouton print des  adh
 function PrintControl() {
 	clearMap();
-	$("#endImprim").html('<div id="text_imprim" >Impression en cours, veuillez patienter<br/><br/><br/><img src="images/impression.gif" /></div>');
-	$("#fonds").css({	"display": "inline",
-						"z-index":"11000"
+	$('#endImprim').html('<div id="text_imprim" >Impression en cours, veuillez patienter<br/><br/><br/><img src="images/impression.gif" /></div>');
+	$('#fonds').css({	'display': 'inline',
+						'z-index':'11000'
 					});
-	$("#endImprim").css({	"display":"inline",
-							"background-image" : "none",
-							"z-index":"12000"
+	$('#endImprim').css({	'display':'inline',
+							'background-image' : 'none',
+							'z-index':'12000'
 						});
-	$.ajax({type: 	"POST", //method pour passer les parametres
-			url: 	"output_pdf.php", //page de direction
+	$.ajax({type: 	'POST', //method pour passer les parametres
+			url: 	'output_pdf.php', //page de direction
 			data: 	{	myJson:  JSON.stringify(bestTenAdh) },	//Transforme le tableau en string Json
 			success :    function (json) {
 					var json = jQuery.parseJSON(json);
 					json.message = $.base64.decode(json.message);
-					$("#endImprim").html('<div>'+json.message+'</div> <input type="button" id="close_imprim" />');
+					$('#endImprim').html('<div>'+json.message+'</div> <input type="button" id="close_imprim" />');
 					 
 						timer_imprim = setTimeout(function() { //timer de fermeture
-											$("#fonds").hide("fade",{},1000);
-											$("#endImprim").hide("fade",{},1000);
+											$('#fonds').hide('fade',{},1000);
+											$('#endImprim').hide('fade',{},1000);
 										},10000 );
 								
-					//	$("#fonds").css({"display": "inline"});
-						$("#endImprim").css({	//"display":"inline",
-												"background-image":"url(images/imprim.jpg)",
-												"background-repeat":"no-repeat",
-												"background-position":"center center",
-												"text-align": "center"
+					//	$('#fonds').css({'display': 'inline'});
+						$('#endImprim').css({	//'display':'inline',
+												'background-image':'url(images/imprim.jpg)',
+												'background-repeat':'no-repeat',
+												'background-position':'center center',
+												'text-align': 'center'
 											});
 						//fonction du bouton fermer
 						$('#close_imprim').click (function() {		
-							$("#fonds").hide("fade",{},1000);
-							$("#endImprim").hide("fade",{},1000);	
+							$('#fonds').hide('fade',{},1000);
+							$('#endImprim').hide('fade',{},1000);	
 							clearTimeout(timer_imprim);
 						});
 			}
@@ -199,44 +199,44 @@ function PrintControl() {
 
 //Fonction du bouton print de la div adh
 function PrintControlAdherent() {
-	$("#endImprim").html('<div id="text_imprim" >Impression en cours, veuillez patienter<br/><br/><br/><img src="images/impression.gif" /></div>');
-	$("#fonds").css({	"display": "inline",
-						"z-index":"11000"	//Passe le fond devant la div de l adh
+	$('#endImprim').html('<div id="text_imprim" >Impression en cours, veuillez patienter<br/><br/><br/><img src="images/impression.gif" /></div>');
+	$('#fonds').css({	'display': 'inline',
+						'z-index':'11000'	//Passe le fond devant la div de l adh
 					});
-	$("#endImprim").css({	"display":"inline",
-							"background-image" : "none",
-							"z-index":"12000"//Passe le pop up imprimer devant le fond
+	$('#endImprim').css({	'display':'inline',
+							'background-image' : 'none',
+							'z-index':'12000'//Passe le pop up imprimer devant le fond
 						});
-	$.ajax({type: 	"GET", //method pour passer les parametres
-			url: 	"output_pdf_adh.php", //page de direction
+	$.ajax({type: 	'GET', //method pour passer les parametres
+			url: 	'output_pdf_adh.php', //page de direction
 			data: 	numero_artisan, // Parametre
 			success :    function (json) {
 					var json = jQuery.parseJSON(json);
 					json.message = $.base64.decode(json.message);
-					$("#endImprim").html('<div>'+json.message+'</div> <input type="button" id="close_imprim" />');
+					$('#endImprim').html('<div>'+json.message+'</div> <input type="button" id="close_imprim" />');
 					timer_imprim = setTimeout(function() {//timer de fermeture
-												$("#fonds").css({"display": "inline",
-																"z-index":"0" 	//Passe le fond derriere la div de l adh
+												$('#fonds').css({	'display':'inline',
+																	'z-index':'0' 	//Passe le fond derriere la div de l adh
 															});
-												$("#endImprim").hide("fade",{},1000);
+												$('#endImprim').hide('fade',{},1000);
 											},10000 );									
 					/*$("#fonds").css({"display": "inline",
 									 	//Passe le fond devant la div de l adh
 								});*/
-					$("#endImprim").css({	"display":"inline",
-											//"z-index":"12000"//Passe le pop up imprimer devant le fond
-											"background-image":"url(images/imprim.jpg)",
-											"background-repeat":"no-repeat",
-											"background-position":"center center",
-											"text-align": "center"
+					$('#endImprim').css({	'display':'inline',
+											//'z-index':'12000'//Passe le pop up imprimer devant le fond
+											'background-image':'url(images/imprim.jpg)',
+											'background-repeat':'no-repeat',
+											'background-position':'center center',
+											'text-align': 'center'
 												});
 					//fonction du bouton fermer			
 					$('#close_imprim').click (function() {		
-						$("#fonds").css({
-										"display": "inline",
-										"z-index":"0" 	//Passe le fond derriere la div de l adh
+						$('#fonds').css({
+										'display':'inline',
+										'z-index':'0' 	//Passe le fond derriere la div de l adh
 									});
-						$("#endImprim").hide("fade",{},1000);	
+						$('#endImprim').hide('fade',{},1000);	
 						clearTimeout(timer_imprim);
 					});
 			}
@@ -270,70 +270,70 @@ function latLngDistance(centerLat, centerLng, lat, lng) {
  
 //Affichage de la div d 'un adhérent
 function affichageDivAdh(numero_adh) {
- 			$.ajax({type: "GET", 
-				url: "info_json.php",
-				data: "function=data_artisan&numero_artisan="+numero_adh,
+ 			$.ajax({type: 'GET', 
+				url: 'info_json.php',
+				data: 'function=data_artisan&numero_artisan='+numero_adh,
 				success: function(json) {	
 							//Timer pour fermer la div après 2min		
 							timer = setTimeout(function() {
 										time = 1; //variable pr le test de l'évènement
-										$("#cadre").hide(effects[Math.floor(Math.random()*effects.length)], {}, 750);
-										$("#fonds").hide("fade",{},1000);
+										$('#cadre').hide(effects[Math.floor(Math.random()*effects.length)], {}, 750);
+										$('#fonds').hide('fade',{},1000);
 										map.panTo(vannes);
 										map.setZoom(9);	
 									},120000 );								
 
-							$("#cadre").css({	"display": "inline",
-									"z-index":"10000" 	//Passe le fond devant la div de l adh
+							$('#cadre').css({	'display':'inline',
+												'z-index':'10000' 	//Passe le fond devant la div de l adh
 							});	
-							$("#fonds").css({
-									 	"z-index":"9000"//Passe le fond devant la div de l adh
-								});
+							$('#fonds').css({ 'z-index':'9000' }); //Passe le fond devant la div de l adh
+								
 									
 							//Vide le tableau cadre
-							$("#nom-adherent")	.html("");
-							$("#photo0")		.html("");
-							$("#donnee")		.html("");
-							$("#photo5")		.html("");
-							$("#desc")			.html("");
-							$("#photo1")		.html("");
-							$("#photo2")		.html("");
-							$("#photo3")		.html("");
-							$("#photo4")		.html("");
-							$("#fermer")		.html("");
+							$('#nom-adherent')	.html('');
+							$('#photo0')		.html('');
+							$('#donnee')		.html('');
+							$('#photo5')		.html('');
+							$('#desc')			.html('');
+							$('#photo1')		.html('');
+							$('#photo2')		.html('');
+							$('#photo3')		.html('');
+							$('#photo4')		.html('');
+							$('#fermer')		.html('');
 							
 							//Code executé en asynchrone en cas de succes de la page PHP
 							var data = jQuery.parseJSON(json);	
 							
-							data.nom	= $.base64.decode(data.nom);
-							data.ville	= $.base64.decode(data.ville);
-							data.adr1	= $.base64.decode(data.adr1);
-							(data.text_desc ? (data.text_desc = $.base64.decode(data.text_desc)):'')
+							data.nom		= $.base64.decode(data.nom);
+							data.ville		= $.base64.decode(data.ville);
+							data.adr1		= $.base64.decode(data.adr1);
+							data.text_desc	= (data.text_desc ? (data.text_desc = $.base64.decode(data.text_desc)):'');
 							
-							numero_artisan = "numero_artisan="+data.numero;
+							numero_artisan = 'numero_artisan=' + data.numero;
 							
-							//Affichage du nom de l'adhérent	
-							$("#nom-adherent").text(data.nom);
-							$("#nom-adherent").append(			
+							//Affichage du nom de l'adhérent
+							$('#nom-adherent')	.text(data.nom)
+												.append(			
 							((data.activite==1 ? '</br><div><img src="images/10_adhplombier-mini.png"/> Plombier &amp; Chauffagiste</div>': "") //image de l'activité de l'adh
 							||(data.activite==2 ? '</br><div><img src="images/10_adhelectricien-mini.png"/> Electricien</div>': "")
 							||(data.activite==3 ? '</br><div><img src="images/10_adhboth-mini.png"/>Plombier &amp; Electricien</div>': ""))
 							)
 							
 							//Affichage des données relative à l'adh
-							$("#donnee").html('<div id=adr>'+(data.adr1 	? data.adr1:'')+'<br/>'
+							$('#donnee').html('<div id=adr>'+(data.adr1 	? data.adr1:'')+'<br/>'
 								+(data.ville 	? data.ville:'') +' '+(data.cp ? data.cp:'') +'</div><br/></br>'
-								+(data.tel1 	? ("<div><img src='images/icon_map/telephone-icone.png' height=40px  />"+'  '+data.tel1)+'</div>':'') +'</br></br>'
-								+(data.tel3 	? ("<div><img src='images/icon_map/fax-icone.png' height=40px />"+'  '+data.tel3+'</div>') :'')+'</br></br>'
-								+(data.email 	? ("<div><img src='images/icon_map/enveloppe-icone.jpg' height=40px  />"+'  '+data.email+'</div>'):'') +'<br/>'
+								+(data.tel1 	? ('<div><img src="images/icon_map/telephone-icone.png" height="40px" />'+'  '+data.tel1)+'</div>':'') +'</br></br>'
+								+(data.tel3 	? ('<div><img src="images/icon_map/fax-icone.png" height="40px" />'+'  '+data.tel3+'</div>') :'')+'</br></br>'
+								+(data.email 	? ('<div><img src="images/icon_map/enveloppe-icone.jpg" height="40px" />'+'  '+data.email+'</div>'):'') +'<br/>'
 							);
 												
 							//Remplir la cellule de description
 							if (data.text_desc) {
-								$("#desc").html("<div id='text_desc'>"+data.text_desc+'</div>');
-								$("#text_desc").css({'background-color': 'rgba(40, 150, 200, 0.7)'}); //Couleur de la div text_desc
+//								alert(data.text_desc.replace(/\n/,''));
+								$('#desc').html('<div id="text_desc">'+data.text_desc.replace(/[\n\r]/,'<br/>')+'</div>');
+								$('#text_desc').css({'background-color': 'rgba(40, 150, 200, 0.7)'}); //Couleur de la div text_desc
 							} else {
-								$("#text_desc").css({'background-color': 'white'}); //Si pas de description fond en blanc						
+								$('#text_desc').css({'background-color': 'white'}); //Si pas de description fond en blanc						
 							}	
 							
 							//Remplir les cellules des photos
@@ -342,23 +342,23 @@ function affichageDivAdh(numero_adh) {
 								var mySplitResult = myString.split(",");
 								for(i = 0; i < mySplitResult.length; i++) {
 									if (mySplitResult[i] != "" ) {
-										$("#photo"+i+"").html("<img src='images/photo_adh/"+data.numero+"/"+mySplitResult[i]+"' id='photo"+i+"' alt='"+mySplitResult[i]+"'/>");
+										$('#photo'+i).html('<img src="images/photo_adh/'+data.numero+'/'+mySplitResult[i]+'" id="photo'+i+'" alt="'+mySplitResult[i]+'"/>');
 									}
 								}	
 							}
 							
 							//Création du bouton fermer avec effet  et du bouton d'impression
-							$("#fermer").append((data.website 	? ("<div><img src='images/icon_map/icone_email.png' height=40px  />"+'  '+data.website+'</div></br></br>'):'')+"<a id=impression href=# onclick=PrintControlAdherent()><img src=images/icon_map/print64px.png style=border:none></a>"+"<div id='btn_fermer'><input type=button id=close><div>");
+							$('#fermer').append((data.website 	? ('<div><img src="images/icon_map/icone_email.png" height="40px" />'+'  '+data.website+'</div></br></br>'):'')+"<a id=impression href=# onclick=PrintControlAdherent()><img src=images/icon_map/print64px.png style=border:none></a>"+"<div id='btn_fermer'><input type=button id=close><div>");
 							
 							//Ouverture de la div avec effet
-							$("#fonds").show("fade",{},2500);
-							$("#cadre").show(effects[Math.floor(Math.random()*effects.length)], {}, 750);
+							$('#fonds').show('fade',{},2500);
+							$('#cadre').show(effects[Math.floor(Math.random()*effects.length)], {}, 750);
 							
 							//Fonction bouton fermer
-							$("#close").click (function() {											
+							$('#close').click (function() {											
 								//fermeture de la div avec effet
-								$("#cadre").hide(effects[Math.floor(Math.random()*effects.length)], {}, 750);
-								$("#fonds").hide("fade",{},900);
+								$('#cadre').hide(effects[Math.floor(Math.random()*effects.length)], {}, 750);
+								$('#fonds').hide('fade',{},900);
 								clearTimeout(timer);
 							});
 							
