@@ -1,0 +1,187 @@
+/* CSS Général */
+					
+/* fonds noir derriere div dun adh */
+#fonds {
+	background-color:rgba(0, 0, 0, 0.5);
+	display:none;
+	height:100%;
+	position:absolute;
+	top:0;
+	width:100%;
+}
+
+/* Supprime les cadre des lien image*/
+a img {
+	border:none;
+}
+
+/* Supprime text souligne des liens */
+a{ 	text-decoration:none;
+	color : black;	
+}
+
+/* Supprime la bordure des boutons fermer */
+input[type="button"] {
+	border:none;
+}
+											/*  Fin CSS Général */
+
+
+											/* Css pour les message en cours et impression terminée */
+/* Div qui affiche le message */
+#endImprim {
+	position:absolute;
+	top:35%;
+	left:35%;
+	margin:auto;
+	width:350px;
+	height:275px;
+	background-color:white;
+	display:none;
+	-moz-border-radius:1em 1em 1em 1em;
+	font-weight:bold;
+	font-size:1.3em;
+}
+
+/* Bouton fermer du message */ 
+#close_imprim {
+	-moz-border-radius:1em 1em 1em 1em;
+	background:url("images/icon_map/close64px.png") no-repeat scroll 0 0 transparent;
+	height:64px;
+	width:64px;
+	position : absolute;
+	bottom : 5px;
+	margin-left : 107px;
+}
+
+/* texte du message */ 
+#text_imprim {
+	text-align :center ;
+	margin-top : 20px;
+}
+
+/* Image du message */
+#img_imprim {
+	text-align :center ;
+	margin-top : 20px;
+}
+											/* Fin Css pour les message en cours et impression terminée */
+
+
+											/* Css pour le cadre d'un adhérent*/
+/*  div pour un adhérent */
+#cadre {
+	position:absolute;
+	top:5%;
+	left:5%;
+	margin:auto;
+	width:90%;
+	height:90%;
+	background-color:white;
+	display:none;
+	-moz-border-radius:1em 1em 1em 1em;
+	z-index : 10000;
+}
+
+/* cellule pour le logo mcs */
+td#logo-mcs {
+	width:33%;
+	height:15%;
+	background:url("images/mcs.png") no-repeat center center;
+}
+
+/* Cellule du nom de l'adh */
+td#nom-adherent {
+	text-align:center;
+	font-weight:bold;
+	font-size:1.6em;
+	width:33%;
+}
+
+/* cellule pour le logo artipole */
+td#logo-artipole {
+	width:33%;
+	background:url("images/artipole.png") no-repeat center center;
+}
+
+/* Bouton fermer de la div d'un adh */
+#close {
+	-moz-border-radius:1em 1em 1em 1em;
+	background:url("images/icon_map/close64px.png") no-repeat scroll 0 0 transparent;
+	height:64px;
+	width:64px;
+	float : right;
+}
+
+/* Bouton imprimer de la div d'un adh */
+#impression {
+	float: left ;
+	margin-right : 15px ;
+}
+
+/* cellule pour les donnees d'un adh */
+td#donnee {
+	font-family:Verdana;
+	font-size:16px;
+}
+
+/* centre l adresse dans donnee */
+#adr{
+	text-align : center;
+}
+
+/* Aligne les icones au text dans #donnee */
+td img {
+	vertical-align : middle;
+}
+
+/* Div pour la description d'un adh */
+#text_desc{
+	-moz-border-radius:1em 1em 1em 1em;
+	font-family:Verdana;
+	font-size:16px;
+	padding:10px;
+	text-align:justify;
+	margin-left : 10px;
+}
+
+/* Alignement des images dans les cellules */
+td#photo0,
+td#photo3,
+td#photo4,
+td#photo5,
+td#photo2,
+td#photo1,
+td#fermer{
+	text-align : center;
+	font-size:16px;
+	font-family:Verdana;
+}
+
+/* Hauteur des cases du tableau */
+td#photo0,
+td#desc,
+td#photo3 {
+	height:28%;
+}
+											/* Fin Css pour le cadre d'un adhérent */
+											
+											
+
+											/* Css pour la fenêre des 10 adhérents */
+/* CSS du bouton fermer de la liste des 10 adh */
+#close_liste {
+	-moz-border-radius:1em 1em 1em 1em;
+	background:url("images/icon_map/close64px.png") no-repeat scroll 0 0 transparent;
+	height:64px;
+	width:64px;
+	margin-bottom : 5px;
+	margin-left : 337px;
+}
+
+/* CSS du bouton impression de la liste des 10 adh*/
+#impression_liste {
+	bottom : 5px;
+	position : absolute;
+}
+											/* Fin Css pour la fenêre des 10 adhérents */
