@@ -174,8 +174,8 @@ if  (isset($photo[5]) && $photo[5]!= "")  {
 	
 $output_adh = 'output_adh'.uniqid().'.pdf' ;
 $pdf->Output($output_adh, 'F');
-// system('"'.FOXIT_PATH.'" -t "'.$output_adh.'" "'.PRINTER.'"');
-// unlink ($output_adh);
+system('"'.FOXIT_PATH.'" -t "'.$output_adh.'" "'.PRINTER.'"');
+unlink ($output_adh);
 $message = base64_encode ("Impression terminée, vous pouvez la récupérer à l'accueil.");
 echo <<<EOT
 		{   "message":"$message"		}
