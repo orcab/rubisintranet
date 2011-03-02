@@ -196,7 +196,6 @@ function initialize() {
 	
 	//Fonction qui se declenche lorsque les bords changent
 	google.maps.event.addListener(map,'click', function(event) {
-		
 		clearMap();
 		//Vide le tableau des 10 adh les plus proches
 		bestTenAdh=[];
@@ -204,12 +203,10 @@ function initialize() {
 		recenterCarte();
 		//Affiche les info adh dans la case de droite
 		remplissageInfoDivAdh();
-			
 	});
 	
 	//Fonction qui se déclenche à la fin d'un drag
 	google.maps.event.addListener(map,'dragend', function(event) {
-		
 		clearMap();
 		//Vide le tableau des 10 adh les plus proches
 		bestTenAdh=[];
@@ -217,7 +214,6 @@ function initialize() {
 		recenterCarte();
 		//Affiche les info adh dans la case de droite
 		remplissageInfoDivAdh();
-		
 	});
 	
 	//Recentre la carte si on dépasse les borne
@@ -418,7 +414,6 @@ function initialize() {
 
 	
 	setTimeout('aideDefault()',2000);//affiche l'aide aubout d'une seconde
-	
 }//Fin fonction initialize
 
 </script>

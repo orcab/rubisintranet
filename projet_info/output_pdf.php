@@ -211,12 +211,18 @@ while ($row = mysql_fetch_array($res)) {
 }//Fin de la boucle while
 $output = 'output'.uniqid().'.pdf' ;
 $pdf->Output($output, 'F');
-system('"'.FOXIT_PATH.'" -t "'.$output.'" "'.PRINTER.'"');
+
+if (file_exists(FOXIT_PATH)) {
+	//$message = base64_encode('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
+	system('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
+} else {
+	$message = base64_encode("Impossible de trouver Foxit Reader");
+}
 unlink($output);
-$message = base64_encode ("Impression terminée, vous pouvez la récupérer à l'accueil.");
+$message = base64_encode("Impression terminée, vous pouvez la récupérer à l'accueil.");
 
 echo <<<EOT
-		{   "message":"$message"		}
+{"message":"$message"}
 EOT;
 
 ?>

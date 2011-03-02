@@ -108,7 +108,7 @@ if  (isset($data['website']) && $data['website']!= " " && $data['website']!= "")
 
 if  (isset($data['text_desc']) && $data['text_desc']!= " " && $data['text_desc']!= "")  {
 	$pdf->Ln(30);
-	$pdf->MultiCell(100,5,$data['text_desc']);  //Multiligne
+	$pdf->MultiCell(100,5,preg_replace('/<\s*br\/?\s*>/','',$data['text_desc']));  //Multiligne remove <br>
 }
 $pdf->Ln(4);
 
@@ -172,13 +172,20 @@ if  (isset($photo[5]) && $photo[5]!= "")  {
 	}
 }
 	
-$output_adh = 'output_adh'.uniqid().'.pdf' ;
-$pdf->Output($output_adh, 'F');
-system('"'.FOXIT_PATH.'" -t "'.$output_adh.'" "'.PRINTER.'"');
-unlink ($output_adh);
-$message = base64_encode ("Impression terminée, vous pouvez la récupérer à l'accueil.");
+$output = 'output_adh'.uniqid().'.pdf' ;
+$pdf->Output($output, 'F');
+
+if (file_exists(FOXIT_PATH)) {
+	//$message = base64_encode('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
+	system('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
+} else {
+	$message = base64_encode("Impossible de trouver Foxit Reader");
+}
+unlink($output);
+$message = base64_encode("Impression terminée, vous pouvez la récupérer à l'accueil.");
+
 echo <<<EOT
-		{   "message":"$message"		}
+{ "message":"$message" }
 EOT;
 
 ?>
