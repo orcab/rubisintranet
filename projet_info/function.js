@@ -287,7 +287,6 @@ function affichageDivAdh(numero_adh) {
 												'z-index':'10000' 	//Passe le fond devant la div de l adh
 							});	
 							$('#fonds').css({ 'z-index':'9000' }); //Passe le fond devant la div de l adh
-								
 									
 							//Vide le tableau cadre
 							$('#nom-adherent')	.html('');
@@ -329,7 +328,6 @@ function affichageDivAdh(numero_adh) {
 												
 							//Remplir la cellule de description
 							if (data.text_desc) {
-//								alert(data.text_desc.replace(/\n/,''));
 								$('#desc').html('<div id="text_desc">'+data.text_desc.replace(/[\n\r]/,'<br/>')+'</div>');
 								$('#text_desc').css({'background-color': 'rgba(40, 150, 200, 0.7)'}); //Couleur de la div text_desc
 							} else {
@@ -348,7 +346,11 @@ function affichageDivAdh(numero_adh) {
 							}
 							
 							//Création du bouton fermer avec effet  et du bouton d'impression
-							$('#fermer').append((data.website 	? ('<div><img src="images/icon_map/icone_email.png" height="40px" />'+'  '+data.website+'</div></br></br>'):'')+"<a id=impression href=# onclick=PrintControlAdherent()><img src=images/icon_map/print64px.png style=border:none></a>"+"<div id='btn_fermer'><input type=button id=close><div>");
+							$('#fermer').append((data.website 	? (
+									'<div><img src="images/icon_map/icone_email.png" height="40px" />'+' '+data.website+'<img src="../gfx/qrcode.php?text='+escape(data.website)+'" style="float:right;" class="qrcode"/></div></br></br>'):'')
+									+'<a id="impression" href="#" onclick="PrintControlAdherent();"><img src="images/icon_map/print64px.png" style="border:none;"></a>'
+									+'<div id="btn_fermer"><input type="button" id="close"><div>'
+									);
 							
 							//Ouverture de la div avec effet
 							$('#fonds').show('fade',{},2500);

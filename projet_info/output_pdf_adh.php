@@ -1,19 +1,20 @@
 <?php
-require('../inc/fpdf/fpdf.php');
+require_once('../inc/fpdf/fpdf.php');
+require_once('../inc/qrcode/qrcode.class.php');
 include 'connexion.php';
 
 class PDF extends FPDF
 {
 	//En-tête
 	function Header()
-	{
-		
-		//Logo MCS de gauche
+	{	//Logo MCS de gauche
 		 $this->Image('images/PDF/mcs_pdf.png',0,0,45);
 		//Logo Artipole de droite
 		 $this->Image('images/PDF/artipole_pdf.png',250,0,45);
 	
 	}
+
+
 	//Pied de page
 	function Footer()
 	{
@@ -104,6 +105,8 @@ if  (isset($data['cp']) && $data['cp']!= " " && $data['cp']!= "" && isset($data[
 
 if  (isset($data['website']) && $data['website']!= " " && $data['website']!= "")  {
 	$pdf->Cell(0,0,'Site internet : '.$data['website'],0,0,'C');
+	$qrcode = new QRcode($data['website'], 'L'); // error level : L, M, Q, H
+	$qrcode->displayFPDF($pdf, 297/2 - 5, $pdf->GetY()+2, 10);
 }
 
 if  (isset($data['text_desc']) && $data['text_desc']!= " " && $data['text_desc']!= "")  {
