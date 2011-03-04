@@ -11,7 +11,6 @@ class PDF extends FPDF
 		 $this->Image('images/PDF/mcs_pdf.png',0,0,45);
 		//Logo Artipole de droite
 		 $this->Image('images/PDF/artipole_pdf.png',250,0,45);
-	
 	}
 
 
@@ -55,25 +54,25 @@ $data = mysql_fetch_array($res);
 $pdf->SetFont('Arial','B',26);
 $pdf->Cell(0,0,$data['nom'],0,1,'C');
 
-if ($data['activite']== 1)  {
-$pdf->Ln(11);
-$pdf->Image("images/PDF/plombier-mini.png",110,17);
-$pdf->SetFont('Arial','B',14);
-$pdf->Cell(0,0,'Plombier & Chauffagiste',0,1,'C');
+if ($data['activite'] == 1)  {
+	$pdf->Ln(11);
+	$pdf->Image("images/PDF/plombier-mini.png",110,17);
+	$pdf->SetFont('Arial','B',14);
+	$pdf->Cell(0,0,'Plombier & Chauffagiste',0,1,'C');
 }
 
-if ($data['activite']== 2) {
-$pdf->Ln(11);
-$pdf->Image("images/PDF/electricien-mini.png",125,17);
-$pdf->SetFont('Arial','B',14);
-$pdf->Cell(0,0,'Electricien',0,1,'C');
+if ($data['activite'] == 2) {
+	$pdf->Ln(11);
+	$pdf->Image("images/PDF/electricien-mini.png",125,17);
+	$pdf->SetFont('Arial','B',14);
+	$pdf->Cell(0,0,'Electricien',0,1,'C');
 }
 
-if ($data['activite']== 3) {
-$pdf->Ln(11);
-$pdf->Image("images/PDF/both-mini.png",110,17);
-$pdf->SetFont('Arial','B',14);
-$pdf->Cell(0,0,'Plombier & Electricien',0,1,'C');
+if ($data['activite'] == 3) {
+	$pdf->Ln(11);
+	$pdf->Image("images/PDF/both-mini.png",110,17);
+	$pdf->SetFont('Arial','B',14);
+	$pdf->Cell(0,0,'Plombier & Electricien',0,1,'C');
 }
 				
 $pdf->Ln(10);
@@ -119,56 +118,55 @@ $pdf->Ln(4);
 $photo = explode(",", $data['photo']);
 
 
-
 //Place chaque image sur le PDF		
-if  (isset($photo[0]) && $photo[0]!= "")  {
+if  (isset($photo[0]) && $photo[0])  {
 	$size = getimagesize("images/photo_adh/$_GET[numero_artisan]/$photo[0]") ;
-	if (  $size[0] > $size[1]){
+	if ($size[0] > $size[1]){
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[0]",10,30,80);
 	} else {
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[0]",30,30,0,55);
 	}
 }
 
-if  (isset($photo[1]) && $photo[1]!= "")  {
+if  (isset($photo[1]) && $photo[1])  {
 	$size = getimagesize("images/photo_adh/$_GET[numero_artisan]/$photo[1]") ;
-	if (  $size[0] > $size[1]){
+	if ($size[0] > $size[1]){
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[1]",10,140,80);
 	} else {
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[1]",30,140,0,55);
 	}
 }
 
-if  (isset($photo[2]) && $photo[2]!= "")  {
+if  (isset($photo[2]) && $photo[2])  {
 	$size = getimagesize("images/photo_adh/$_GET[numero_artisan]/$photo[2]") ;
-	if (  $size[0] > $size[1]){
-		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[2]",115,72,80);
+	if ($size[0] > $size[1]){
+		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[2]",115,80,80);
 	} else {
-		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[2]",130,70,0,55);
+		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[2]",130,80,0,55);
 	}
 }
 
-if  (isset($photo[3]) && $photo[3]!= "")  {	
+if  (isset($photo[3]) && $photo[3])  {	
 	$size = getimagesize("images/photo_adh/$_GET[numero_artisan]/$photo[3]") ;
-	if (  $size[0] > $size[1]){
-		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[3]",120,140,70);
+	if ($size[0] > $size[1]){
+		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[3]",120,150,70);
 	} else {
-		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[3]",130,140,0,55);
+		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[3]",130,150,0,55);
 	}
 }
 
-if  (isset($photo[4]) && $photo[4]!= "")  {	
+if  (isset($photo[4]) && $photo[4])  {	
 	$size = getimagesize("images/photo_adh/$_GET[numero_artisan]/$photo[4]") ;
-	if (  $size[0] > $size[1]){
+	if ($size[0] > $size[1]){
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[4]",210,135,80);
 	} else {
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[4]",225,135,0,55);
 	}
 }
 
-if  (isset($photo[5]) && $photo[5]!= "")  {
+if  (isset($photo[5]) && $photo[5])  {
 	$size = getimagesize("images/photo_adh/$_GET[numero_artisan]/$photo[5]") ;
-	if (  $size[0] > $size[1]){
+	if ($size[0] > $size[1]){
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[5]",220,50,70);
 	} else {
 		$pdf->Image("images/photo_adh/$_GET[numero_artisan]/$photo[5]",220,50,0,55);
@@ -180,12 +178,16 @@ $pdf->Output($output, 'F');
 
 if (file_exists(FOXIT_PATH)) {
 	//$message = base64_encode('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
-	system('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
+	if (PRINT_PDF)
+		system('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
 } else {
 	$message = base64_encode("Impossible de trouver Foxit Reader");
 }
-unlink($output);
-$message = base64_encode("Impression terminée, vous pouvez la récupérer à l'accueil.");
+
+if (PRINT_PDF)
+	unlink($output);
+
+$message = base64_encode("Vous pouvez récupérer le documents auprès de nos conseillères.");
 
 echo <<<EOT
 { "message":"$message" }
