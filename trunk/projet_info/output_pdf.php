@@ -214,12 +214,16 @@ $pdf->Output($output, 'F');
 
 if (file_exists(FOXIT_PATH)) {
 	//$message = base64_encode('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
-	system('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
+	if (PRINT_PDF)
+		system('"'.FOXIT_PATH.'" -t '.$output.' '.PRINTER);
 } else {
 	$message = base64_encode("Impossible de trouver Foxit Reader");
 }
-unlink($output);
-$message = base64_encode("Impression terminée, vous pouvez la récupérer à l'accueil.");
+
+if (PRINT_PDF)
+	unlink($output);
+
+$message = base64_encode("Vous pouvez récupérer le documents auprès de nos conseillères.");
 
 echo <<<EOT
 {"message":"$message"}
