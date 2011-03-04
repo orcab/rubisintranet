@@ -4,16 +4,23 @@ include 'connexion.php';
 
 class PDF extends FPDF
 {
-
 	//En-tête
 	function Header()
 	{
 		//Titre du document
-		 $this->Image('images/PDF/informations.png',70,10,70);
+		$this->Image('images/PDF/informations.png',70,10,70);
 		//Logo MCS de gauche
-		 $this->Image('images/PDF/mcs_pdf.png',0,0,40);
+		$this->Image('images/PDF/mcs_pdf.png',0,0,40);
 		//Logo Artipole de droite
-		 $this->Image('images/PDF/artipole_pdf.png',170,0,40);
+		$this->Image('images/PDF/artipole_pdf.png',170,0,40);
+
+		// au dessus du tableau on rappel la légende
+		$this->SetFontSize(11);
+		$this->Cell(210,5,"       Plombier & Chauffagiste                  Electricien                    Plombier & Electricien");
+		$this->Image("images/PDF/plombier-mini.png",5,$this->GetY());
+		$this->Image("images/PDF/electricien-mini.png",66,$this->GetY());
+		$this->Image("images/PDF/both-mini.png",105.7,$this->GetY());
+
 	}
 	
 	//Pied de page
@@ -166,8 +173,8 @@ $res = mysql_query($sql) or die("Erreur dans la requette SQL (".mysql_error().")
 
 //Boucle pour remplir le tableau d'adhérents
 while ($row = mysql_fetch_array($res)) {
-	$u=$pdf->GetX();
-	$v=$pdf->GetY();
+	$x=$pdf->GetX();
+	$y=$pdf->GetY();
 	// nettoyage de valeur, enlève les espaces avant et après la chaine de caractère
 	$row['nom'] 	= 	trim($row['nom']); 
 	$row['tel1'] 	=	trim($row['tel1']);
@@ -184,28 +191,28 @@ while ($row = mysql_fetch_array($res)) {
 			array( //   font-family , font-weight, font-size, font-color, text-align
 				
 				//Colonne pour afficher le marker de l'adhérent
-				array(($row['activite']==1 ? $pdf->Image('images/PDF/plombier-mini.png',$u,$v) : "")|| //Test de l'activité pour choisir le marker correspondant à afficher
-				    ($row['activite']==2 ? $pdf->Image('images/PDF/electricien-mini.png',$u,$v) : "")||
-					($row['activite']==3 ? $pdf->Image('images/PDF/both-mini.png',$u,$v) : ""),
-					'font-style' => '', 'text-align' => 'L', 'font-size' => 10 ),
+				array(	($row['activite']==1 ? $pdf->Image('images/PDF/plombier-mini.png',$x,$y) : '')|| //Test de l'activité pour choisir le marker correspondant à afficher
+						($row['activite']==2 ? $pdf->Image('images/PDF/electricien-mini.png',$x,$y) : '')||
+						($row['activite']==3 ? $pdf->Image('images/PDF/both-mini.png',$x,$y) : ''),
+						'font-style' => '', 'text-align' => 'L', 'font-size' => 10 ),
 				
 				//Colonne pour afficher le nom de l'adhérent				
-				array('text' => "$row[nom]"  ,
-					'font-style' => 'B', 	'text-align' => 'C', 'font-size' => 10),
+				array(	'text' => "$row[nom]"  ,
+						'font-style' => 'B', 	'text-align' => 'C', 'font-size' => 10),
 				
 				//Colonne pour afficher le tel et le fax de l'adhérent				
-				array('text' => ($row['tel1'] ? "N° tel : $row[tel1]" : "").	//Condition si le champ est rempli
-					($row['tel3'] ? "\nFax :    $row[tel3]" : ""),				//Condition si le champ est rempli
-					'font-style' => '',  'text-align' => 'L', 'font-size' => 10 ),
+				array(	'text' => ($row['tel1'] ? "N° tel : $row[tel1]" : '').	//Condition si le champ est rempli
+						($row['tel3'] ? "\nFax :    $row[tel3]" : ''),				//Condition si le champ est rempli
+						'font-style' => '',  'text-align' => 'L', 'font-size' => 10 ),
 				
 				//Colonne pour afficher l'adresse le cp et la ville			
-				array('text' => "$row[adr1]\n$row[cp] $row[ville]" ,
-					'font-style' => '',   'text-align' => 'L', 'font-size' => 10 ),
+				array(	'text' => "$row[adr1]\n$row[cp] $row[ville]" ,
+						'font-style' => '',   'text-align' => 'L', 'font-size' => 10 ),
 				
 				//Colonne pour afficher webiste et le mail de l'adhérent
-				array('text' => ($row['email'] ? "E-m@il : $row[email]" : ""). 		//Condition si le champ est rempli
-					($row['website'] ? "\nSite internet : $row[website]" : "") ,	//Condition si le champ est rempli
-					'font-style' => '',   'text-align' => 'L', 'font-size' => 10 )								
+				array(	'text' => ($row['email'] ? "E-m@il : $row[email]" : ''). 		//Condition si le champ est rempli
+						($row['website'] ? "\nSite internet : $row[website]" : '') ,	//Condition si le champ est rempli
+						'font-style' => '',   'text-align' => 'L', 'font-size' => 10 )								
 			)
 	);
 }//Fin de la boucle while
