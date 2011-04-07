@@ -190,10 +190,19 @@ while($row = odbc_fetch_array($detail_commande)) {
 			if (!isset($kit[$row['DET97']])) // premier article du kit
 				$kit[$row['DET97']] = array();
 
-			$kit[$row['DET97']][] = $designation." x".str_replace('.000','',$row['QTESA'])." (".str_replace('.',',',sprintf('%0.2f',$row['QTESA']*$row['PRINE'])).EURO.")";// on rajoute la piece au kit
+			$kit[$row['DET97']][] = array(	$row['CODAR'],
+											$row['NOMFO'],
+											$row['REFFO'],
+											$designation,
+											$row['LOCAL'].($row['LOCA2'] ? "\n$row[LOCA2]":'').($row['LOCA3'] ? "\n$row[LOCA3]":''),
+											$row['UNICD'],
+											floatval($row['QTESA']),
+											floatval($row['PRINE']),
+											$row['NOLIG'],
+											$row['TYCDD']=='SPE' ? 'S'.($row['CDE_SPE_RECEPTIONNEE']=='O'?"\nE":'') :'' // 'E' et 'S'
+									);// on rajoute la piece au kit
 			continue;
 		}
-		
 		//print_r($kit);exit;
 
 
@@ -223,7 +232,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 		$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 						array('text' => $row['CODAR']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 						array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
-						array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation.$info_prepa.$info_conditionnement, 'text-align' => 'L', 'font-size' => 8),
+						array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation.$info_prepa.$info_conditionnement.
+										(isset($kit[$row['DET97']])?"\nKIT composé de :":''), 'text-align' => 'L', 'font-size' => 8),
 						array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,'text-align' => 'C', 'font-size' => 10), //localisation
 						array('text' => $row['UNICD'],				'text-align' => 'C'), // unité
 						array('text' => floatval($row['QTESA']),	'text-align' => 'C'), // quantité
@@ -246,17 +256,17 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 		//print_r($kit);exit;
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
-			foreach ($kit[$row['DET97']] as $ligne)
+			foreach ($kit[$row['DET97']] as $data)
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-								array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+								array('text' => $data[0]	,'text-align'=>'R','font-size'=>'8'),
+								array('text' => $data[1]."\n".$data[2],'text-align'=>'R','font-size'=>'8'),
+								array('text' => "Composante kit : ".$data[3],'text-align'=>'R','font-size'=>'8'),
+								array('text' => $data[4],'text-align'=>'R','font-size'=>'8'),
+								array('text' => $data[5],'text-align'=>'R','font-size'=>'8'),
+								array('text' => $data[6],'text-align'=>'R','font-size'=>'8'),
 								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8')
+								array('text' => $data[8],'text-align'=>'R','font-size'=>'8'),
+								array('text' => $data[9],'text-align'=>'R','font-size'=>'8')
 							)
 						);
 			
