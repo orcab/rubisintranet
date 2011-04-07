@@ -197,7 +197,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 											$row['LOCAL'].($row['LOCA2'] ? "\n$row[LOCA2]":'').($row['LOCA3'] ? "\n$row[LOCA3]":''),
 											$row['UNICD'],
 											floatval($row['QTESA']),
-											floatval($row['PRINE']),
+											'', // pour un eventuel prix
 											$row['NOLIG'],
 											$row['TYCDD']=='SPE' ? 'S'.($row['CDE_SPE_RECEPTIONNEE']=='O'?"\nE":'') :'' // 'E' et 'S'
 									);// on rajoute la piece au kit
