@@ -155,7 +155,7 @@ class PDF extends FPDF
 		global $row_entete,$SOCIETE,$arguments ;
 
 		// qrcode du fichier
-		$json = array('t'=>(BON_DE_RETOUR ? 'bon_retour':'bon_preparation'),'b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo(),'u'=>$arguments['user']);
+		$json = array('t'=>'bon_'.TYPE_DOCUMENT,'b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo(),'u'=>$arguments['user']);
 		$qrcode = new QRcode(json_encode($json), 'L'); // error level : L, M, Q, H
 		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
 		$qrcode->displayFPDF($this, RIGHT_MARGIN -7, PAGE_HEIGHT-22, 20);
