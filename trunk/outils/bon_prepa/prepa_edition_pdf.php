@@ -9,6 +9,7 @@ $arguments['copy']		= 1 ;
 $arguments['ged']		= 0 ;
 $arguments['duplicata'] = false ;
 $arguments['user']		= '' ;
+$arguments['titre']		= 'preparation' ;
 foreach($argv as $a) {
 	if		 (preg_match('/^--nocli=(.+)$/',$a,$matches)) {
 		$arguments['nocli'] = strtoupper($matches[1]);
@@ -20,6 +21,8 @@ foreach($argv as $a) {
 		$arguments['foxit_path'] = $matches[1];
 	} elseif (preg_match('/^--lignes=(.+)$/',$a,$matches)) {
 		$arguments['lignes'] = $matches[1];
+	} elseif (preg_match('/^--titre=(.+)$/',$a,$matches)) {
+		$arguments['titre'] = $matches[1];
 	} elseif (preg_match('/^--duplicata=(.+)$/',$a,$matches)) {
 		$arguments['duplicata'] = $matches[1];
 	} elseif (preg_match('/^--user=(.+)$/',$a,$matches)) {
@@ -29,7 +32,6 @@ foreach($argv as $a) {
 	} elseif (preg_match('/^--ged=(\d+)$/',$a,$matches)) {
 		$arguments['ged'] = $matches[1];
 	}
-
 }
 
 if (!(isset($arguments['nobon']) && $arguments['nobon'])) {
@@ -121,8 +123,15 @@ if (!is_array($row_entete)) {
 $row_entete		= array_map('trim',$row_entete);
 $detail_commande= odbc_exec($loginor,$sql_detail) ; 
 
-// si le montant du bon est négatif, alors c'est un bon de retour
-define('BON_DE_RETOUR',$row_entete['MONTBT'] < 0 ? TRUE : FALSE);
+// détermine le type de document "bon de prepa/bon de controle/bon de retour"
+if		($arguments['titre'] == 'preparation')
+	define('TYPE_DOCUMENT','preparation');
+elseif	($arguments['titre'] == 'controle')
+	define('TYPE_DOCUMENT','controle');
+
+if	($row_entete['MONTBT'] < 0) // si le montant du bon est négatif, alors c'est un bon de retour
+	define('TYPE_DOCUMENT','retour');
+
 
 $row = array();
 
@@ -277,7 +286,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 odbc_close($loginor);
 
-$filename = 'bon_'.(BON_DE_RETOUR ? 'retour':'prepa').'_'.$arguments['nobon'].'('.crc32(uniqid()).').pdf';	# defnit un nom de fchier unique
+$filename = 'bon_'.TYPE_DOCUMENT.'_'.$arguments['nobon'].'('.crc32(uniqid()).').pdf';	# defnit un nom de fchier unique
 $pdf->Output($filename,'F');												# creer le fichier PDF
 fwrite(STDERR , print_time()."File '$filename' generated\n");
 
@@ -294,12 +303,6 @@ if (isset($arguments['printer'])	&& $arguments['printer'] &&
 		fwrite(STDERR , print_time()."Sending to printer copy $i '$arguments[printer]'\n");
 		system('"'.$arguments['foxit_path'].'" -t '.$filename.' '.$arguments['printer']);# envoie le fichier PDF vers l'imprimante
 	}
-
-	// deux exemplaire pour un bon de retour
-	/*if (BON_DE_RETOUR) {
-		fwrite(STDERR , print_time()."Sending to printer another copy '$arguments[printer]'\n");
-		system('"'.$arguments['foxit_path'].'" -t '.$filename.' '.$arguments['printer']);# envoie le fichier PDF vers l'imprimante
-	}*/
 	
 	// supprime le fichier PDF
 	fwrite(STDERR , print_time()."Deleting PDF file\n");
