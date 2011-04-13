@@ -25,7 +25,7 @@ class PDF extends FPDF
 	function Header() {
 		global $row_entete,$SOCIETE,$jours_mini,$tournee_chauffeur,$flag_header_prepare,$row,$y_up_rect,$arguments ;
 		
-		$this->Image('gfx/filigranne_'.(BON_DE_RETOUR ? 'retour':'preparation').'.png',0 ,0, PAGE_WIDTH, PAGE_HEIGHT); // filigranne en fond de page
+		$this->Image('gfx/filigranne_'.TYPE_DOCUMENT.'.png',0 ,0, PAGE_WIDTH, PAGE_HEIGHT); // filigranne en fond de page
 
 		// logo gauche et droite en haut de page
 		/*
@@ -34,7 +34,7 @@ class PDF extends FPDF
 		*/
 
 		//QRCode en haut a droite
-		$json = array('t'=>(BON_DE_RETOUR ? 'bon_retour':'bon_preparation'),'b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo(),'u'=>$arguments['user']);
+		$json = array('t'=>'bon_'.TYPE_DOCUMENT,'b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo(),'u'=>$arguments['user']);
 		$qrcode = new QRcode(json_encode($json), 'L'); // error level : L, M, Q, H
 		$qrcode->displayFPDF($this, PAGE_WIDTH - 22, 2, 20);
 
@@ -111,7 +111,7 @@ class PDF extends FPDF
 		// titre
 		$this->SetFont('helvetica','B',12);
 		$this->SetTextColor(255,0,0);
-		$this->Cell(0,5,"BON DE ".(BON_DE_RETOUR ? 'RETOUR':'PREPARATION').($arguments['duplicata'] ? ' (Duplicata)':''),0,1,'C');
+		$this->Cell(0,5,"BON DE ".strtoupper(TYPE_DOCUMENT).($arguments['duplicata'] ? ' (Duplicata)':''),0,1,'C');
 		$this->Ln(0.5);
 
 		//Entete des articles
