@@ -33,6 +33,7 @@ try {
 if (!isset($_SESSION['cde_adh_filtre_date_inf']))		$_SESSION['cde_adh_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-1,date('d'),date('Y')));
 if (!isset($_SESSION['cde_adh_filtre_date_sup']))		$_SESSION['cde_adh_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d'),date('Y')));
 if (!isset($_SESSION['cde_adh_filtre_reference']))		$_SESSION['cde_adh_filtre_reference']	= '';
+if (!isset($_SESSION['cde_adh_filtre_vendeur']))		$_SESSION['cde_adh_filtre_vendeur']		= '';
 if (!isset($_SESSION['cde_adh_filtre_numero']))			$_SESSION['cde_adh_filtre_numero']		= '';
 if (!isset($_SESSION['cde_adh_filtre_montant']))		$_SESSION['cde_adh_filtre_montant']		= 0;
 if (!isset($_SESSION['cde_adh_filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_montant'] = '>=';
@@ -45,6 +46,7 @@ if (!isset($_SESSION['cde_adh_filtre_artisan']))		$_SESSION['cde_adh_filtre_arti
 if (isset($_POST['filtre_date_inf']))		$_SESSION['cde_adh_filtre_date_inf']		= $_POST['filtre_date_inf'];
 if (isset($_POST['filtre_date_sup']))		$_SESSION['cde_adh_filtre_date_sup']		= $_POST['filtre_date_sup'];
 if (isset($_POST['filtre_reference']))		$_SESSION['cde_adh_filtre_reference']		= $_POST['filtre_reference'];
+if (isset($_POST['filtre_vendeur']))		$_SESSION['cde_adh_filtre_vendeur']			= $_POST['filtre_vendeur'];
 if (isset($_POST['filtre_numero']))			$_SESSION['cde_adh_filtre_numero']			= $_POST['filtre_numero'];
 if (isset($_POST['filtre_montant']))		$_SESSION['cde_adh_filtre_montant']			= $_POST['filtre_montant'];
 if (isset($_POST['filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_montant']	= $_POST['filtre_signe_montant'];
@@ -134,6 +136,18 @@ td.info {
 	cursor:pointer;
 }
 
+span.groupe_vendeur {
+	color:gray;
+	font-size:0.8em;
+	text-transform:lowercase;
+}
+
+option.suspendu {
+	color:gray;
+	font-style:italic;
+	font-size:0.9em;
+}
+
 th.numero_bon,th.nb_ligne,th.nb_livre,th.nb_dispo { width:5em; }
 
 th.date_bon, th.date_liv,th.montant { width:10em; }
@@ -219,14 +233,16 @@ function telecharger_excel(sql) {
 				</td>
 				<td style="padding-left:1em;text-align:right;">Référence cde <input type="text" name="filtre_reference" value="<?=$_SESSION['cde_adh_filtre_reference']?>" size="8"></td>
 				<td style="text-align:right;padding-left:1em;">N° Cde <input type="text" name="filtre_numero" value="<?=$_SESSION['cde_adh_filtre_numero']?>" size="8"></td>
-				<td style="padding-left:1em;text-align:right;">Montant
+				<td style="padding-left:15px;">
+					Code artisan&nbsp;<input type="text" name="filtre_artisan" size="6" value="<?=$_SESSION['cde_adh_filtre_artisan']?>"/>	
+				</td>
+				<td style="padding-left:1em;">Montant
 					<select name="filtre_signe_montant">
 						<option value=">="<?=$_SESSION['cde_adh_filtre_signe_montant']=='>=' ? ' selected':''?>>supérieur à</option>
 						<option value="<="<?=$_SESSION['cde_adh_filtre_signe_montant']=='<=' ? ' selected':''?>>inférieur à</option>
 					</select>
 				</td>
 				<td><input type="text" name="filtre_montant" value="<?=$_SESSION['cde_adh_filtre_montant'] ? $_SESSION['cde_adh_filtre_montant']:'0' ?>" size="3">&euro;</td>
-				<td></td>
 			</tr>
 			<tr>
 				<td>Date de fin</td>
@@ -247,14 +263,14 @@ function telecharger_excel(sql) {
 					</script>
 				</td>
 				<td style="text-align:right;">Code ou référence article&nbsp;<input type="text" name="filtre_article" value="<?=$_SESSION['cde_adh_filtre_article']?>" size="8"></td>
-				<td style="padding-left:15px;">
-					Code artisan&nbsp;<input type="text" name="filtre_artisan" size="6" value="<?=$_SESSION['cde_adh_filtre_artisan']?>"/>	
-				</td>
-				<td style="text-align:right;">
-					<select name="filtre_reliquat">
-						<option value=""<?=$_SESSION['cde_adh_filtre_reliquat']			==''		? ' selected':''?> style="background-color:white;">Toutes les commandes</option>
-						<option value="reliquat"<?=$_SESSION['cde_adh_filtre_reliquat']	=='reliquat'? ' selected':''?> style="background-color:orange;">Uniquement les reliquats</option>
-						<option value="livre"<?=$_SESSION['cde_adh_filtre_reliquat']	=='livre'	? ' selected':''?> style="background-color:green;color:white;">Uniquement les livrées</option>
+				<td>
+					<!-- vendeurs -->
+					<select name="filtre_vendeur">
+						<option value="">Tous vendeur</option>
+<?							$res		= $sqlite->query("SELECT * FROM vendeurs WHERE nom <> '???' ORDER BY nom ASC") or die("Impossible de lancer la requete de selection des vendeurs : ".array_pop($sqlite->errorInfo()));
+							while ($row = $res->fetch(PDO::FETCH_ASSOC)) { ?>
+								<option value="<?=$row['code']?>" class="<?=$row['suspendu'] ? 'suspendu':''?>" <?=$_SESSION['cde_adh_filtre_vendeur']==$row['code'] ? ' selected':''?>><?=$row['nom']?></option>
+<?							} ?>
 					</select>
 				</td>
 				<td style="text-align:right;">
@@ -267,7 +283,16 @@ function telecharger_excel(sql) {
 						<option value="100"<?=$_SESSION['cde_adh_filtre_pagesize']=='100' ? ' selected':''?>>100 cde par page</option>
 					</select>
 				</td>
-				<td><input type="submit" class="button divers" style="background-image:url(gfx/magnify.png);" value="Filtrer"></td>
+				<td>
+					<select name="filtre_reliquat">
+						<option value=""<?=$_SESSION['cde_adh_filtre_reliquat']			==''		? ' selected':''?> style="background-color:white;">Toutes les commandes</option>
+						<option value="reliquat"<?=$_SESSION['cde_adh_filtre_reliquat']	=='reliquat'? ' selected':''?> style="background-color:orange;">Uniquement les reliquats</option>
+						<option value="livre"<?=$_SESSION['cde_adh_filtre_reliquat']	=='livre'	? ' selected':''?> style="background-color:green;color:white;">Uniquement les livrées</option>
+					</select>
+				</td>
+				<td style="text-align:right;">
+					<input type="submit" class="button divers" style="background-image:url(gfx/magnify.png);" value="Filtrer">
+				</td>
 			</tr>
 		</table>
 	</caption>
@@ -284,21 +309,20 @@ function telecharger_excel(sql) {
 		<th class="date_bon">Date<br><a href="historique_commande.php?filtre_classement=date_bon ASC,numero_bon ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=date_bon DESC,numero_bon DESC"><img src="gfx/desc.png"></a></th>
 		<th class="date_liv">Date Liv.<br><a href="historique_commande.php?filtre_classement=date_liv ASC,numero_bon ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=date_liv DESC,numero_bon DESC"><img src="gfx/desc.png"></a></th>
 		<th class="numero_artisan">Artisan<br><a href="historique_commande.php?filtre_classement=numero_artisan ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=numero_artisan DESC"><img src="gfx/desc.png"></a></th>
+		<th class="vendeur">Vendeur<br><a href="historique_commande.php?filtre_classement=vendeur ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=vendeur DESC"><img src="gfx/desc.png"></a></th>
 		<th class="reference">Référence<br><a href="historique_commande.php?filtre_classement=reference ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=reference DESC"><img src="gfx/desc.png"></a></th>
 		<th class="nb_ligne">Nb ligne<br><a href="historique_commande.php?filtre_classement=nb_ligne ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=nb_ligne DESC"><img src="gfx/desc.png"></a></th>
 		<th class="nb_livre">Nb livrées<br><a href="historique_commande.php?filtre_classement=nb_livre ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=nb_dispo DESC"><img src="gfx/desc.png"></a></th>
-		<th class="nb_dispo">Dispo<br><a href="historique_commande.php?filtre_classement=nb_dispo ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=nb_dispo DESC"><img src="gfx/desc.png"></a></th>
+		<th class="nb_dispo">Dispo Coop<br><a href="historique_commande.php?filtre_classement=nb_dispo ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=nb_dispo DESC"><img src="gfx/desc.png"></a></th>
 		<th class="montant">Mt HT Cde<br><a href="historique_commande.php?filtre_classement=montant ASC"><img src="gfx/asc.png"></a><a href="historique_commande.php?filtre_classement=montant DESC"><img src="gfx/desc.png"></a></th>
-	<!--	<th class="info" style="border-right:none;">INF</th>-->
-	<!--	<th class="pdf" style="border-right:none;border-left:none;">PDF</th>
+		<th class="pdf" style="border-right:none;border-left:none;">PDF</th>
 		<th class="xls" style="border-left:none;">XLS</th>
-	-->
 	</tr>
 	</thead>
 	<tbody>
 <?
 	$where = array() ;
-	$tables = array("cde_rubis");
+	$tables = array('cde_rubis');
 	
 	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_inf'])));
 	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_sup'])));
@@ -306,6 +330,7 @@ function telecharger_excel(sql) {
 	if ($_SESSION['cde_adh_filtre_date_inf'] && $_SESSION['cde_adh_filtre_date_inf'] != 'Aucune') $where[] = "date_bon >= '$date_inf_formater'" ;
 	if ($_SESSION['cde_adh_filtre_date_sup'] && $_SESSION['cde_adh_filtre_date_sup'] != 'Aucune') $where[] = "date_bon <= '$date_sup_formater'" ;
 	if ($_SESSION['cde_adh_filtre_reference'])	$where[] = "reference LIKE '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_reference']))."%'" ;
+	if ($_SESSION['cde_adh_filtre_vendeur'])	$where[] = "vendeur = '".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_vendeur']))."'" ;
 	if ($_SESSION['cde_adh_filtre_numero'])		$where[] = "cde_rubis.numero_bon LIKE '".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_numero'])))."%'" ;
 	
 	$where[] = "montant $_SESSION[cde_adh_filtre_signe_montant] $_SESSION[cde_adh_filtre_montant]" ;
@@ -313,6 +338,7 @@ function telecharger_excel(sql) {
 
 	if ($_SESSION['cde_adh_filtre_artisan'])
 		$where[] = "cde_rubis.numero_artisan='".trim(mysql_escape_string($_SESSION['cde_adh_filtre_artisan']))."'"; // un artisan précis
+
 
 	// code article présent dans la cde
 	if ($_SESSION['cde_adh_filtre_article']) {
@@ -337,16 +363,22 @@ function telecharger_excel(sql) {
 	$limit = ($pageno - 1) * $rows_per_page .',' .$rows_per_page;
 
 	$sql = <<<EOT
-SELECT cde_rubis.id_bon,cde_rubis.numero_bon,cde_rubis.numero_artisan,date_bon,date_liv,nb_ligne,nb_livre,nb_prepa,nb_dispo,montant,montant_dispo,reference
+SELECT	cde_rubis.id_bon,cde_rubis.numero_bon,cde_rubis.numero_artisan,date_bon,date_liv,nb_ligne,nb_livre,nb_prepa,nb_dispo,montant,montant_dispo,reference,
+		vendeurs.code AS code_vendeur, vendeurs.nom AS nom_vendeur, vendeurs.groupe_principal AS groupe_vendeur
 FROM $tables
+	LEFT JOIN vendeurs
+		ON cde_rubis.vendeur=vendeurs.code
 $where
 ORDER BY $ordre
 LIMIT $limit
 EOT;
 
 $sql_sans_limit = <<<EOT
-SELECT cde_rubis.id_bon,cde_rubis.numero_bon,cde_rubis.numero_artisan,date_bon,date_liv,nb_ligne,nb_livre,nb_prepa,nb_dispo,montant,montant_dispo,reference
+SELECT	cde_rubis.id_bon,cde_rubis.numero_bon,cde_rubis.numero_artisan,date_bon,date_liv,nb_ligne,nb_livre,nb_prepa,nb_dispo,montant,montant_dispo,reference,
+		vendeurs.code AS code_vendeur, vendeurs.nom AS nom_vendeur, vendeurs.groupe_principal AS groupe_vendeur
 FROM $tables
+	LEFT JOIN vendeurs
+		ON cde_rubis.vendeur=vendeurs.code
 $where
 ORDER BY $ordre
 EOT;
@@ -368,7 +400,6 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 	while ($row = $res->fetch(PDO::FETCH_ASSOC)) { ?>
 		<tr style="background:<?= $i++ & 1 ? '#F5F5F5':'white' ?>" id="<?=$row['numero_bon']?>">
 			<td class="numero_bon"><?=$row['numero_bon']?></td>
-			
 			<td class="date_bon"><?
 				$tmp = explode('-',$row['date_bon']);
 				$date_commande = mktime(0,0,0,$tmp[1],$tmp[2],$tmp[0]);
@@ -384,36 +415,41 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			<td class="numero_artisan"><?=
 				isset($artisans[$row['numero_artisan']]) ? $artisans[$row['numero_artisan']] : $row['numero_artisan']
 			?></td>
+			<td class="vendeur" style="text-align:left;"><?=$row['nom_vendeur']?>
+				<? if ($row['groupe_vendeur']) { ?>
+					<span class="groupe_vendeur">(<?=$row['groupe_vendeur']?>)</span>
+				<? } ?>
+			</td><!-- vendeur -->
 			<td class="reference" style="text-align:left;"><?=$row['reference']?></td><!-- réference -->
 			<td class="nb_ligne" style="text-align:center;"><?=$row['nb_ligne']?></td><!-- nombre de ligne -->
+			<!-- nombre de ligne livrées -->
 			<td class="nb_livre" style="text-align:center;">
 <?				if ($row['nb_livre'] == $row['nb_ligne']) { // tout est livré ?>
 					<img src="gfx/ok.png" title="Votre commande est entièrement livrée"/>
 <?				} else { ?>
 					<?=$row['nb_livre']?>
 <?			} ?>
-			</td><!-- nombre de ligne livrées -->
+			</td>
+			<!-- nombre de ligne dispo -->
 			<td class="nb_dispo" style="text-align:center;">
 <?				if ($row['nb_livre'] != $row['nb_ligne']) {
 					if ($row['nb_dispo'] <= 0) { // matos pas recu ?>
-						<img src="gfx/stock2-1.png" title="Aucune pièce de votre commande n'a été reçu"/>
-<?					} elseif ($row['nb_dispo'] < $row['nb_ligne']) {  // matos partiellement dispo ?>
+						<?=$row['nb_dispo']?><br/><img src="gfx/stock2-1.png" title="Aucune pièce de votre commande n'a été reçu"/>
+<?					} elseif ($row['nb_dispo'] + $row['nb_livre'] < $row['nb_ligne']) {  // matos partiellement dispo ?>
 						<?=$row['nb_dispo']?><br/><img src="gfx/stock2-2.png" title="Votre commande est partiellement disponible à la coopérative"/>
-<?					} elseif ($row['nb_dispo'] >= $row['nb_ligne']) {  // matos dispo ?>
-						<img src="gfx/stock2-3.png" title="Votre commande est entièrement disponible à la coopérative"/>
+<?					} elseif ($row['nb_dispo'] + $row['nb_livre'] >= $row['nb_ligne']) {  // matos dispo ?>
+						<?=$row['nb_dispo']?><br/><img src="gfx/stock2-3.png" title="Votre commande est entièrement disponible à la coopérative"/>
 <?					}
 				} ?>
 			</td><!-- nombre de ligne livrées -->
 			<td class="montant" style="text-align:right;" nowrap>
 				<? printf('%0.2f',$row['montant']) ?> &euro;
 				<? if ($row['montant_dispo'] > 0 && $row['nb_livre'] != $row['nb_ligne']) { ?>
-						<br/><span class="montant_dispo"><?=$row['montant_dispo']?> &euro; de disponible</span>
+						<br/><span class="montant_dispo"><?=$row['montant_dispo']?> &euro; dispo ou livré</span>
 				<? } ?>
 			</td><!-- Mt commande -->
-			<!--<td class="info" style="border-right:none;"><img src="gfx/icon-info.png" alt="Plus d'infos" onclick="show_info('<?=$row['numero_bon']?>');" /></a></td>-->
-			<!--<td class="pdf" style="border-right:none;border-left:none;"><a href="edition_pdf.php?id=<?=$row['id_bon']?>"><img src="gfx/icon-pdf.png" alt="Edition PDF" /></a></td>
+			<td class="pdf" style="border-right:none;border-left:none;"><a href="edition_pdf.php?id=<?=$row['id_bon']?>"><img src="gfx/icon-pdf.png" alt="Edition PDF" /></a></td>
 			<td class="xls" style="border-left:none;"><a href="edition_excel.php?id=<?=$row['id_bon']?>"><img src="gfx/icon-excel.png" alt="Edition Excel" /></a></td>
-			-->
 		</tr>
 <?	
 		$total_montant += $row['montant'] ;
@@ -428,15 +464,6 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		</tr>
 	</tfoot>
 </table>
-
-<script language="javascript">
-<!--
-function show_info(id_bon) {
-//	$info_user['username']
-	$('tr#'+id_bon).after('<tr><td colspan="4">&nbsp;</td><td colspan="4">&nbsp;</td><td colspan="3">&nbsp;</td></tr>');
-}
-//-->
-</script>
 
 <div class="pagination">
 <? if ($row_count > 0) {
@@ -467,18 +494,8 @@ de <span class="nombre"><?=$lastpage?></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp
 
 </form>
 
-<!--[if IE]>
-<div style="text-align:center;color:grey;font-size:0.8em;">
-Si vous constatez des problèmes d'affichage, cela est du à votre naviguateur Internet Explorer. Merci d'utiliser un navigateur récent qui respecte les standards du Web.<br>
-<a href="http://www.mozilla-europe.org/fr/firefox/" target="_blank"><img src="../templates/MCS/images/firefox_bar.png" /></a>
-<a href="http://www.google.com/chrome" target="_blank"><img src="../templates/MCS/images/chrome_bar.gif" /></a>
-<a href="http://www.opera.com/download/" target="_blank"><img src="../templates/MCS/images/opera_bar.gif" /></a>
-<a href="http://www.apple.com/fr/safari/download/" target="_blank"><img src="../templates/MCS/images/safari_bar.png" /></a>
-</div>
-<![endif]-->
-
-
 <div style="margin-top:10px;color:red;text-align:center;">La mise à jour a eu lieu ce matin à 5h</div>
+
 </body>
 </html>
 <?
