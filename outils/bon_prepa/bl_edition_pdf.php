@@ -61,12 +61,17 @@ where		NOBON='$arguments[nobon]'
 	and BON.NOCLI='$arguments[nocli]'
 EOT;
 
+$lignes_reste_imprimer = array();
 $lignes_a_imprimer = '';
 if (isset($arguments['lignes']) && $arguments['lignes']) {
 	$tmp = array();
 	foreach (explode(',',$arguments['lignes']) as $article_qte) {
 		list($article,$qte) = explode(':',$article_qte);
 		array_push($tmp,"(BON.CODAR='$article' and BON.QTESA='$qte')");	// ajout des n° de lignes que l'on a trouvé dans le spool
+		if (!isset($lignes_reste_imprimer[$article_qte]))
+			$lignes_reste_imprimer[$article_qte] = 0;
+
+		$lignes_reste_imprimer[$article_qte]++; // on ajoute une ligne dans la liste des lignes a imprimé (pour pallier au bug des ligne:qte identique)
 	}
 	array_push($tmp,"BON.PROFI='9'");				// avec les commentaires
 	$lignes_a_imprimer = ' and ('.join(' or ',$tmp).') ';
@@ -143,6 +148,11 @@ while($row = odbc_fetch_array($detail_commande)) {
 	
 	$row_original = $row ;
 	$row =array_map('trim',$row);
+
+	if ($lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA'])] > 0) // cette ligne reste a imprimer
+		$lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA'])]-- ; // on descent le nombre de ligne a imprimer (bug des lignes en double)
+	else	// plus de ligne a imrpimer --> c'est surement une ligne en double non voulu, on la saute
+		continue;
 
 	if ($row['PROFI'] == 9) { // cas d'un commentaire
 		if ($row['CONSA']) {
