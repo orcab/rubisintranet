@@ -1,6 +1,15 @@
 <?
+
 include('../../inc/config.php');
 require_once('etat.php');
+
+$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
+$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
+$artisans = array();
+$res = mysql_query("SELECT numero,nom FROM artisan") or die("Ne peux pas supprimer la relance ".mysql_error());
+while($row = mysql_fetch_array($res)) {
+	$artisans[$row['numero']] = $row['nom'];
+}
 
 set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
 require_once '../../inc/Spreadsheet/Excel/Writer.php';
@@ -23,6 +32,7 @@ $sql = isset($_GET['sql']) ? base64_decode(urldecode($_GET['sql'])) : '';
 	define('NUM_BON',$i++);
 	define('DATE_BON',$i++);
 	define('DATE_LIV',$i++);
+	define('ARTISAN',$i++);
 	define('REFERENCE',$i++);
 	define('NB_LIGNE',$i++);
 	define('NB_LIVRE',$i++);
@@ -56,21 +66,23 @@ $sql = isset($_GET['sql']) ? base64_decode(urldecode($_GET['sql'])) : '';
 	$format_coef->setNumFormat('0.00000');
 
 	// La premiere ligne
-	$worksheet->write(0,NUM_BON,		'N° du bon',$format_title);
-	$worksheet->write(0,DATE_BON, 		'Date du bon',$format_title);		$worksheet->setColumn(DATE_BON,DATE_BON,20);
+	$worksheet->write(0,NUM_BON,		'N° du bon',	$format_title);
+	$worksheet->write(0,DATE_BON, 		'Date du bon',	$format_title);		$worksheet->setColumn(DATE_BON,DATE_BON,20);
 	$worksheet->write(0,DATE_LIV, 		'Date de livraison',$format_title); $worksheet->setColumn(DATE_LIV,DATE_LIV,20);
-	$worksheet->write(0,REFERENCE,		'Référence',$format_title);			$worksheet->setColumn(REFERENCE,REFERENCE,25);
+	$worksheet->write(0,ARTISAN, 		'Artisan',$format_title); $worksheet->setColumn(ARTISAN,ARTISAN,20);
+	$worksheet->write(0,REFERENCE,		'Référence',	$format_title);		$worksheet->setColumn(REFERENCE,REFERENCE,25);
 	$worksheet->write(0,NB_LIGNE,		'Nombre de ligne',$format_title);
-	$worksheet->write(0,NB_LIVRE,		'Livrées',$format_title);
-	$worksheet->write(0,NB_DISPO,		'Dispo',$format_title);
-	$worksheet->write(0,MONTANT,		'Montant',$format_title);			$worksheet->setColumn(MONTANT,MONTANT,20);
-	$worksheet->write(0,MONTANT_DISPO,	'Montant disponible',$format_title);$worksheet->setColumn(MONTANT_DISPO,MONTANT_DISPO,20);
+	$worksheet->write(0,NB_LIVRE,		'Livrées',		$format_title);
+	$worksheet->write(0,NB_DISPO,		'Dispo Coop',	$format_title);
+	$worksheet->write(0,MONTANT,		EURO.' commande',$format_title);	$worksheet->setColumn(MONTANT,MONTANT,20);
+	$worksheet->write(0,MONTANT_DISPO,	EURO.' dispo ou livré',$format_title);$worksheet->setColumn(MONTANT_DISPO,MONTANT_DISPO,20);
 
 	$i = 1;
 	while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 		$worksheet->write( $i, NUM_BON,			$row['numero_bon']		,$format_cell);
 		$worksheet->write( $i, DATE_BON ,		$row['date_bon']		,$format_cell); 
 		$worksheet->write( $i, DATE_LIV ,		$row['date_liv']		,$format_cell); 
+		$worksheet->write( $i, ARTISAN ,		isset($artisans[$row['numero_artisan']]) ? $artisans[$row['numero_artisan']] : $row['numero_artisan']	,$format_cell); 
 		$worksheet->write( $i, REFERENCE,		$row['reference']		,$format_cell); 
 		$worksheet->write( $i, NB_LIGNE,		$row['nb_ligne']		,$format_cell);
 
@@ -81,9 +93,11 @@ $sql = isset($_GET['sql']) ? base64_decode(urldecode($_GET['sql'])) : '';
 		$worksheet->write( $i, NB_LIVRE,		$row['nb_livre']		,$format);
 
 		$format = '';
-		if		($row['nb_dispo'] <= 0)					$format = $format_cell_pas_dispo;
+		if		($row['nb_dispo'] <= 0 && $row['nb_livre'] == $row['nb_ligne']) $format = $format_cell;
+		elseif	($row['nb_dispo'] <= 0)					$format = $format_cell_pas_dispo;
+		elseif	($row['nb_dispo'] + $row['nb_livre'] >= $row['nb_ligne'])	$format = $format_cell_dispo;
 		elseif	($row['nb_dispo'] <  $row['nb_ligne'])	$format = $format_cell_partiellement_dispo;
-		elseif	($row['nb_dispo'] >= $row['nb_ligne'])	$format = $format_cell_dispo;
+		
 		$worksheet->write( $i, NB_DISPO,		$row['nb_dispo']		,$format);
 
 		$worksheet->write( $i, MONTANT,			$row['montant']			,$format_prix);
