@@ -66,8 +66,8 @@ $lignes_a_imprimer = '';
 if (isset($arguments['lignes']) && $arguments['lignes']) {
 	$tmp = array();
 	foreach (explode(',',$arguments['lignes']) as $article_qte) {
-		list($article,$qte) = explode(':',$article_qte);
-		array_push($tmp,"(BON.CODAR='$article' and BON.QTESA='$qte')");	// ajout des n° de lignes que l'on a trouvé dans le spool
+		list($article,$qte,$rf) = explode(':',$article_qte);
+		array_push($tmp,"(BON.CODAR='$article' and BON.QTESA='$qte' and BON.TRAIT='".strtoupper($rf)."')");	// ajout des n° de lignes que l'on a trouvé dans le spool
 		if (!isset($lignes_reste_imprimer[$article_qte]))
 			$lignes_reste_imprimer[$article_qte] = 0;
 
@@ -102,7 +102,6 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 where	BON.NOBON='$arguments[nobon]'
 	and BON.NOCLI='$arguments[nocli]'
 	and ETSBE=''		-- pas de lignes annulées
-	--and TRAIT='F'		-- lignes déjà livrées
 	$lignes_a_imprimer	-- uniquement les lignes données dans le fichier spool
 order by TRAIT ASC, BON.NOLIG ASC -- par ordre de n° de ligne
 EOT;
@@ -149,8 +148,8 @@ while($row = odbc_fetch_array($detail_commande)) {
 	$row_original = $row ;
 	$row =array_map('trim',$row);
 
-	if ($lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA'])] > 0) // cette ligne reste a imprimer
-		$lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA'])]-- ; // on descent le nombre de ligne a imprimer (bug des lignes en double)
+	if ($lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA']).':'.$row['TRAIT']] > 0) // cette ligne reste a imprimer
+		$lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA']).':'.$row['TRAIT']]-- ; // on descent le nombre de ligne a imprimer (bug des lignes en double)
 	else	// plus de ligne a imrpimer --> c'est surement une ligne en double non voulu, on la saute
 		continue;
 
