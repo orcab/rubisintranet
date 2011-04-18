@@ -148,10 +148,12 @@ while($row = odbc_fetch_array($detail_commande)) {
 	$row_original = $row ;
 	$row =array_map('trim',$row);
 
-	if ($lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA']).':'.$row['TRAIT']] > 0) // cette ligne reste a imprimer
-		$lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA']).':'.$row['TRAIT']]-- ; // on descent le nombre de ligne a imprimer (bug des lignes en double)
-	else	// plus de ligne a imrpimer --> c'est surement une ligne en double non voulu, on la saute
-		continue;
+	if (isset($row['CODAR']) && isset($row['QTESA']) && isset($row['TRAIT']) && $row['CODAR']) { // les commentaires n'ont pas de CODAR
+		if ($lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA']).':'.$row['TRAIT']] > 0) // cette ligne reste a imprimer
+			$lignes_reste_imprimer[$row['CODAR'].':'.floatval($row['QTESA']).':'.$row['TRAIT']]-- ; // on descent le nombre de ligne a imprimer (bug des lignes en double)
+		else	// plus de ligne a imprimer --> c'est surement une ligne en double non voulu, on la saute
+			continue;
+	}
 
 	if ($row['PROFI'] == 9) { // cas d'un commentaire
 		if ($row['CONSA']) {
