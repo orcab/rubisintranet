@@ -124,13 +124,14 @@ $row_entete		= array_map('trim',$row_entete);
 $detail_commande= odbc_exec($loginor,$sql_detail) ; 
 
 // détermine le type de document "bon de prepa/bon de controle/bon de retour"
-if		($arguments['titre'] == 'preparation')
-	define('TYPE_DOCUMENT','preparation');
-elseif	($arguments['titre'] == 'controle')
-	define('TYPE_DOCUMENT','controle');
-
-if	($row_entete['MONTBT'] < 0) // si le montant du bon est négatif, alors c'est un bon de retour
+if ($row_entete['MONTBT'] >= 0) {
+	if		($arguments['titre'] == 'preparation')
+		define('TYPE_DOCUMENT','preparation');
+	elseif	($arguments['titre'] == 'controle')
+		define('TYPE_DOCUMENT','controle');
+} else {
 	define('TYPE_DOCUMENT','retour');
+}
 
 
 $row = array();
