@@ -50,7 +50,6 @@ img:hover {
 	</td>
 	<td style="width:50%;padding-bottom:20px;">
 		<a href="http://10.211.14.10/intranet/outils/ged/"><img src="ged/gfx/ged_icon.png"><br>GED</a>
-		<!--<a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a>-->
 	</td>
 </tr>
 <tr>
@@ -73,6 +72,13 @@ img:hover {
 	<td><a href="bon_mise_en_stock/index.php"><img src="bon_mise_en_stock/gfx/bon_mise_en_stock.png"><br>Bon de mise en stock</a></td>
 	<td><a href="fiche_fournisseur/index.php"><img src="fiche_fournisseur/gfx/fiche_fournisseur.png"><br>Fiches Fournisseurs</a></td>
 </tr>
+<tr>
+	<td></a>
+	</td>
+	<td><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
+	<td></td>
+</tr>
+
 </table>
 </center>
 
