@@ -11,17 +11,18 @@ select
 	AF.NOFOU,AF.REFFO,
 	F.NOMFO,
 	S.LOCAL, S.LOCA2, S.LOCA3
-from			AFAGESTCOM.AARTICP1 A
-	left join	AFAGESTCOM.AARFOUP1 AF
+from			${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
+	left join	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 AF
 		on  A.NOART=AF.NOART and A.FOUR1=AF.NOFOU
-	left join	AFAGESTCOM.ASTOFIP1 S
-		on  A.NOART=S.NOART and S.DEPOT='AFA'
-	left join	AFAGESTCOM.AFOURNP1 F
+	left join	${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 S
+		on  A.NOART=S.NOART and S.DEPOT='${LOGINOR_DEPOT}'
+	left join	${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 F
 		on  A.FOUR1=F.NOFOU
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOCKP1 QTE
+		on QTE.NOART=A.NOART and QTE.DEPOT='${LOGINOR_DEPOT}' 
 where
-		LOCAL like '%$_GET[val]%'
-	or	LOCA2 like '%$_GET[val]%'
-	or	LOCA3 like '%$_GET[val]%'
+			(LOCAL like '%$_GET[val]%' or LOCA2 like '%$_GET[val]%' or LOCA3 like '%$_GET[val]%')
+		and QTE.QTINV>0
 EOT;
 
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");

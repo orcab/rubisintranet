@@ -25,14 +25,14 @@ function refresh_etiquette(sel,id) {
 				for(article in data) {
 					var erreur = '';
 					if (!data[article].code_article)
-						erreur += "Aucun code MCS n'a été trouvé pour cette référence fournisseur (Code expo : "+data[article].code_expo+")";
+						erreur += "Aucun code MCS n'a été trouvé pour cette référence fournisseur";
 
 					html += '<tr><td class="fournisseur">'+
-						//	data[article].code_article+'<br/>'+
-						//	data[article].code_expo+'<br/>'+
 							'<div class="fournisseur">'+data[article].fournisseur+'</div>'+
 							'<div class="reference">'+data[article].reference+'</div></td><td class="designation">'+
-							(data[article].qte > 1 ? '<strong>x'+data[article].qte+'</strong> ':'') + data[article].designation+'<div class="erreur">'+erreur+'</div></td><td class="prix" nowrap="nowrap">'+
+							(data[article].qte > 1 ? '<strong>x'+data[article].qte+'</strong> ':'') + data[article].designation+
+							'<div class="hide_when_print" style="color:green;">Code : '+data[article].code_expo+' / '+data[article].code_article+'</div>'+
+							'<div class="erreur">'+erreur+'</div></td><td class="prix" nowrap="nowrap">'+
 							(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? data[article].px_public.toFixed(2) + '&nbsp;&euro;':'NC')+'</td></tr>';
 
 					total += data[article].qte * (data[article].px_public ? data[article].px_public.toFixed(2):0);
