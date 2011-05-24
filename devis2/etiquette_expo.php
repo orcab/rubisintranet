@@ -24,14 +24,14 @@ function refresh_etiquette(sel,id) {
 				var total = 0;
 				for(article in data) {
 					var erreur = '';
-					if (!data[article].code_article)
-						erreur += "Aucun code MCS n'a été trouvé pour cette référence fournisseur";
+					if (!data[article].px_public)
+						erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
 
 					html += '<tr><td class="fournisseur">'+
 							'<div class="fournisseur">'+data[article].fournisseur+'</div>'+
 							'<div class="reference">'+data[article].reference+'</div></td><td class="designation">'+
 							(data[article].qte > 1 ? '<strong>x'+data[article].qte+'</strong> ':'') + data[article].designation+
-							'<div class="hide_when_print" style="color:green;">Code : '+data[article].code_expo+' / '+data[article].code_article+'</div>'+
+							'<div class="hide_when_print" style="color:green;">Code : '+data[article].code_expo+'</div>'+
 							'<div class="erreur">'+erreur+'</div></td><td class="prix" nowrap="nowrap">'+
 							(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? data[article].px_public.toFixed(2) + '&nbsp;&euro;':'NC')+'</td></tr>';
 
