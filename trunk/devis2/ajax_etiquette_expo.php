@@ -1,6 +1,6 @@
 <?
 include('../inc/config.php');
-
+define('SQLITE_DATABASE','../scripts/catalfou.sqlite');
 
 if ($_GET['what'] == 'get_detail_box' && isset($_GET['val']) && $_GET['val']) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR DANS SQLITE
 	
@@ -52,35 +52,38 @@ EOT;
 
 	//print_r($articles);
 
+
+	if (!file_exists(SQLITE_DATABASE)) die ("Base de donnée non présente");
+	try {
+		$sqlite = new PDO('sqlite:'.SQLITE_DATABASE); // success
+		$sqlite->sqliteCreateFunction('REGEXP', 'preg_match', 2); // on cree la fonction REGEXP dans sqlite.
+	} catch (PDOException $exception) {
+		echo "Erreur dans l'ouverture de la base de données. Merci de prévenir Benjamin au 02.97.69.00.69 ou d'envoyé un mail à <a href='mailto:benjamin.poulain@coopmcs.com&subject=Historique commande en ligne'>Benjamin Poulain</a>";
+		die ($exception->getMessage());
+	}
+
+
 	$tmp = array();
 	foreach ($articles as $article => $data) {
-		array_push($tmp,"(A.ACTIV<>'00S' and AF.NOFOU='$data[code_fournisseur]' and AF.REFFO='$data[reference]')");
+		array_push($tmp,"(code_fournisseur='$data[code_fournisseur]' AND reference='$data[reference]')");
 	}
 	$tmp = join(' OR ',$tmp);
 	$sql = <<<EOT
-select
-	A.NOART,
-	AF.NOFOU,AF.REFFO,
-	PV.PVEN6 as PX_PUBLIC, (PV.PVEN1 * 1.5) as PX_PUBLIC_CALCULE
-from	AFAGESTCOM.AARFOUP1 AF
-		left join AFAGESTCOM.ATARPVP1 PV
-			on  PV.PVT09='E' and AF.NOART=PV.NOART
-		left join AFAGESTCOM.AARTICP1 A
-			on  PV.NOART=A.NOART
+SELECT
+	code_fournisseur,reference,
+	prix6 AS px_public, (prix1 * 1.5) AS px_public_calcule
+from	articles
 where
 	$tmp
 EOT;
 
-	//echo "\n$sql";
-
-	$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
-	while($row = odbc_fetch_array($res)) {
-		$row = array_map('trim',$row);
-		$articles["$row[NOFOU].$row[REFFO]"]['code_article'] = $row['NOART'];
-		if	($row['PX_PUBLIC'] > 0)
-			$articles["$row[NOFOU].$row[REFFO]"]['px_public'] = round(min($row['PX_PUBLIC'],$row['PX_PUBLIC_CALCULE']),2); // si un prix public est renseigné, on prend le moins cher des deux
+	//echo "\n$sql"; exit;
+	$res = $sqlite->query($sql) or die("Impossible de lancer la requete des prix : ".array_pop($sqlite->errorInfo()));
+	while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+		if	($row['px_public'] > 0)
+			$articles["$row[code_fournisseur].$row[reference]"]['px_public'] = round(min($row['px_public'],$row['px_public_calcule']),2); // si un prix public est renseigné, on prend le moins cher des deux
 		else
-			$articles["$row[NOFOU].$row[REFFO]"]['px_public'] = round($row['PX_PUBLIC_CALCULE'],2);	// sinon on prend le prix calculé avec la formule
+			$articles["$row[code_fournisseur].$row[reference]"]['px_public'] = round($row['px_public_calcule'],2);	// sinon on prend le prix calculé avec la formule
 	}
 
 	echo json_encode($articles);
