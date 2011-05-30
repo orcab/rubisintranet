@@ -10,6 +10,8 @@ $start = microtime(true);
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
 
+var TVA = 19.6;
+
 function refresh_etiquette(sel,id) {
 	var box = sel[sel.selectedIndex].value;
 
@@ -27,17 +29,22 @@ function refresh_etiquette(sel,id) {
 					if (!data[article].px_public)
 						erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
 
-					html += '<tr><td class="fournisseur">'+
+					html += '<tr>'+
+							'<td class="fournisseur">'+
 							'<div class="fournisseur">'+data[article].fournisseur+'</div>'+
-							'<div class="reference">'+data[article].reference+'</div></td><td class="designation">'+
-							(data[article].qte > 1 ? '<strong>x'+data[article].qte+'</strong> ':'') + data[article].designation+
+							'<div class="reference">'+data[article].reference+'</div></td>'+
+							'<td class="designation">'+(data[article].qte > 1 ? '<strong>x'+data[article].qte+'</strong> ':'') + data[article].designation+
 							'<div class="hide_when_print" style="color:green;">Code : '+data[article].code_expo+'</div>'+
-							'<div class="erreur">'+erreur+'</div></td><td class="prix" nowrap="nowrap">'+
-							(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? data[article].px_public.toFixed(2) + '&nbsp;&euro;':'NC')+'</td></tr>';
+							'<div class="erreur">'+erreur+'</div></td>'+
+						//	'<td class="prix" nowrap="nowrap">'+(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? data[article].px_public.toFixed(2) + '&nbsp;&euro;':'NC')+'</td>'+
+							'<td class="prix" nowrap="nowrap">'+(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? (data[article].px_public * TVA).toFixed(2)  + '&nbsp;&euro; ttc':'NC')+'</td>'+
+							'</tr>';
 
 					total += data[article].qte * (data[article].px_public ? data[article].px_public.toFixed(2):0);
 				}
-				html += '<tr><td class="prix-conseille">Prix conseillés</td><td class="total" colspan="2">Montant total du box : '+total.toFixed(2)+'&nbsp;&euro;</td></tr></table>';
+				//html += '<tr><td class="prix-conseille">Prix conseillés</td><td class="total" colspan="2">Montant total du box : '+total.toFixed(2)+'&nbsp;&euro;</td></tr></table>';
+				html += '</table>';
+
 				$('#etiquette'+id).append(html);
 
 				$('#loading').css('visibility','hidden'); // supprime le loading
