@@ -10,43 +10,64 @@ $start = microtime(true);
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
 
-var TVA = 19.6;
+var TVA = 0.196;
 
 function refresh_etiquette(sel,id) {
 	var box = sel[sel.selectedIndex].value;
-
+	
 	if (box) {
 		$('#loading').css('visibility','visible'); // affiche le loading
 		$('#etiquette'+id).html('');
-		//	alert(box);	
+
+		// va chercher le détail du box selectionné
 		$.getJSON('ajax_etiquette_expo.php', { 'what':'get_detail_box', 'val': box  } ,
 			function(data){
-				//data.reference
-				var html = '<table class="articles"><caption>Box '+box+'</caption>';
-				var total = 0;
+				// classe le tableau des article en fonction des sousbox pour les mettre ensembles
+				var ordre_sousbox = {};
 				for(article in data) {
-					var erreur = '';
-					if (!data[article].px_public)
-						erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
-
-					html += '<tr>'+
-							'<td class="fournisseur">'+
-							'<div class="fournisseur">'+data[article].fournisseur+'</div>'+
-							'<div class="reference">'+data[article].reference+'</div></td>'+
-							'<td class="designation">'+(data[article].qte > 1 ? '<strong>x'+data[article].qte+'</strong> ':'') + data[article].designation+
-							'<div class="hide_when_print" style="color:green;">Code : '+data[article].code_expo+'</div>'+
-							'<div class="erreur">'+erreur+'</div></td>'+
-						//	'<td class="prix" nowrap="nowrap">'+(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? data[article].px_public.toFixed(2) + '&nbsp;&euro;':'NC')+'</td>'+
-							'<td class="prix" nowrap="nowrap">'+(data[article].qte > 1 ? '<span style="font-style:normal;">'+data[article].qte+'x</span> ':'') + (data[article].px_public ? (data[article].px_public * TVA).toFixed(2)  + '&nbsp;&euro; ttc':'NC')+'</td>'+
-							'</tr>';
-
-					total += data[article].qte * (data[article].px_public ? data[article].px_public.toFixed(2):0);
+					if (data[article].sousbox) {
+						if (typeof(ordre_sousbox[data[article].sousbox]) == 'undefined') // tableau pas encore créé
+							ordre_sousbox[data[article].sousbox] = [];
+						ordre_sousbox[data[article].sousbox].push(data[article]);
+					} else {
+						if (typeof(ordre_sousbox['commun']) == 'undefined') // tableau pas encore créé
+							ordre_sousbox['commun'] = [];
+						ordre_sousbox['commun'].push(data[article]);
+					}
 				}
-				//html += '<tr><td class="prix-conseille">Prix conseillés</td><td class="total" colspan="2">Montant total du box : '+total.toFixed(2)+'&nbsp;&euro;</td></tr></table>';
-				html += '</table>';
+
+				// affiche les articles en parcourant les sous box
+				var html = '<table class="articles"><caption>Box '+box+'</caption><tbody class="sousbox">';
+				var total = 0;
+				var old_sousbox = '';
+
+				for(sousbox in ordre_sousbox) {
+					if (sousbox != old_sousbox) // changement de sous box, on déclare un nouveau group
+						html += '</tbody><tbody class="espacement"><tr><td colspan="3">&nbsp;</td></tr></tbody><tbody class="sousbox">';
+
+					for(article in ordre_sousbox[sousbox]) {
+						var erreur = '';
+						var detail = ordre_sousbox[sousbox][article];
+
+						if (!detail.px_public)
+							erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
+
+						html += '<tr>'+
+								'<td class="fournisseur">'+
+								'<div class="fournisseur">'+detail.fournisseur+'</div>'+
+								'<div class="reference">'+detail.reference+'</div></td>'+
+								'<td class="designation">'+(detail.qte > 1 ? '<strong>x'+detail.qte+'</strong> ':'') + detail.designation+
+								'<div class="hide_when_print" style="color:green;">Code : '+detail.code_expo+'</div>'+
+								'<div class="erreur">'+erreur+'</div></td>'+
+								'<td class="prix" nowrap="nowrap">'+(detail.qte > 1 ? '<span style="font-style:normal;">'+detail.qte+'x</span> ':'') + (detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+'</td>'+
+								'</tr>';
+					}
+
+					old_sousbox = sousbox;
+				}
+				html += '</tbody></table>';
 
 				$('#etiquette'+id).append(html);
-
 				$('#loading').css('visibility','hidden'); // supprime le loading
 			}
 		);
@@ -56,85 +77,95 @@ function refresh_etiquette(sel,id) {
 </script>
 
 <style>
-
 body {
     font-family: verdana;
     font-size: 0.8em;
 }
+
 div.choix-box {
     border: medium none;
     float: left;
     text-align: center;
     width: 45%;
 }
+
 div#loading {
     text-align: center;
     visibility: hidden;
     width: 100%;
 }
+
 div.debug {
     color: grey;
     display: none;
     font-size: 0.7em;
 }
+
 table#etiquette {
     font-family: verdana;
     font-size: 8px;
     height: 190mm;
     width: 285mm;
 }
+
 #etiquette1, #etiquette2 {
     height: 100%;
     padding: 0 0.5cm 0.5cm;
     vertical-align: top;
     width: 50%;
 }
-td#etiquette1 {
-    border-right: 1px dotted black;
-}
-td#etiquette2 {
-}
+
+td#etiquette1 { border-right: 1px dotted black; }
+td#etiquette2 { }
+
 table.articles {
     border-collapse: collapse;
     width: 100%;
 }
+
 table.articles caption {
     font-size: 1.5em;
     font-weight: bold;
     margin: 0 0 5px;
     text-align: center;
 }
-div.fournisseur {
-    font-weight: bold;
-}
+
+table.articles tbody.sousbox { border: solid 1px black; }
+
+table.articles tbody.espacement { height: 1em; }
+
+div.fournisseur { font-weight: bold; }
+
 td.prix {
     font-weight: bold;
     text-align: right;
 }
-td.total {
-    text-align: right;
-}
+
+td.total { text-align: right; }
+
 table.articles td {
     border-bottom: 1px dotted black;
     font-size: 0.7em;
     vertical-align: top;
 }
-.erreur {
-    color: red;
-}
+
+.erreur { color: red; }
+
 td.designation {
     font-style: italic;
     padding-left: 0.5cm;
 }
+
 .prix-conseille {
     font-size: 1.5em;
     text-align: left;
 }
 
+.ttc { font-style:normal; }
+
 @media print {
 	.hide_when_print { display:none; }
 }
-
 </style>
 
 <body>
