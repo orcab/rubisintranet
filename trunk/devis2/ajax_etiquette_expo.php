@@ -30,30 +30,41 @@ EOT;
 
 	// va récupérer la liste des prix des articles du box
 	$articles = array();
+	$localisations = array();
 	while($row = odbc_fetch_array($res)) {
 		$row = array_map('trim',$row);
-		$qte = 0;
-		$sousbox = '';
+		
+		$sousbox = 'commun';
 		foreach (split('/',join('/',array($row['LOCAL'],$row['LOCA2'],$row['LOCA3']))) as $local) { // pour chaque localisation
+			$qte = 0;
 			if ($local) {
 				if (preg_match("/$_GET[val]([a-z]*)(-(\\d+))?/i",$local,$matches)) {
-					$qte += isset($matches[3]) ? $matches[3] : 1; // on test la quantité "X25-3"
-					$sousbox = $matches[1];
+					$qte += isset($matches[3]) ? $matches[3] : 1; // on test la quantité "X25a-3"
+					$sousbox = $matches[1] ? $matches[1] : 'commun';
+
+					// on renseigne les localisations articles
+					if (!isset($localisations[$sousbox]))
+						$localisations[$sousbox] = array();
+
+					array_push($localisations[$sousbox],	array(	'article'=>"$row[NOFOU];$row[REFFO]",
+																	'qte'=>$qte)
+								);
 				}
 			}
 		}
 
-		$articles["$row[NOFOU].$row[REFFO]"] = array(	'designation'		=> $row['DESI1'],
+		// on renseigne les infos articles
+		$articles["$row[NOFOU];$row[REFFO]"] = array(	'designation'		=> $row['DESI1'],
 														'code_fournisseur'	=> $row['NOFOU'],
 														'fournisseur'		=> $row['NOMFO'],
 														'reference'			=> $row['REFFO'],
-														'qte'				=> $qte,
-														'code_expo'			=> $row['NOART'],
-														'sousbox'			=> $sousbox
+														'code_expo'			=> $row['NOART']
 													);
 	}
 
-	//print_r($articles);
+	/*print_r($articles);
+	print_r($localisations);
+	exit;*/
 
 
 	if (!file_exists(SQLITE_DATABASE)) die ("Base de donnée non présente");
@@ -84,12 +95,15 @@ EOT;
 	$res = $sqlite->query($sql) or die("Impossible de lancer la requete des prix : ".array_pop($sqlite->errorInfo()));
 	while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 		if	($row['px_public'] > 0)
-			$articles["$row[code_fournisseur].$row[reference]"]['px_public'] = round(min($row['px_public'],$row['px_public_calcule']),2); // si un prix public est renseigné, on prend le moins cher des deux
+			$articles["$row[code_fournisseur];$row[reference]"]['px_public'] = round(min($row['px_public'],$row['px_public_calcule']),2); // si un prix public est renseigné, on prend le moins cher des deux
 		else
-			$articles["$row[code_fournisseur].$row[reference]"]['px_public'] = round($row['px_public_calcule'],2);	// sinon on prend le prix calculé avec la formule
+			$articles["$row[code_fournisseur];$row[reference]"]['px_public'] = round($row['px_public_calcule'],2);	// sinon on prend le prix calculé avec la formule
 	}
 
-	echo json_encode($articles);
+	echo json_encode(array(	'articles'	=>	$articles,
+							'sousboxs'	=>	$localisations
+							)
+					);
 } // fin 'get_detail_box'
 
 

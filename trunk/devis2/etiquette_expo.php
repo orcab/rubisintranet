@@ -14,6 +14,7 @@ var TVA = 0.196;
 
 function refresh_etiquette(sel,id) {
 	var box = sel[sel.selectedIndex].value;
+	//var box = 47 ;
 	
 	if (box) {
 		$('#loading').css('visibility','visible'); // affiche le loading
@@ -22,33 +23,19 @@ function refresh_etiquette(sel,id) {
 		// va chercher le détail du box selectionné
 		$.getJSON('ajax_etiquette_expo.php', { 'what':'get_detail_box', 'val': box  } ,
 			function(data){
-				// classe le tableau des article en fonction des sousbox pour les mettre ensembles
-				var ordre_sousbox = {};
-				for(article in data) {
-					if (data[article].sousbox) {
-						if (typeof(ordre_sousbox[data[article].sousbox]) == 'undefined') // tableau pas encore créé
-							ordre_sousbox[data[article].sousbox] = [];
-						ordre_sousbox[data[article].sousbox].push(data[article]);
-					} else {
-						if (typeof(ordre_sousbox['commun']) == 'undefined') // tableau pas encore créé
-							ordre_sousbox['commun'] = [];
-						ordre_sousbox['commun'].push(data[article]);
-					}
-				}
-
 				// affiche les articles en parcourant les sous box
-				var html = '<table class="articles"><caption>Box '+box+'</caption><tbody class="sousbox">';
+				var html = '<table class="articles"><caption>Box '+box+'</caption>';
 				var total = 0;
-				var old_sousbox = '';
 
-				for(sousbox in ordre_sousbox) {
-					if (sousbox != old_sousbox) // changement de sous box, on déclare un nouveau group
-						html += '</tbody><tbody class="espacement"><tr><td colspan="3">&nbsp;</td></tr></tbody><tbody class="sousbox">';
+				for(sousbox in data.sousboxs) {
+					html += '<tbody class="sousbox">';
 
-					for(article in ordre_sousbox[sousbox]) {
-						var erreur = '';
-						var detail = ordre_sousbox[sousbox][article];
-
+					for(article in data.sousboxs[sousbox]) {
+						var erreur	= '';
+						var cle		= data.sousboxs[sousbox][article].article;
+						var qte		= data.sousboxs[sousbox][article].qte;
+						var detail	= data.articles[cle];
+			
 						if (!detail.px_public)
 							erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
 
@@ -56,16 +43,16 @@ function refresh_etiquette(sel,id) {
 								'<td class="fournisseur">'+
 								'<div class="fournisseur">'+detail.fournisseur+'</div>'+
 								'<div class="reference">'+detail.reference+'</div></td>'+
-								'<td class="designation">'+(detail.qte > 1 ? '<strong>x'+detail.qte+'</strong> ':'') + detail.designation+
+								'<td class="designation">'+(qte > 1 ? '<strong>x'+qte+'</strong> ':'') + detail.designation+
 								'<div class="hide_when_print" style="color:green;">Code : '+detail.code_expo+'</div>'+
 								'<div class="erreur">'+erreur+'</div></td>'+
-								'<td class="prix" nowrap="nowrap">'+(detail.qte > 1 ? '<span style="font-style:normal;">'+detail.qte+'x</span> ':'') + (detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+'</td>'+
+								'<td class="prix" nowrap="nowrap">'+(qte > 1 ? '<span style="font-style:normal;">'+qte+'x</span> ':'') + (detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+'</td>'+
 								'</tr>';
+						
 					}
-
-					old_sousbox = sousbox;
+					html += '</tbody><tbody class="espacement"><tr><td colspan="3">&nbsp;</td></tr></tbody>';
 				}
-				html += '</tbody></table>';
+				html += '</table>';
 
 				$('#etiquette'+id).append(html);
 				$('#loading').css('visibility','hidden'); // supprime le loading
@@ -148,6 +135,9 @@ table.articles td {
     font-size: 0.7em;
     vertical-align: top;
 }
+
+table.articles tr:last-child td { border: none; } /* pas de bordure sur le dernier block */
+
 
 .erreur { color: red; }
 
@@ -236,6 +226,8 @@ EOT;
 	<td id="etiquette2"></td>
 </tr>
 </table>
+
+<!--<script>refresh_etiquette('test',1);</script>-->
 
 </body>
 </html>
