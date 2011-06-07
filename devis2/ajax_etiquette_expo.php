@@ -33,10 +33,12 @@ EOT;
 	while($row = odbc_fetch_array($res)) {
 		$row = array_map('trim',$row);
 		$qte = 0;
+		$sousbox = '';
 		foreach (split('/',join('/',array($row['LOCAL'],$row['LOCA2'],$row['LOCA3']))) as $local) { // pour chaque localisation
 			if ($local) {
-				if (preg_match("/$_GET[val](-(\\d+))?/",$local,$matches)) {
-					$qte += isset($matches[2]) ? $matches[2] : 1; // on test la quantité "X25-3"
+				if (preg_match("/$_GET[val]([a-z]*)(-(\\d+))?/i",$local,$matches)) {
+					$qte += isset($matches[3]) ? $matches[3] : 1; // on test la quantité "X25-3"
+					$sousbox = $matches[1];
 				}
 			}
 		}
@@ -46,7 +48,8 @@ EOT;
 														'fournisseur'		=> $row['NOMFO'],
 														'reference'			=> $row['REFFO'],
 														'qte'				=> $qte,
-														'code_expo'			=> $row['NOART']
+														'code_expo'			=> $row['NOART'],
+														'sousbox'			=> $sousbox
 													);
 	}
 
