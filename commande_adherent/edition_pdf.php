@@ -33,8 +33,10 @@ where	NOBON='$NOBON_escape'
 EOT;
 
 $sql_detail = <<<EOT
-select	NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26,LOCAL,LOCA2,LOCA3,
-		DDISS,DDISA,DDISM,DDISJ
+select	BON.NOLIG,ARCOM,PROFI,TYCDD,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,REFFO,DET97,TANU0 as ECOTAXE,DET26,LOCAL,LOCA2,LOCA3,
+		DDISS,DDISA,DDISM,DDISJ,
+		DET21 as ETAT_PREPA,DET45 as PREPARATEUR,CONCAT(DET1J,CONCAT('/',CONCAT(DET1M,CONCAT('/',CONCAT(DET1S,DET1A))))) as DATE_PREPA,DET94 as LOCAL_PREPA, --preparation
+		COM_PREPA.DESCO as COMMENTAIRE_PREPA	-- commentaire de prepa
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR
 			on	BON.NOFOU=FOURNISSEUR.NOFOU
@@ -47,11 +49,16 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 			on		BON.CODAR   = STOCK.NOART
 				and	STOCK.DEPOT = BON.AGENC
 				and	STOCK.STSTS = ''
-where	NOBON='$NOBON_escape'
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMBOP1 COM_PREPA
+			on		COM_PREPA.NOCLI	= BON.NOCLI
+				and COM_PREPA.NOBON	= BON.NOBON
+				and COM_PREPA.NOLIG = BON.NOLIG
+				and COM_PREPA.COMBO_TYPE = 'PRE'
+where	BON.NOBON='$NOBON_escape'
 	and BON.NOCLI='$NOCLI_escape'
-	and ETSBE<>'ANN'
+	and BON.ETSBE<>'ANN'
 	$ligne_R
-order by NOLIG
+order by BON.NOLIG
 EOT;
 
 if (DEBUG) {
@@ -128,6 +135,16 @@ while($row = odbc_fetch_array($detail_commande)) {
 		
 		//print_r($kit);exit;
 
+		// INFO de PREPA
+		$info_prepa = '';
+		if ($row['ETAT_PREPA'] == 'O') {
+			$info_prepa .= "\nInfo prépa Loc : ";
+			$info_prepa .= $row['LOCAL_PREPA'] ? "En $row[LOCAL_PREPA]":'';
+			$info_prepa .= $row['DATE_PREPA']  ? " le $row[DATE_PREPA]":'';
+			$info_prepa .= $row['PREPARATEUR'] ? " par $row[PREPARATEUR]":'';
+			$info_prepa .= $row['COMMENTAIRE_PREPA'] ? "\n$row[COMMENTAIRE_PREPA]":'';
+		}
+
 
 		// on cherche les commentaires associé à la ligne de commande (saisie sur une commande client)
 		$commentaire_res = odbc_exec($loginor,"SELECT CDLIB FROM ${LOGINOR_PREFIX_BASE}GESTCOM.ACOMMEP1 WHERE CDFIC='ADETBOP1' and CDETA='' and CDCOD LIKE '%$row_entete[NOBON]$row[NOLIG]%' ORDER BY CDLIG") ;
@@ -135,13 +152,14 @@ while($row = odbc_fetch_array($detail_commande)) {
 			if ($commentaire_row['CDLIB'])
 				$designation .= "\n".trim($commentaire_row['CDLIB']);
 
+
 		if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde demandé sans prix
 
 			if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) { // uniquement les lignes R
 				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 					array('text' => $row['CODAR']."\n#".$row['NOLIG']	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 10 ),
 					array('text' => $row['NOMFO'].($row['REFFO']?"\n$row[REFFO]":'')		, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => 7 ),
-					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation		, 'text-align' => 'L', 'font-size' => 8),
+					array('text' => (isset($kit[$row['DET97']])?'KIT ':'').$designation.$info_prepa		, 'text-align' => 'L', 'font-size' => 8),
 					array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,'text-align' => 'C', 'font-size' => 10), //localisation
 					array('text' => $row['UNICD']		, 'text-align' => 'C'), // unité
 					array('text' => str_replace('.000','',$row['QTESA']).($row['DET26']=='O' && $row['TYCDD']=='SPE'?"\n$row[DDISJ]/$row[DDISM]/$row[DDISS]$row[DDISA]":'')		, 'text-align' => 'C'), // quantité
