@@ -25,6 +25,8 @@ where
 		and QTE.QTINV>0
 EOT;
 
+	//echo "\n$sql"; exit;
+
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
 
@@ -79,12 +81,13 @@ EOT;
 
 	$tmp = array();
 	foreach ($articles as $article => $data) {
-		array_push($tmp,"(code_fournisseur='$data[code_fournisseur]' AND reference='$data[reference]')");
+		if ($data['code_fournisseur'] && $data['reference'])
+			array_push($tmp,"(code_fournisseur='$data[code_fournisseur]' AND reference='$data[reference]')");
 	}
 	$tmp = join(' OR ',$tmp);
 	$sql = <<<EOT
 SELECT
-	code_fournisseur,reference,
+	code_fournisseur,reference,code_mcs,
 	prix6 AS px_public, (prix1 * 1.5) AS px_public_calcule
 from	articles
 where
@@ -92,12 +95,23 @@ where
 EOT;
 
 	//echo "\n$sql"; exit;
-	$res = $sqlite->query($sql) or die("Impossible de lancer la requete des prix : ".array_pop($sqlite->errorInfo()));
+	$res	= $sqlite->query($sql) or die("Impossible de lancer la requete des prix : ".array_pop($sqlite->errorInfo()));
 	while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-		if	($row['px_public'] > 0)
-			$articles["$row[code_fournisseur];$row[reference]"]['px_public'] = round(min($row['px_public'],$row['px_public_calcule']),2); // si un prix public est renseigné, on prend le moins cher des deux
-		else
+		$mode	= '';
+		if	($row['px_public'] > 0) {
+			if ($row['px_public'] <= $row['px_public_calcule']) { // si un prix public est renseigné, on prend le moins cher des deux
+				$articles["$row[code_fournisseur];$row[reference]"]['px_public'] = round($row['px_public'],2) ;
+				$mode = 'pp';
+			} else {
+				$articles["$row[code_fournisseur];$row[reference]"]['px_public'] = round($row['px_public_calcule'],2) ;
+				$mode = 'adh';
+			}
+		} else {
 			$articles["$row[code_fournisseur];$row[reference]"]['px_public'] = round($row['px_public_calcule'],2);	// sinon on prend le prix calculé avec la formule
+			$mode = 'adh';
+		}
+		$articles["$row[code_fournisseur];$row[reference]"]['mode']		= $mode;
+		$articles["$row[code_fournisseur];$row[reference]"]['code_mcs'] = $row['code_mcs'];
 	}
 
 	echo json_encode(array(	'articles'	=>	$articles,
@@ -113,6 +127,4 @@ EOT;
 else {
 	echo "Aucune procedure selectionnée";
 }
-
-
 ?>

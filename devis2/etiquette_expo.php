@@ -24,7 +24,7 @@ function refresh_etiquette(sel,id) {
 		$.getJSON('ajax_etiquette_expo.php', { 'what':'get_detail_box', 'val': box  } ,
 			function(data){
 				// affiche les articles en parcourant les sous box
-				var html = '<table class="articles"><caption>Box '+box+'</caption>';
+				var html = '<table class="articles"><caption><img class="logo_mcs" src="gfx/logo_mcs_mini.png"/><span class="box">Box '+box+'</span><img class="logo_artipole" src="gfx/logo_artipole_mini.png"/></caption></theader>';
 				var total = 0;
 
 				for(sousbox in data.sousboxs) {
@@ -39,14 +39,23 @@ function refresh_etiquette(sel,id) {
 						if (!detail.px_public)
 							erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
 
+						if (!detail.reference) {
+							erreur += "Aucune référence de renseignée pour l'article";
+							detail.px_public = 0; // on met le prix à 0 car il sera faux de toute façon
+						}
+
 						html += '<tr>'+
-								'<td class="fournisseur">'+
-								'<div class="fournisseur">'+detail.fournisseur+'</div>'+
-								'<div class="reference">'+detail.reference+'</div></td>'+
-								'<td class="designation">'+(qte > 1 ? '<strong>x'+qte+'</strong> ':'') + detail.designation+
-								'<div class="hide_when_print" style="color:green;">Code : '+detail.code_expo+'</div>'+
-								'<div class="erreur">'+erreur+'</div></td>'+
-								'<td class="prix" nowrap="nowrap">'+(qte > 1 ? '<span style="font-style:normal;">'+qte+'x</span> ':'') + (detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+'</td>'+
+									'<td class="fournisseur">'+
+										'<div class="fournisseur">'+detail.fournisseur+'</div>'+
+										'<div class="reference">'+detail.reference+'</div>'+
+									'</td>'+
+										'<td class="designation">'+(qte > 1 ? '<strong>x'+qte+'</strong> ':'') + detail.designation+
+										'<div style="color:green;font-size:0.8em;">Code : '+detail.code_expo+'/'+detail.code_mcs+' '+
+										(detail.mode=='pp' ? '<span class="pp">PP</span>':'')+'</div>'+ // prix public ou adh*1.5
+										'<div class="erreur">'+erreur+'</div>'+
+									'</td>'+
+										'<td class="prix" nowrap="nowrap">'+(qte > 1 ? '<span style="font-style:normal;">'+qte+'x</span> ':'') + (detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+
+									'</td>'+
 								'</tr>';
 						
 					}
@@ -151,7 +160,23 @@ td.designation {
     text-align: left;
 }
 
-.ttc { font-style:normal; }
+.ttc { font-weight:normal; }
+
+span.pp { /* flag prix public */
+    border: none;
+    padding-left: 2px;
+    padding-right: 2px;
+    font-weight: bold;
+    color: white;
+    background-color: green;
+}
+
+.logo_artipole {
+    float: right;
+}
+.logo_mcs {
+    float: left;
+}
 
 @media print {
 	.hide_when_print { display:none; }
