@@ -114,6 +114,9 @@ EOT;
 		$articles["$row[code_fournisseur];$row[reference]"]['code_mcs'] = $row['code_mcs'];
 	}
 
+	header('Content-type: text/json');
+	header('Content-type: application/json');
+
 	echo json_encode(array(	'articles'	=>	$articles,
 							'sousboxs'	=>	$localisations
 							)

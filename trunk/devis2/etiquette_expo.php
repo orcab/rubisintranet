@@ -36,8 +36,14 @@ function refresh_etiquette(sel,id) {
 						var qte		= data.sousboxs[sousbox][article].qte;
 						var detail	= data.articles[cle];
 			
-						if (!detail.px_public)
+						if (!detail.px_public)				// si aucun prix public renseigné
 							erreur += "La référence fournisseur n'a pas été trouvé dans le catalogue fournisseur";
+
+						if (	!detail.code_mcs							// si aucun code MCS trouvé, le prix trouvé n'est pas le bon
+							||	detail.code_mcs.substring(0,2) == '15') {	// si un code expo est trouvé à la place du code MCS, le prix n'est pas bon
+							detail.px_public = 0;
+							erreur += "L'article n'existe pas en &quot;en code dépôt&quot;";
+						}
 
 						if (!detail.reference) {
 							erreur += "Aucune référence de renseignée pour l'article";
