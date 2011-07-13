@@ -104,11 +104,11 @@ where	BON.NOBON='$arguments[nobon]'
 	and ETSBE=''		-- pas de lignes annulées
 	and TRAIT<>'F'		-- pas de lignes déjà livrées
 	$lignes_a_imprimer	-- uniquement les lignes données dans le fichier spool + lignes deja préparées + commentaires
-order by DET21 ASC, PROFI ASC, TYCDD DESC, LOCAL ASC, NOLIG ASC --ligne non préparé avant ligne préparée, ligne puis commentaire, stock avant spé, par ordre de local, puis par ordre de n° de ligne
+order by DET21 ASC, ARCOM DESC, PROFI ASC, TYCDD DESC, LOCAL ASC, NOLIG ASC --ligne non préparé avant ligne préparée, ligne puis commentaire, stock avant spé, par ordre de local, puis par ordre de n° de ligne
 EOT;
 
 if (DEBUG) {
-	fwrite(STDERR , "SQL_ENTETE : $sql_entete");
+	fwrite(STDERR , "SQL_ENTETE : $sql_entete\n\n\n-------------------------------------------------------------\n\n");
 	fwrite(STDERR , "SQL_DETAIL : $sql_detail");
 	exit;
 }
