@@ -131,7 +131,7 @@ EOT;
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res		= odbc_exec($loginor,$sql) ;
 	$i = 1;
-	$tarif_encours = array('remise1','remise2','remise3','prix_revient','coef','prix_vente');
+	$tarif_encours = array('remise1'=>'','remise2'=>'','remise3'=>'','prix_revient'=>'','coef'=>'','prix_vente'=>'');
 	while($row = odbc_fetch_array($res)) {
 		if ($row['TYPE_PR'] == 'E' && $row['TYPE_PV'] == 'E') { // tarif encours --> on stock pour l'afficher ensuite
 			$tarif_encours['remise1']		= $row['REMISE1'];
