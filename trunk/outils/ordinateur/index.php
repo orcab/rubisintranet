@@ -233,15 +233,17 @@ function valider_detail_utilisateur() {
 	</tr>
 		<tr>
 		<th>Type</th>
-		<td><select name="detail_utilisateur_printer">
-			<option value="0">Employé</option>
-			<option value="1">Imprimante</option>
-			<option value="2">Borne Wifi</option>
-			<option value="3">Douchette Wifi</option>
-			<option value="4">Serveur</option>
-			<option value="5">PABX</option>
-			<option value="6">Switch</option>
-			<option value="7">Router</option>
+		<td>
+			<select name="detail_utilisateur_printer">
+				<option value="0">Employé</option>
+				<option value="1">Imprimante</option>
+				<option value="2">Borne Wifi</option>
+				<option value="3">Douchette Wifi</option>
+				<option value="4">Serveur</option>
+				<option value="5">PABX</option>
+				<option value="6">Switch</option>
+				<option value="7">Router</option>
+				<option value="8">VirtualBox</option>
 			</select>
 		</td>
 	</tr>
@@ -308,6 +310,7 @@ while($row = mysql_fetch_array($res)) {
 		case 5 : echo 'pabx-'.($etat?'ok':'bad').'.png'; break;
 		case 6 : echo 'switch-'.($etat?'ok':'bad').'.png'; break;
 		case 7 : echo 'router-'.($etat?'ok':'bad').'.png'; break;
+		case 8 : echo 'virtual-'.($etat?'ok':'bad').'.png'; break;
 	}
 	echo '">';
 ?>
