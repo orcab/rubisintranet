@@ -318,7 +318,7 @@ while($row = mysql_fetch_array($res)) {
 	<td style="text-align:center;">
 <?
 	//if (FALSE) { // si PC allumé
-	if ($etat && $row['printer'] == 0) { // si PC allumé
+	if ($etat && in_array($row['printer'],array(0,4,8)) { // si PC allumé
 
 		$port = 5900 ;
 		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
