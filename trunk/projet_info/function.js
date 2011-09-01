@@ -40,7 +40,7 @@ function HomeControl(controlDiv, map) {
 	google.maps.event.addDomListener(controlDiv, 'click', function() {
 		clearMap();
 		map.panTo(vannes);// Recentre sur Vannes
-		map.setZoom(9); // Remet le zoom initial
+		map.setZoom(10); // Remet le zoom initial
 	});
 }
 
