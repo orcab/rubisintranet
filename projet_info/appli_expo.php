@@ -285,7 +285,7 @@ function initialize() {
 			//Condition si il est fermé
 			if ($(controlDiv).children('img').attr('src')== "images/icon_map/add64px.png") {
 				$('.adh10').poshytip('hide').removeClass('tooltips_showed'); // Masque l'aide de 10adh
-				$(controlDiv).css({	'background-color': 'rgba(57,203,251,0.8)',
+				$(controlDiv).css({	'background-color': 'rgba(255,255,255,0.8)',
 									'-moz-border-radius':'1em',
 									'padding':'5px'
 								});
@@ -426,10 +426,10 @@ function initialize() {
 <!--Tableau servant à l'affichage des données-->
 <div id="fonds"></div>
 <table id="cadre">
-<tr><td id="logo-mcs"></td><td id="nom-adherent"></td><td id="logo-artipole"></td></tr>
-<tr><td id="photo0"></td><td id="donnee"></td><td id="photo2"></td></td></tr>
-<tr><td id="desc"></td><td id="photo1"></td><td id="photo5"></td></tr>
-<tr><td id="photo3"></td><td id="photo4"></td><td id="fermer"></td></tr>
+	<tr><td id="logo-mcs"></td><td id="nom-adherent"></td><td id="logo-artipole"></td></tr>
+	<tr><td id="photo0"></td><td id="donnee"></td><td id="photo2"></td></td></tr>
+	<tr><td id="desc"></td><td id="photo1"></td><td id="photo5"></td></tr>
+	<tr><td id="photo3"></td><td id="photo4"></td><td id="fermer"></td></tr>
 </table>
 <!--<div id="fondsimprim"></div> -->
 <div id="endImprim"></div>
