@@ -24,9 +24,8 @@ my $data = {} ;
 
 # on tente d'aller sur le disqie partagé --> erreur
 print print_time()."Testing access to disk ... ";
-open(TEST,'+>'.$cfg->val('file','path_temporary_file')) or die "Ne peux pas creer le fichier TEST '".$cfg->val('file','path_temporary_file')."' ($!)";
-close(TEST);
-unlink($cfg->val('file','path_temporary_file')) or die "Ne peux pas supprimer le fichier TEST '".$cfg->val('file','path_temporary_file')."' ($!)";
+open(TEST,'+>TEST.TMP') or die "Ne peux pas creer le fichier TEST 'TEST.TMP' ($!)"; close(TEST);
+unlink('TEST.TMP') or die "Ne peux pas supprimer le fichier TEST 'TEST.TMP' ($!)";
 print "ok\n";
 
 
@@ -35,6 +34,8 @@ POP3_FETCH:
 print print_time()."POP3 connection ... ";
 my $pop3 = Net::POP3->new($cfg->val('pop3','host'), ResvPort=>$cfg->val('pop3','port') , Timeout => 30) or die "Impossible de se connecter au serveur POP3";
 print "ok\n";
+
+my @message_to_delete;
 
 print print_time()."POP3 authentification ... ";
 my $authentification = $pop3->login($cfg->val('pop3','user'), $cfg->val('pop3','pass'));
@@ -60,7 +61,7 @@ if (defined($authentification) && $authentification > 0) {
 
 
 			my $ligne = 1;
-			print print_time()."Commande found from $code_client Parsing,";
+			print print_time()."Commande found from $code_client\n";
 			$data->{$messageId} = {	'SNOCLI'=>$code_client,
 									'SNTBOS'=>'', 'SNTBOA'=>'', 'SNTBOM'=>'', 'SNTBOJ'=>'', # date du bon
 									'SNTLIS'=>'', 'SNTLIA'=>'', 'SNTLIM'=>'', 'SNTLIJ'=>'', # date de livraison
@@ -137,9 +138,8 @@ if (defined($authentification) && $authentification > 0) {
 				}
 			}
 
-			print " deleting ... ";
-			$pop3->delete($msgnum);
-			print "ok\n";
+			# on marque les message pour suppression. Si un probleme arrive ensuite, il ne faut pas supprimer les message pour un traitement future
+			push @message_to_delete, $msgnum;
 
 		} else {
 			print print_time()."Malformed email found ($msgnum). Deleting ... ";
@@ -149,12 +149,10 @@ if (defined($authentification) && $authentification > 0) {
 	}
 } elsif ($authentification == '0E0') {
 	print "ok, but no message\n";
-	$pop3->quit;
 	goto END;
 } else {
 	die "Impossible de s'identifier sur le serveur POP3";
 }
-$pop3->quit;
 
 if ($debug) {
 	print Dumper($data);
@@ -208,14 +206,25 @@ foreach my $uniqid (keys %$data) {
 close CSV;
 print "ok\n";
 
+END:
+
 # copie du fichier temporaire a l'emplacement finale sur le disque partagé
-if (!-e $cfg->val('file','path_file')) { # si le fichier finale n'existe pas alors on move le fichier temporaire
+if (!-e $cfg->val('file','path_file') && -e $cfg->val('file','path_temporary_file')) { # si le fichier finale n'existe pas alors on move le fichier temporaire
 	move($cfg->val('file','path_temporary_file'),$cfg->val('file','path_file')) or die "Ne peux pas deplacer le fichier temporaire en fichier finale '".$cfg->val('file','path_file')."' ($!)";
 } else {
 	 # si le fichier existe deja alors on ne le copie pas, on attend patiement.
 }
 
-END:
+
+# deleting message from pop3
+print print_time()."Deleting message " if @message_to_delete;
+foreach (@message_to_delete) {
+	print "$_, ";
+	$pop3->delete($_);
+}
+print " ok\n" if @message_to_delete;
+$pop3->quit;
+
 
 print print_time()."END\n\n";
 print STDERR Dumper($data) if $debug;
