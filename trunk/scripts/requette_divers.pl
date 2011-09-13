@@ -3,15 +3,15 @@
 use Data::Dumper;
 use Win32::ODBC;
 use strict ;
-use Config::IniFiles;
 use constant PROGRESSBAR_SIZE => 20;
-#use Time::HiRes qw( usleep );
+require 'Phpconst2perlconst.pm';
+use Phpconst2perlconst ;
 $|=1;
 
 my $start_time = time();
 
-my $cfg = new Config::IniFiles( -file => 'config.ini' );
-my $loginor = new Win32::ODBC('DSN='.$cfg->val('RUBIS','DSN').';UID='.$cfg->val('RUBIS','USER').';PWD='.$cfg->val('RUBIS','PASS').';') or die "Ne peux pas se connecter à rubis";
+my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
+my $loginor  = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 
 open(SQL,"<requette_divers.sql") or die "Peux pas ouvrir le fichier requette_divers.sql ($!)";
 my $count=1;

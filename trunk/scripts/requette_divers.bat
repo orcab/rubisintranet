@@ -1,1 +1,1 @@
-perl requette_divers
+perl requette_divers.pl

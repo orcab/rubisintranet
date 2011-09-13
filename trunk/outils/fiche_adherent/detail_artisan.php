@@ -515,7 +515,7 @@ $(document).ready(function() {
 <? } ?>
 
 <input type="button" class="button divers hide_when_print" style="background-image:url(gfx/fiche_artisan_mini.png);" value="Choisir un autre artisan" onclick="document.location.href='index.php';" />
-<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/anomalie_small.png);margin-left:10px;" value="Voir la liste des anomalies du artisan <?=$row['nom']?>" onclick="document.location.href='/intranet/anomalie/historique_anomalie.php?filtre_artisan='+escape('<?=$row['nom']?>')+'&filtre_date_inf=&filtre_date_sup=';" />
+<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/anomalie_small.png);margin-left:10px;" value="Voir la liste des anomalies du artisan <?=$row['nom']?>" onclick="document.location.href='/intranet/anomalie/historique_anomalie.php?filtre_adherent='+escape('<?=$row['nom']?>')+'&filtre_date_inf=&filtre_date_sup=';" />
 
 
 <h1>Artisan : <?=$row['nom']?></h1>

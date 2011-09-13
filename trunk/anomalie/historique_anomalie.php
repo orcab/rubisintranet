@@ -39,6 +39,7 @@ if (isset($_POST['filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $_
 if (isset($_GET['filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $_GET['filtre_date_inf']; // pour pouvoir y acceder via une url
 if (isset($_POST['filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $_POST['filtre_date_sup'];
 if (isset($_GET['filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $_GET['filtre_date_sup']; // pour pouvoir y acceder via une url
+if (isset($_GET['filtre_adherent']))	$_SESSION['anomalie_filtre_adherent']	= $_GET['filtre_adherent'];
 if (isset($_POST['filtre_adherent']))	$_SESSION['anomalie_filtre_adherent']	= $_POST['filtre_adherent'];
 if (isset($_POST['filtre_fournisseur']))$_SESSION['anomalie_filtre_fournisseur']= $_POST['filtre_fournisseur'];
 if (isset($_GET['filtre_fournisseur'])) $_SESSION['anomalie_filtre_fournisseur']= $_GET['filtre_fournisseur']; // pour pouvoir y acceder via une url

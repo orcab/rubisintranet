@@ -20,7 +20,7 @@ print print_time()."Select des familles actives ...";
 my $sql = <<EOT;
 select		AFCNI,AFCAC,AFCFA,AFCSF,AFCCH,AFCSC,ACFLI
 from		${prefix_base_rubis}GESTCOM.AFAMILP1
-where		AFCTY='FA1'
+where		AFCTY='FA1' and AFC01=''
 order by	AFCAC asc, AFCFA asc, AFCSF asc, AFCCH asc, AFCSC asc
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
