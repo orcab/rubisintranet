@@ -38,10 +38,10 @@ elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset
 	$message = "L'intervention a été correctement supprimée";
 }
 
-// SAISIR UN COMMENTAIRE
+// SAISIR UNE INTERVENTION
 elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && isset($_POST['id']) && $_POST['id']) { // mode saisie de commentaire artisan
 	$date = implode('-',array_reverse(explode('/',$_POST['commentaire_date']))).' '.$_POST['commentaire_heure'].':00'; //2007-09-10 14:16:59;
-	$res = mysql_query("INSERT INTO artisan_commentaire (code_artisan,date_creation,createur,participants,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id'])."','$date','".mysql_escape_string($_POST['commentaire_createur'])."','".mysql_escape_string($_POST['commentaire_participants'])."','$_POST[commentaire_type]',$_POST[commentaire_humeur],'".mysql_escape_string($_POST['commentaire_commentaire'])."',0)") or die("Ne peux pas enregistrer le commentaire ".mysql_error());
+	$res = mysql_query("INSERT INTO artisan_commentaire (code_artisan,date_creation,createur,participants,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id'])."','$date','".mysql_escape_string($_POST['commentaire_createur'])."','".mysql_escape_string(join(', ',$_POST['commentaire_participants']))."','$_POST[commentaire_type]',$_POST[commentaire_humeur],'".mysql_escape_string($_POST['commentaire_commentaire'])."',0)") or die("Ne peux pas enregistrer le commentaire ".mysql_error());
 	$message = "L'intervention a été enregistrée";
 }
 
@@ -80,21 +80,6 @@ h1 {
 
 img.icon { cursor:pointer; }
 div#edit-complement { display:none; }
-
-div#participants {
-	padding:20px;
-	border:solid 2px black;
-	-moz-border-radius:10px;
-	background:white;
-	display:none;
-	position: absolute;
-	top:20%;
-	left:30%;
-	width:40%;
-	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
-	-moz-box-shadow: 0px 0px 10px 0px white;
-	z-index:201;
-}
 
 /* style pour la boite de dialogue pour la saisie d'intervention */
 div#intervention {
@@ -257,32 +242,31 @@ img.qrcode { display:none; }
 <link rel="stylesheet" href="../../js/theme/ui.slider.css" type="text/css" />
 <link rel="Stylesheet" href="../../js/slider2/ui.slider.extras.css" type="text/css" />
 
+<!-- pour le chosen -->
+<script language="javascript" src="../../js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="../../js/chosen/chosen.css" />
+
 <style type="text/css">
 	/*form { margin: 0 30px;}*/
 	fieldset#slider { border:0; margin-top: 1em;}
 	.ui-slider {clear: both; top: 15px;}
 </style>
 <script type="text/javascript">
+
+
 $(function(){
 	$('select#valueA, select#valueB').selectToUISlider({
 		labels: 10
 	});
 });
-</script>
 
-
-
-
-<script type="text/javascript">
-	tinyMCE.init({
-		mode : 'textareas',
-		theme : 'advanced',
-		theme_advanced_buttons1_add : 'forecolor',
-		theme_advanced_buttons2 : '',
-		theme_advanced_buttons3 : ''
-	});
-</script>
-<script type="text/javascript">
+tinyMCE.init({
+	mode : 'textareas',
+	theme : 'advanced',
+	theme_advanced_buttons1_add : 'forecolor',
+	theme_advanced_buttons2 : '',
+	theme_advanced_buttons3 : ''
+});
 
 // affiche a boite de saisie du completment
 function affiche_complement() {
@@ -349,33 +333,11 @@ function cache_upload() {
 	$('#upload-file').hide();
 }
 
-// affiche la boite de dialogue des participants
-function show_participants() {
-	$('#participants').show();
-}
-
-// cache la boite de dialogue des participants
-function cache_participants() {
-	$('#participants').hide();
-}
-
-// stock les particpants coché dans une input hidden
-function sauve_participants() {
-	var id_participants		= new Array();
-	var nom_participants	= new Array();
-	$('input[type=checkbox][id^="check-"]:checked').each(function() {
-			id_participants.push($(this).attr('id').replace(/^check\-/,''));
-			nom_participants.push($(this).parent().text());
-	});
-	document.selecteur.commentaire_participants.value = nom_participants.join(',');
-	$('#preview-particpants').text(nom_participants.join(', '));
-	//document.selecteur.participants.value = '';
-	cache_participants();
-}
-
-
 // upload
 $(document).ready(function() {
+
+	$(".chzn-select").chosen();
+
 	$('#uploadify').uploadify({
 		'scriptData'	 : {'artisan':'<?=strtoupper($id)?>'},
 		'uploader'       : '../../js/uploadify/uploadify.swf',
@@ -386,8 +348,8 @@ $(document).ready(function() {
 		'multi'          : true,
 		'onAllComplete'  : function() {
 				window.location.reload();
-		}
-	});
+	}
+});
 
 <?
 	// définition des options de la carte
@@ -480,21 +442,6 @@ $(document).ready(function() {
 	<p><input type="button" class="button annuler" value="Annuler" onclick="javascript:jQuery('#uploadify').uploadifyClearQueue();cache_upload();" /></p>
 </div>
 
-<!-- boite de dialogue avec tous les participants -->
-<div id="participants">
-<?	$i=1;
-	$res_employes  = mysql_query("SELECT * FROM employe WHERE printer=0 and nom NOT LIKE '%3G' ORDER BY prenom ASC");
-	while ($row2 = mysql_fetch_array($res_employes)) { ?>
-			<label class="mobile" for="check-<?=$row2['id']?>"><input type="checkbox" name="check-<?=$row2['id']?>" id="check-<?=$row2['id']?>" value="<?=$row2['id']?>"/><?=$row2['prenom']?></label>
-			<?= ($i++ % 4 == 0) ? '<br/><br/>':'' ?>
-<?	} ?>
-	<br/><br/>
-	<input type="hidden" name="commentaire_participants" value=""/><!-- stock el nom des participants -->
-	<input type="button" class="button valider" value="OK" onclick="sauve_participants();" />
-	<input type="button" class="button annuler" value="Annuler" onclick="cache_participants();" />
-</div>
-
-
 <!-- boite de dialogue pour la intervention artisan -->
 <div id="intervention">
 <table style="">
@@ -503,8 +450,7 @@ $(document).ready(function() {
 		<td style="text-align:right;">Créateur</td>
 		<td>
 			<select name="commentaire_createur">
-<?			//$res2  = mysql_query('SELECT * FROM employe WHERE printer=0 ORDER BY prenom ASC');
-			mysql_data_seek($res_employes,0);
+<?			$res_employes  = mysql_query("SELECT * FROM employe WHERE printer=0 and nom NOT LIKE '%3G' ORDER BY prenom ASC");
 			while ($row2 = mysql_fetch_array($res_employes)) { ?>
 					<option value="<?=$row2['prenom']?>"<?
 						if ($_SERVER['REMOTE_ADDR']==$row2['ip']) {
@@ -543,8 +489,12 @@ $(document).ready(function() {
 	</tr>
 	<tr>
 		<td colspan="4" style="text-align:left;">
-			<input type="button" class="button" style="background-image:url('gfx/participants.png');" onclick="show_participants();" value="Participants"/>
-			<span id="preview-particpants" style="font-size:0.8em;"></span>
+			<select name="commentaire_participants[]" data-placeholder="Participants..." style="width:350px;" multiple class="chzn-select">
+				<?	mysql_data_seek($res_employes,0);
+					while ($row2 = mysql_fetch_array($res_employes)) { ?>
+							<option value="<?=$row2['prenom']?>"><?=$row2['prenom']?></option>
+				<?	} ?>
+			</select>
 		</td>
 	</tr>
 	<tr>
@@ -687,18 +637,12 @@ EOT;
 					eregi('\.(.+)$',$file,$regs);
 					$ext = $regs[1];
 					switch ($ext) {
-						case 'doc': case 'docx': case 'odt': case 'txt':
-							echo 'doc-docx-odt.png'; break;
-						case 'xls': case 'xlsx': case 'csv': case 'ods':
-							echo 'xls-xlsx-csv-ods.png';  break;
-						case 'pdf':
-							echo 'pdf.png';  break;
-						case 'jpg': case 'jpeg': case 'gif': case 'png': case 'tiff': case 'tif': case 'bmp':
-							echo 'jpg-jpeg-gif-png-tiff-bmp.png';  break;
-						case 'zip': case 'rar': case '7z':
-							echo 'zip-rar-7z.png';  break;
-						default:
-							echo 'file.png'; break;
+						case 'doc': case 'docx': case 'odt': case 'txt':										echo 'doc-docx-odt.png'; break;
+						case 'xls': case 'xlsx': case 'csv': case 'ods':										echo 'xls-xlsx-csv-ods.png';  break;
+						case 'pdf':																				echo 'pdf.png';  break;
+						case 'jpg': case 'jpeg': case 'gif': case 'png': case 'tiff': case 'tif': case 'bmp':	echo 'jpg-jpeg-gif-png-tiff-bmp.png';  break;
+						case 'zip': case 'rar': case '7z':														echo 'zip-rar-7z.png';  break;
+						default:																				echo 'file.png'; break;
 					}
 					?>" class="icon" />
 					<a href="files/<?="$id/$file"?>" target="_blank"><?=$file?></a> 
@@ -725,33 +669,22 @@ EOT;
 					<td class="date"><?=$jours_mini[$row_commentaire['date_jour']]?> <?=$row_commentaire['date_formater']?> <?=$row_commentaire['heure_formater']?></td>
 					<td class="humeur">
 <?						switch ($row_commentaire['humeur']) {
-							case 0: ?>&nbsp;<?
-								break;
-							case 1: ?><img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" /><?
-								break;
-							case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" /><?
-								break;
-							case 3: ?><img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" /><?
-								break;
+							case 0: ?>&nbsp;<?																				break;
+							case 1: ?><img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" /><?			break;
+							case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" /><?	break;
+							case 3: ?><img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" /><?			break;
 						} ?>
 					</td>
 					<td class="createur"><?=$row_commentaire['createur']?></td>
 					<td class="type"><?
 						switch ($row_commentaire['type']) {
-							case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite de l'adh à MCS<?
-								break;
-							case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez l'artisan<?
-								break;
-							case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?
-								break;
-							case 'Fax': ?><img src="gfx/fax.png"/> Fax<?
-								break;
-							case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?
-								break;
-							case 'email': ?><img src="gfx/mail.png"/> Email<?
-								break;
-							case 'autre': ?><img src="gfx/autre.png"/> Autre<?
-								break;
+							case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite de l'adh à MCS<?		break;
+							case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez l'artisan<?	break;
+							case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?					break;
+							case 'Fax': ?><img src="gfx/fax.png"/> Fax<?									break;
+							case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?						break;
+							case 'email': ?><img src="gfx/mail.png"/> Email<?								break;
+							case 'autre': ?><img src="gfx/autre.png"/> Autre<?								break;
 						}
 					?></td>
 					<td class="participants">Participants : <?=$row_commentaire['participants']?></td>
