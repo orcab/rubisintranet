@@ -32,7 +32,15 @@ elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset
 // SAISIR UN COMMENTAIRE
 elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && isset($_POST['id']) && $_POST['id']) { // mode saisie de commentaire fournisseur
 	$date = implode('-',array_reverse(explode('/',$_POST['commentaire_date']))).' '.$_POST['commentaire_heure'].':00'; //2007-09-10 14:16:59;
-	$res = mysql_query("INSERT INTO fournisseur_commentaire (code_fournisseur,date_creation,createur,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id'])."','$date','".mysql_escape_string($_POST['commentaire_createur'])."','$_POST[commentaire_type]',$_POST[commentaire_humeur],'".mysql_escape_string($_POST['commentaire_commentaire'])."',0)") or die("Ne peux pas enregistrer le commentaire ".mysql_error());
+	$participants = $_POST['commentaire_participants'];
+	if ($_POST['commentaire_participants_autres']) array_push($participants,$_POST['commentaire_participants_autres']);
+
+	$res = mysql_query("INSERT INTO fournisseur_commentaire (code_fournisseur,date_creation,createur,participants,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id']).
+		"','$date','".
+		mysql_escape_string($_POST['commentaire_createur'])."','".
+		mysql_escape_string(join(', ',$participants)).
+		"','$_POST[commentaire_type]',$_POST[commentaire_humeur],'".
+		mysql_escape_string($_POST['commentaire_commentaire'])."',0)") or die("Ne peux pas enregistrer le commentaire ".mysql_error());
 	$message = "L'intervention a été enregistrée";
 }
 
@@ -90,11 +98,12 @@ table.intervention td {
 	text-align:left;
 }
 
-td.date					{ width:25%; }
-td.humeur				{ width:5%; }
-td.createur				{ width:5%; }
-td.type					{ width:25%; }
-td.delete_intervention	{ width:5%; }
+td.date					{ width:12em; white-space:nowrap;}
+td.humeur				{ width:20px; white-space:nowrap;}
+td.createur				{ width:6em; white-space:nowrap;}
+td.type					{ width:12em; white-space:nowrap;}
+td.participants			{ font-size:0.8em; white-space:nowrap; background: url(gfx/participants.png) no-repeat center left; }
+td.delete_intervention	{ width:20px; text-align:right; white-space:nowrap;}
 
 table.intervention tr:first-child { background:#DDD; }
 
@@ -148,6 +157,12 @@ div#interventions {
 	margin-top:20px;
 }
 
+input#commentaire_participants_autres {
+	color:grey;
+    width: 200px;
+    vertical-align: top;
+}
+
 img.qrcode { display:none; }
 
 @media print {
@@ -164,6 +179,12 @@ img.qrcode { display:none; }
 <link href="../../js/uploadify/uploadify.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript" src="../../js/uploadify/swfobject.js"></script>
 <script type="text/javascript" src="../../js/uploadify/jquery.uploadify.v2.1.0.min.js"></script>
+
+<!-- pour le chosen -->
+<script language="javascript" src="../../js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="../../js/chosen/chosen.css" />
+
+
 <script type="text/javascript">
 	tinyMCE.init({
 		mode : 'textareas',
@@ -238,8 +259,12 @@ function cache_upload() {
 }
 
 
-// upload
+// document chargé
 $(document).ready(function() {
+	// plugin chosen
+	$(".chzn-select").chosen();
+
+	// plugin upload
 	$('#uploadify').uploadify({
 		'scriptData'	 : {'fournisseur':'<?=strtoupper($id)?>'},
 		'uploader'       : '../../js/uploadify/uploadify.swf',
@@ -251,6 +276,11 @@ $(document).ready(function() {
 		'onAllComplete'  : function() {
 				window.location.reload();
 		}
+	});
+
+	// autre participants
+	$('#commentaire_participants_autres').focus(function() {
+		$(this).val('').css('color','black');
 	});
 });
 
@@ -325,6 +355,17 @@ $(document).ready(function() {
 		</td>
 	</tr>
 	<tr>
+		<td colspan="4" style="text-align:left;font-size:0.8em;vertical-align:top;">
+			<select name="commentaire_participants[]" data-placeholder="Participants..." style="width:200px;" multiple class="chzn-select">
+				<?	mysql_data_seek($res2,0);
+					while ($row2 = mysql_fetch_array($res2)) { ?>
+						<option value="<?=$row2['prenom']?>"><?=$row2['prenom']?></option>
+				<?	} ?>
+			</select>
+			<input type="text" id="commentaire_participants_autres" name="commentaire_participants_autres" value="Autres ..." />
+		</td>
+	</tr>
+	<tr>
 		<td colspan="4"><textarea id="commentaire_commentaire" name="commentaire_commentaire" rows="6" cols="50" style="width:100%"></textarea></td>
 	</tr>
 	<tr>
@@ -348,7 +389,7 @@ $(document).ready(function() {
 
 <h1>Fiche fournisseur : <?=$row['nom']?></h1>
 
-<div id="fiche" style="margin:auto;width:80%;text-align:center;">
+<div id="fiche" style="margin:auto;width:90%;text-align:center;">
 
 	<fieldset style="width:40%;display:inline;floating:left;"><legend>Coordonnées (Rubis)</legend>
 		<div style="float:left;"><?=str_replace("\n",'<br/>',$row['info_rubis1'])?></div>
@@ -438,15 +479,27 @@ $(document).ready(function() {
 						} ?>
 					</td>
 					<td class="createur"><?=$row_commentaire['createur']?></td>
-					<td class="type">par <?=$row_commentaire['type']?></td>
+					<td class="type"><?
+						switch ($row_commentaire['type']) {
+							case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite de l'adh à MCS<?		break;
+							case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez l'artisan<?	break;
+							case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?					break;
+							case 'fax': ?><img src="gfx/fax.png"/> Fax<?									break;
+							case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?						break;
+							case 'email': ?><img src="gfx/mail.png"/> Email<?								break;
+							case 'autre': ?><img src="gfx/autre.png"/> Autre<?								break;
+						}
+					?></td>
+					<td class="participants">&nbsp;&nbsp;&nbsp;<?=$row_commentaire['participants']?></td>
 <?						if (	($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) ||
 								($row_commentaire['createur'] == $createur && $row_commentaire['temps_ecoule'] <= 3600) // si on est le créateur du com' et que moins d'une heure s'est écoulée
 							) { ?>
 							<td class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" style="cursor:pointer;"  onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" alt="Supprimer cette intervention" title="Supprimer cette intervention"/></td>
 <?						}	?>
+					
 				</tr>
 				<tr>
-					<td class="commentaire" colspan="5"><?=stripslashes($row_commentaire['commentaire'])?></td>
+					<td class="commentaire" colspan="6"><?=stripslashes($row_commentaire['commentaire'])?></td>
 				</tr>
 			</table>
 <?		} ?>
