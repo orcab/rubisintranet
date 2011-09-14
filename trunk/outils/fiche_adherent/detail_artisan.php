@@ -85,6 +85,15 @@ h1 {
 	font-size:1.5em;
 }
 
+h2 {
+	font-weight:bold;
+	font-size:0.9em;
+	margin:0;
+	margin-left:10px;
+	margin-bottom:5px;
+	text-align:left;
+}
+
 img.icon { cursor:pointer; }
 div#edit-complement { display:none; }
 
@@ -168,21 +177,12 @@ div#upload-file {
 }
 div#upload-file h2 { font-size:0.8em; }
 
-div#interventions {
+div.big-block {
 	-moz-border-radius:6px;
 	border:solid 1px grey;
 	width:99%;
 	margin:auto;
 	margin-top:20px;
-}
-
-div#statistiques {
-	-moz-border-radius:6px;
-	border:solid 1px grey;
-	width:99%;
-	margin:auto;
-	margin-top:20px;
-	text-align:center;
 }
 
 select#commentaire_type option {
@@ -531,7 +531,7 @@ $(document).ready(function() {
 <input type="button" class="button divers hide_when_print" style="background-image:url(gfx/anomalie_small.png);margin-left:10px;" value="Voir la liste des anomalies du artisan <?=$row['nom']?>" onclick="document.location.href='/intranet/anomalie/historique_anomalie.php?filtre_adherent='+escape('<?=$row['nom']?>')+'&filtre_date_inf=&filtre_date_sup=';" />
 
 
-<h1>Artisan : <?=$row['nom']?></h1>
+<h1>Fiche artisan : <?=$row['nom']?></h1>
 
 <div id="fiche" style="margin:auto;width:90%;text-align:center;">
 <?	// creer une connextion Rubis pour récupérer d'autres infos non stocké dans MySQL
@@ -573,19 +573,20 @@ EOT;
 	$row_rubis	= odbc_fetch_array($res) or die("Impossible lancer la requete de récupration échéance");
 	
 ?>
-	<fieldset style="width:47%;display:inline;floating:left;"><legend>Coordonnées (Rubis)</legend>
+	<div class="big-block" style="width:47%;float:left;">
+		<h2>Coordonnées (Rubis)</h2>
 		<table class="coordonnees-rubis" style="width:100%;">
-			<tr><td>Code Rubis :</td><td><?=$id?></td>
+			<tr><td><img src="gfx/code.png"/></td><td><?=$id?></td>
 				<td rowspan="15"><img src="../../gfx/qrcode.php?text=<?
 					echo urlencode(json_encode(array('t'=>'fiche_adherent','c'=>$id,'d'=>time())));
 				?>" class="qrcode"/></td>
 			</tr>
-			<tr><td>Email :</td><td><?=$row['email']?></td></tr>
-			<tr><td>Tél bureau :</td><td><?=$row['tel1']?></td></tr>
-			<tr><td>Fax bureau :</td><td><?=$row['tel2']?></td></tr>
-			<tr><td>Portable 1 :</td><td><?=$row['tel3']?></td></tr>
-			<tr><td>Portable 2 :</td><td><?=$row['tel4']?></td></tr>
-			<tr><td style="white-space:nowrap;">Adresse bureau :</td><td><?
+			<tr><td><img src="gfx/mail.png"/></td><td><?=$row['email']?></td></tr>
+			<tr><td><img src="gfx/telephone.png"/></td><td><?=$row['tel1']?></td></tr>
+			<tr><td><img src="gfx/fax.png"/></td><td><?=$row['tel3']?></td></tr>
+			<tr><td><img src="gfx/cellphone.png"/></td><td><?=$row['tel2']?></td></tr>
+			<tr><td><img src="gfx/cellphone.png"/></td><td><?=$row['tel4']?></td></tr>
+			<tr><td style="white-space:nowrap;"><img src="gfx/adresse.gif"/></td><td><?
 				if ($row['adr1'])	echo $row['adr1']."<br/>";
 				if ($row['adr2'])	echo $row['adr2']."<br/>";
 				if ($row['adr3'])	echo $row['adr3']."<br/>";
@@ -615,32 +616,34 @@ EOT;
 				</td>
 			</tr>
 		</table>
-	</fieldset>
+	</div>
 
-	<fieldset style="margin-top:10px;width:47%;display:inline;floating:left;"><legend>Carte</legend>
+	<div class="big-block" style="width:51%;float:left;margin-left:10px;margin-bottom:20px;">
+		<h2>Carte</h2>
 		<div id="map_canvas" style="width:100%;height:300px;z-index:0;"></div>
-	</fieldset>
+	</div>
 
 
-	<fieldset style="margin:auto;margin-top:10px;width:97%;"><legend>Complément
+	<div class="big-block" style="clear:both;">
+		<h2>Complément
 <?		if ($droit & PEUT_MODIFIER_FICHE_ARTISAN) { ?>
 			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" alt="Edite le texte" title="Edite le texte" align="absbottom"/>
-<?		}	?>
-	</legend>
+<?		}	?></h2>
 		<div id="div-complement"><?=stripslashes($row['info'])?></div>
 		<div id="edit-complement">
 			<textarea id="textarea_complement" name="textarea_complement" rows="10" cols="50" style="width:100%;"><?=stripslashes($row['info'])?></textarea>
 			<input type="button" class="button valider" onclick="sauve_complement();" value="Enregistrer">
 			<input type="button"  class="button annuler" onclick="cache_complement('complement');" value="Annuler">
 		</div>
-	</fieldset>
+	</div>
 
 
-	<fieldset style="margin-top:10px;width:97%;display:inline;floating:left;text-align:left;"><legend>Fichiers attachés
+	<div class="big-block">
+		<h2>Fichiers attachés
 <?		if ($droit & PEUT_MODIFIER_FICHE_ARTISAN) { ?>
 			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" alt="Associer un fichier" title="Associer un fichier" align="absbottom"/>
 <?		}	?>
-	</legend>
+		</h2>
 		<ul class="file">
 <?			if (file_exists(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id)) {
 				$d = dir(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id); // l'endroit ou sont stocké les fichiers
@@ -667,12 +670,10 @@ EOT;
 			} // fin if file_exists
 ?>
 		</ul>
-	</fieldset>
+	</div>
 
-	<div id="interventions">
-		<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
-		Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_artisan();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/>
-		</div>
+	<div class="big-block">
+		<h2>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_artisan();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/></h2>
 <?
 		// récupère la liste des interventions
 		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM artisan_commentaire WHERE code_artisan='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 
@@ -716,10 +717,8 @@ EOT;
 </div>
 
 
-<div id="statistiques">
-	<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
-	Statisitiques <img src="gfx/stats.png"/>
-	</div>
+<div class="big-block" style="width:99%;text-align:center;">
+	<h2>Statistiques <img src="gfx/stats.png"/></h2>
 	<fieldset id="slider" style="margin-bottom:30px;font-size:0.7em;">
 		<label for="valueA" class="sentence" style="display:none;">Depuis :</label>
 
