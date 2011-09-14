@@ -77,6 +77,15 @@ h1 {
 	font-size:1.5em;
 }
 
+h2 {
+	font-weight:bold;
+	font-size:0.9em;
+	margin:0;
+	margin-left:10px;
+	margin-bottom:5px;
+	text-align:left;
+}
+
 img.icon { cursor:pointer; }
 div#edit-complement { display:none; }
 
@@ -134,6 +143,13 @@ span.size {
 	margin-left:5px;
 }
 
+div.big-block {
+	-moz-border-radius:6px;
+	border:solid 1px grey;
+	width:99%;
+	margin:auto;
+	margin-top:20px;
+}
 
 /* style pour la boite de dialogue pour l'upload de fichier */
 div#upload-file {
@@ -148,14 +164,6 @@ div#upload-file {
 	-moz-box-shadow: 5px 5px 20px 0px grey;
 }
 div#upload-file h2 { font-size:0.8em; }
-
-div#interventions {
-	-moz-border-radius:6px;
-	border:solid 1px grey;
-	width:86%;
-	margin:auto;
-	margin-top:20px;
-}
 
 input#commentaire_participants_autres {
 	color:grey;
@@ -391,36 +399,53 @@ $(document).ready(function() {
 
 <div id="fiche" style="margin:auto;width:90%;text-align:center;">
 
-	<fieldset style="width:40%;display:inline;floating:left;"><legend>Coordonnées (Rubis)</legend>
-		<div style="float:left;"><?=str_replace("\n",'<br/>',$row['info_rubis1'])?></div>
+	<div class="big-block" style="width:40%;float:left;margin-bottom:20px;">
+		<h2>Coordonnées (Rubis)</h2>
+		<div style="float:left;width:60%;text-align:left;margin-left:40px;">
+		<?
+			$tmp = str_replace("\n",'<br/>',$row['info_rubis1']);
+			// transforme les notions écrite tel, fax et autre en icon
+			$tmp = str_replace('Tel : ','<img src="gfx/telephone.png"/>',$tmp);
+			$tmp = str_replace('Fax : ','<img src="gfx/fax.png"/>',$tmp);
+			$tmp = str_replace('Autre : ','<img src="gfx/cellphone.png"/>',$tmp);
+			echo $tmp;
+		?>
+		</div>
 		<img src="../../gfx/qrcode.php?text=<?
 					echo urlencode(json_encode(array('t'=>'fiche_fournisseur','c'=>$id,'d'=>time())));
 				?>" style="float:right;" class="qrcode"/>
-	</fieldset>
+	</div>
 
-	<fieldset style="margin-top:10px;width:40%;display:inline;floating:left;"><legend>Représentant (Rubis)</legend>
-		<div><?=str_replace("\n",'<br/>',$row['info_rubis2'])?></div>
-	</fieldset>
+	<div class="big-block" style="width:51%;float:left;margin-left:10px;">
+		<h2>Représentant (Rubis)</h2>
+		<? 
+			$tmp = str_replace("\n",'<br/>',$row['info_rubis2']);
+			$tmp = str_replace('Représentant :','',$tmp);
+			echo $tmp;
+		?>
+	</div>
 
-	<fieldset style="margin:auto;margin-top:10px;width:84%;"><legend>Complément
+	<div class="big-block" style="clear:both;">
+		<h2>Complément
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
 			<img class="icon hide_when_print" src="gfx/edit-mini.png" onclick="affiche_complement();" alt="Edite le texte" title="Edite le texte" align="absbottom"/>
 <?		}	?>
-	</legend>
+		</h2>
 		<div id="div-complement"><?=stripslashes($row['info3'])?></div>
 		<div id="edit-complement">
 			<textarea id="textarea_complement" name="textarea_complement" rows="10" cols="50" style="width:100%;"><?=stripslashes($row['info3'])?></textarea>
 			<input type="button" class="button valider" onclick="sauve_complement();" value="Enregistrer">
 			<input type="button"  class="button annuler" onclick="cache_complement('complement');" value="Annuler">
 		</div>
-	</fieldset>
+	</div>
 
 
-	<fieldset style="margin-top:10px;width:84%;display:inline;floating:left;text-align:left;"><legend>Fichiers attachés
+	<div class="big-block">
+		<h2>Fichiers attachés
 <?		if ($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) { ?>
 			<img class="icon hide_when_print" src="gfx/add-file-mini.png" onclick="affiche_upload();" alt="Associer un fichier" title="Associer un fichier" align="absbottom"/>
 <?		}	?>
-	</legend>
+		</h2>
 		<ul class="file">
 <?			if (file_exists(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id)) {
 				$d = dir(dirname($_SERVER['SCRIPT_FILENAME']).'/files/'.$id); // l'endroit ou sont stocké les fichiers
@@ -453,9 +478,9 @@ $(document).ready(function() {
 			} // fin if file_exists
 ?>
 		</ul>
-	</fieldset>
+	</div>
 
-	<div id="interventions">
+	<div class="big-block">
 		<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
 		Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/>
 		</div>
