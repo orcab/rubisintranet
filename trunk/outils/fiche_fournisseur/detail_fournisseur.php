@@ -506,13 +506,13 @@ $(document).ready(function() {
 					<td class="createur"><?=$row_commentaire['createur']?></td>
 					<td class="type"><?
 						switch ($row_commentaire['type']) {
-							case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite de l'adh à MCS<?		break;
-							case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez l'artisan<?	break;
-							case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?					break;
-							case 'fax': ?><img src="gfx/fax.png"/> Fax<?									break;
-							case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?						break;
-							case 'email': ?><img src="gfx/mail.png"/> Email<?								break;
-							case 'autre': ?><img src="gfx/autre.png"/> Autre<?								break;
+							case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite du fournisseur<?			break;
+							case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez le fournisseur<?	break;
+							case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?						break;
+							case 'fax': ?><img src="gfx/fax.png"/> Fax<?										break;
+							case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?							break;
+							case 'email': ?><img src="gfx/mail.png"/> Email<?									break;
+							case 'autre': ?><img src="gfx/autre.png"/> Autre<?									break;
 						}
 					?></td>
 					<td class="participants">&nbsp;&nbsp;&nbsp;<?=$row_commentaire['participants']?></td>
