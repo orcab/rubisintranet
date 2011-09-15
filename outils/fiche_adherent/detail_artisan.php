@@ -601,7 +601,7 @@ EOT;
 					<img src="gfx/electricien-mini.png" alt="Electricien" title="Electricien"/>
 			<?	} ?>
 			</td></tr>
-			<tr><td>Tournée le :</td><td><?=trim($info_rubis['TOU'])?></td></tr>
+			<tr><td><img src="gfx/truck.png"/></td></td><td><?=trim($info_rubis['TOU'])?></td></tr>
 			<tr><td>Echéance :</td><td><?=trim($row_rubis['LIBELLE_ECHEANCE'])?></td></tr>
 			<tr><td>Réglement :</td><td><?=trim($info_rubis['REG'])?></td></tr>
 			<tr><td>Date d'adhésion :</td><td><?=trim($row_rubis['DATE_ADHESION'])?></td></tr>
@@ -701,7 +701,7 @@ EOT;
 							case 'autre': ?><img src="gfx/autre.png"/> Autre<?								break;
 						}
 					?></td>
-					<td class="participants"><?=$row_commentaire['participants']?></td>
+					<td class="participants">&nbsp;&nbsp;&nbsp;<?=$row_commentaire['participants']?></td>
 <?						if (	($droit & PEUT_MODIFIER_FICHE_ARTISAN) ||
 								($row_commentaire['createur'] == $createur && $row_commentaire['temps_ecoule'] <= 3600) // si on est le créateur du com' et que moins d'une heure s'est écoulée
 							) { ?>

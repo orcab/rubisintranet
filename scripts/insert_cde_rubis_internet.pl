@@ -22,7 +22,7 @@ use constant {
 
 $|=1;								# pour ne pas flusher directement les sortie print
 
-my %skip	= qw/init 0 delete 0 bon 0 devis 0 compress 0 upload 0/;
+my %skip	= qw/init 0 bon 0 devis 0 vendeurs 0 compress 0 upload 0 vaccum 0/;
 my %options = ();
 GetOptions (\%options, 'skip=s','all','help|?','version','dbname=s','from=s','to=s') or die ;
 
@@ -170,11 +170,30 @@ while($loginor->FetchRow()) {
 		if ($sqlite->err()) { die "$DBI::errstr\n"; }
 	}
 
-	if ($row{'QTREC'} == $row{'QTESA'} && $row{'TYCDD'} eq 'SPE') { # si quantié receptionnée == quantité commandée --> matos dispo
-		$date_dispo = "$row{DDISS}$row{DDISA}-$row{DDISM}-$row{DDISJ}";
-		$nb_dispo++;
-		$montant_dispo += $row{'MONHT'};
-	}	
+	# calcul du nombre de dispo, montant dispo, nombre de prepa
+	if ($row{'PROFI'} eq '1') { # article et non pas com'
+		$nb_ligne++;
+	
+		if ($row{'TRAIT'} eq 'F') {					# ligne deja livré
+			$nb_livre++ ;
+			$montant_dispo += $row{'MONHT'};
+
+		} else {									# ligne pas encore livré
+			$nb_prepa++ if ($row{'PREPA'} eq 'O');	# ligne préparée
+
+			if ($row{'TYCDD'} eq 'STO') {			# matos en stock
+				$nb_dispo++;						# donc forcement recu
+				$montant_dispo += $row{'MONHT'};
+
+			} elsif ($row{'TYCDD'} eq 'SPE') {	# matos special
+				if ($row{'QTREC'} == $row{'QTESA'}) { # si quantié receptionnée == quantité commandée --> matos dispo
+					$date_dispo = "$row{DDISS}$row{DDISA}-$row{DDISM}-$row{DDISJ}";
+					$nb_dispo++;
+					$montant_dispo += $row{'MONHT'};
+				}
+			}
+		}
+	}
 
 	#insertion des différentes ligne du bon
 	$sqlite->do("INSERT OR IGNORE INTO cde_rubis_detail (id_bon,no_ligne,code_article,fournisseur,ref_fournisseur,designation,unit,qte,prix,etat,date_dispo) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOLIG}','$row{CODAR}','$row{NOMFO}','$row{REFFO}','$designation','$row{UNICD}',$row{QTESA},$row{PRINE},".
@@ -183,25 +202,8 @@ while($loginor->FetchRow()) {
 			|	($row{'PREPA'} eq 'O'	? ETAT_PREPARE:0)
 			|	($row{'PROFI'} eq '9'	? ETAT_COMMENTAIRE:0)
 		)
-		.",'$date_dispo')");
+		.",'".($date_dispo eq '--' ? '':$date_dispo)."')");
 	if ($sqlite->err()) { die "$DBI::errstr\n"; }
-
-
-
-	if ($row{'PROFI'} eq '1') { # article et non pas com'
-		$nb_ligne++;
-
-		if ($row{'TRAIT'} eq 'F') {
-			$nb_livre++ ;
-		} else {
-			$nb_prepa++ if ($row{'PREPA'} eq 'O');
-		}
-
-		if ($row{'TYCDD'} eq 'STO') { # matos en stock, donc forcement recu
-			$nb_dispo++;
-			$montant_dispo += $row{'MONHT'};
-		}
-	}
 
 	$old_bon = "$row{NOBON}.$row{NOCLI}";
 }
@@ -265,7 +267,7 @@ from	${prefix_base_rubis}GESTCOM.ADETBVP1 DETAIL_BON
 			on		ENTETE_BON.NOCLI=CLIENT.NOCLI
 		left join ${prefix_base_rubis}GESTCOM.AGENCEP1 AGENCE
 			on		ENTETE_BON.AGENC=AGENCE.AGECO
-where	
+where
 		ENTETE_BON.ETSEE = ''
 	and DETAIL_BON.ETSBE = ''
 		$where_date_devis
@@ -309,7 +311,24 @@ END_DEVIS: ;
 
 
 
+goto END_VENDEURS if $skip{'vendeurs'};
+print print_time()."Select des vendeurs ...";
+my $sql = <<EOT ;
+select CODPR,LIBPR,DIAP2,DIAP1 from ${prefix_base_rubis}GESTCOM.ATABLEP1 where TYPPR='LIV'
+EOT
+$loginor->Sql($sql);
+print "OK\n";
 
+print print_time()."Insertion des vendeurs dans la base SQLite ...";
+while($loginor->FetchRow()) {
+	my %row = $loginor->DataHash() ;
+	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur
+	#insertion des vendeurs
+	$sqlite->do("INSERT OR IGNORE INTO vendeurs (code,nom,groupe_principal,suspendu) VALUES ('$row{CODPR}','$row{LIBPR}','$row{DIAP2}','$row{DIAP1}')");
+	if ($sqlite->err()) { die "$DBI::errstr\n"; }
+}
+print "OK\n";
+END_VENDEURS: ;
 
 #goto END_RELIQUAT if $skip{'reliquat'};
 ## reliquat ###########################################################################################################"
@@ -398,16 +417,16 @@ END_DEVIS: ;
 #print "OK\n";
 #END_RELIQUAT: ;
 
-
 $sqlite->commit;
-if (!$skip{'delete'}) {
-	print print_time()."Nettoyage de l'espace vide ...";
-	$sqlite->do("VACUUM;"); # flush white space
-	print "OK\n";
-}
+
+goto END_VACCUM if $skip{'vaccum'};
+print print_time()."Nettoyage de l'espace vide ...";
+do_vacuum($sqlite);
+print "OK\n";
+END_VACCUM: ;
+
 $sqlite->disconnect();
 $loginor->Close();
-
 
 
 
@@ -417,7 +436,6 @@ print print_time()."Compression de la base SQLite ... ";
 system("bzip2 -zkf8 ".$options{'dbname'});
 print "OK\n";
 END_COMPRESS: ;
-
 
 
 
@@ -666,30 +684,30 @@ EOT
 #}
 
 
-# Creation de la table EMPLOYE #####################################################################################""
+# Creation de la table VENDEURS #####################################################################################""
+$sqlite->do('DROP TABLE IF EXISTS "vendeurs"');
 $sql = <<EOT ;
-CREATE TABLE IF NOT EXISTS "employe" (
-  "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL ,
-  "prenom" varchar(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS "vendeurs" (
+  "code" varchar(3) PRIMARY KEY NOT NULL ,
   "nom" varchar(255) NOT NULL,
-  "email" varchar(255) default NULL,
-  "loginor" varchar(6) default NULL,
-  "code_vendeur" varchar(3) default NULL,
-  "tel" varchar(255) default NULL,
-  "ip" varchar(255) default NULL,
-  "machine" varchar(255) default NULL,
-  "printer" INTEGER NOT NULL default 0,
-  "droit" INTEGER NOT NULL
+  "groupe_principal" varchar(10) DEFAULT NULL,
+  "suspendu" bool NOT NULL DEFAULT 0
 )
 EOT
 $sqlite->do($sql);
 
 $sqlite->commit; # valide les table et les trigger
-
 } #fin init_sqlite
 
 
 
+
+sub do_vacuum {
+    my ($dbh) = @_;
+    local $dbh->{AutoCommit} = 1;
+    $dbh->do('VACUUM');
+    return;
+}
 
 
 

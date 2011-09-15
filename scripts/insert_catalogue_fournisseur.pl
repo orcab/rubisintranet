@@ -45,8 +45,12 @@ print " ok\n";
 
 ############################################################### CONNEXION A LOGINOR POUR RECUPERER LES INFOS
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
+my $sqlite = DBI->connect('dbi:SQLite:'.$options{'dbname'},'','',{ RaiseError => 0, AutoCommit => 0 }) or die("Pas de DB");
+init_sqlite();
 
+#goto ARTICLE;
 
+FOURNISSEUR:
 print print_time()."Select des fournisseurs actifs ...";
 my $sql = <<EOT;
 select	NOFOU,NOMFO
@@ -57,10 +61,6 @@ print " ok\n";
 
 
 ###############################################################
-my $sqlite = DBI->connect('dbi:SQLite:'.$options{'dbname'},'','',{ RaiseError => 0, AutoCommit => 0 }) or die("Pas de DB");
-init_sqlite();
-
-
 print print_time()."Insertion des fournisseurs ...";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
@@ -74,7 +74,7 @@ while($loginor->FetchRow()) {
 print " ok\n";
 
 
-
+FAMILLE:
 print print_time()."Select des familles actives ...";
 my $sql = <<EOT;
 select		AFCNI,AFCAC,AFCFA,AFCSF,AFCCH,AFCSC,ACFLI
@@ -109,7 +109,7 @@ while($loginor->FetchRow()) {
 print "ok\n";
 
 
-
+ARTICLE:
 print print_time()."Select des articles crees ...";
 my $sql = <<EOT;
 select	A.NOART,											-- code article
@@ -132,13 +132,12 @@ from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 			left join ${prefix_base_rubis}GESTCOM.ATARPAP1 PR
 				on A.NOART=PR.NOART
 where
-		ETARE=''		-- non suspendu
-	and T.AGENC ='AFA'
+		T.AGENC ='AFA'
 	and T.PVT09	='E'	-- tarif de vente en cours
 	and PR.AGENC='AFA'
 	and PR.PRV03='E'	-- tarif de revient en cours
 	and A.ARDIV='NON'
---	and A.NOART='05002245'
+--	and A.NOART='15001323'
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
@@ -152,7 +151,7 @@ while($loginor->FetchRow()) {
 	my $reference_propre = $row{'REFFO'};
 	$reference_propre =~ s/[^A-Z0-9]//ig;
 
-	$sqlite->do("INSERT INTO articles (code_fournisseur,'reference',code_mcs,designation1,designation2,designation3,gencode,conditionnement,sur_conditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,reference_propre,date_application,date_creation,date_maj) VALUES (".
+	$sqlite->do("INSERT INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,conditionnement,sur_conditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,reference_propre,date_application,date_creation,date_maj) VALUES (".
 		"'".$row{'NOFOU'}."',".
 		"'".$row{'REFFO'}."',".
 		"'".$row{'NOART'}."',".
@@ -176,13 +175,14 @@ print " ok\n";
 
 
 
+STOCK:
 # rajouter la notion de stock sur caudan et plescop
 print print_time()."Select des stocks ...";
 my $sql = <<EOT;
 select	NOART,STSER,DEPOT
 from	${prefix_base_rubis}GESTCOM.ASTOFIP1
-where	STSTS=''		-- non suspendu
---	and NOART='05002245'
+--	where
+--		NOART='15001323'
 EOT
 $loginor->Sql($sql); # regarde les stock par agence
 print " ok\n";
@@ -207,7 +207,7 @@ print " ok\n";
 
 
 
-
+CATALOGUE:
 print print_time()."Select des articles au catalogue ...";
 my $sql = <<EOT;
 select
@@ -227,6 +227,7 @@ FROM ${prefix_base_rubis}GESTCOM.ACBARTP1
 where
 		ACBPRO='CATALFOU'	-- du catalogue fournisseur
 	and	ACBEMM<>''			-- pas de fournisseur vide
+--	and ACBEMM='HANSGR' and ACBRFF='11042000'
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
@@ -261,7 +262,7 @@ while($loginor->FetchRow()) {
 	my $reference_propre = $row{'ACBRFF'};
 	$reference_propre =~ s/[^A-Z0-9]//ig;
 
-	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,'reference',code_mcs,designation1,designation2,designation3,gencode,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,reference_propre,date_application,date_creation,date_maj) VALUES (".
+	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,reference_propre,date_application,date_creation,date_maj) VALUES (".
 		"'".$row{'ACBEMM'}."',".
 		"'".$row{'ACBRFF'}."',".
 		"'".$row{'ACBC09'}."',".
@@ -284,6 +285,24 @@ while($loginor->FetchRow()) {
 		"'".($row{'ACBDCS'} ? join('-',$row{'ACBDCS'}.$row{'ACBDCA'},$row{'ACBDCM'},$row{'ACBDCJ'}) : '')."',".	# date creation
 		"'".($row{'ACBDMS'} ? join('-',$row{'ACBDMS'}.$row{'ACBDMA'},$row{'ACBDMM'},$row{'ACBDMJ'}) : '')."'".	# date maj
 	")");
+
+	# met a jour le prix d'un article expo s'il existe deja (les prix expo sont faux, il faut tenir compte du prix catalogue fournisseur)
+	$sqlite->do("UPDATE articles set ".
+		"prix_achat_brut='".$row{'ACBTPA'}."',".
+		"remise1='".$row{'ACBRE1'}."',".
+		"remise2='".$row{'ACBRE2'}."',".
+		"remise3='".$row{'ACBRE3'}."',".
+		"prix1='".($pa_net * $row{'ACBCF1'})."',".	# prix adh
+		"prix2='".($pa_net * COEF2)."',".
+		"prix3='".($pa_net * COEF3)."',".
+		"prix4='".($pa_net * COEF4)."',".
+		"prix5='".($pa_net * COEF5)."',".
+		"prix6='".$prix6."' ".
+		"WHERE code_fournisseur='".$row{'ACBEMM'}."' ".
+		"AND reference='".$row{'ACBRFF'}."' ".
+		"AND code_mcs LIKE '15%'"  # article expo
+	);
+
 	if ($sqlite->err()) { warn "$DBI::errstr\n"; }
 }
 print " ok\n";

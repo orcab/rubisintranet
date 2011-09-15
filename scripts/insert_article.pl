@@ -41,6 +41,7 @@ where	ETARE=''
 	and T.PVT09	='E' -- tarif de vente en cours
 	and PR.AGENC='AFA'
 	and PR.PRV03='E' -- tarif de revient en cours
+--	and A.NOART='05002245'
 EOT
 
 $loginor->Sql($sql); # regarde les articles actifs
