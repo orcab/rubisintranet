@@ -86,56 +86,38 @@ div#footer {
 </center>
 
 <div id="footer">
-	<h2 style="font-size:0.9em;color:grey;font-weight:normal;">Evenements à MCS dans la semaine</h2>
+	<h2 style="font-size:0.9em;color:grey;font-weight:normal;">Evenements à MCS dans la semaine à venir</h2>
 	<?	// charge le fichier json des evenements
-		$ini_filename = 'scripts/ical2json.ini';
+		$ini_filename = 'scripts/ical2sqlite.ini';
 		if (file_exists($ini_filename)) {
 			$ini = parse_ini_file($ini_filename,true);
-			if (file_exists($ini['files']['json_output'])) {
-				$json = join('',file($ini['files']['json_output']));
-				$events_not_ordered = json_decode($json,true); // assoc
+			if (file_exists($ini['files']['sqlite_output'])) {
 				
-
-				// on classe les evenements dans l'ordre de debut
-				$events_ordered = array();
-				foreach ($events_not_ordered as $uid=>$event) {
-					if (isset($event['DTSTART;TZID']) &&
-						preg_match('/^Europe\/Paris:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?$/',$event['DTSTART;TZID'],$matches))
-						$date_start = $matches;
-					if (isset($event['DTSTART;VALUE']) &&
-						preg_match('/^DATE;TZID=Europe\/Paris:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?$/',$event['DTSTART;VALUE'],$matches))
-						$date_start = $matches;
-
-					if (!isset($matches[4])) { // si l'heure n'est pas présente, on l'ajoute
-						$matches[4]='00';
-						$matches[5]='00';
-						$matches[6]='00';
-					}
-
-					$events_ordered[$uid] = $matches[1].$matches[2].$matches[3].$matches[4].$matches[5].$matches[6] ;
+				try {
+					$sqlite = new PDO('sqlite:'.$ini['files']['sqlite_output']); // success
+					//$sqlite->sqliteCreateFunction('REGEXP', 'preg_match', 2); // on cree la fonction REGEXP dans sqlite.
+				} catch (PDOException $exception) {
+					echo "Erreur dans l'ouverture de la base de données. Merci de prévenir Benjamin au 02.97.69.00.69 ou d'envoyé un mail à <a href='mailto:benjamin.poulain@coopmcs.com&subject=Historique commande en ligne'>Benjamin Poulain</a>";
+					die ($exception->getMessage());
 				}
 
-				asort($events_ordered);
-				$events = array();
-				foreach ($events_ordered as $uid=>$date) {
-					$events[] = $events_not_ordered[$uid];
-				}
+				$sql = <<<EOT
+select `start`,`end`,summary,description from events
+where
+     (`start`>=date('now') and `start`<=date('now','+7 day')) 
+     or
+     (`end`>=date('now') and `end`<=date('now','+7 day'))     
+order by
+      `start` ASC
+limit 0,4
+EOT;
+				$res = $sqlite->query($sql) or die("Impossible de lancer la requete de selection des events de la semaine suivantes : ".array_pop($sqlite->errorInfo()));
 
 				// on affiche les evenements classés
-				foreach ($events as $uid=>$event) {
-					if (isset($event['DTSTART;TZID']) &&
-						preg_match('/^Europe\/Paris:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?$/',$event['DTSTART;TZID'],$matches))
-						$date_start = $matches;
-					if (isset($event['DTSTART;VALUE']) &&
-						preg_match('/^DATE;TZID=Europe\/Paris:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?$/',$event['DTSTART;VALUE'],$matches))
-						$date_start = $matches;
+				while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 
-					if (isset($event['DTEND;TZID']) &&
-						preg_match('/^Europe\/Paris:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?$/',$event['DTEND;TZID'],$matches))
-						$date_end = $matches;
-					if (isset($event['DTEND;VALUE']) &&
-						preg_match('/^DATE;TZID=Europe\/Paris:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?$/',$event['DTEND;VALUE'],$matches))
-						$date_end = $matches;
+					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['start'],$date_start);
+					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['end'],$date_end);
 
 					$date_start_time = mktime(	isset($date_start[4])?$date_start[4]:0,	// hour
 												isset($date_start[5])?$date_start[5]:0,	// min
@@ -166,15 +148,15 @@ div#footer {
 							<?=$heure_end <> '00:00'?$heure_end:'' ?>
 						</div>
 						<div class="cal-summary" style="font-weight:normal;">
-							<?=utf8_decode($event['SUMMARY'])?>
+							<?=utf8_decode($row['summary'])?>
 						</div>
 						<div class="cal-description" style="color:grey;font-weight:normal;">
-							<?=isset($event['DESCRIPTION']) ? utf8_decode($event['DESCRIPTION']):''?>
+							<?=isset($row['description']) ? utf8_decode($row['description']):''?>
 						</div>
 					</div>
 <?				}
 			} else {
-				?>Impossible de trouver le fichier json <em><?=$ini['files']['json_output']?></em><?
+				?>Impossible de trouver le fichier json <em><?=$ini['files']['sqlite_output']?></em><?
 			}
 		} else {
 			 ?>Impossible de trouver le fichier de configuration <em><?=$ini_filename?></em><?
