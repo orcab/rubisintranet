@@ -162,7 +162,7 @@ EOT;
 					$mail->Relay(SMTP_SERVEUR);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-					$mail->AddTo('pascal.herve@coopmcs.com', 'Pascal Herve') or die("Erreur d'ajour de destinataire");
+					$mail->AddTo('gwenael.croizer@coopmcs.com', 'Gwenael Croizer') or die("Erreur d'ajour de destinataire");
 					$mail->From('elisabeth.binio@coopmcs.com','Elisabeth Binio');
 
 					$mail->Html($html);

@@ -42,7 +42,8 @@ elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset
 elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && isset($_POST['id']) && $_POST['id']) { // mode saisie de commentaire artisan
 	$date = implode('-',array_reverse(explode('/',$_POST['commentaire_date']))).' '.$_POST['commentaire_heure'].':00'; //2007-09-10 14:16:59;
 	$participants = $_POST['commentaire_participants'];
-	if ($_POST['commentaire_participants_autres']) array_push($participants,$_POST['commentaire_participants_autres']);
+	if ($_POST['commentaire_participants_autres'] && $_POST['commentaire_participants_autres'] <> 'Autres ...')
+		array_push($participants,$_POST['commentaire_participants_autres']);
 
 	$res = mysql_query("INSERT INTO artisan_commentaire (code_artisan,date_creation,createur,participants,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id'])."','$date','".
 		mysql_escape_string($_POST['commentaire_createur'])."','".
