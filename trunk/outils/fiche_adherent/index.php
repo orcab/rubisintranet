@@ -89,7 +89,7 @@ table.liste {
 
 table.liste .date {
 	color:grey;
-	text-align:right;
+	margin:0;
 }
 
 #liste-artisan-non-visite { float:right; }
@@ -284,12 +284,15 @@ while($row = mysql_fetch_array($res)) {
 <?
 // récupère la liste des artisans visités recemement
 $sql = <<<EOT
-SELECT	nom,artisan.numero,
-		(SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan' ORDER BY date_creation DESC LIMIT 0,1) AS last_visite
-FROM	artisan
-WHERE		suspendu=0
-		AND	(SELECT count(*) FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan')>0
-ORDER BY last_visite DESC
+SELECT	date_creation as last_visite, code_artisan as numero, createur, humeur, nom
+FROM	artisan_commentaire AC
+	LEFT JOIN artisan A
+		ON AC.code_artisan = A.numero
+WHERE	supprime=0
+	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 1 YEAR) -- un an maximum
+	AND `type`='visite_artisan'
+GROUP BY	code_artisan
+ORDER BY	date_creation DESC
 EOT;
 
 $res = mysql_query($sql) or die("ne peux pas retrouver la liste des artisans visité dernierement".mysql_error());
@@ -297,6 +300,7 @@ while($row = mysql_fetch_array($res)) { ?>
 	<tr>
 		<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
 		<div class="date">
+		<img src="gfx/artisan.png" style="vertical-align:top;" title="Visite chez l'artisan"/><?=$row['createur']?> le 
 		<?	
 			preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['last_visite'],$last_visite);
 			$last_visite_time = mktime(	$last_visite[4],	// hour
@@ -308,7 +312,13 @@ while($row = mysql_fetch_array($res)) { ?>
 			$last_visite_formater = date('d M Y',$last_visite_time);
 			$last_visite_formater = $jours_mini[date('w',$last_visite_time)]." $last_visite_formater";
 			echo $last_visite_formater;
-		?>
+
+			switch ($row['humeur']) {
+				case 0: ?><?																												break;
+				case 1: ?>&nbsp;<img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" style="vertical-align:top;" /><?			break;
+				case 2: ?>&nbsp;<img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" style="vertical-align:top;" /><?	break;
+				case 3: ?>&nbsp;<img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" style="vertical-align:top;" /><?			break;
+			} ?>
 		</div>
 		</td>
 	</tr>
@@ -321,12 +331,14 @@ while($row = mysql_fetch_array($res)) { ?>
 <?
 // récupère la liste des artisans visités recemement
 $sql = <<<EOT
-SELECT	nom,artisan.numero,
-		(SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 ORDER BY date_creation DESC LIMIT 0,1) AS last_visite
-FROM	artisan
-WHERE		suspendu=0
-		AND	(SELECT count(*) FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0)>0
-ORDER BY last_visite DESC
+SELECT	date_creation as last_visite, code_artisan as numero, createur, `type`, humeur, nom
+FROM	artisan_commentaire AC
+	LEFT JOIN artisan A
+		ON AC.code_artisan = A.numero
+WHERE	supprime=0
+	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 1 YEAR) -- un an maximum
+GROUP BY	code_artisan
+ORDER BY	date_creation DESC
 EOT;
 
 $res = mysql_query($sql) or die("ne peux pas retrouver la liste des derniers commentaires".mysql_error());
@@ -334,6 +346,16 @@ while($row = mysql_fetch_array($res)) { ?>
 	<tr>
 		<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
 		<div class="date">
+		<?	switch ($row['type']) {
+				case 'visite_mcs': ?><img src="gfx/mcs-icon.png"	style="vertical-align:top;" title="Visite de l'artisan à MCS"/><?	break;
+				case 'visite_artisan': ?><img src="gfx/artisan.png" style="vertical-align:top;" title="Visite chez l'artisan"/><?		break;
+				case 'telephone': ?><img src="gfx/telephone.png"	style="vertical-align:top;" title="Par téléphone"/><?				break;
+				case 'fax': ?><img src="gfx/fax.png"				style="vertical-align:top;" title="Par fax"/><?						break;
+				case 'courrier': ?><img src="gfx/courrier.png"		style="vertical-align:top;" title="Par courrier"/><?				break;
+				case 'email': ?><img src="gfx/mail.png"				style="vertical-align:top;" title="Par mail"/><?					break;
+				case 'autre': ?><img src="gfx/autre.png"			style="vertical-align:top;" title="Auytre"/><?						break;
+			}
+		?><?=$row['createur']?> le 
 		<?	
 			preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['last_visite'],$last_visite);
 			$last_visite_time = mktime(	$last_visite[4],	// hour
@@ -345,7 +367,13 @@ while($row = mysql_fetch_array($res)) { ?>
 			$last_visite_formater = date('d M Y',$last_visite_time);
 			$last_visite_formater = $jours_mini[date('w',$last_visite_time)]." $last_visite_formater";
 			echo $last_visite_formater;
-		?>
+
+			switch ($row['humeur']) {
+				case 0: ?><?																													break;
+				case 1: ?>&nbsp;<img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" style="vertical-align:top;" /><?		break;
+				case 2: ?>&nbsp;<img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" style="vertical-align:top;" /><?	break;
+				case 3: ?>&nbsp;<img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" style="vertical-align:top;" /><?			break;
+			} ?>
 		</div>
 		</td>
 	</tr>

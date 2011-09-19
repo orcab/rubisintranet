@@ -484,6 +484,7 @@ $(document).ready(function() {
 	<div class="big-block">
 		<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
 		Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button" style="background-image:url('../../js/boutton_images/eye.png')" value="Cacher les interventions" onclick="$('table.intervention').toggle('slow');$(this).val( $(this).val() == 'Afficher les interventions' ? 'Cacher les interventions':'Afficher les interventions' );"/>
 		</div>
 <?
 		// récupère la liste des interventions
