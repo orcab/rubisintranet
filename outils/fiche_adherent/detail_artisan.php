@@ -41,7 +41,7 @@ elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset
 // SAISIR UNE INTERVENTION
 elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && isset($_POST['id']) && $_POST['id']) { // mode saisie de commentaire artisan
 	$date = implode('-',array_reverse(explode('/',$_POST['commentaire_date']))).' '.$_POST['commentaire_heure'].':00'; //2007-09-10 14:16:59;
-	$participants = $_POST['commentaire_participants'];
+	$participants = isset($_POST['commentaire_participants']) ? $_POST['commentaire_participants'] : array();
 	if ($_POST['commentaire_participants_autres'] && $_POST['commentaire_participants_autres'] <> 'Autres ...')
 		array_push($participants,$_POST['commentaire_participants_autres']);
 
@@ -674,7 +674,9 @@ EOT;
 	</div>
 
 	<div class="big-block">
-		<h2>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_artisan();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/></h2>
+		<h2>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_artisan();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button" style="background-image:url('../../js/boutton_images/eye.png')" value="Cacher les interventions" onclick="$('table.intervention').toggle('slow');$(this).val( $(this).val() == 'Afficher les interventions' ? 'Cacher les interventions':'Afficher les interventions' );"/>
+		</h2>
 <?
 		// récupère la liste des interventions
 		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM artisan_commentaire WHERE code_artisan='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 

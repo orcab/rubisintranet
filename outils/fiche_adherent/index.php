@@ -80,14 +80,26 @@ table#liste-artisan-favoris > caption {
 }
 
 /* table des adhérents non visité */
-table#liste-artisan-non-visite  {
+table.liste {
 	width:200px;
 	font-size:0.7em;
 	border-spacing: 0px;
 	border-collapse: collapse;
 }
 
-table#liste-artisan-non-visite  > caption {
+table.liste .date {
+	color:grey;
+	text-align:right;
+}
+
+#liste-artisan-non-visite { float:right; }
+#liste-dernier-visite { margin-bottom:20px; }
+#liste-container {
+	float:left;
+	width:200px;	
+}
+
+table.liste  > caption {
 	color:white;
 	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
 	font-weight:bold;
@@ -96,7 +108,7 @@ table#liste-artisan-non-visite  > caption {
 	text-shadow:grey 0px -1px;
 }
 
-table#liste-artisan-non-visite td {
+table.liste td {
 	border:solid 1px grey;
 	text-align:left;
 	padding-left:5px;
@@ -104,7 +116,7 @@ table#liste-artisan-non-visite td {
 	cursor:pointer;
 }
 
-table#liste-artisan-non-visite td:hover {
+table.liste td:hover {
 	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
 	color:white;
 	text-shadow:grey 0px -1px;
@@ -241,7 +253,7 @@ $(document).ready(function(){
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 
-<table id="liste-artisan-non-visite" style="float:right;">
+<table class="liste" id="liste-artisan-non-visite">
 	<caption>Non visité depuis 1 an</caption>
 <?
 // récupère la liste des artisans non visité depuis 1 an
@@ -259,10 +271,88 @@ while($row = mysql_fetch_array($res)) {
 		$date_diff = $row['last_visite'] ? $now - $row['last_visite'] : $one_year_in_second;
 ?>	
 <?	if ($date_diff >= $one_year_in_second) { ?>
-		<tr><td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?> <?=$row['last_visite']?></td></tr>
+		<tr><td onclick="goTo('<?=$row['numero']?>');"><?=$row['nom']?> <?=$row['last_visite']?></td></tr>
 <?	}
 } ?>
 </table>
+
+
+<div id="liste-container">
+
+<table class="liste" id="liste-dernier-visite">
+	<caption>Visité dernierement</caption>
+<?
+// récupère la liste des artisans visités recemement
+$sql = <<<EOT
+SELECT	nom,artisan.numero,
+		(SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan' ORDER BY date_creation DESC LIMIT 0,1) AS last_visite
+FROM	artisan
+WHERE		suspendu=0
+		AND	(SELECT count(*) FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan')>0
+ORDER BY last_visite DESC
+EOT;
+
+$res = mysql_query($sql) or die("ne peux pas retrouver la liste des artisans visité dernierement".mysql_error());
+while($row = mysql_fetch_array($res)) { ?>
+	<tr>
+		<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
+		<div class="date">
+		<?	
+			preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['last_visite'],$last_visite);
+			$last_visite_time = mktime(	$last_visite[4],	// hour
+										$last_visite[5],	// min
+										$last_visite[6],	// sec
+										$last_visite[2],		// mounth
+										$last_visite[3],		// day
+										$last_visite[1]) ;	// year (4 digit)
+			$last_visite_formater = date('d M Y',$last_visite_time);
+			$last_visite_formater = $jours_mini[date('w',$last_visite_time)]." $last_visite_formater";
+			echo $last_visite_formater;
+		?>
+		</div>
+		</td>
+	</tr>
+<? } ?>
+</table>
+
+
+<table class="liste" id="liste-dernier-commentaire">
+	<caption>Derniers commentaires</caption>
+<?
+// récupère la liste des artisans visités recemement
+$sql = <<<EOT
+SELECT	nom,artisan.numero,
+		(SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 ORDER BY date_creation DESC LIMIT 0,1) AS last_visite
+FROM	artisan
+WHERE		suspendu=0
+		AND	(SELECT count(*) FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0)>0
+ORDER BY last_visite DESC
+EOT;
+
+$res = mysql_query($sql) or die("ne peux pas retrouver la liste des derniers commentaires".mysql_error());
+while($row = mysql_fetch_array($res)) { ?>
+	<tr>
+		<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
+		<div class="date">
+		<?	
+			preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['last_visite'],$last_visite);
+			$last_visite_time = mktime(	$last_visite[4],	// hour
+										$last_visite[5],	// min
+										$last_visite[6],	// sec
+										$last_visite[2],		// mounth
+										$last_visite[3],		// day
+										$last_visite[1]) ;	// year (4 digit)
+			$last_visite_formater = date('d M Y',$last_visite_time);
+			$last_visite_formater = $jours_mini[date('w',$last_visite_time)]." $last_visite_formater";
+			echo $last_visite_formater;
+		?>
+		</div>
+		</td>
+	</tr>
+<? } ?>
+</table>
+
+</div>
 
 <form action="index.php" method="post" name="selecteur" style="margin:auto;width:20%;margin-top:10px;">
 
