@@ -5,13 +5,6 @@ $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 $message ='' ;
 
-// SAISIR UN COMMENTAIRE
-if(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && isset($_POST['id']) && $_POST['id']) { // mode saisie de commentaire fournisseur
-	$date = implode('-',array_reverse(explode('/',$_POST['commentaire_date']))).' '.$_POST['commentaire_heure'].':00'; //2007-09-10 14:16:59;
-	$res = mysql_query("INSERT INTO fournisseur_commentaire (code_fournisseur,date_creation,createur,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id'])."','$date','".mysql_escape_string($_POST['commentaire_createur'])."','$_POST[commentaire_type]',$_POST[commentaire_humeur],'".mysql_escape_string($_POST['commentaire_commentaire'])."',0)") or die("Ne peux pas enregistrer le commentaire ".mysql_error());
-	$message = "L'intervention a été enregistrée";
-}
-
 ?>
 <html>
 <head>
@@ -57,6 +50,50 @@ tr.fournisseur > td:nth-child(2) { border-left:none; }
 
 table#liste-fournisseur td:first-child, table#liste-fournisseur td:nth-child(2) { border-top:solid 1px grey; } /* premiere et 2eme case fournisseur */
 table#liste-fournisseur { cursor:pointer; }
+
+
+/* liste des derniers com' */
+table.liste {
+	width:200px;
+	font-size:0.7em;
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+table.liste .date {
+	color:grey;
+	margin:0;
+}
+
+#liste-container {
+	float:left;
+	width:200px;	
+}
+
+table.liste  > caption {
+	color:white;
+	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
+	font-weight:bold;
+	text-transform:uppercase;
+	padding:3px;
+	text-shadow:grey 0px -1px;
+}
+
+table.liste td {
+	border:solid 1px grey;
+	text-align:left;
+	padding-left:5px;
+	background-image:-moz-linear-gradient( top , #fdfdfd, #eee );
+	cursor:pointer;
+}
+
+table.liste td:hover {
+	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
+	color:white;
+	text-shadow:grey 0px -1px;
+	-moz-box-shadow: 0 0 9px #6a9dca;
+}
+
 
 .fournisseur-annule {
 	text-decoration:strike-through;
@@ -104,7 +141,6 @@ function affiche_fournisseur() {
 							'<tr class="fournisseur' + (!fournisseurs[i][2] ? ' fournisseur-annule':'') + '">' +
 								'<td onclick="goTo(\''+fournisseurs[i][0]+'\')">' +fournisseurs[i][1].toUpperCase() +
 							(fournisseurs[i][3] > 0 ? '&nbsp;&nbsp;('+fournisseurs[i][3]+')' : '') + '</td>' +
-								'<td onclick="intervention_fournisseur(\'' + fournisseurs[i][0].toUpperCase() + '\');" title="Ajouter une intervention">&nbsp;</td>' +
 							'</tr>'
 					);
 			} // fin if
@@ -116,32 +152,6 @@ function affiche_fournisseur() {
 function goTo(id) {
 	document.location.href='detail_fournisseur.php?id='+escape(id);
 }
-
-
-
-/* affiche la boite de saisie des intervention */
-function intervention_fournisseur(code_rubis) {
-	$('#fournisseur').text(code_rubis);
-	document.selecteur.id.value = code_rubis;
-
-	var maDate = new Date() ;
-	document.selecteur.commentaire_date.value  = maDate.getDate() + '/' + (maDate.getMonth() + 1) + '/' + maDate.getFullYear();
-	document.selecteur.commentaire_heure.value = maDate.getHours() + ':' + maDate.getMinutes() ;
-
-	$('#intervention').css('top',document.body.scrollTop +100);
-	$('#intervention').css('left',screen.availWidth / 2 - 300);
-	$('#intervention').show();
-	document.selecteur.commentaire_commentaire.focus();
-}
-
-
-
-/* enregsitre l'intervention */
-function sauve_intervention() {
-	document.selecteur.action.value="saisie_intervention";
-	document.selecteur.submit();
-}
-
 
 
 // stock la liste des fournisseurs
@@ -160,72 +170,71 @@ while($row = mysql_fetch_array($res)) { ?>
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 
+<div id="liste-container">
+
+<table class="liste" id="liste-dernier-commentaire">
+	<caption>20 derniers commentaires</caption>
+<?
+// récupère la liste des Dernier com'
+$sql = <<<EOT
+SELECT	date_creation as last_visite, code_fournisseur as numero, createur, `type`, humeur, nom
+FROM	fournisseur_commentaire FC
+	LEFT JOIN fournisseur F
+		ON FC.code_fournisseur = F.code_rubis
+WHERE	supprime=0
+	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 1 YEAR) -- un an maximum
+ORDER BY	date_creation DESC
+LIMIT 0,20
+EOT;
+
+$res = mysql_query($sql) or die("ne peux pas retrouver la liste des derniers commentaires".mysql_error());
+while($row = mysql_fetch_array($res)) { ?>
+	<tr>
+		<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
+		<div class="date">
+		<?	switch ($row['type']) {
+				case 'visite_mcs': ?><img src="gfx/mcs-icon.png"	style="vertical-align:top;" title="Visite de l'artisan à MCS"/><?	break;
+				case 'visite_artisan': ?><img src="gfx/artisan.png" style="vertical-align:top;" title="Visite chez l'artisan"/><?		break;
+				case 'telephone': ?><img src="gfx/telephone.png"	style="vertical-align:top;" title="Par téléphone"/><?				break;
+				case 'fax': ?><img src="gfx/fax.png"				style="vertical-align:top;" title="Par fax"/><?						break;
+				case 'courrier': ?><img src="gfx/courrier.png"		style="vertical-align:top;" title="Par courrier"/><?				break;
+				case 'email': ?><img src="gfx/mail.png"				style="vertical-align:top;" title="Par mail"/><?					break;
+				case 'autre': ?><img src="gfx/autre.png"			style="vertical-align:top;" title="Auytre"/><?						break;
+			}
+		?><?=$row['createur']?> le 
+		<?	
+			preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['last_visite'],$last_visite);
+			$last_visite_time = mktime(	$last_visite[4],	// hour
+										$last_visite[5],	// min
+										$last_visite[6],	// sec
+										$last_visite[2],		// mounth
+										$last_visite[3],		// day
+										$last_visite[1]) ;	// year (4 digit)
+			$last_visite_formater = date('d M Y',$last_visite_time);
+			$last_visite_formater = $jours_mini[date('w',$last_visite_time)]." $last_visite_formater";
+			echo $last_visite_formater;
+
+			switch ($row['humeur']) {
+				case 0: ?><?																													break;
+				case 1: ?>&nbsp;<img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" style="vertical-align:top;" /><?		break;
+				case 2: ?>&nbsp;<img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" style="vertical-align:top;" /><?	break;
+				case 3: ?>&nbsp;<img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" style="vertical-align:top;" /><?			break;
+			} ?>
+		</div>
+		</td>
+	</tr>
+<? } ?>
+</table>
+
+</div>
+
+
 <form action="index.php" method="post" name="selecteur" style="margin:auto;width:20%;margin-top:10px;">
 <input type="hidden" name="id" value="" />
 <input type="hidden" name="action" value="" />
 
-<!-- boite de dialogue pour la intervention fournisseur -->
-<div id="intervention">
-<table style="">
-	<caption style="font-weight:bold;">Saisie d'intervention</caption>
-	<tr>
-		<td colspan="3">Fournisseur : <span id="fournisseur"></span></td>
-		<td><input type="text" name="commentaire_date" size="8" maxlength="10" /> <input type="text" name="commentaire_heure" size="5" maxlength="5" /></td>
-	</tr>
-	<tr>
-		<td>Type</td>
-		<td>
-			<select name="commentaire_type">
-				<option value="visite_mcs">Visite chez MCS</option>
-				<option value="visite_fournisseur">Visite chez fournisseur</option>
-				<option value="telephone">Téléphone</option>
-				<option value="fax">Fax</option>
-				<option value="courrier">Courrier</option>
-				<option value="email">Email</option>
-			</select>
-		</td>
-		<td>Représentant</td>
-		<td>
-			<select name="commentaire_createur">
-<?			$res2  = mysql_query("SELECT * FROM employe WHERE printer=0 ORDER BY prenom ASC");
-			while ($row2 = mysql_fetch_array($res2)) { ?>
-					<option value="<?=$row2['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row2['ip'] ? ' selected':''?>><?=$row2['prenom']?></option>
-<?			} ?>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2"></td>
-		<td>Humeur</td>
-		<td>
-			<select name="commentaire_humeur" size="1">
-				<option style="padding-left:30px;height:20px;" value="0" selected>Indifférent</option>
-				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-clear.png) no-repeat left;" value="1">Content</option>
-				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-few-clouds.png) no-repeat left;" value="2">Mausade</option>
-				<option style="padding-left:30px;height:20px;background:white url(/intranet/gfx/weather-storm.png) no-repeat left;" value="3">Enervé</option>
-			</select>
-		</td>
-	</tr>
-	<tr>
-		<td colspan="4"><textarea id="commentaire_commentaire" name="commentaire_commentaire" rows="6" cols="50" style="width:100%"></textarea></td>
-	</tr>
-	<tr>
-		<td colspan="4" align="center">
-			<input type="button" class="button valider" onclick="sauve_intervention();" value="Enregistrer" />
-			<input type="button"  class="button annuler" onclick="$('#intervention').hide();" value="Annuler" />
-		</td>
-	</tr>
-</table>
-</div>
-
-
-<? if ($message) { ?>
-	<div style="color:red;margin-top:10px;text-align:center;font-weight:bold;"><?=$message?></div>
-<? } ?>
-
-
 <fieldset><legend>Rechercher un fournisseur</legend>
-<input type="text" name="recherche" size="15" onkeyup="affiche_fournisseur()" value="" />
+<input type="text" name="recherche" size="25" onkeyup="affiche_fournisseur()" value="" />
 </fieldset>
 </form>
 
