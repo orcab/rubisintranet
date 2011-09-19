@@ -327,7 +327,7 @@ while($row = mysql_fetch_array($res)) { ?>
 
 
 <table class="liste" id="liste-dernier-commentaire">
-	<caption>Derniers commentaires</caption>
+	<caption>20 derniers commentaires</caption>
 <?
 // récupère la liste des artisans visités recemement
 $sql = <<<EOT
@@ -337,7 +337,6 @@ FROM	artisan_commentaire AC
 		ON AC.code_artisan = A.numero
 WHERE	supprime=0
 	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 1 YEAR) -- un an maximum
-GROUP BY	code_artisan
 ORDER BY	date_creation DESC
 EOT;
 
