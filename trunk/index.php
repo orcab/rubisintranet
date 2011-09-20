@@ -46,19 +46,95 @@ div#footer {
 	background-image:-moz-linear-gradient( top , #fdfdfd, #eee );
 	width:96%;
 	margin-top:10px;
-	height:150px;
+	height:180px;
 	padding-left:50px;
 	font-weight:bold;
 	padding-top:5px;
 	font-size:0.8em;
 }
 
+/* style des evenements */
+div#footer h2 {
+	font-size:0.9em;
+	color:grey;
+	font-weight:normal;
+}
+
+div.cal-event {
+	background:url(gfx/calendar.gif) no-repeat 4px top;
+	margin-bottom:10px;
+	float:left;
+	width:20%;
+	padding-left:26px;
+	border-right:solid 1px #CCC;
+	border-bottom:solid 1px #CCC;
+	margin-right:20px;
+	height:100px;
+	border-bottom-right-radius: 10px;
+	display:none;
+}
+
+div.cal-date {
+	font-weight:bold;
+}
+
+div.cal-summary {
+	font-weight:normal;
+}
+
+div.cal-description {
+	color:grey;
+	font-weight:normal;
+}
+
+div.cal-location {
+	color:#88F;
+	font-weight:normal;
+}
 
 </style>
 
 <script type="text/javascript" src="js/jquery.js"></script>
-<script type="text/javascript" src="js/infobulle/infobulle.js"></script>
-<style type="text/css">@import url(js/infobulle/infobulle.css);</style>
+<script type="text/javascript" src="js/jquery.ui.all.js"></script>
+<script>
+
+var event_block = 0; // block en cours d'affichage
+
+// quand tout est chargé
+$(document).ready(function(){
+	// on affiche les 4 premiers events
+	for(var i=0 ; i<4 ; i++)
+		$('#cal-event-'+i).slideDown();
+	event_block = 0; // on a affiché le premier block
+});
+
+
+
+function prev_events() {
+	// on affiche les 4 events precedent
+	if (event_block>0) { // si on est pas deja sur le premier groupe
+		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
+			$('#cal-event-'+i).hide();
+		
+		event_block--;
+		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
+			$('#cal-event-'+i).slideDown();
+	}
+}
+
+function next_events() {
+	// on affiche les 4 events suivants
+	if (event_block < Math.round(total_events/4)) { // si on est pas deja sur le dernier groupe
+		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
+			$('#cal-event-'+i).hide();
+		
+		event_block++;
+		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
+			$('#cal-event-'+i).slideDown();
+	}
+}
+
+</script>
 
 </head>
 <body style="margin:0px;padding:0px;">
@@ -86,7 +162,8 @@ div#footer {
 </center>
 
 <div id="footer">
-	<h2 style="font-size:0.9em;color:grey;font-weight:normal;">Evenements à MCS dans la semaine à venir</h2>
+	<h2>Evenements à MCS dans la semaine à venir</h2>
+	<img src="gfx/precedent.png" style="clear:both;margin:auto;display:block;margin-bottom:5px;" onclick="prev_events();"/>
 	<?	// charge le fichier json des evenements
 		$ini_filename = 'scripts/ical2sqlite.ini';
 		if (file_exists($ini_filename)) {
@@ -102,19 +179,34 @@ div#footer {
 				}
 
 				$sql = <<<EOT
-select `start`,`end`,summary,description from events
-where
-     (`start`>=date('now') and `start`<=date('now','+7 day')) 
-     or
-     (`end`>=date('now') and `end`<=date('now','+7 day'))     
-order by
+SELECT `start`,`end`,summary,description,location
+FROM events
+WHERE
+     (`start`>=date('now') AND `start`<=date('now','+1 year')) 
+     OR
+     (`end`>=date('now') AND `end`<=date('now','+1 year'))     
+ORDER BY
       `start` ASC
-limit 0,4
 EOT;
 				$res = $sqlite->query($sql) or die("Impossible de lancer la requete de selection des events de la semaine suivantes : ".array_pop($sqlite->errorInfo()));
 
 				// on affiche les evenements classés
+				$i=0;
 				while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+
+					// hack pour les evenement sur une journée (ou plusieurs). la date de fin doit etre diminuer de 1
+					if (preg_match('/ 00:00:00$/',$row['start']) &&
+						preg_match('/(\d{4})-(\d{2})-(\d{2}) 00:00:00$/',$row['end'],$matches)) {
+						$date_end_time = mktime(	0,	// hour
+													0,	// min
+													0,	// sec
+													$matches[2],				// mounth
+													$matches[3] - 1,				// day
+													$matches[1]) ;			// year (4 digit)
+						$row['end'] = date('Y-m-d 00:00:00',$date_end_time);
+
+						//echo "end:'$row[end]'";
+					}
 
 					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['start'],$date_start);
 					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['end'],$date_end);
@@ -139,22 +231,21 @@ EOT;
 					$heure_end = date('H:i',$date_end_time);
 					$date_end_formater = $jours_mini[date('w',$date_end_time)]." $date_end_formater";
 ?>
-					<div class="cal-event" style="background:url(gfx/calendar.gif) no-repeat 4px top;margin-bottom:20px;float:left;width:20%;padding-left:26px;border-right:solid 1px #CCC;border-bottom:solid 1px #CCC;margin-right:20px;height:100px;border-radius:10px;">
-						<div class="cal-date" style="font-weight:bold;">
-							<?=$date_start_formater?>
-							<?=$heure_start <> '00:00'?$heure_start:'' ?>
-							<img src="gfx/arrow.png" style="vertical-align:bottom;"/>
-							<?=$date_end_formater <> $date_start_formater ? $date_end_formater:''?>
-							<?=$heure_end <> '00:00'?$heure_end:'' ?>
+					<div class="cal-event" id="cal-event-<?=$i?>">
+						<div class="cal-date">
+							<?=$date_start_formater?> <?=$heure_start <> '00:00'?$heure_start:'' ?>
+<?							if ($date_end_formater <> $date_start_formater || $heure_end <> '00:00') { ?>
+								<img src="gfx/arrow.png" style="vertical-align:bottom;"/>
+<?							} ?>
+							<?=$date_end_formater <> $date_start_formater ? $date_end_formater:''?> <?=$heure_end <> '00:00'?$heure_end:'' ?>
 						</div>
-						<div class="cal-summary" style="font-weight:normal;">
-							<?=utf8_decode($row['summary'])?>
-						</div>
-						<div class="cal-description" style="color:grey;font-weight:normal;">
-							<?=isset($row['description']) ? utf8_decode($row['description']):''?>
-						</div>
+						<div class="cal-summary"><?=utf8_decode($row['summary'])?></div>
+						<div class="cal-description"><?=stripslashes(str_replace('\n','<br/>',utf8_decode($row['description'])))?></div>
+						<div class="cal-location"><?=$row['location'] ? "Lieu : ".utf8_decode($row['location']):''?></div>
 					</div>
-<?				}
+<?	
+					$i++;
+				} // fin while events
 			} else {
 				?>Impossible de trouver le fichier json <em><?=$ini['files']['sqlite_output']?></em><?
 			}
@@ -162,6 +253,12 @@ EOT;
 			 ?>Impossible de trouver le fichier de configuration <em><?=$ini_filename?></em><?
 		}
 	?>
+
+	<img src="gfx/suivant.png" style="clear:both;margin:auto;display:block;" onclick="next_events();"/>
 </div>
+
+<script>
+	var total_events = <?=$i?>;
+</script>
 </body>
 </html>
