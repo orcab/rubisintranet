@@ -258,7 +258,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 			$y_up_rect = $y_up_before_page_chage;
 		
 		/*
-		if ($row['GENCO'] && preg_match('/^\d{13}$/',$row['GENCO']) && $row['ARCOM'] != 'OUI') { // s'il a un gencode et que ce n'est pas un kit
+		if ($row['GENCO'] && preg_match('/^\d{13}$/',$row['GENCO']) && $row['ARCOM'] != 'OUI' && is_ean13($row['GENCO'])) { // s'il a un gencode et que ce n'est pas un kit
 			$pdf->SetFillColor(0,0,0); // noir
 			$pdf->EAN13(LEFT_MARGIN + REF_WIDTH + FOURNISSEUR_WIDTH + DESIGNATION_DEVIS_WIDTH + LOCAL_WIDTH + UNITE_WIDTH + QTE_WIDTH + 1.5, $y_up_rect + 1, $row['GENCO'] , 5 , .20 );
 		}
