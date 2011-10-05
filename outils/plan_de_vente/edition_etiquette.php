@@ -70,7 +70,8 @@ $pdf->MultiCell(0,10,$row_entete['NOART']."QTE: $qte_escape",0);
 
 // code barre
 $pdf->SetY($oldY += $interligne);
-$pdf->EAN13(LEFT_MARGIN, $oldY , $row_entete['EAN13'] , 40 , 2 );
+if (is_ean13($row_entete['EAN13']))
+	$pdf->EAN13(LEFT_MARGIN, $oldY , $row_entete['EAN13'] , 40 , 2 );
 
 // localisation
 $localisations = array();
