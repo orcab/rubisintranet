@@ -2,10 +2,8 @@
 
 use Data::Dumper;
 use Win32::ODBC;
-use Mysql ;
 use strict ;
 use POSIX qw(strftime);
-use Net::FTP;						# pour l'upload de fichier
 require 'Phpconst2perlconst.pm';
 use Phpconst2perlconst ;
 use Config::IniFiles;
@@ -71,21 +69,6 @@ print print_time()."Compression du fichier SQL ... ";
 system("bzip2 -zkf8 qte_article.sql");
 print "OK\n";
 
-
-# Début du transfert FTP
-#print print_time()."Transfert FTP ... ";
-#my	$ftp = Net::FTP->new('', Debug => 0) or die "Cannot connect to  : $@";
-#	$ftp->login('','') or die "Cannot login ", $ftp->message;
-#	$ftp->binary;
-#	$ftp->put('qte_article.sql.bz2') or die "put failed ", $ftp->message;
-#	$ftp->quit;
-#
-#	$ftp = Net::FTP->new('', Debug => 0) or die "Cannot connect to : $@";
-#	$ftp->login('','') or die "Cannot login ", $ftp->message;
-#	open(F,'>switch_db_qte.txt') && close F; # fichier qui permet de dire au script distant d'inverser les BD (insérer la nouvelle)
-#	$ftp->put('switch_db_qte.txt') or die "put failed ", $ftp->message;
-#    $ftp->quit;
-#print "OK\n";
 
 print print_time()."Transfert ... ";
 my $cmd = join(' ',	'pscp',
