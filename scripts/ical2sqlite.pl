@@ -77,7 +77,7 @@ print print_time()."END\n\n";
 sub init_sqlite {
 # creation des tables articles + fournisseur + index + triggers #####################################################################################""
 	my $sql = <<EOT ;
-CREATE TABLE IF NOT EXISTS [events] (
+CREATE TABLE [events] (
   [uid] CHAR, 
   [created] DATETIME NOT NULL, 
   [lastmodified] DATETIME, 
@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS [events] (
   CONSTRAINT [] PRIMARY KEY ([uid])
 );
 EOT
+	$sqlite->do("DROP TABLE IF EXISTS [events];");
 	$sqlite->do($sql);
 
 	#index sur les events
