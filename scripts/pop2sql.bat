@@ -1,0 +1,1 @@
+pop2sql.exe >> pop2sql.log
