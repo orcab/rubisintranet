@@ -11,6 +11,7 @@ $message  = '' ;
 
 $today_Ymd = date('Ymd') ;
 $vendeurs = select_vendeur();
+$email_vendeur = get_email_vendeur();
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
 if (!isset($_SESSION['cde_adh_filtre_date_inf']))	$_SESSION['cde_adh_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m'),date('d')-0,date('Y')));
@@ -186,10 +187,23 @@ function envoi_formulaire(l_action) {
 	return true;
 }
 
-$(document).ready(function() {
-	$("#historique-commande").tablesorter();
-});
 
+function send_return_mail(img,nobon,nomcli,email) {
+	if (email) {
+		$(img).attr('src','gfx/loading4.gif');
+		$.ajax({
+				url: 'ajax.php',
+				type: 'GET',
+				data: 'what=send_return_mail&nobon='+nobon+'&nomcli='+nomcli+'&email='+email,
+				success: function(result){
+							//var json = eval('(' + result + ')') ; //$.trim(json['desi1']);
+							$(img).hide();
+						}	
+		});
+	} else {
+		alert("Aucun vendeur avec un email valide n'est spécifié");
+	}
+}
 
 //-->
 </SCRIPT>
@@ -369,6 +383,7 @@ $(document).ready(function() {
 		<th style="vertical-align:top;" class="hide_when_print">PDF<br/>chiffré</th>
 		<th style="vertical-align:top;" class="hide_when_print">PDF</th>
 		<th style="vertical-align:top;" class="hide_when_print">Etiq</th>
+		<th style="vertical-align:top;" class="hide_when_print">Ret</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -453,6 +468,8 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 	$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
 	while($row = odbc_fetch_array($res)) {
 //	$row = odbc_fetch_array($res)
+		$row['LIVSB'] = trim($row['LIVSB']);
+		$row['NOMSB'] = trim($row['NOMSB']);
 ?>
 
 	<tr class="ligne">
@@ -468,8 +485,8 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			$jour_commande = $jours_mini[date('w',$date_livraison)];		
 		?><?=$jour_commande?> <?=$date_formater?>
 		<?= ($today_Ymd > $row['DLSSB'].$row['DLASB'].$row['DLMSB'].$row['DLJSB'] && $_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours') ? "<img src='../gfx/attention.png'/>":''?></td><!-- date livraison -->
-		<td class="TYVTE"><?=isset($vendeurs[trim($row['TYVTE'])]) ? $vendeurs[trim($row['TYVTE'])] : trim($row['TYVTE'])?></td><!-- type de vente -->
-		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
+		<td class="TYVTE"><?=$row['TYVTE']?></td><!-- type de vente -->
+		<td class="LIVSB"><?=isset($vendeurs[$row['LIVSB']]) ? $vendeurs[$row['LIVSB']] : $row['LIVSB']?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
 		<td class="AGENC" style="text-align:center;"><?= ucfirst(strtolower($row['AGELI'])) ?></td><!-- agence -->
@@ -486,6 +503,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix_FR.png" alt="Edition PDF - Ligne F et R" /></a><br/><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix&options[]=ligne_R"><img src="../gfx/pdf-icon_sans_prix_R.png" alt="Edition PDF - Ligne R" style="margin-top:3px;"/></a></td>
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_etiquette.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="gfx/icon_etiquette.png" alt="Edition Etiquette" /></a></td>
+		<td style="text-align:center;" class="hide_when_print"><img src="gfx/send_mail.png" alt="Prévenir le vendeur d'un retour" title="Prévenir le vendeur d'un retour" onclick="send_return_mail(this,'<?=$row['NOBON']?>','<?=addslashes($row['NOMSB'])?>','<?=isset($email_vendeur[$row['LIVSB']]) && $email_vendeur[$row['LIVSB']] ? $email_vendeur[$row['LIVSB']]:''?>')";/></td>
 	</tr>
 
 
