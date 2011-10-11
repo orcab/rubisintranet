@@ -18,6 +18,7 @@ if (!isset($_SESSION['cde_adh_filtre_date_sup']))	$_SESSION['cde_adh_filtre_date
 if (!isset($_SESSION['cde_adh_filtre_adherent']))	$_SESSION['cde_adh_filtre_adherent']	= '';
 if (!isset($_SESSION['cde_adh_filtre_reference']))	$_SESSION['cde_adh_filtre_reference']	= '';
 if (!isset($_SESSION['cde_adh_filtre_vendeur']))	$_SESSION['cde_adh_filtre_vendeur']		= e('code',mysql_fetch_array(mysql_query("SELECT UCASE(code_vendeur) AS code FROM employe WHERE code_vendeur IS NOT NULL and ip='$_SERVER[REMOTE_ADDR]' ORDER BY prenom ASC")));
+if (!isset($_SESSION['cde_adh_filtre_type_vente']))	$_SESSION['cde_adh_filtre_type_vente']	= '';
 if (!isset($_SESSION['cde_adh_filtre_numero']))		$_SESSION['cde_adh_filtre_numero']		= '';
 if (!isset($_SESSION['cde_adh_filtre_montant']))	$_SESSION['cde_adh_filtre_montant']		= 0;
 if (!isset($_SESSION['cde_adh_filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_montant'] = '>=';
@@ -31,6 +32,7 @@ if (isset($_POST['filtre_date_sup']))	$_SESSION['cde_adh_filtre_date_sup']	= $_P
 if (isset($_POST['filtre_adherent']))	$_SESSION['cde_adh_filtre_adherent']	= $_POST['filtre_adherent'];
 if (isset($_POST['filtre_reference']))	$_SESSION['cde_adh_filtre_reference']	= $_POST['filtre_reference'];
 if (isset($_POST['filtre_vendeur']))	$_SESSION['cde_adh_filtre_vendeur']		= $_POST['filtre_vendeur'];
+if (isset($_POST['filtre_type_vente']))	$_SESSION['cde_adh_filtre_type_vente']	= $_POST['filtre_type_vente'];
 if (isset($_POST['filtre_numero']))		$_SESSION['cde_adh_filtre_numero']		= $_POST['filtre_numero'];
 if (isset($_POST['filtre_montant']))	$_SESSION['cde_adh_filtre_montant']		= $_POST['filtre_montant'];
 if (isset($_POST['filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_montant'] = $_POST['filtre_signe_montant'];
@@ -339,7 +341,14 @@ $(document).ready(function() {
 				<td style="text-align:right;">Référence <input type="text" name="filtre_reference" value="<?=$_SESSION['cde_adh_filtre_reference']?>" size="8"></td>
 				<td style="text-align:right;padding-left:1em;">N° Cde <input type="text" name="filtre_numero" value="<?=$_SESSION['cde_adh_filtre_numero']?>" size="8"></td>
 				<td style="padding-left:1em;">Code Article <input type="text" name="filtre_article" value="<?=$_SESSION['cde_adh_filtre_article']?>" size="8"></td>
-				<td></td>
+				<td><!-- type de vente -->
+					Type de vente :
+					<select name="filtre_type_vente">
+						<option value=""	<?=$_SESSION['cde_adh_filtre_type_vente']==''?' selected':''?>>TOUS</option>
+						<option value="EMP"	<?=$_SESSION['cde_adh_filtre_type_vente']=='EMP' ? ' selected':''?>>Emportée</option>
+						<option value="LIV"	<?=$_SESSION['cde_adh_filtre_type_vente']=='LIV' ? ' selected':''?>>Livrée</option>
+					</select>
+				</td>
 			</tr>
 		</table>
 
@@ -349,6 +358,7 @@ $(document).ready(function() {
 		<th class="NOBON">N°<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOBON DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="DATE">Date<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="DATE">Date Liv<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="TYVTE">Type<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=TYVTE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=TYVTE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="LIVSB">Vendeur<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NOMSB">Adhérent<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="RFCSB">Référence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
@@ -390,6 +400,9 @@ $(document).ready(function() {
 	if ($_SESSION['cde_adh_filtre_agence']) // si une agence de spécifié
 		$where[] = "CDE_ENTETE.AGENC = '$_SESSION[cde_adh_filtre_agence]'" ; // uniquement pour l'agence en cours
 
+	if ($_SESSION['cde_adh_filtre_type_vente']) // si une agence de spécifié
+		$where[] = "CDE_ENTETE.TYVTE = '$_SESSION[cde_adh_filtre_type_vente]'" ; // type de vente EMP ou LIV
+
 	// gere les recherche sur article et type de commande
 	if ($_SESSION['cde_adh_filtre_article'] || $_SESSION['cde_adh_filtre_type_cde']) {
 		$tables[] = "${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 CDE_DETAIL"; // on rajoute la table détail
@@ -425,7 +438,7 @@ $(document).ready(function() {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,AGELI
+select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,AGELI,TYVTE
 from $tables
 $where
 order by $ordre
@@ -455,6 +468,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			$jour_commande = $jours_mini[date('w',$date_livraison)];		
 		?><?=$jour_commande?> <?=$date_formater?>
 		<?= ($today_Ymd > $row['DLSSB'].$row['DLASB'].$row['DLMSB'].$row['DLJSB'] && $_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours') ? "<img src='../gfx/attention.png'/>":''?></td><!-- date livraison -->
+		<td class="TYVTE"><?=isset($vendeurs[trim($row['TYVTE'])]) ? $vendeurs[trim($row['TYVTE'])] : trim($row['TYVTE'])?></td><!-- type de vente -->
 		<td class="LIVSB"><?=isset($vendeurs[trim($row['LIVSB'])]) ? $vendeurs[trim($row['LIVSB'])] : trim($row['LIVSB'])?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
