@@ -54,6 +54,11 @@ div#footer {
 }
 
 /* style des evenements */
+
+img#prev {
+	visibility:hidden;
+}
+
 div#footer h2 {
 	font-size:0.9em;
 	color:grey;
@@ -119,6 +124,8 @@ function prev_events() {
 		event_block--;
 		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
 			$('#cal-event-'+i).slideDown();
+
+		show_or_hide_arrows();
 	}
 }
 
@@ -131,7 +138,23 @@ function next_events() {
 		event_block++;
 		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
 			$('#cal-event-'+i).slideDown();
+		
+		show_or_hide_arrows();
 	}
+}
+
+function show_or_hide_arrows() {
+	//$('h2').text("event_block="+event_block+"      Math.round(total_events/4)-3="+(Math.round(total_events/4)-1));
+
+	if (event_block==0)
+		$('#prev').css('visibility','hidden');
+	else
+		$('#prev').css('visibility','visible');
+
+	if (event_block==(Math.round(total_events/4)-1))
+		$('#next').css('visibility','hidden');
+	else
+		$('#next').css('visibility','visible');
 }
 
 </script>
@@ -162,14 +185,13 @@ function next_events() {
 </center>
 
 <div id="footer">
-	<h2>Evenements à MCS dans la semaine à venir</h2>
-	<img src="gfx/precedent.png" style="clear:both;margin:auto;display:block;margin-bottom:5px;" onclick="prev_events();"/>
+	<h2>Evenements à MCS dans les semaines à venir</h2>
+	<img id="prev" src="gfx/precedent.png" style="clear:both;margin:auto;display:block;margin-bottom:5px;" onclick="prev_events();"/>
 	<?	// charge le fichier json des evenements
 		$ini_filename = 'scripts/ical2sqlite.ini';
 		if (file_exists($ini_filename)) {
 			$ini = parse_ini_file($ini_filename,true);
 			if (file_exists($ini['files']['sqlite_output'])) {
-				
 				try {
 					$sqlite = new PDO('sqlite:'.$ini['files']['sqlite_output']); // success
 					//$sqlite->sqliteCreateFunction('REGEXP', 'preg_match', 2); // on cree la fonction REGEXP dans sqlite.
@@ -205,8 +227,13 @@ EOT;
 													$matches[1]) ;			// year (4 digit)
 						$row['end'] = date('Y-m-d 00:00:00',$date_end_time);
 
+						if ($row['end'] < date('Y-m-d')) // si la date de fin modifié est inférieur à aujourd'hui --> on saute
+							continue;
+
 						//echo "end:'$row[end]'";
 					}
+
+					
 
 					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['start'],$date_start);
 					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['end'],$date_end);
@@ -254,7 +281,7 @@ EOT;
 		}
 	?>
 
-	<img src="gfx/suivant.png" style="clear:both;margin:auto;display:block;" onclick="next_events();"/>
+	<img id="next" src="gfx/suivant.png" style="clear:both;margin:auto;display:block;" onclick="next_events();"/>
 </div>
 
 <script>
