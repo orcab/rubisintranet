@@ -17,7 +17,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'send_return_mail' &&
 	$mail->Delivery('relay');
 	$mail->Relay(SMTP_SERVEUR);
 	$mail->From('isabelle.gerardin@coopmcs.com','Isabelle Gerardin');
-	$mail->AddTo('benjamin.poulain@coopmcs.com') or die("Erreur d'ajout de destinataire");
+	$mail->AddTo($_GET['email']) or die("Erreur d'ajout de destinataire");
 	$mail->Html($html);
 
 	if ($mail->Send("Retour de marchandise : $_GET[nobon]"))
