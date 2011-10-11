@@ -91,7 +91,7 @@ img.icon { cursor:pointer; }
 div#edit-complement { display:none; }
 
 /* style pour la boite de dialogue pour la saisie d'intervention */
-div#intervention {
+div#new-intervention {
 	padding:20px;
 	border:solid 2px black;
 	-moz-border-radius:10px;
@@ -100,36 +100,95 @@ div#intervention {
 	position:absolute;
 	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
 	-moz-box-shadow: 5px 5px 20px 0px grey;
+	z-index:200;
 }
 
-table.intervention td {
-	padding:2px;
-	font-size:0.9em;
+div.block-interventions {
+	border:none;
 	text-align:left;
+	margin-top:20px;
+	padding-left:20px;
 }
 
-td.date					{ width:12em; white-space:nowrap;}
-td.humeur				{ width:20px; white-space:nowrap;}
-td.createur				{ width:6em; white-space:nowrap;}
-td.type					{ width:12em; white-space:nowrap;}
-td.participants			{ font-size:0.8em; white-space:nowrap; background: url(gfx/participants.png) no-repeat center left; }
-td.delete_intervention	{ width:20px; text-align:right; white-space:nowrap;}
-
-table.intervention tr:first-child { background:#DDD; }
-
-table.intervention { /* premiere case intervention */
-	border:dotted 1px #444;
-	margin:auto;
-	margin-bottom:20px;
-	width:95%;
-	border-spacing: 0px;
-    border-collapse: collapse;
+div.block-interventions h2 {
+	margin:0px;
+	padding-left:1em;
+	background-color:#f2f2f2;
+	border-top:solid 1px #e2e2e2;
 }
 
-td.commentaire {
-	margin-top:25px;
-	margin-left:50px;
-	text-align:left;
+div.intervention {
+	margin-top:20px;
+	border-bottom:solid 0px #e9e9e9;
+	padding-bottom:10px;
+}
+
+div.intervention-archive {
+	margin-top:0px;
+}
+
+div.intervention-archive img.intervention-createur,
+div.intervention-archive div.intervention-content {
+	display:none;
+}
+
+div.intervention-archive div.intervention-complement {
+    background-color: #F5F5F5;
+}
+
+div.intervention-archive span {
+    color: #888;
+}
+
+img.intervention-createur {
+	margin-right:10px;
+	width:60px;
+	float:left;
+}
+
+div.intervention-content {
+	font-size:0.8em;
+	border-right:solid 2px #CCC;
+	padding-right:50px;
+	margin:0;
+}
+
+div.intervention-createur {
+	color:#3b5998;
+	font-weight:bold;
+}
+
+div.intervention-commentaire {
+	color:#505050;
+	margin:0;
+}
+
+div.intervention-complement {
+	background-color:#edeff4;
+	border-bottom:solid 1px #d2d9e7;
+	border-top:solid 1px white;
+	color:#3b5998;
+	font-size:0.8em;
+	padding-left:1em;
+	padding-bottom:4px;
+	margin:0;
+}
+
+span.intervention-date,
+span.intervention-humeur,
+span.intervention-type {
+	margin-right:5em;
+}
+
+img.intervention-delete, img.intervention-hide {
+	cursor:pointer;
+	float:right;
+	margin-top:4px;
+	margin-right:10px;
+}
+
+div.intervention-commentaire p:last-child {
+	margin-bottom:0px;
 }
 
 /* style pour les fichier uploader */
@@ -165,6 +224,17 @@ div#upload-file {
 	-moz-box-shadow: 5px 5px 20px 0px grey;
 }
 div#upload-file h2 { font-size:0.8em; }
+
+div#blackscreen {
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:100%;
+	height:100%;
+	background-color:rgba(0,0,0,0.7);
+	display:none;
+	z-index:199;
+}
 
 input#commentaire_participants_autres {
 	color:grey;
@@ -230,11 +300,16 @@ function intervention_fournisseur() {
 	document.selecteur.commentaire_date.value  = maDate.getDate() + '/' + (maDate.getMonth() + 1) + '/' + maDate.getFullYear();
 	document.selecteur.commentaire_heure.value = maDate.getHours() + ':' + maDate.getMinutes() ;
 
-	$('#intervention').css('top',document.body.scrollTop +100);
-	$('#intervention').css('left',screen.availWidth / 2 - 300);
-	$('#intervention').show();
+	$('#blackscreen').fadeIn('slow');
+	$('#new-intervention').css({'top':document.body.scrollTop +100,
+								'left':screen.availWidth / 2 - 300}).show();
 
 	document.selecteur.commentaire_commentaire.focus();
+}
+
+function cache_intervention() {
+	$('#blackscreen').fadeOut('slow');
+	$('#new-intervention').hide();
 }
 
 // supprime un fichier
@@ -253,6 +328,20 @@ function delete_intervention(id) {
 function sauve_intervention() {
 	document.selecteur.action.value="saisie_intervention";
 	document.selecteur.submit();
+}
+
+// cache une intervention
+function hide_intervention(id) {
+	var el = $('#intervention-'+id+' > img.intervention-createur') ;
+	if (el.css('display') == 'none') {
+		el.fadeIn();
+		$('#intervention-'+id+' > div.intervention-content').fadeIn();
+		$('#intervention-'+id).css('margin-top',20);
+	} else {
+		el.fadeOut();
+		$('#intervention-'+id+' > div.intervention-content').fadeOut();
+		$('#intervention-'+id).css('margin-top',0);
+	}
 }
 
 // affiche la boite de dialogue d'upload de fichier
@@ -297,6 +386,8 @@ $(document).ready(function() {
 </head>
 <body>
 
+<div id="blackscreen"></div>
+
 <!-- menu de naviguation -->
 <? include('../../inc/naviguation.php'); ?>
 
@@ -317,8 +408,8 @@ $(document).ready(function() {
 
 
 <!-- boite de dialogue pour la intervention fournisseur -->
-<div id="intervention">
-<table style="">
+<div id="new-intervention">
+<table>
 	<caption style="font-weight:bold;">Saisie d'intervention</caption>
 	<tr>
 		<td colspan="3"></td>
@@ -380,7 +471,7 @@ $(document).ready(function() {
 	<tr>
 		<td colspan="4" align="center">
 			<input type="button" class="button valider" onclick="sauve_intervention();" value="Enregistrer">
-			<input type="button"  class="button annuler" onclick="$('#intervention').hide();" value="Annuler">
+			<input type="button"  class="button annuler" onclick="cache_intervention();" value="Annuler">
 		</td>
 	</tr>
 </table>
@@ -481,60 +572,73 @@ $(document).ready(function() {
 		</ul>
 	</div>
 
-	<div class="big-block">
-		<div style="font-weight:bold; font-size:0.9em; margin-left:10px;margin-bottom:5px;text-align:left;">
-		Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="absbottom"/>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button" style="background-image:url('../../js/boutton_images/eye.png')" value="Cacher les interventions" onclick="$('table.intervention').toggle('slow');$(this).val( $(this).val() == 'Afficher les interventions' ? 'Cacher les interventions':'Afficher les interventions' );"/>
-		</div>
-<?
-		// récupère la liste des interventions
-		$res_commentaire = mysql_query("SELECT *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,DATE_FORMAT(date_creation,'%w') AS date_jour,DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,TIME_TO_SEC(TIMEDIFF(NOW(),date_creation)) AS temps_ecoule FROM fournisseur_commentaire WHERE code_fournisseur='$id' AND supprime=0 ORDER BY date_creation ASC") or die("Ne peux pas afficher les commentaires anomalies ".mysql_error()); 
-		while($row_commentaire = mysql_fetch_array($res_commentaire)) { ?>
-			<table class="intervention">
-				<tr>
-					<td class="date"><?=$jours_mini[$row_commentaire['date_jour']]?> <?=$row_commentaire['date_formater']?> <?=$row_commentaire['heure_formater']?></td>
-					<td class="humeur">
-<?						switch ($row_commentaire['humeur']) {
-							case 0: ?>&nbsp;<?
-								break;
-							case 1: ?><img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" /><?
-								break;
-							case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" /><?
-								break;
-							case 3: ?><img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" /><?
-								break;
-						} ?>
-					</td>
-					<td class="createur"><?=$row_commentaire['createur']?></td>
-					<td class="type"><?
-						switch ($row_commentaire['type']) {
-							case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite du fournisseur<?			break;
-							case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez le fournisseur<?	break;
-							case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?						break;
-							case 'fax': ?><img src="gfx/fax.png"/> Fax<?										break;
-							case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?							break;
-							case 'email': ?><img src="gfx/mail.png"/> Email<?									break;
-							case 'autre': ?><img src="gfx/autre.png"/> Autre<?									break;
-						}
-					?></td>
-					<td class="participants">&nbsp;&nbsp;&nbsp;<?=$row_commentaire['participants']?></td>
-<?						if (	($droit & PEUT_MODIFIER_FICHE_FOURNISSEUR) ||
+	<div class="block-interventions">
+		<h2>Interventions <img class="icon hide_when_print" src="gfx/add-mini.png" onclick="intervention_fournisseur();" alt="Ajoute une intervention" title="Ajoute une intervention" align="top"/>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="button" style="background-image:url('../../js/boutton_images/eye.png');" value="Cacher toutes les interventions" onclick="$('div.intervention').toggle('slow');$(this).val( $(this).val() == 'Afficher toutes les interventions' ? 'Cacher toutes les interventions':'Afficher toutes les interventions' );"/>
+		</h2>
+
+<?		// récupère la liste des interventions
+		$sql = <<<EOT
+SELECT	*,
+		DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,
+		DATE_FORMAT(date_creation,'%w') AS date_jour,
+		DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,
+		(NOW() - date_creation) AS temps_ecoule
+FROM	
+		fournisseur_commentaire
+WHERE		code_fournisseur='$id'
+		AND supprime=0
+ORDER BY 
+		date_creation DESC
+EOT;
+		$res_commentaire = mysql_query($sql) or die("Ne peux pas afficher les commentaires anomalies ".mysql_error());
+		while($row_commentaire = mysql_fetch_array($res_commentaire)) {
+			$archive = ($row_commentaire['temps_ecoule'] >= 3600*24*180) ? 'intervention-archive':''; // si plus vieux que 6 mois --> on passe en archive
+?>
+			<div class="intervention <?=$archive?>" id="intervention-<?=$row_commentaire['id']?>">
+					<img class="intervention-createur" src="/intranet/photos/personnels/mini/<?=strtolower($row_commentaire['createur'])?>.jpg"/>
+					<div class="intervention-content">
+						<div class="intervention-createur"><?=$row_commentaire['createur']?></div>
+						<div class="intervention-commentaire"><?=stripslashes($row_commentaire['commentaire'])?></div>
+					</div>
+					<div class="intervention-complement">
+						<span class="intervention-date">
+							<?=$jours_mini[$row_commentaire['date_jour']]?> <?=$row_commentaire['date_formater']?> <?=$row_commentaire['heure_formater']?>
+						</span>
+						<span class="intervention-humeur">
+	<?						switch ($row_commentaire['humeur']) {
+								case 0: ?>&nbsp;<?																				break;
+								case 1: ?><img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" /><?			break;
+								case 2: ?><img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" /><?	break;
+								case 3: ?><img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" /><?			break;
+							} ?>
+						</span>
+						<span class="intervention-type">
+	<?						switch ($row_commentaire['type']) {
+								case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite de l'adh à MCS<?		break;
+								case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez l'artisan<?	break;
+								case 'telephone': ?><img src="gfx/telephone.png"/> Téléphone<?					break;
+								case 'fax': ?><img src="gfx/fax.png"/> Fax<?									break;
+								case 'courrier': ?><img src="gfx/courrier.png"/> Courrier<?						break;
+								case 'email': ?><img src="gfx/mail.png"/> Email<?								break;
+								case 'autre': ?><img src="gfx/autre.png"/> Autre<?								break;
+							} ?>
+						</span>
+						<span class="intervention-participant">
+							<img src="gfx/participants.png" style="vertical-align:absbottom;"/>&nbsp;<?=$row_commentaire['participants']?>
+						</span>
+
+						<?	if (	($droit & PEUT_MODIFIER_FICHE_ARTISAN) ||
 								($row_commentaire['createur'] == $createur && $row_commentaire['temps_ecoule'] <= 3600) // si on est le créateur du com' et que moins d'une heure s'est écoulée
 							) { ?>
-							<td class="delete_intervention"><img src="/intranet/gfx/comment_delete.png" style="cursor:pointer;"  onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="hide_when_print" alt="Supprimer cette intervention" title="Supprimer cette intervention"/></td>
+								<img src="/intranet/gfx/comment_delete.png" onclick="delete_intervention(<?=$row_commentaire['id']?>);" class="intervention-delete hide_when_print" alt="Supprimer cette intervention" title="Supprimer cette intervention"/>
 <?						}	?>
-					
-				</tr>
-				<tr>
-					<td class="commentaire" colspan="6"><?=stripslashes($row_commentaire['commentaire'])?></td>
-				</tr>
-			</table>
+
+						<img src="../../js/boutton_images/eye.png" onclick="hide_intervention(<?=$row_commentaire['id']?>);" class="intervention-hide hide_when_print" alt="Cacher cette intervention" title="Cacher cette intervention"/>
+					</div>
+			</div><!-- fin intervention -->
 <?		} ?>
-		</div>
-<!--	</fieldset> -->
-</div>
-
-
+		</div><!-- fin big block -->
 </form>
 </body>
 </html>
