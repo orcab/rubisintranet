@@ -33,8 +33,8 @@ EOT;
 	}
 		
 		echo <<<EOT
-		{   "numero":"$data[numero]", 
-			"nom":"$data[nom]", 
+		{   "numero":"$data[numero]",
+			"nom":"$data[nom]",
 			"email":"$data[email]",
 			"tel1":"$data[tel1]",
 			"tel3":"$data[tel3]",

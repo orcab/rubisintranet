@@ -149,17 +149,27 @@ while($row = odbc_fetch_array($detail_devis)) {
 		//print_r($kit);exit;
 
 		if (isset($kit[$row['DET97']])) { // on doit afficher les info du kit
-			foreach ($kit[$row['DET97']] as $ligne)
-				$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
-								array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-								array('text' => '','text-align'=>'R','font-size'=>'8'),
-							)
-						);
-			
+			if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) {
+				foreach ($kit[$row['DET97']] as $ligne)
+					$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+									array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+									array('text' => '','text-align'=>'R','font-size'=>'8'),
+									array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
+									array('text' => '','text-align'=>'R','font-size'=>'8')
+								)
+							);
+			} else {
+				foreach ($kit[$row['DET97']] as $ligne)
+					$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
+									array('text' => ''	,'text-align'=>'R','font-size'=>'8'),
+									array('text' => '','text-align'=>'R','font-size'=>'8'),
+									array('text' => $ligne,'text-align'=>'R','font-size'=>'8'),
+									array('text' => '','text-align'=>'R','font-size'=>'8'),
+									array('text' => '','text-align'=>'R','font-size'=>'8'),
+									array('text' => '','text-align'=>'R','font-size'=>'8')
+								)
+							);
+			}
 			unset($kit[$row['DET97']]);
 		}
 
@@ -178,7 +188,6 @@ while($row = odbc_fetch_array($detail_devis)) {
 				);
 			}
 		}
-
 
 		$total_ht		+= $row['QTESA']*$row['PRINE'] + $row['ECOTAXE']*$row['QTESA']; // on rajoute la somme au total
 		$sous_total_ht	+= $row['QTESA']*$row['PRINE'] + $row['ECOTAXE']*$row['QTESA']; // on rajoute la somme au sous total
