@@ -162,7 +162,7 @@ function select_vendeur() {
 	while($row = mysql_fetch_array($res)) {
 		$tmp[$row['code']] = $row['prenom'];
 
-		foreach (explode(',',$row['groupe']) as $g) { // on consrtuit un tableau des groupes
+		foreach (explode(',',$row['groupe']) as $g) { // on construit un tableau des groupes
 			$g = trim($g) ;
 			if($g) // si un groupe précisé
 				if (array_key_exists($g,$groupes) && is_array($groupes[$g])) // deja un tableau --> on push le code vendeur
@@ -187,4 +187,30 @@ function select_vendeur() {
 	return array_merge($vendeurs,$tmp);
 }
 
+function get_email_vendeur() {
+	$res = mysql_query("SELECT UCASE(code_vendeur) AS code,email FROM employe WHERE code_vendeur IS NOT NULL AND code_vendeur<>'' ORDER BY prenom ASC");
+	$tmp = array();
+	while($row = mysql_fetch_array($res)) {
+		$tmp[$row['code']] = $row['email'];
+	}
+	return $tmp;
+}
+
+
+function is_ean13($ean13) {
+	if (strlen($ean13) != 13) return false; // le code-barres doit contenir 13 caractères
+	if (!is_numeric($ean13)) return false; // le code-barres ne doit contenir que des chiffres
+	$sum = 0;
+	for ($index = 0; $index < 12; $index ++) {
+		$number = (int) $ean13[$index];
+		if (($index % 2) != 0) $number *= 3;
+		$sum += $number;
+	}
+	$key = $ean13[12]; // clé de contrôle égale au dernier chiffre
+
+	if (10 - ($sum % 10) != $key)
+		return false;
+	else
+		return true;
+}
 ?>
