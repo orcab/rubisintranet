@@ -1,6 +1,7 @@
 <?php
 	include('../../inc/config.php');
-	
+	define('IMAGE_PATH','c:/easyphp/www/intranet/photos/articles/' );
+
 	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
@@ -22,6 +23,8 @@
 	if (isset($_GET['order']))
 		$_SESSION['order']  = $_GET['order'];
 
+	$IMAGES = rscandir(IMAGE_PATH);
+	//print_r($IMAGES);exit;
 ?>
 
 <html>
@@ -41,6 +44,15 @@ pre {
 
 a img {
 	border:none;
+}
+
+img.photo {
+	width:50px;
+}
+
+img.photo:hover {
+	width:100%;
+	z-index:200;
 }
 
 table#article {
@@ -442,7 +454,7 @@ function valider_nouveau_chemin() {
 				<option value="BT">Bernard</option>
 				<option value="CG">Charles</option>
 				<option value="JM">Jérémy</option>
-				<option value="LG">Laurent</option>
+				<option value="CK">Claude K.</option>
 			</select>
 		</td>
 	</tr>
@@ -532,6 +544,12 @@ function valider_nouveau_chemin() {
 <!-- entete + bouton de selection -->
 	<table style="width:100%;">
 	<tr>
+		<!-- photo -->
+		<td rowspan="2" class="photo" style="text-align:left;vertical-align:middle;">
+<?				if (isset($_SESSION['chemin']) && array_key_exists($_SESSION['chemin'],$IMAGES)) { // il y a une photo ?>
+					<img class="photo" src="/intranet/photos/articles/<?=preg_replace('!^'.IMAGE_PATH.'!i','',$IMAGES[$_SESSION['chemin']][0])?>"/>
+<?				} ?>
+		</td>
 		<td style="text-align:left;border:none;vertical-align:top;">
 <?			if (isset($_SESSION['chemin'])) { ?>
 				[<?=$_SESSION['chemin']?>] <b><?=e('libelle',mysql_fetch_array(mysql_query("SELECT libelle FROM pdvente WHERE chemin='".mysql_escape_string($_SESSION['chemin'])."'")))?></b>
@@ -555,6 +573,7 @@ function valider_nouveau_chemin() {
 
 <table id="article">
 	<tr>
+		<th class="photo" nowrap>photo</th>
 		<th class="code_article" nowrap>code<a href="affiche_article.php?order=code_article ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=code_article DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="fournisseur">Fournisseur<a href="affiche_article.php?order=fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="ref_fournisseur" nowrap>Ref<a href="affiche_article.php?order=ref_fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=ref_fournisseur DESC"><img src="/intranet/gfx/desc.png"></th>
@@ -617,6 +636,12 @@ EOT;
 			$row['code_article'] = trim($row['code_article']);
 ?>
 		<tr id="<?=$row['code_article']?>">
+			<!-- photo -->
+			<td class="photo">
+<?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
+					<img class="photo" src="/intranet/photos/articles/<?=preg_replace('!^'.IMAGE_PATH.'!i','',$IMAGES[$row['code_article']][0])?>"/>
+<?				} ?>
+			</td>
 			<!-- code article -->
 			<td class="code_article"><a href="javascript:detail_article('<?=$row['code_article']?>');" class="info"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['code_article']) : $row['code_article']?><span>Afficher les détails de l'article</span></a></td>
 			<!-- fournisseur -->
@@ -717,6 +742,7 @@ EOT;
 		$res = odbc_exec($loginor,"select NOART,FOUR1,DESI1,SERST from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 where ETARE='S' and ".join(' and ',$famille)) ;
 		while($row = odbc_fetch_array($res)) { ?>
 			<tr class="suspendu">
+				<td></td><!--photo-->
 				<td><?=$row['NOART']?></td>
 				<td style="font-size:9px;"><?=$row['FOUR1']?></td>
 				<td></td>
@@ -744,8 +770,27 @@ EOT;
 		odbc_close($loginor);
 	} // chemin non définit ?>
 </table>
-
 </form>
-
 </body>
-</html>
+</html><?
+
+// cherche les photos dans les répertoires
+function rscandir($base='', &$data=array()) {
+  $array = array_diff(scandir($base), array('.', '..')); # remove ' and .. from the array */
+  foreach($array as $value) { /* loop through the array at the level of the supplied $base */
+ 
+    if (is_dir($base.$value)) { /* if this is a directory */
+    //  $data[] = $base.$value.'/'; /* add it to the $data array */
+      $data = rscandir($base.$value.'/', $data); /* then make a recursive call with the
+      current $value as the $base supplying the $data array to carry into the recursion */
+    }  elseif (is_file($base.$value) &&
+				(preg_match("/^(\d+)(?:-\d+)?\.(?:jpe?g|png)$/i",$value,$regs) ||
+				 preg_match("/^((?:[\d\w]{3}\.?)+)(?:-\d+)?\.(?:jpe?g|png)$/i",$value,$regs) )
+			) { /* else if the current $value is a file */
+      $data[$regs[1]][] = $base.$value; /* just add the current $value to the $data array */
+    }
+  }
+  return $data; // return the $data array
+}
+
+?>
