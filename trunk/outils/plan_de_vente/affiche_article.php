@@ -24,6 +24,7 @@
 	if (isset($_GET['order']))
 		$_SESSION['order']  = $_GET['order'];
 
+	$IMAGES = array();
 	if (file_exists('images_data.php'))
 		include 'images_data.php';
 	else
