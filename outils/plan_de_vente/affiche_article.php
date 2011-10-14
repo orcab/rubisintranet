@@ -1,6 +1,6 @@
 <?php
 	include('../../inc/config.php');
-	define('IMAGE_PATH','C:/easyphp/www/intranet/tarif2/images/');
+	
 	define('REMOVE_IMAGE_PATH','C:/easyphp/www');
 
 	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
@@ -24,39 +24,21 @@
 	if (isset($_GET['order']))
 		$_SESSION['order']  = $_GET['order'];
 
-	$IMAGES = rscandir(IMAGE_PATH);
+	if (file_exists('images_data.php'))
+		include 'images_data.php';
+	else
+		echo ("Impossible de charger le fichier de cache des images");
 	//print_r($IMAGES);exit;
 ?>
-
 <html>
 <head>
 <style>
-body {
-	margin:0px;	
-}
+body { margin:0px; }
+body,pre { font-family: verdana,helvetica; }
+pre { font-size:10px; }
+a img { border:none; }
 
-body,pre {
-	font-family: verdana,helvetica;
-}
-
-pre {
-	font-size:10px;
-}
-
-a img {
-	border:none;
-}
-
-img.photo {
-	width:50px;
-}
-
-/*
-img.photo:hover {
-	width:100%;
-	z-index:200;
-}
-*/
+img.photo { width:50px; }
 
 table#article {
 	width:100%;
@@ -127,35 +109,25 @@ div#detail-article, div#arbre-deplacement {
 }
 
 
-div#detail-article table {
-	font-size:0.6em;
-}
+div#detail-article table { font-size:0.6em; }
 
-div#detail-article table td,div#detail-article table th {
-	vertical-align:bottom;
-}
+div#detail-article table td,div#detail-article table th { vertical-align:bottom; }
 
-table#article th {
-	background:#C0C0C0;
-}
+table#article th { background:#C0C0C0; }
 
 table#article th.<?=e(0,explode(' ',$_SESSION['order']))?>,  table#article td.<?=e(0,explode(' ',$_SESSION['order']))?> {
 	border-left:solid 2px black;
 	border-right:solid 2px black;
 }
 
-table#article td.<?=e(0,explode(' ',$_SESSION['order']))?> {
-	background-color:#D0D0D0;
-}
+table#article td.<?=e(0,explode(' ',$_SESSION['order']))?> { background-color:#D0D0D0; }
 
 td strong {
 	font-weight:bold;
 	color:green;
 }
 
-strong.condi {
-	color:black;
-}
+strong.condi { color:black; }
 
 div#photo {
 	padding:15px;
@@ -176,8 +148,7 @@ div#photo {
 <!--
 
 function detail_article(code_article) {
-	$('#detail-article').css('top',document.body.scrollTop +100);
-	$('#detail-article').css('left',screen.availWidth / 2 - 300);
+	$('#detail-article').css({'top':document.body.scrollTop +100,'left':screen.availWidth / 2 - 300});
 
 	$('#detail_article_designation1').html('');
 	$('#detail_article_designation2').html('');
@@ -260,7 +231,6 @@ function inverse_servi_article(obj_img,code_article) {
 
 						$('#dialogue').html('OK');
 						$('#dialogue').fadeOut(2000);
-
 						if (json['debug']) $('#debug').html(json['debug']);
 					}	
 	});
@@ -268,10 +238,9 @@ function inverse_servi_article(obj_img,code_article) {
 
 function inverse_tarif_article(obj_img,code_article) {
 
-	$('#dialogue').html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.");
-	$('#dialogue').css('top',document.body.scrollTop +100);
-	$('#dialogue').css('left',screen.availWidth / 2 - 300);
-	$('#dialogue').show();
+	$('#dialogue')	.html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.")
+					.css({'top':document.body.scrollTop +100,'left':screen.availWidth / 2 - 300})
+					.show();
 
 	$.ajax({
 			url: 'ajax.php',
@@ -282,9 +251,7 @@ function inverse_tarif_article(obj_img,code_article) {
 						if (json['stock'])	obj_img.src = 'gfx/catalogue_yes.png';
 						else				obj_img.src = 'gfx/catalogue_no.png';
 
-						$('#dialogue').html('OK');
-						$('#dialogue').fadeOut(2000);
-
+						$('#dialogue').html('OK').fadeOut(2000);
 						if (json['debug']) $('#debug').html(json['debug']);
 					}
 	});
@@ -293,10 +260,9 @@ function inverse_tarif_article(obj_img,code_article) {
 
 function inverse_etat_article(obj_img,code_article,chemin) {
 
-	$('#dialogue').html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.");
-	$('#dialogue').css('top',document.body.scrollTop +100);
-	$('#dialogue').css('left',screen.availWidth / 2 - 300);
-	$('#dialogue').show();
+	$('#dialogue')	.html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.")
+					.css({'top':document.body.scrollTop +100,'left':screen.availWidth / 2 - 300})
+					.show();
 
 	$.ajax({
 			url: 'ajax.php',
@@ -313,9 +279,7 @@ function inverse_etat_article(obj_img,code_article,chemin) {
 							$('#'+code_article).addClass('suspendu');
 						}
 
-						$('#dialogue').html('OK');
-						$('#dialogue').fadeOut(2000);
-
+						$('#dialogue').html('OK').fadeOut(2000);
 						if (json['debug']) $('#debug').html(json['debug']);
 					}	
 	});
@@ -324,10 +288,9 @@ function inverse_etat_article(obj_img,code_article,chemin) {
 
 function valider_detail_article() {
 	$('#detail-article').hide();
-	$('#dialogue').html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.");
-	$('#dialogue').css('top',document.body.scrollTop +100);
-	$('#dialogue').css('left',screen.availWidth / 2 - 300);
-	$('#dialogue').show();
+	$('#dialogue')	.html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.")
+					.css({'top':document.body.scrollTop +100,'left':screen.availWidth / 2 - 300})
+					.show();
 
 	$.ajax({
 			url: 'ajax.php',
@@ -343,10 +306,7 @@ function valider_detail_article() {
 					'&edition_tarif='+(document.article.detail_article_edition_tarif.checked ? 'OUI':'NON'),
 			success: function(result){
 						var json = eval('(' + result + ')') ;
-						
-						$('#dialogue').html('OK');
-						$('#dialogue').fadeOut(2000);
-
+						$('#dialogue').html('OK').fadeOut(2000);
 						if (json['debug']) $('#debug').html(json['debug']);
 					}	
 	});
@@ -384,9 +344,8 @@ function affiche_arbre_deplacement() {
 			nb_article_coche++;
 	
 	if (nb_article_coche) { // si un moins un article est coché
-		$('#arbre-deplacement').css('top',document.body.scrollTop +100);
-		$('#arbre-deplacement').css('left',screen.availWidth / 2 - 300);
-		$('#arbre-deplacement').show();
+		$('#arbre-deplacement')	.css({'top':document.body.scrollTop +100,'left':screen.availWidth / 2 - 300})
+								.show();
 	} else
 		alert("Veuillez sélectionner au moins un article avant");
 }
@@ -399,10 +358,9 @@ function valider_nouveau_chemin() {
 	if (document.article.nouveau_chemin.value) {
 
 		$('#arbre-deplacement').hide();
-		$('#dialogue').html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.");
-		$('#dialogue').css('top',document.body.scrollTop +100);
-		$('#dialogue').css('left',screen.availWidth / 2 - 300);
-		$('#dialogue').show();
+		$('#dialogue')	.html("<img src=\"gfx/loading3.gif\" align=\"absmiddle\"> En cours de modification.")
+						.css({'top':document.body.scrollTop +100,'left':screen.availWidth / 2 - 300})
+						.show();
 
 		code_article = '' ;
 		for(i=0 ; i<document.article.elements.length ; i++) {
@@ -419,8 +377,7 @@ function valider_nouveau_chemin() {
 				data:	'what=valider_nouveau_chemin&chemin=' + document.article.nouveau_chemin.value + code_article,
 				success: function(result){
 							var json = eval('(' + result + ')') ;
-							$('#dialogue').html('OK');
-							$('#dialogue').fadeOut(2000);
+							$('#dialogue').html('OK').fadeOut(2000);
 							if (json['debug']) $('#debug').html(json['debug']); // on affiche le debug
 							document.location.reload(false); // on recharge la page
 						}	
@@ -802,21 +759,4 @@ EOT;
 </table>
 </form>
 </body>
-</html><?
-
-// cherche les photos dans les répertoires
-function rscandir($base='', &$data=array()) {
-  $array = array_diff(scandir($base), array('.', '..')); # remove ' and .. from the array */
-  foreach($array as $value) { /* loop through the array at the level of the supplied $base */
- 
-    if (is_dir($base.$value)) { /* if this is a directory */
-		//$data[] = $base.$value.'/'; /* add it to the $data array */
-		$data = rscandir($base.$value.'/', $data); /* then make a recursive call with the current $value as the $base supplying the $data array to carry into the recursion */
-    }  elseif (is_file($base.$value) && (preg_match("/(.+?)\.(?:jpe?g|png)$/i",$value,$regs))) { /* else if the current $value is a file */
-		$data[$regs[1]][] = $base.$value; /* just add the current $value to the $data array */
-    }
-  }
-  return $data; // return the $data array
-}
-
-?>
+</html>
