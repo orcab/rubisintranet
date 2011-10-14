@@ -1,6 +1,7 @@
 <?php
 	include('../../inc/config.php');
-	define('IMAGE_PATH','c:/easyphp/www/intranet/photos/articles/' );
+	define('IMAGE_PATH','C:/easyphp/www/intranet/tarif2/images/');
+	define('REMOVE_IMAGE_PATH','C:/easyphp/www');
 
 	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
@@ -50,10 +51,12 @@ img.photo {
 	width:50px;
 }
 
+/*
 img.photo:hover {
 	width:100%;
 	z-index:200;
 }
+*/
 
 table#article {
 	width:100%;
@@ -152,6 +155,17 @@ td strong {
 
 strong.condi {
 	color:black;
+}
+
+div#photo {
+	padding:15px;
+	border:solid 2px #555;
+	background:white;
+	display:none;
+	position:absolute;
+	color:black;
+	font-size:1.2em;
+	z-index:99;
 }
 
 </style>
@@ -417,6 +431,20 @@ function valider_nouveau_chemin() {
 <? } // fin de peut déplacer article ?>
 
 
+$(document).ready(function(){
+	$('img.photo').bind('mouseover',function(){
+		//alert($(this).offset().top + 'px    '+$(this).offset().left+'px');
+		var offset = $(this).offset();
+		$('#photo')	.html('<img src="'+$(this).attr('src')+'"/>')
+					.css({'top':offset.top+'px','left':offset.left+'px'})
+					.bind('mouseout',function(){
+						$('#photo').hide();
+					})
+					.show();
+	});// fin mouseover
+}); // document.ready
+
+
 //-->
 </SCRIPT>
 </head>
@@ -426,6 +454,8 @@ function valider_nouveau_chemin() {
 <form name="article" method="POST">
 
 <div id="debug"></div>
+
+<div id="photo"></div>
 
 <!-- boite de dialogue pour faire patienté pendant l'ajax -->
 <div id="dialogue"></div>
@@ -547,7 +577,7 @@ function valider_nouveau_chemin() {
 		<!-- photo -->
 		<td rowspan="2" class="photo" style="text-align:left;vertical-align:middle;">
 <?				if (isset($_SESSION['chemin']) && array_key_exists($_SESSION['chemin'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="/intranet/photos/articles/<?=preg_replace('!^'.IMAGE_PATH.'!i','',$IMAGES[$_SESSION['chemin']][0])?>"/>
+					<img class="photo" src="<?=preg_replace('!^'.REMOVE_IMAGE_PATH.'!i','',$IMAGES[$_SESSION['chemin']][0])?>"/>
 <?				} ?>
 		</td>
 		<td style="text-align:left;border:none;vertical-align:top;">
@@ -639,7 +669,7 @@ EOT;
 			<!-- photo -->
 			<td class="photo">
 <?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="/intranet/photos/articles/<?=preg_replace('!^'.IMAGE_PATH.'!i','',$IMAGES[$row['code_article']][0])?>"/>
+					<img class="photo" src="<?=preg_replace('!^'.REMOVE_IMAGE_PATH.'!i','',$IMAGES[$row['code_article']][0])?>"/>
 <?				} ?>
 			</td>
 			<!-- code article -->
@@ -780,14 +810,10 @@ function rscandir($base='', &$data=array()) {
   foreach($array as $value) { /* loop through the array at the level of the supplied $base */
  
     if (is_dir($base.$value)) { /* if this is a directory */
-    //  $data[] = $base.$value.'/'; /* add it to the $data array */
-      $data = rscandir($base.$value.'/', $data); /* then make a recursive call with the
-      current $value as the $base supplying the $data array to carry into the recursion */
-    }  elseif (is_file($base.$value) &&
-				(preg_match("/^(\d+)(?:-\d+)?\.(?:jpe?g|png)$/i",$value,$regs) ||
-				 preg_match("/^((?:[\d\w]{3}\.?)+)(?:-\d+)?\.(?:jpe?g|png)$/i",$value,$regs) )
-			) { /* else if the current $value is a file */
-      $data[$regs[1]][] = $base.$value; /* just add the current $value to the $data array */
+		//$data[] = $base.$value.'/'; /* add it to the $data array */
+		$data = rscandir($base.$value.'/', $data); /* then make a recursive call with the current $value as the $base supplying the $data array to carry into the recursion */
+    }  elseif (is_file($base.$value) && (preg_match("/(.+?)\.(?:jpe?g|png)$/i",$value,$regs))) { /* else if the current $value is a file */
+		$data[$regs[1]][] = $base.$value; /* just add the current $value to the $data array */
     }
   }
   return $data; // return the $data array
