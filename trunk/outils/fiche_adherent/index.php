@@ -123,6 +123,11 @@ table.liste td:hover {
 	-moz-box-shadow: 0 0 9px #6a9dca;
 }
 
+.ville {
+	color:grey;
+	font-size:0.8em;
+}
+
 .artisan-annule {
 	text-decoration:line-through;
 	color:#999;
@@ -259,7 +264,8 @@ $(document).ready(function(){
 // récupère la liste des artisans non visité depuis 1 an
 $sql = <<<EOT
 SELECT	nom,artisan.numero,
-		UNIX_TIMESTAMP((SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan' ORDER BY date_creation DESC LIMIT 0,1)) AS last_visite
+		UNIX_TIMESTAMP((SELECT date_creation FROM artisan_commentaire WHERE artisan_commentaire.code_artisan=artisan.numero AND artisan_commentaire.supprime=0 AND `type`='visite_artisan' ORDER BY date_creation DESC LIMIT 0,1)) AS last_visite,
+		ville
 FROM	artisan
 WHERE		suspendu=0
 ORDER BY nom ASC
@@ -271,7 +277,7 @@ while($row = mysql_fetch_array($res)) {
 		$date_diff = $row['last_visite'] ? $now - $row['last_visite'] : $one_year_in_second;
 ?>	
 <?	if ($date_diff >= $one_year_in_second) { ?>
-		<tr><td onclick="goTo('<?=$row['numero']?>');"><?=$row['nom']?> <?=$row['last_visite']?></td></tr>
+		<tr><td onclick="goTo('<?=$row['numero']?>');" nowrap><?=$row['nom']?> <?=$row['last_visite']?> <span class="ville">(<?=$row['ville']?>)</span></td></tr>
 <?	}
 } ?>
 </table>
@@ -280,49 +286,43 @@ while($row = mysql_fetch_array($res)) {
 <div id="liste-container">
 
 <table class="liste" id="liste-dernier-visite">
-	<caption>Visité dernierement</caption>
+	<caption>Visité depuis 3 mois</caption>
 <?
 // récupère la liste des artisans visités recemement
 $sql = <<<EOT
-SELECT	date_creation as last_visite, code_artisan as numero, createur, humeur, nom
+SELECT	DATE_FORMAT(date_creation,'%d %b %Y') as last_visite_format, DATE_FORMAT(date_creation,'%w') as day_of_week, code_artisan as numero, createur, humeur, nom
 FROM	artisan_commentaire AC
 	LEFT JOIN artisan A
 		ON AC.code_artisan = A.numero
 WHERE	supprime=0
-	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 1 YEAR) -- un an maximum
+	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 3 MONTH) -- un an maximum
 	AND `type`='visite_artisan'
-GROUP BY	code_artisan
 ORDER BY	date_creation DESC
 EOT;
 
-$res = mysql_query($sql) or die("ne peux pas retrouver la liste des artisans visité dernierement".mysql_error());
-while($row = mysql_fetch_array($res)) { ?>
-	<tr>
-		<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
-		<div class="date">
-		<img src="gfx/artisan.png" style="vertical-align:top;" title="Visite chez l'artisan"/><?=$row['createur']?> le 
-		<?	
-			preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['last_visite'],$last_visite);
-			$last_visite_time = mktime(	$last_visite[4],	// hour
-										$last_visite[5],	// min
-										$last_visite[6],	// sec
-										$last_visite[2],		// mounth
-										$last_visite[3],		// day
-										$last_visite[1]) ;	// year (4 digit)
-			$last_visite_formater = date('d M Y',$last_visite_time);
-			$last_visite_formater = $jours_mini[date('w',$last_visite_time)]." $last_visite_formater";
-			echo $last_visite_formater;
+$artisan_deja_affiche = array();
 
-			switch ($row['humeur']) {
-				case 0: ?><?																												break;
-				case 1: ?>&nbsp;<img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" style="vertical-align:top;" /><?			break;
-				case 2: ?>&nbsp;<img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" style="vertical-align:top;" /><?	break;
-				case 3: ?>&nbsp;<img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" style="vertical-align:top;" /><?			break;
-			} ?>
-		</div>
-		</td>
-	</tr>
-<? } ?>
+$res = mysql_query($sql) or die("ne peux pas retrouver la liste des artisans visité dernierement".mysql_error());
+while($row = mysql_fetch_array($res)) {
+	if (!isset($artisan_deja_affiche[$row['numero']])) { ?>
+		<tr>
+			<td onclick="goTo('<?=$row['numero']?>')"><?=$row['nom']?><br/>
+			<div class="date">
+			<img src="gfx/artisan.png" style="vertical-align:top;" title="Visite chez l'artisan"/>
+				<?=$row['createur']?> le <?=$jours_mini[$row['day_of_week']]?> <?=$row['last_visite_format']?>
+			<?	
+				switch ($row['humeur']) {
+					case 0: ?><?																													break;
+					case 1: ?>&nbsp;<img src="/intranet/gfx/weather-clear.png" alt="Content" title="Content" style="vertical-align:top;" /><?		break;
+					case 2: ?>&nbsp;<img src="/intranet/gfx/weather-few-clouds.png" alt="Mausade" title="Mausade" style="vertical-align:top;" /><?	break;
+					case 3: ?>&nbsp;<img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" style="vertical-align:top;" /><?			break;
+				} ?>
+			</div>
+			</td>
+		</tr>
+<?		$artisan_deja_affiche[$row['numero']] = true;
+	}
+} ?>
 </table>
 
 
@@ -336,8 +336,8 @@ FROM	artisan_commentaire AC
 	LEFT JOIN artisan A
 		ON AC.code_artisan = A.numero
 WHERE	supprime=0
-	AND	date_creation <= NOW() and date_creation >= DATE_SUB(NOW(),INTERVAL 1 YEAR) -- un an maximum
 ORDER BY	date_creation DESC
+LIMIT 0,20
 EOT;
 
 $res = mysql_query($sql) or die("ne peux pas retrouver la liste des derniers commentaires".mysql_error());
