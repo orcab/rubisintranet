@@ -61,7 +61,7 @@ if(isset($_GET['action']) && $_GET['action']=='delete' && isset($_GET['id']) && 
 	$row = mysql_fetch_array($res);
 	#mysql_query("DELETE FROM devis WHERE id=$_GET[id]");
 	mysql_query("UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
-	devis_log("delete_devis",$_GET['id'],"UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
+	//devis_log("delete_devis",$_GET['id'],"UPDATE devis SET supprime=1 WHERE id='$_GET[id]'");
 	$message = "Le devis n&deg; $row[numero] a &eacute;t&eacute; correctement supprim&eacute;";
 }
 
@@ -71,7 +71,7 @@ if(isset($_GET['action']) && $_GET['action']=='delete_relance' && isset($_GET['i
 	$row = mysql_fetch_array($res);
 	#mysql_query("DELETE FROM devis_relance WHERE id=$_GET[id]") ;
 	mysql_query("UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'") or die("Ne peux pas supprimer la relance ".mysql_error());
-	devis_log("delete_relance",$_GET['id'],"UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'");
+	//devis_log("delete_relance",$_GET['id'],"UPDATE devis_relance SET supprime=1 WHERE id='$_GET[id]'");
 	$message = "La relance du devis n&deg; $row[numero] a &eacute;t&eacute; correctement supprim&eacute;e";
 }
 
@@ -80,14 +80,14 @@ if(isset($_POST['action']) && $_POST['action']=='saisie_relance' && isset($_POST
 	$date = implode('-',array_reverse(explode('/',$_POST['relance_date']))).' '.$_POST['relance_heure'].':00'; //2007-09-10 14:16:59;
 	$sql = "INSERT INTO devis_relance (id_devis,`date`,representant,`type`,humeur,commentaire) VALUES ($_POST[id],'$date','$_POST[relance_representant]','$_POST[relance_type]',$_POST[relance_humeur],'".mysql_escape_string($_POST['relance_commentaire'])."')";
 	$res = mysql_query($sql) or die("Ne peux pas enregistrer la relance client ".mysql_error());
-	devis_log("insert_relance",mysql_insert_id(),$sql);
+	//devis_log("insert_relance",mysql_insert_id(),$sql);
 	$message = "La relance client a &eacute;t&eacute; enregistr&eacute;e";
 }
 
 if(isset($_POST['action']) && $_POST['action']=='saisie_cmd' && isset($_POST['id']) && $_POST['id']) { // mode saisie de cmd client
 	$sql = "UPDATE devis SET mtht_cmd_rubis=NULL, num_cmd_rubis='".strtoupper(ereg_replace("[^A-Za-z0-9]+",",",trim($_POST['cmd'])))."' WHERE id=$_POST[id]";
 	$res = mysql_query($sql) or die("Ne peux pas enregistrer la commande client ".mysql_error());
-	devis_log("update_num_cmd_rubis",$_POST['id'],$sql);
+	//devis_log("update_num_cmd_rubis",$_POST['id'],$sql);
 	$message = "La commande client a &eacute;t&eacute; enregistr&eacute;e";
 }
 

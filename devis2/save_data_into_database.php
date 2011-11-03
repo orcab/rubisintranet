@@ -59,7 +59,6 @@ UPDATE devis${table_sufixe} SET
 		date_maj=NOW(),
 		representant='$POST_escaped[artisan_representant]',
 		artisan='$artisan_nom_escape',
-		theme='',
 		nom_client='$POST_escaped[client_nom]',
 		adresse_client='$POST_escaped[client_adresse]',
 		adresse_client2='$POST_escaped[client_adresse2]',
@@ -75,7 +74,7 @@ EOT;
 //echo $sql ;
 
 	mysql_query($sql) or die("Erreur dans la modification du devis : ".mysql_error());
-	devis_log("update_devis",$id_devis,$sql);
+	//devis_log("update_devis",$id_devis,$sql);
 	
 
 } else {
@@ -101,7 +100,7 @@ EOT;
 
 	mysql_query($sql) or die("Erreur dans la creation du devis : ".mysql_error());
 	$id_devis = mysql_insert_id();
-	devis_log("insert_devis",$id_devis,$sql);
+	//devis_log("insert_devis",$id_devis,$sql);
 }
 
 
@@ -111,7 +110,7 @@ $total_devis		= 0 ;
 $total_devis_adh	= 0 ;
 $option				= 0 ;
 mysql_query("DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
-devis_log("delete_ligne",$id_devis,"DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'");
+//devis_log("delete_ligne",$id_devis,"DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'");
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // ARTICLE SPÉCIFIÉ
 		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,`option`) VALUES" ;
@@ -131,7 +130,6 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 			$total_devis_adh	+= $_POST['a_qte'][$i] * str_replace(',','.',$_POST['a_adh_pu'][$i]);
 		}
 		
-
 		mysql_query($sql) or die("Erreur dans creation des lignes devis : ".mysql_error()."<br>\n$sql");
 		
 	} elseif(!$_POST['a_reference'][$i] && $_POST['a_designation'][$i]) { // cas d'un commentaire
@@ -141,7 +139,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		mysql_query($sql) or die("Erreur dans creation des lignes devis (titre) : ".mysql_error());
 	}
 }
-devis_log("insert_lignes",$id_devis);
+//devis_log("insert_lignes",$id_devis);
 
 
 // ENREGISTREMENT DES MOFIDICATIONS ARTICLE DANS LA BASE (OU CREATION)
@@ -175,9 +173,9 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 								" AND	reference="		."'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))		."'" ;
 
 			mysql_query($sql) or die("Erreur dans la mise à jour des articles : ".mysql_error()."<br/>\n$sql");
-			devis_log("replace_article",$id_devis,$sql);
+			//devis_log("replace_article",$id_devis,$sql);
 		} else {
-			devis_log("create_article",$id_devis,$sql);
+			//devis_log("create_article",$id_devis,$sql);
 		}
 	}
 }
