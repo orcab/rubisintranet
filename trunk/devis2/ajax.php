@@ -123,7 +123,7 @@ EOT;
 
 	// mise a jour de la base avec le montant pour éviter une recherche future
 	mysql_query("UPDATE devis SET mtht_cmd_rubis='$prix_cmd_rubis' WHERE id=$_GET[id]");
-	devis_log("update_montant_cmd_rubis",$_GET['id'],$sql);
+	//devis_log("update_montant_cmd_rubis",$_GET['id'],$sql);
 
 	odbc_close($loginor);
 	echo json_encode($prix_cmd_rubis);

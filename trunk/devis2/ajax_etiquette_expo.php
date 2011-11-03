@@ -92,6 +92,7 @@ SELECT
 from	articles
 where
 	$tmp
+--	AND code_mcs NOT LIKE '15%'
 EOT;
 
 	//echo "\n$sql"; exit;
