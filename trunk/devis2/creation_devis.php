@@ -31,8 +31,8 @@ if (isset($_GET['id'])) { // mode modification
 	// mode creation
 	// on crée un faux devis qu'il faudra compléter
 	$sql = <<<EOT
-INSERT INTO devis	(`date`,date_maj,representant,		artisan,	nom_client,	ville_client,	tel_client)
-VALUES				(NOW(),	NOW(),	'$representant',	'EDITION',	'EDITION',	'EDITION',		'EDITION')
+INSERT INTO devis	(`date`,date_maj,representant,		code_artisan,	artisan,	nom_client,	ville_client,	tel_client)
+VALUES				(NOW(),	NOW(),	'$representant',	'EDITIO'	,'EDITION',	'EDITION',	'EDITION',		'EDITION')
 EOT;
 	mysql_query($sql) or die("Erreur dans la creation du dummy devis : ".mysql_error()."<br/>\n$sql");
 	$id = mysql_insert_id();
@@ -86,12 +86,16 @@ var auto_save = true;
 <? } ?>
 
 
-function affiche_adherent() {
-	var value_selected = document.creation_devis.artisan_nom.options[document.creation_devis.artisan_nom.selectedIndex].value ;
-	if (value_selected == 'NON Adherent' || value_selected == 'CAB 56')
+function affiche_adherent(obj) {
+	var value_selected = obj.options[obj.selectedIndex].value ;
+	if (value_selected == 'NON Adherent' || value_selected == 'CAB 56 (056039)') {
+		//document.creation_devis.artisan_code.value='';
 		$('#artisan_nom_libre').show('fast');
-	else
+	} else {
+		//var matches = value_selected.match(/ \((.+?)\)$/); // capture le code artisan dans le nom
+		//document.creation_devis.artisan_code.value=matches[1];
 		$('#artisan_nom_libre').hide('fast');
+	}
 }
 
 function cache_sugest() {
@@ -128,7 +132,7 @@ function make_all_bind() {
 	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').unbind('change');
 	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').change(function() {
 		var parent_td = $(this).parents('tr').children('td') ;
-		if (parent_td.children('input[name^=a_reference]').val() && parent_td.children('input[name^=a_fournisseur]').val()) // si on a une référence et un fournisseur, c'est que l'on edit un article. Sinon on écris jsute un com'
+		if (parent_td.children('input[name^=a_reference]').val() && parent_td.children('input[name^=a_fournisseur]').val()) // si on a une référence et un fournisseur, c'est que l'on edit un article. Sinon on écrit juste un com'
 			parent_td.children('div.modification').show();
 	});
 
@@ -552,24 +556,29 @@ div#sauvegarde {
 <tr>
 	<th>Artisan</th>
 	<td>
-		<select name="artisan_nom" onchange="affiche_adherent();" TABINDEX="2">
+		<select name="artisan_nom" onchange="affiche_adherent(this);" TABINDEX="2">
 			<option value="NON Adherent">Artisan NON ADHERENT</option>
-<?			$res  = mysql_query("SELECT nom FROM artisan WHERE suspendu='0' ORDER BY nom ASC") or die("Ne peux pas récupérer la liste des adhérents ".mysql_error());
+<?			$res  = mysql_query("SELECT nom,numero FROM artisan WHERE suspendu='0' ORDER BY nom ASC") or die("Ne peux pas récupérer la liste des adhérents ".mysql_error());
 			$a_trouve_artisan = FALSE ;
+			$artisan_code = '';
 			while ($row = mysql_fetch_array($res)) {
 				if ($modif) { //modif ?>
-					<option value="<?=$row['nom']?>"<?
+					<option value="<?=$row['nom']?> (<?=$row['numero']?>)"<?
 						if ($row_devis['artisan']==$row['nom']) {
-							echo ' selected'; $a_trouve_artisan = TRUE ;
+							echo ' selected';
+							$a_trouve_artisan = TRUE ;
+							$artisan_code = $row['numero'];
 						} elseif ($row['nom']=='CAB 56' && eregi('^CAB 56',$row_devis['artisan'])) {
 							echo ' selected';
+							$artisan_code = '';
 						}
 						?>><?=$row['nom']?></option>
 <?				} else { // creation ?>
-					<option value="<?=$row['nom']?>"><?=$row['nom']?></option>
+					<option value="<?=$row['nom']?> (<?=$row['numero']?>)"><?=$row['nom']?></option>
 <?				}	
 			} ?>
-		</select><br/><input id="artisan_nom_libre" <?= $a_trouve_artisan ? 'style="visibility:hidden;"' : ''?> type="text" name="artisan_nom_libre" value="<?= $modif && !$a_trouve_artisan ? eregi_replace('^CAB 56 : ','',$row_devis['artisan']):''; ?>">
+		</select><br/><input id="artisan_nom_libre" <?= $a_trouve_artisan ? 'style="display:none;"' : ''?> type="text" name="artisan_nom_libre" value="<?= $modif && !$a_trouve_artisan ? eregi_replace('^CAB 56 : ','',$row_devis['artisan']):''; ?>" />
+		<!--<input type="hidden" name="artisan_code" value="<?=$artisan_code?>"/>-->
 	</td>
 	<td></td>
 	<th>Adresse (ligne 1)</th>
