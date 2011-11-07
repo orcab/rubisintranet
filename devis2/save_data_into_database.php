@@ -8,8 +8,18 @@ $table_sufixe = '';
 if ($draft) $table_sufixe = '_draft';
 
 $id_devis = isset($_POST['id_devis']) && $_POST['id_devis'] ? $_POST['id_devis'] : '';
+
+// on extrait le code artisan du nom
+$code_artisan	= '';
+if (preg_match('/(.+?) \((.+?)\)$/',$_POST['artisan_nom'],$matches)) {
+	$artisan_nom			= $matches[1] ;
+	$code_artisan			= $matches[2] ;
+	$_POST['artisan_nom']	= $matches[1] ;
+} else {
+	$artisan_nom	= $_POST['artisan_nom'];
+}
+
 // SI L'ARTISAN N'EST PAS ADHERENT, ON PREND LE LIBÉLLÉ LIBRE !
-$artisan_nom = $_POST['artisan_nom'] ;
 if		($_POST['artisan_nom'] == 'NON Adherent' && $_POST['artisan_nom_libre'])
 	$artisan_nom = $_POST['artisan_nom_libre'] ;
 elseif ($_POST['artisan_nom'] == 'CAB 56' && $_POST['artisan_nom_libre'])
@@ -29,12 +39,13 @@ if($id_devis) { // mode modification
 	
 	if ($draft) { // on creer le devis brouillon s'il n'existe pas
 		$sql = <<<EOT
-INSERT IGNORE INTO devis_draft (id,`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
+INSERT IGNORE INTO devis_draft (id,`date`,date_maj,representant,code_artisan,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
 VALUES (
 	'$id_devis',
 	'$date',
 	NOW(),
 	'$POST_escaped[artisan_representant]',
+	'$code_artisan',
 	'$artisan_nom_escape',
 	'$POST_escaped[client_nom]',
 	'$POST_escaped[client_adresse]',
@@ -47,8 +58,7 @@ VALUES (
 	'$POST_escaped[devis_num_devis_rubis]'
 )
 EOT;
-	mysql_query($sql) or die("Erreur dans la creation du devis brouillon : ".mysql_error());
-
+		mysql_query($sql) or die("Erreur dans la creation du devis brouillon : ".mysql_error());
 	}
 
 
@@ -58,6 +68,7 @@ UPDATE devis${table_sufixe} SET
 		`date`='$date',
 		date_maj=NOW(),
 		representant='$POST_escaped[artisan_representant]',
+		code_artisan='$code_artisan',
 		artisan='$artisan_nom_escape',
 		nom_client='$POST_escaped[client_nom]',
 		adresse_client='$POST_escaped[client_adresse]',
@@ -80,11 +91,12 @@ EOT;
 } else {
 	// ENREGISTREMENT DU DEVIS DANS LA BASE
 	$sql = <<<EOT
-		INSERT INTO devis${table_sufixe}	(`date`,date_maj,representant,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
+		INSERT INTO devis${table_sufixe}	(`date`,date_maj,representant,code_artisan,artisan,nom_client,adresse_client,adresse_client2,codepostal_client,ville_client,tel_client,tel_client2,email_client,num_devis_rubis)
 		VALUES (
 			'$date',
 			NOW(),
 			'$POST_escaped[artisan_representant]',
+			'$code_artisan',
 			'$artisan_nom_escape',
 			'$POST_escaped[client_nom]',
 			'$POST_escaped[client_adresse]',
@@ -189,8 +201,5 @@ if (!$draft) {
 }
 
 
-
 } // fin save_data_into_database
-
-
 ?>
