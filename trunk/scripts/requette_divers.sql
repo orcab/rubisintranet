@@ -14,7 +14,7 @@ update AFAGESTCOM.AARTICP1 set ART06='NON' where CDKIT='OUI' -- fiche article
 update AFAGESTCOM.ASTOFIP1 set STO10='N' where NOART IN (select NOART from AFAGESTCOM.AARTICP1 where CDKIT='OUI') -- fiche de stock
 
 -- conditionnement d'achat divisible
-update AFAGESTCOM.AARFOUP1 set ARF03='OUI' -- fiche article-fournisseur
+update AFAGESTCOM.AARFOUP1 set ARF03='OUI' where NOART like '02%' -- fiche article-fournisseur
 
 -- passe les achat interdit de blanc a "non" sur la fiche de stock
 update AFAGESTCOM.ASTOFIP1 set STO11='N' where STO11='' --fiche de stock
