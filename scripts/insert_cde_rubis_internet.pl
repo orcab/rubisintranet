@@ -4,6 +4,7 @@ my $VERSION = 3.0;
 use constant ;
 use Data::Dumper;					# pour les test
 use Win32::ODBC;					# pour se connecter à Loginor en ODBC
+use Mysql;							# pour se connecter à Mysql
 use File::Copy;						# pour le déplacement de fichier
 use strict ;						# pour la clareté du script
 use POSIX qw(strftime);				# pour faire des print propre
@@ -21,7 +22,7 @@ use constant {
 
 $|=1;								# pour ne pas flusher directement les sortie print
 
-my %skip	= qw/init 0 bon 0 devis 0 vendeurs 0 compress 0 upload 0 vaccum 0/;
+my %skip	= qw/init 0 bon 0 devis 0 vendeurs 0 devis_expo 0 compress 0 upload 0 vaccum 0/;
 my %options = ();
 GetOptions (\%options, 'skip=s','all','help|?','version','dbname=s','from=s','to=s') or die ;
 
@@ -60,7 +61,8 @@ my $thirty_days_ago			= strftime('%Y-%m-%d'	,0,0,0,	strftime('%d', localtime) - 
 my $thirty_days_ago_rubis	= strftime('%Y%m%d'		,0,0,0,	strftime('%d', localtime) - 7, strftime('%m', localtime) - 1, strftime('%Y', localtime) - 1900) ;
 my $loginor					= new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 my $sqlite					= DBI->connect('dbi:SQLite:'.$options{'dbname'},'','',{ RaiseError => 0, AutoCommit => 0 }) or die("Pas de DB");
-
+my $mysql					= Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_USER},$cfg->{MYSQL_PASS}) or die "Peux pas se connecter a mysql";
+   $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 # creation de la base SQLite
 goto END_INIT if $skip{'init'};
@@ -153,11 +155,11 @@ while($loginor->FetchRow()) {
 
 		# supprime l'ancien bon et le détail grace au trigger
 		$sqlite->do("DELETE FROM cde_rubis WHERE numero_bon='$row{NOBON}' and numero_artisan='$row{NOCLI}'");
-		if ($sqlite->err()) { die "$DBI::errstr\n"; }
+		die "$DBI::errstr\n" if $sqlite->err();
 
 		# insert la nouvelle entete de commande
 		$sqlite->do("INSERT OR IGNORE INTO cde_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,montant_dispo,montant_livre,reference,chantier,agence,nb_livre,nb_prepa,nb_dispo) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',0,$row{MONTBT},0,0,'$row{RFCSB}','$row{CHAD1}','$row{AGELI}','0','0','0')");
-		if ($sqlite->err()) { die "$DBI::errstr\n"; }
+		die "$DBI::errstr\n" if $sqlite->err();
 	}
 
 	# calcul du nombre de dispo, montant dispo, nombre de prepa
@@ -193,7 +195,7 @@ while($loginor->FetchRow()) {
 			|	($row{'PROFI'} eq '9'	? ETAT_COMMENTAIRE:0)
 		)
 		.",'$row{DATE_LIV_FOURNISSEUR}','".($row{'DATE_LIV_FOURNISSEUR_CONFIRM'} eq 'OUI'?1:0)."','".($date_dispo eq '--' ? '':$date_dispo)."')");
-	if ($sqlite->err()) { die "$DBI::errstr\n"; }
+	die "$DBI::errstr\n" if $sqlite->err();
 
 	$old_bon = "$row{NOBON}.$row{NOCLI}";
 }
@@ -268,18 +270,18 @@ while($loginor->FetchRow()) {
 	if ($old_bon ne "$row{NOBON}.$row{NOCLI}") { #nouveau
 		# supprime l'ancien bon et le détail grace au trigger
 		$sqlite->do("DELETE FROM devis_rubis WHERE numero_bon='$row{NOBON}' and numero_artisan='$row{NOCLI}'");
-		if ($sqlite->err()) { die "$DBI::errstr\n"; }
+		die "$DBI::errstr\n" if $sqlite->err();
 
 		# insert le nouveau
 		$sqlite->do("INSERT OR IGNORE INTO devis_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,reference,agence) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',$row{NBLIG},$row{MONTBT},'$row{RFCSB}','$row{AGELI}')");
-		if ($sqlite->err()) { die "$DBI::errstr\n"; }
+		die "$DBI::errstr\n" if $sqlite->err();
 	}
 
 	#insertion des différente ligne du bon
 	$sqlite->do("INSERT OR IGNORE INTO devis_rubis_detail (id_bon,no_ligne,code_article,fournisseur,ref_fournisseur,designation,unit,qte,prix,etat) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOLIG}','$row{CODAR}','$row{NOMFO}','$row{REFFO}','$designation','$row{UNICD}',$row{QTESA},$row{PRINE},".
 			($row{'TYCDD'} eq 'SPE' ? ETAT_SPECIAL:0)
 		.")");
-	if ($sqlite->err()) { die "$DBI::errstr\n"; }
+	die "$DBI::errstr\n" if $sqlite->err();
 
 	$old_bon = "$row{NOBON}.$row{NOCLI}";
 }
@@ -303,13 +305,67 @@ while($loginor->FetchRow()) {
 	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur
 	#insertion des vendeurs
 	$sqlite->do("INSERT OR IGNORE INTO vendeurs (code,nom,groupe_principal,suspendu) VALUES ('$row{CODPR}','$row{LIBPR}','$row{DIAP2}','$row{DIAP1}')");
-	if ($sqlite->err()) { die "$DBI::errstr\n"; }
+	die "$DBI::errstr\n" if $sqlite->err();
 }
 print "OK\n";
 END_VENDEURS: ;
 
 
+
+goto END_DEVIS_EXPO if $skip{'devis_expo'};
+
+# supprime les anciens devis expo
+print print_time()."Suppression des anciens devis expo ...";
+$sqlite->do("DELETE FROM devis_expo_detail");
+die "$DBI::errstr\n" if $sqlite->err();
+$sqlite->do("DELETE FROM devis_expo");
+die "$DBI::errstr\n" if $sqlite->err();
+print "OK\n";
+
+print print_time()."Select des devis expo ...";
+my $res = $mysql->query("SELECT * FROM devis WHERE supprime=0");	# selection des devis expo actif
+print "OK\n";
+
+print print_time()."Insertion des devis expo dans la base SQLite ...";
+while(my %row = $res->fetchhash) {
+	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur
+	#insertion des devis expo
+	$sql = <<EOT ;
+INSERT INTO devis_expo (
+	[id],[date],[date_maj],[representant],[code_artisan],[artisan],[nom_client],[adresse_client],[adresse_client2],
+	[codepostal_client],[ville_client],[tel_client],[tel_client2],[email_client],[num_devis_rubis],[num_cmd_rubis],[mtht_cmd_rubis]
+) VALUES (
+	'$row{id}','$row{date}','$row{date_maj}','$row{representant}','$row{code_artisan}','$row{artisan}','$row{nom_client}','$row{adresse_client}','$row{adresse_client2}',
+	'$row{codepostal_client}','$row{ville_client}','$row{tel_client}','$row{tel_client2}','$row{email_client}','$row{num_devis_rubis}','$row{num_cmd_rubis}','$row{mtht_cmd_rubis}'
+)
+EOT
+	$sqlite->do($sql);
+	die "$DBI::errstr\n" if $sqlite->err();
+}
+
+my $res = $mysql->query("SELECT * FROM devis_ligne"); # selection le détails des devis expo
+print "OK\n";
+
+while(my %row = $res->fetchhash) {
+	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur
+	#insertion des lignes de devis expo
+	$sql = <<EOT ;
+INSERT INTO devis_expo_detail (
+	[id],[id_devis],[code_article],[ref_fournisseur],[fournisseur],[designation],[qte],[puht],[pu_adh_ht],[stock],[expo],[option]
+) VALUES (
+	'$row{id}','$row{id_devis}','$row{code_article}','$row{ref_fournisseur}','$row{fournisseur}','$row{designation}','$row{qte}','$row{puht}','$row{pu_adh_ht}',
+	'$row{stock}','$row{expo}','$row{option}'
+)
+EOT
+	$sqlite->do($sql);
+	die "$DBI::errstr\n" if $sqlite->err();
+}
+print "OK\n";
+END_DEVIS_EXPO: ;
+
 $sqlite->commit;
+
+
 
 goto END_VACCUM if $skip{'vaccum'};
 print print_time()."Nettoyage de l'espace vide ...";
@@ -317,8 +373,10 @@ do_vacuum($sqlite);
 print "OK\n";
 END_VACCUM: ;
 
-$sqlite->disconnect();
-$loginor->Close();
+
+undef $mysql;			# close the mysql connection
+$sqlite->disconnect();	# close the sqlite connection
+$loginor->Close();		# close the loginor connection
 
 
 
@@ -510,7 +568,6 @@ EOT
 }
 
 
-
 # Creation de la table VENDEURS #####################################################################################""
 $sqlite->do('DROP TABLE IF EXISTS "vendeurs"');
 $sql = <<EOT ;
@@ -522,6 +579,60 @@ CREATE TABLE IF NOT EXISTS "vendeurs" (
 )
 EOT
 $sqlite->do($sql);
+
+
+
+
+
+# creation des table DEVIS EXPO #####################################################################################""
+	$sql = <<EOT ;
+CREATE TABLE IF NOT EXISTS [devis_expo] (
+  [id] INTEGER NOT NULL PRIMARY KEY, 
+  [date] DATETIME NOT NULL, 
+  [date_maj] DATETIME,
+  [representant] VARCHAR NOT NULL,
+  [code_artisan] VARCHAR(6),
+  [artisan] VARCHAR, 
+  [nom_client] VARCHAR, 
+  [adresse_client] TEXT, 
+  [adresse_client2] TEXT, 
+  [codepostal_client] VARCHAR(10), 
+  [ville_client] VARCHAR, 
+  [tel_client] VARCHAR, 
+  [tel_client2] TEXT, 
+  [email_client] VARCHAR, 
+  [num_devis_rubis] VARCHAR(10), 
+  [num_cmd_rubis] TEXT, 
+  [mtht_cmd_rubis] FLOAT(15, 2)	
+)
+EOT
+$sqlite->do($sql);
+
+#index
+$sqlite->do('CREATE INDEX IF NOT EXISTS [code_artisan] ON [devis_expo] ([code_artisan])');
+$sqlite->do('CREATE INDEX IF NOT EXISTS [nom_client] ON [devis_expo] ([nom_client])');
+$sqlite->do('CREATE INDEX IF NOT EXISTS [representant] ON [devis_expo] ([representant])');
+
+$sql = <<EOT ;
+CREATE TABLE IF NOT EXISTS [devis_expo_detail]	(
+	[id] INTEGER NOT NULL PRIMARY KEY, 
+	[id_devis] INTEGER NOT NULL CONSTRAINT [cle_etrangere_devis_expo] REFERENCES [devis_expo]([id]) ON DELETE CASCADE,
+	[code_article] VARCHAR(15), 
+	[ref_fournisseur] VARCHAR, 
+	[fournisseur] VARCHAR(35), 
+	[designation] TEXT, 
+	[qte] INTEGER, 
+	[puht] FLOAT(10, 2), 
+	[pu_adh_ht] FLOAT(10, 2), 
+	[stock] BOOL, 
+	[expo] BOOL, 
+	[option] BOOL
+)
+EOT
+$sqlite->do($sql);
+
+#index
+$sqlite->do('CREATE INDEX IF NOT EXISTS [id_devis] ON [devis_expo_detail] ([id_devis])');
 
 $sqlite->commit; # valide les table et les trigger
 } #fin init_sqlite

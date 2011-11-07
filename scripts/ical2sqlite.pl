@@ -95,8 +95,8 @@ EOT
 	$sqlite->do($sql);
 
 	#index sur les events
-	$sqlite->do('CREATE INDEX [date_start]	ON [event] ([start]);');
-	$sqlite->do('CREATE INDEX [date_end]	ON [event] ([end]);');
+	$sqlite->do('CREATE INDEX [date_start]	ON [events] ([start]);');
+	$sqlite->do('CREATE INDEX [date_end]	ON [events] ([end]);');
 
 	$sqlite->commit; # valide les table et les trigger
 	#$sqlite->commit; $sqlite->disconnect(); exit;
