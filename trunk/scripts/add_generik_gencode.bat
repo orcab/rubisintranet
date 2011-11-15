@@ -1,1 +1,1 @@
-add_generik_gencode.exe >> add_generik_gencode.log
+perl add_generik_gencode.pl >> add_generik_gencode.log

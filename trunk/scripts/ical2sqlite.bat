@@ -1,1 +1,1 @@
-ical2sqlite.exe
+perl ical2sqlite.pl
