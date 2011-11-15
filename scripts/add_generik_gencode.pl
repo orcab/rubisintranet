@@ -18,16 +18,9 @@ my $loginor2 = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR
 
 # selectionne les lignes active sans gencode
 my $sql = <<EOT ;
-select	A.NOART,A.GENCO,AF.AFOG3
-from	${prefix_base_rubis}GESTCOM.AARTICP1 A,
-		${prefix_base_rubis}GESTCOM.AARFOUP1 AF
-where		A.ETARE=''							-- article non suspendu
-		and AF.NOART=A.NOART					-- jointure
-		and (
-			AF.AFOG3 = ''						-- un des deux code barre est vide
-			or
-			A.GENCO = ''
-			)
+select	NOART
+from	${prefix_base_rubis}GESTCOM.AARTICP1
+where	GENCO = ''	-- pas de code barre
 EOT
 #print $sql;
 $loginor->Sql($sql);
@@ -43,12 +36,8 @@ while($loginor->FetchRow()) {
 		my $cle		= 3*($gencod[1]+$gencod[3]+$gencod[5]+$gencod[7]+$gencod[9]+$gencod[11]) + ($gencod[0]+$gencod[2]+$gencod[4]+$gencod[6]+$gencod[8]+$gencod[10])  ;
 		$gencod_mcs .= substr((10 - substr($cle,-1)),-1); # calcul de la clé de check
 
-		if (!$row{'AFOG3'}) {
-			$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.AARFOUP1 set AFOG3='$gencod_mcs' where NOART='".$row{'NOART'}."'");
-		}
-		if (!$row{'GENCO'}) {
-			$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.AARTICP1 set GENCO='$gencod_mcs' where NOART='".$row{'NOART'}."'");
-		}
+		$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.AARTICP1 set GENCO='$gencod_mcs' where NOART='".$row{'NOART'}."'");
+		$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.AARFOUP1 set AFOG3='$gencod_mcs' where NOART='".$row{'NOART'}."' and NOFOU='CESAFA'");
 		print print_time()."UPDATE '$row{NOART}'\n";
 	} else {
 		print print_time()."SKIP '$row{NOART}'\n";
