@@ -634,7 +634,8 @@ EOT;
 	$sql = <<<EOT
 select	ECHEANCE.LIECH as LIBELLE_ECHEANCE,
 		CLIENT.RENDI as MDP_SITE_WEB,
-		CLIENT.PROFE as DATE_ADHESION
+		CLIENT.PROFE as DATE_ADHESION,
+		CLIENT.CLSIR as SIRET
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AECHEAP1 ECHEANCE
 				on CLIENT.NUECH=ECHEANCE.NUECH
@@ -675,6 +676,7 @@ EOT;
 			<?	} ?>
 			</td></tr>
 			<tr><td><img src="gfx/truck.png"/></td></td><td><?=trim($info_rubis['TOU'])?></td></tr>
+			<tr><td>SIRET :</td><td><?=trim($row_rubis['SIRET'])?></td></tr>
 			<tr><td>Echéance :</td><td><?=trim($row_rubis['LIBELLE_ECHEANCE'])?></td></tr>
 			<tr><td>Réglement :</td><td><?=trim($info_rubis['REG'])?></td></tr>
 			<tr><td>Date d'adhésion :</td><td><?=trim($row_rubis['DATE_ADHESION'])?></td></tr>
@@ -756,7 +758,7 @@ SELECT	*,
 		DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,
 		DATE_FORMAT(date_creation,'%w') AS date_jour,
 		DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,
-		(NOW() - date_creation) AS temps_ecoule
+		TO_DAYS(NOW()) - TO_DAYS(date_creation)) AS temps_ecoule
 FROM	
 		artisan_commentaire
 WHERE		code_artisan='$id'
@@ -766,7 +768,7 @@ ORDER BY
 EOT;
 		$res_commentaire = mysql_query($sql) or die("Ne peux pas afficher les commentaires anomalies ".mysql_error());
 		while($row_commentaire = mysql_fetch_array($res_commentaire)) {
-			$archive = ($row_commentaire['temps_ecoule'] >= 3600*24*180) ? 'intervention-archive':''; // si plus vieux que 6 mois --> on passe en archive
+			$archive = ($row_commentaire['temps_ecoule'] >= 180) ? 'intervention-archive':''; // si plus vieux que 6 mois --> on passe en archive
 ?>
 			<div class="intervention <?=$archive?>" id="intervention-<?=$row_commentaire['id']?>">
 					<img class="intervention-createur" src="/intranet/photos/personnels/mini/<?=strtolower($row_commentaire['createur'])?>.jpg"/>
