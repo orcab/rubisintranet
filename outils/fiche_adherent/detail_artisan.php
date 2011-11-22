@@ -758,7 +758,7 @@ SELECT	*,
 		DATE_FORMAT(date_creation,'%d %b %Y') AS date_formater,
 		DATE_FORMAT(date_creation,'%w') AS date_jour,
 		DATE_FORMAT(date_creation,'%H:%i') AS heure_formater,
-		TO_DAYS(NOW()) - TO_DAYS(date_creation)) AS temps_ecoule
+		TO_DAYS(NOW() - TO_DAYS(date_creation)) AS temps_ecoule
 FROM	
 		artisan_commentaire
 WHERE		code_artisan='$id'
