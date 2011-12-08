@@ -298,7 +298,6 @@ $(document).ready(function(){
 	$('#completion_fourn').css('top',offset.top + 22);
 	$('#completion_fourn').css('left',offset.left);
 	$('#completion_fourn').css('position','absolute');
-
 });
 
 //-->
