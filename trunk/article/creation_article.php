@@ -1,7 +1,6 @@
 <?
 
 include('../inc/config.php');
-
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
@@ -24,6 +23,8 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 	$designation3		= str_replace('"',"''",$_POST['designation3']);		$designation3	= str_replace(';',",",$designation3);
 	$ref_fournisseur	= str_replace('"',"''",$_POST['ref_fournisseur']);	$ref_fournisseur= str_replace(';',",",$ref_fournisseur);
 	
+	$coef = (1/(100 - (int)$_POST['marge']))*100;
+
 	$html = <<<EOT
 <table>
 <tr><td>De la part de</td><td>$_POST[from]</td></tr>
@@ -31,12 +32,17 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Designation 2</td><td>$designation2</td></tr>
 <tr><td>Designation 3</td><td>$designation3</td></tr>
 <tr><td>Fournisseur</td><td>$_POST[fournisseur]</td></tr>
+<tr><td>Code fournisseur</td><td>$_POST[code_fournisseur]</td></tr>
 <tr><td>Ref Fournisseur</td><td>$ref_fournisseur</td></tr>
 <tr><td>Gencode</td><td>$_POST[gencode]</td></tr>
 <tr><td>Apparait sur le tarif</td><td>$_POST[on_tarif]</td></tr>
 <tr><td>Px d'achat/public</td><td>$_POST[px_achat]</td></tr>
-<tr><td>Remise</td><td>$_POST[remise]</td></tr>
-<tr><td>Marge</td><td>$_POST[marge]</td></tr>
+<tr><td>Px d'achat à venir</td><td>$_POST[px_achat_venir]</td></tr>
+<tr><td>Date prix à venir</td><td>$_POST[date_achat_venir]</td></tr>
+<tr><td>Remise1</td><td>$_POST[remise1]</td></tr>
+<tr><td>Remise2</td><td>$_POST[remise2]</td></tr>
+<tr><td>Remise3</td><td>$_POST[remise3]</td></tr>
+<tr><td>Coef</td><td>$coef</td></tr>
 <tr><td>Px de vente</td><td>$_POST[px_vente]</td></tr>
 <tr><td>Eco Taxe</td><td>$_POST[eco_taxe]</td></tr>
 <tr><td>Servi sur stock</td><td>$_POST[stock]</td></tr>
@@ -46,7 +52,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Conditionnement</td><td>$_POST[conditionnement]</td></tr>
 <tr><td>Divisible</td><td>$_POST[divisible]</td></tr>
 <tr><td>Unité</td><td>$_POST[unite]</td></tr>
-<tr><td>Zone de Prépa</td><td>$_POST[zone_prepa]</td></tr>
 <tr><td>Activite</td><td>$_POST[activite]</td></tr>
 <tr><td>Famille</td><td>$_POST[famille]</td></tr>
 <tr><td>Sous famille</td><td>$_POST[sousfamille]</td></tr>
@@ -54,6 +59,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Sous chapitre</td><td>$_POST[souschapitre]</td></tr>
 <tr><td>Commentaire</td><td>$_POST[commentaire]</td></tr>
 EOT;
+
 	$mail->Html($html);
 	$sent = $mail->Send("Creation article : $_POST[designation]");
 
@@ -63,12 +69,15 @@ $designation
 $designation2
 $designation3
 Fournisseur : $_POST[fournisseur]
-Reférence : $ref_fournisseur
+Code fournisseur : $_POST[code_fournisseur]
+Reference : $ref_fournisseur
 Gencode : $_POST[gencode]
 Sur Tarif ? : $_POST[on_tarif]
 Px d'achat/public : $_POST[px_achat]
-Remise : $_POST[remise]
-Marge : $_POST[marge]
+Remise1 : $_POST[remise1]
+Remise2 : $_POST[remise2]
+Remise3 : $_POST[remise3]
+Coef : $coef
 Px de vente : $_POST[px_vente]
 Eco Taxe : $_POST[eco_taxe]
 Servi sur stock : $_POST[stock]
@@ -78,7 +87,6 @@ Stock alerte : $_POST[stock_alerte]
 Conditionnement : $_POST[conditionnement]
 Divisible : $_POST[divisible]
 Unité : $_POST[unite]
-Zone de Prépa : $_POST[zone_prepa]
 Activite : $_POST[activite]
 Famille : $_POST[famille]
 Sous famille : $_POST[sousfamille]
@@ -88,7 +96,7 @@ Sous chapitre : $_POST[souschapitre]
 Commentaire : $_POST[commentaire]
 EOT;
 	$description = mysql_escape_string($description);
-	$res = mysql_query("INSERT INTO historique_article (titre,description,de_la_part,status,date_demande) VALUES ('$titre','$description','$_POST[from]',FALSE,now())") or die(mysql_error());
+	$res = mysql_query("INSERT INTO historique_article (titre,activite,description,de_la_part,status,date_demande) VALUES ('$titre','$_POST[activite]','$description','$_POST[from]',FALSE,now())") or die(mysql_error());
 
 } // fin d'envoi du mail
 ?>
@@ -138,10 +146,6 @@ function compte_car(mon_objet) {
 
 // vérifie que les donnée obligatoire sont bien présentes
 function envoi_formulaire() {
-	/*for(i=0 ; i<=document.creation_article.stock.length ; i++) {
-		alert(document.creation_article.stock[i].checked + ' ' + document.creation_article.stock[i].value);
-	}*/
-
 
 	var erreur = 0 ;
 	if      (!document.creation_article.fournisseur.value) {
@@ -159,9 +163,9 @@ function envoi_formulaire() {
 	else if      (!document.creation_article.marge.options[document.creation_article.marge.selectedIndex].value) {
 		alert("Veuillez saisir une MARGE"); erreur = 1;
 	}
-	else if (!document.creation_article.zone_prepa.options[document.creation_article.zone_prepa.selectedIndex].value) {
-		alert("Veuillez saisir une ZONE DE PREPA\n(même \"je ne sais pas\" s'il faut)"); erreur = 1;
-	}
+//	else if (!document.creation_article.zone_prepa.options[document.creation_article.zone_prepa.selectedIndex].value) {
+//		alert("Veuillez saisir une ZONE DE PREPA\n(même \"je ne sais pas\" s'il faut)"); erreur = 1;
+//	}
 
 	if (!erreur) document.creation_article.submit();
 }
@@ -194,6 +198,16 @@ function affiche_aide(type) { // activite, famille, sousfamille, chapitre
 }
 
 
+<?
+// récupere la liste des fournisseurs de MySQL
+$res = mysql_query("SELECT nom AS nom_fournisseur,code_rubis as code_fournisseur FROM fournisseur ORDER BY nom ASC") or mysql_error("Impossible de récupérer la liste des fournisseurs");
+$fournisseurs = array();
+while($row = mysql_fetch_array($res)) {
+	array_push($fournisseurs,array($row['code_fournisseur'],strtoupper($row['nom_fournisseur'])));
+}
+echo "var fournisseurs = ".json_encode($fournisseurs).";";
+?>
+
 
 // completion pour les fournisseurs
 function complette_fourn(e) {
@@ -213,55 +227,60 @@ function complette_fourn(e) {
 			sel.selectedIndex = selIndex - 1 ;
 	}
 	else if (e.keyCode == 13 && nb_el) { // entrée
-		document.creation_article.fournisseur.value = sel.options[selIndex].value ;
+		document.creation_article.fournisseur.value = sel.options[selIndex].text ;
+		document.creation_article.code_fournisseur.value = sel.options[selIndex].value ;
+		$('#code_fournisseur').text(sel.options[selIndex].value);
 		sel.style.display = 'none';
 	}
-	else { // autre touche --> on recherche les fournisseurs
-		val = document.creation_article.fournisseur.value ;
+	else { // autre touche --> on recherche et affiche les fournisseurs valident
+		val = document.creation_article.fournisseur.value.toUpperCase() ;
 		if (val.length > 0) {
-			http.open("GET", "ajax.php?what=complette_fourn&val="+escape(val), true);
-			http.onreadystatechange = handleHttpResponse_complette_fourn;
-			http.send(null);
+						
+			var valid_fournisseurs = new Array();
+			for(var i=0 ; i<fournisseurs.length ; i++) {
+				if (fournisseurs[i][1] != null && fournisseurs[i][1].substr(0,val.length) == val) // ca match --> on garde le fournisseur (on a deja converti en majuscule avant)
+					valid_fournisseurs.push(i); // on garde l'indice du fournisseur valide
+			}
+
+			document.getElementById('completion_fourn').attributes['size'].value = valid_fournisseurs.length;
+
+			// on vide le select
+			while(sel.options.length > 0)
+				sel.options[0] = null
+
+			// on rempli avec les fournisseurs valident
+			for(var i=0 ; i<valid_fournisseurs.length ; i++) {
+				var indice = valid_fournisseurs[i];
+				sel.options[sel.options.length] = new Option(fournisseurs[indice][1],fournisseurs[indice][0]);
+			}
+
+			if (sel.options.length) {
+				sel.selectedIndex = 0 ; // on selection le premier element de la liste
+				$('#completion_fourn').show();
+			}
+			else {
+				$('#completion_fourn').hide();		
+			}
 		}
 	}
 }
 
-function handleHttpResponse_complette_fourn()
-{
-	if (http.readyState == 4)
-	{	fournisseurs = eval('(' + http.responseText + ')'); // [id1,id2, ...]
-		document.getElementById('completion_fourn').attributes['size'].value = fournisseurs.length;
-		sel = document.creation_article.completion_fourn ;
-
-		// on vide le select
-		while(sel.options.length > 0)
-			sel.options[0] = null
-
-		// on rempli avec les nouveaux fournisseurs
-		for(i=0 ; i<fournisseurs.length ; i++)
-			sel.options[sel.options.length] = new Option(fournisseurs[i],fournisseurs[i]);
-
-		if (sel.options.length) {
-			sel.selectedIndex = 0 ; // on selection le premier element de la liste
-			$('#completion_fourn').show();
-		}
-		else
-			$('#completion_fourn').hide();
-	}	
-}
 
 
 function complette_fourn_click() {
-	sel = document.creation_article.completion_fourn ;
-	document.creation_article.fournisseur.value = sel.options[sel.selectedIndex].value ;
+	var sel = document.creation_article.completion_fourn ;
+
+	document.creation_article.fournisseur.value = sel.options[sel.selectedIndex].text ;
+	document.creation_article.code_fournisseur.value = sel.options[sel.selectedIndex].value ;
+	$('#code_fournisseur').text(sel.options[sel.selectedIndex].value) ;
 	sel.style.display = 'none';
 }
 
 // vérifie si la référence fournisseur n'existe pas déjà
 function check_ref_fournisseur() {
 	with (document.creation_article) {
-		if (fournisseur.value && ref_fournisseur.value)
-			http.open('GET', 'ajax.php?what=check_ref_fournisseur&val='+escape(fournisseur.value)+'/'+escape(ref_fournisseur.value), true);
+		if (code_fournisseur.value && ref_fournisseur.value)
+			http.open('GET', 'ajax.php?what=check_ref_fournisseur&val='+escape(code_fournisseur.value)+'/'+escape(ref_fournisseur.value), true);
 	}
 
 	http.onreadystatechange = function() {
@@ -298,7 +317,8 @@ $(document).ready(function(){
 <td style="width:65%;vertical-align:top;">
 
 <form method="post" action="creation_article.php" name="creation_article">
-<input type="hidden" name="action" value="creation_article">
+<input type="hidden" name="action" value="creation_article"/>
+<input type="hidden" name="code_fournisseur" value=""/>
 
 <table style="width:100%;padding:5px;">
 <tr><th class="label" style="color:red;font-weight:bold;">Envoyer à :</th>
@@ -321,34 +341,39 @@ $(document).ready(function(){
 <tr><th class="label">Designation :</th><td class="valeur"><input type="text" name="designation" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
 <tr><th class="label">Designation 2 :</th><td class="valeur"><input type="text" name="designation2" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
 <tr><th class="label">Designation 3 :</th><td class="valeur"><input type="text" name="designation3" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
-<tr><th class="label">Fournisseur :</th><td class="valeur"><input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"><br/>
+<tr><th class="label">Fournisseur :</th><td class="valeur"><input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"> <span id="code_fournisseur"></span><br/>
 <select id="completion_fourn" name="completion_fourn" size="1" onclick="complette_fourn_click();"></select>
 </td></tr>
 <tr><th class="label">Ref Fournisseur :</th><td class="valeur"><input type="text" name="ref_fournisseur" value="" onblur="majusculize(this.name);check_ref_fournisseur();"></td></tr>
 <tr><th class="label">Gencode :</th><td class="valeur"><input type="text" name="gencode" value="" size="13" maxlength="13" onblur="majusculize(this.name);"></td></tr>
 <tr><th class="label">Apparait sur tarif :</th><td class="valeur">Oui<input type="radio" name="on_tarif" value="oui">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="on_tarif" value="non" checked><br><br></td></tr>
-<tr><th class="label">Px d'achat/public :</th>
+<tr><th class="label">Px d'achat/public</th>
 	<td class="valeur"><input type="text" name="px_achat" value="">&nbsp;&nbsp;&nbsp;&nbsp;
 	Eco Taxe <input type="text" name="eco_taxe" value="" size="3">
 	</td>
 </tr>
-<tr><th class="label">Remise :</th><td class="valeur"><input type="text" name="remise" value=""></td></tr>
+<tr><th class="label">Px d'achat à venir</th>
+	<td class="valeur"><input type="text" name="px_achat_venir" value=""/>&nbsp;&nbsp;&nbsp;&nbsp;
+	Date <input type="text" name="date_achat_venir" value="" size="8"/>
+	</td>
+</tr>
+<tr><th class="label">Remises (3 max) :</th><td class="valeur"><input type="text" name="remise1" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise2" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise3" value="" size="2" maxlength="5"/>%</td></tr>
 <tr><th class="label"></th><td class="valeur">
 	Marge : 
 	<select name="marge">
 		<option value=""></option>
 		<option value="10% (coef 1.11111)">10%</option>
-		<option value="11%">11% (Electromenager)</option>
+		<option value="11% (coef )">11%</option>
 		<option value="12% (coef 1.13636)">12%</option>
 		<option value="13%">13%</option>
 		<option value="14%">14%</option>
 		<option value="15% (coef 1.17647)">15%</option>
 		<option value="16%">16%</option>
 		<option value="17% (coef 1.20482)">17%</option>
-		<option value="18% (coef 1.21951)">18% (Elec)</option>
+		<option value="18% (coef 1.21951)">18%</option>
 		<option value="19% (coef 1.23457)">19%</option>
 		<option value="20% (coef 1.25000)">20% </option>
-		<option value="21% (coef 1.26582)">21% (Outillage)</option>
+		<option value="21% (coef 1.26582)">21%</option>
 		<option value="22%">22%</option>
 		<option value="23%">23%</option>
 		<option value="24%">24%</option>
@@ -386,6 +411,7 @@ Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
 	</select>
 <br><br></td></tr>
 
+<!--
 <tr>
 	<th class="label">Zone de Prépa :</th>
 	<td class="valeur">
@@ -415,6 +441,7 @@ Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
 		</select>
 	</td>
 </tr>
+-->
 
 <tr>
 	<th class="label">Activité :</th>
