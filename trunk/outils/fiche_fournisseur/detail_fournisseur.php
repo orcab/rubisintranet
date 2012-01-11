@@ -32,16 +32,21 @@ elseif(isset($_GET['action']) && $_GET['action']=='delete_intervention' && isset
 // SAISIR UN COMMENTAIRE
 elseif(isset($_POST['action']) && $_POST['action']=='saisie_intervention' && isset($_POST['id']) && $_POST['id']) { // mode saisie de commentaire fournisseur
 	$date = implode('-',array_reverse(explode('/',$_POST['commentaire_date']))).' '.$_POST['commentaire_heure'].':00'; //2007-09-10 14:16:59;
-	$participants = $_POST['commentaire_participants'];
+	$participants = isset($_POST['commentaire_participants']) ? $_POST['commentaire_participants']:array();
 	if ($_POST['commentaire_participants_autres'] && $_POST['commentaire_participants_autres'] <> 'Autres ...')
 		array_push($participants,$_POST['commentaire_participants_autres']);
+	
+	$sql = "INSERT INTO fournisseur_commentaire (code_fournisseur,date_creation,createur,participants,`type`,humeur,commentaire,supprime) VALUES (".
+												"'".mysql_escape_string($_POST['id'])."',".
+												"'$date',".
+												"'".mysql_escape_string($_POST['commentaire_createur'])."',".
+												"'".mysql_escape_string(join(', ',$participants))."',".
+												"'$_POST[commentaire_type]',".
+												"'$_POST[commentaire_humeur]',".
+												"'".mysql_escape_string($_POST['commentaire_commentaire'])."',".
+												"0)" ;
 
-	$res = mysql_query("INSERT INTO fournisseur_commentaire (code_fournisseur,date_creation,createur,participants,`type`,humeur,commentaire,supprime) VALUES ('".mysql_escape_string($_POST['id']).
-		"','$date','".
-		mysql_escape_string($_POST['commentaire_createur'])."','".
-		mysql_escape_string(join(', ',$participants)).
-		"','$_POST[commentaire_type]',$_POST[commentaire_humeur],'".
-		mysql_escape_string($_POST['commentaire_commentaire'])."',0)") or die("Ne peux pas enregistrer le commentaire ".mysql_error());
+	$res = mysql_query($sql) or die("Ne peux pas enregistrer le commentaire ".mysql_error());
 	$message = "L'intervention a été enregistrée";
 }
 
@@ -242,6 +247,12 @@ input#commentaire_participants_autres {
     vertical-align: top;
 }
 
+select#commentaire_type option {
+	padding-left:20px;
+	background-repeat:no-repeat;
+	background-position:left center;
+}
+
 img.qrcode { display:none; }
 
 @media print {
@@ -418,13 +429,14 @@ $(document).ready(function() {
 	<tr>
 		<td>Type</td>
 		<td>
-			<select name="commentaire_type">
-				<option value="visite_mcs">Visite chez MCS</option>
-				<option value="visite_fournisseur">Visite chez fournisseur</option>
-				<option value="telephone">Téléphone</option>
-				<option value="fax">Fax</option>
-				<option value="courrier">Courrier</option>
-				<option value="email">Email</option>
+			<select name="commentaire_type" id="commentaire_type">
+				<option value="visite_mcs" style="background-image:url('gfx/mcs-icon.png');">Visite de l'adh à MCS</option>
+				<option value="visite_artisan" style="background-image:url('gfx/artisan.png');">Visite chez artisan</option>
+				<option value="telephone" style="background-image:url('gfx/telephone.png');">Téléphone</option>
+				<option value="fax" style="background-image:url('gfx/fax.png');">Fax</option>
+				<option value="courrier" style="background-image:url('gfx/courrier.png');">Courrier</option>
+				<option value="email" style="background-image:url('gfx/mail.png');">Email</option>
+				<option value="autre" style="background-image:url('gfx/autre.png');">Autre</option>
 			</select>
 		</td>
 		<td>Représentant</td>
@@ -544,7 +556,7 @@ $(document).ready(function() {
 				while (false !== ($file = $d->read())) { 
 					if ($file == '.' || $file == '..') continue ;
 ?>					<li><img src="gfx/icons/<?
-					eregi('\.(.+)$',$file,$regs);
+					preg_match('/\.(.+)$/i',$file,$regs);
 					$ext = $regs[1];
 					switch ($ext) {
 						case 'doc': case 'docx': case 'odt': case 'txt':
@@ -613,7 +625,7 @@ EOT;
 								case 3: ?><img src="/intranet/gfx/weather-storm.png" alt="Enervé" title="Enervé" /><?			break;
 							} ?>
 						</span>
-						<span class="intervention-type">
+						<span class="intervention-type"><?=$row_commentaire['type']?>
 	<?						switch ($row_commentaire['type']) {
 								case 'visite_mcs': ?><img src="gfx/mcs-icon.png"/> Visite de l'adh à MCS<?		break;
 								case 'visite_artisan': ?><img src="gfx/artisan.png"/> Visite chez l'artisan<?	break;
