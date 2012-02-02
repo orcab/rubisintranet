@@ -4,6 +4,8 @@ include('../inc/config.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
+$droit = recuperer_droit();
+
 if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////// ENVOI DU MAIL DE CREATION DES ARTICLES
 	require_once '../inc/xpm2/smtp.php';
 	$mail = new SMTP;
@@ -105,6 +107,20 @@ EOT;
 <title>Demande de création d'article</title>
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_article.ico" />
 <style>
+a		{ text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+h1 {
+	width:95%;
+	background-color:#DDD;
+	margin-bottom:10px;
+	height:30px;
+	padding-left:50px;
+	font-weight:bold;
+	padding-top:10px;
+	font-size:1em;
+}
+
 th.label {
 	vertical-align:top;
 	text-align:left;
@@ -112,12 +128,18 @@ th.label {
 
 td.valeur {
 	width:70%;
+	vertical-align:top;
 }
 
 select#completion_fourn {
 	border:solid 1px #000080;
 	display:none;
 }
+
+option.type-produit-global { color:grey; }
+#completion div { cursor:pointer; }
+#completion b { color:blue; }
+
 </style>
 
 <style type="text/css">@import url(../js/boutton.css);</style>
@@ -160,19 +182,11 @@ function envoi_formulaire() {
 	else if      (document.creation_article.eco_taxe.value.length <= 0) {
 		alert("Veuillez saisir une ECO TAXE (0 si aucune éco taxe sur le produit)"); erreur = 1;
 	}
-	else if      (!document.creation_article.marge.options[document.creation_article.marge.selectedIndex].value) {
-		alert("Veuillez saisir une MARGE"); erreur = 1;
-	}
-//	else if (!document.creation_article.zone_prepa.options[document.creation_article.zone_prepa.selectedIndex].value) {
-//		alert("Veuillez saisir une ZONE DE PREPA\n(même \"je ne sais pas\" s'il faut)"); erreur = 1;
-//	}
 
 	if (!erreur) document.creation_article.submit();
 }
 
 ///// AJAX ///////////////////////////////////
-
-
 var http = null;
 if		(window.XMLHttpRequest) // Firefox 
 	   http = new XMLHttpRequest(); 
@@ -185,16 +199,42 @@ else	// XMLHttpRequest non supporté par le navigateur
 function affiche_aide(type) { // activite, famille, sousfamille, chapitre
 	with (document.creation_article) {
 		if		(type=='activite')
-			$('#completion').load('ajax.php?what='+type);
+			$('#completion').load('ajax.php?what='+type,function() { bind_event_on_completion(); });
 		else if (type=='famille')
-			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value));
+			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value),function() { bind_event_on_completion(); });
 		else if (type=='sousfamille')
-			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value)+'/'+escape(famille.value));
+			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value)+'/'+escape(famille.value),function() { bind_event_on_completion(); });
 		else if (type=='chapitre')
-			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value)+'/'+escape(famille.value)+'/'+escape(sousfamille.value));
+			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value)+'/'+escape(famille.value)+'/'+escape(sousfamille.value),function() { bind_event_on_completion(); });
 		else if (type=='souschapitre')
-			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value)+'/'+escape(famille.value)+'/'+escape(sousfamille.value)+'/'+escape(chapitre.value));
+			$('#completion').load('ajax.php?what='+type+'&val='+escape(activite.value)+'/'+escape(famille.value)+'/'+escape(sousfamille.value)+'/'+escape(chapitre.value),function() { bind_event_on_completion(); });
 	}
+}
+
+function bind_event_on_completion() {
+	$('#completion .activite').click(function(){
+		document.creation_article.activite.value = $(this).children('b').text();
+		$(document.creation_article.famille).focus();
+	});
+
+	$('#completion .famille').click(function(){
+		document.creation_article.famille.value = $(this).children('b').text();
+		$(document.creation_article.sousfamille).focus();
+	});
+
+	$('#completion .sousfamille').click(function(){
+		document.creation_article.sousfamille.value = $(this).children('b').text();
+		$(document.creation_article.chapitre).focus();
+	});
+
+	$('#completion .chapitre').click(function(){
+		document.creation_article.chapitre.value = $(this).children('b').text();
+		$(document.creation_article.souschapitre).focus();
+	});
+
+	$('#completion .souschapitre').click(function(){
+		document.creation_article.souschapitre.value = $(this).children('b').text();
+	});
 }
 
 
@@ -231,6 +271,8 @@ function complette_fourn(e) {
 		document.creation_article.code_fournisseur.value = sel.options[selIndex].value ;
 		$('#code_fournisseur').text(sel.options[selIndex].value);
 		sel.style.display = 'none';
+
+		show_type_produit();
 	}
 	else { // autre touche --> on recherche et affiche les fournisseurs valident
 		val = document.creation_article.fournisseur.value.toUpperCase() ;
@@ -266,7 +308,7 @@ function complette_fourn(e) {
 }
 
 
-
+// action lorsque l'on choisit un fournisseur dans la liste
 function complette_fourn_click() {
 	var sel = document.creation_article.completion_fourn ;
 
@@ -274,7 +316,59 @@ function complette_fourn_click() {
 	document.creation_article.code_fournisseur.value = sel.options[sel.selectedIndex].value ;
 	$('#code_fournisseur').text(sel.options[sel.selectedIndex].value) ;
 	sel.style.display = 'none';
+
+	show_type_produit();
 }
+
+// affiche les différentes famille produit et les marges une fois le fournisseur choisit
+function show_type_produit() {
+	// récupere le code fournisseur
+	var code_fournisseur = $('#code_fournisseur').text();
+	var select_famille_produit = document.creation_article.famille_produit;
+	// on vide le select et on bloque les cases marge et PV
+	$('#marge').attr('readonly','readonly').css('color','grey').val('');
+	$('#pv').css('visibility','hidden').children('input').val('');
+	while(select_famille_produit.options.length > 0)
+		select_famille_produit.options[0] = null
+
+	$.ajax({
+		type: 'GET',
+		url:  'ajax.php',
+		data: 'what=get_type_produit_fournisseur&code_fournisseur='+code_fournisseur,
+		dataType: 'json',
+		success: function(json){
+			
+			if (json.length > 0) {
+				// on a trouvé des familles, on ne laisse pas le choix à l'utilisateur
+				for(tmp in json) {
+					var opt = new Option(json[tmp]['famille_produit'], json[tmp]['marge']);
+					if (json[tmp]['famille_produit'] == 'Global')
+						opt.className = 'type-produit-global';
+					select_famille_produit.options[select_famille_produit.options.length] = opt;
+				}
+			} else {
+				// on a pas trouvé de famille, on laisse l'utilisateur rentré sa marge
+				$('#marge').attr('readonly','').css('color','black');
+				$('#pv').css('visibility','visible');
+			}
+		}
+	});
+}
+
+
+// action lorsque l'on choisit une famille de produit dans liste
+function change_famille_produit() {
+	$('#marge').val( document.creation_article.famille_produit.options[document.creation_article.famille_produit.selectedIndex].value );
+}
+
+
+function input_only_float(obj) {
+	if(obj.value.match(/[^0-9\.,]/)) {
+		alert("Seul les nombres sont autorisés");
+		obj.value = obj.value.substr(0,obj.value.length-1);
+	}
+}
+
 
 // vérifie si la référence fournisseur n'existe pas déjà
 function check_ref_fournisseur() {
@@ -295,9 +389,7 @@ function check_ref_fournisseur() {
 $(document).ready(function(){
     var p = $("input[name=fournisseur]");
 	var offset = p.offset();
-	$('#completion_fourn').css('top',offset.top + 22);
-	$('#completion_fourn').css('left',offset.left);
-	$('#completion_fourn').css('position','absolute');
+	$('#completion_fourn').css({'top':offset.top + 22,'left':offset.left,'position':'absolute'});
 });
 
 //-->
@@ -309,7 +401,7 @@ $(document).ready(function(){
 <!-- menu de naviguation -->
 <? include('../inc/naviguation.php'); ?>
 
-<div style="width:95%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Demande de création d'article</div> 
+<h1>Demande de création d'article</h1> 
 
 <table>
 <tr>
@@ -351,35 +443,31 @@ $(document).ready(function(){
 	Eco Taxe <input type="text" name="eco_taxe" value="" size="3">
 	</td>
 </tr>
-<tr><th class="label">Px d'achat à venir</th>
-	<td class="valeur"><input type="text" name="px_achat_venir" value=""/>&nbsp;&nbsp;&nbsp;&nbsp;
-	Date <input type="text" name="date_achat_venir" value="" size="8"/>
+<tr>
+	<th class="label">Px d'achat à venir</th>
+	<td class="valeur">
+		<input type="text" name="px_achat_venir" value=""/>&nbsp;&nbsp;&nbsp;&nbsp;
+		Date <input type="text" name="date_achat_venir" value="" size="8"/>
 	</td>
 </tr>
-<tr><th class="label">Remises (3 max) :</th><td class="valeur"><input type="text" name="remise1" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise2" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise3" value="" size="2" maxlength="5"/>%</td></tr>
-<tr><th class="label"></th><td class="valeur">
-	Marge : 
-	<select name="marge">
-		<option value=""></option>
-		<option value="10% (coef 1.11111)">10%</option>
-		<option value="11% (coef )">11%</option>
-		<option value="12% (coef 1.13636)">12%</option>
-		<option value="13%">13%</option>
-		<option value="14%">14%</option>
-		<option value="15% (coef 1.17647)">15%</option>
-		<option value="16%">16%</option>
-		<option value="17% (coef 1.20482)">17%</option>
-		<option value="18% (coef 1.21951)">18%</option>
-		<option value="19% (coef 1.23457)">19%</option>
-		<option value="20% (coef 1.25000)">20% </option>
-		<option value="21% (coef 1.26582)">21%</option>
-		<option value="22%">22%</option>
-		<option value="23%">23%</option>
-		<option value="24%">24%</option>
-		<option value="25% (coef 1.33000)">25%</option>
-		<option value="26%">26%</option>
-		<option value="Autre (voir Px de Vente)">Autre (préciser)</option>
-	</select> PV : <input type="text" name="px_vente" value="" size="6"><br><br></td></tr>
+<tr>
+	<th class="label">Remises (3 max) :</th>
+	<td class="valeur">
+		<input type="text" name="remise1" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise2" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise3" value="" size="2" maxlength="5"/>%
+	</td>
+</tr>
+<tr>
+	<th class="label">Type de produit
+<?		if ($droit & PEUT_MODIFIER_TYPE_PRODUIT) { ?>
+		<br/><a href="modification_type_produit.php" style="font-size:0.8em;">Edition des types <img src="gfx/ext_arrow.png" style="vertical-align:bottom;"/></a>
+<?		} ?>
+	</th>
+	<td class="valeur">
+		<select name="famille_produit" id="famille_produit" size="5" onchange="change_famille_produit();"></select>
+		Marge <input type="text" id="marge" name="marge" value="" size="2" readonly="readonly" style="color:grey;" onkeyup="input_only_float(this);"/>%<br/>
+		<div id="pv" style="visibility:hidden;">PV : <input type="text" name="px_vente" value="" size="6" onkeyup="input_only_float(this);"/></div>
+	</td>
+</tr>
 
 <tr><th class="label">Stock :</th><td class="valeur">Oui<input type="radio" name="stock" value="oui" onclick="$('#stock_mini_maxi').show('fast');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="stock" value="non" onclick="$('#stock_mini_maxi').hide('fast');" checked>
 <div id="stock_mini_maxi" style="display:none;">
@@ -409,38 +497,6 @@ Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
 		<option value="Unité (UN)" selected>Unité</option>
 	</select>
 <br><br></td></tr>
-
-<!--
-<tr>
-	<th class="label">Zone de Prépa :</th>
-	<td class="valeur">
-		<select name="zone_prepa">
-			<option value=""> --- </option>
-			<option value="saispas">Je ne sais pas</option>
-			<optgroup label="Magasin">
-				<option value="MCH">Chauffage</option>
-				<option value="MEL">Electricité</option>
-				<option value="MSA">Sanitaire</option>
-				<option value="MPL">Plomberie</option>
-			</optgroup>
-			<optgroup label="Dépot">
-				<option value="DCH">Chauffage</option>
-				<option value="DEL">Electricité</option>
-				<option value="DSA">Sanitaire</option>
-				<option value="DPL">Plomberie</option>
-			</optgroup>
-			<optgroup label="Mezanine">
-				<option value="PCH">Chauffage</option>
-				<option value="PEL">Electricité</option>
-				<option value="PSA">Sanitaire</option>
-				<option value="PPL">Plomberie</option>
-			</optgroup>
-			<option value="EXT">Extérieur</option>
-			<option value="TOU">Touret</option>
-		</select>
-	</td>
-</tr>
--->
 
 <tr>
 	<th class="label">Activité :</th>

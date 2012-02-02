@@ -6,9 +6,9 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 	$res = mysql_query("SELECT code,libelle FROM pdvente WHERE activite_pere IS NULL;");
 	if ($res) {
-		$html = "<b>Activit&eacute;</b><br><br>";
+		$html = "<b>Activit&eacute;</b><br/><br/>";
 		while($row = mysql_fetch_array($res))
-			$html .= "<b>$row[code]</b> $row[libelle]<br>";
+			$html .= "<div class=\"activite\"><b>$row[code]</b> $row[libelle]</div>";
 
 		echo $html ;
 	} else { // erreur sql
@@ -22,7 +22,7 @@ if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 	if ($res) {
 		$html = "<b>$vals[0] =&gt; Famille</b><br><br>";
 		while($row = mysql_fetch_array($res))
-			$html .= "<b>$row[code]</b> $row[libelle]<br>";
+			$html .= "<div class=\"famille\"><b>$row[code]</b> $row[libelle]</div>";
 
 		echo $html ;
 	} else { // erreur sql
@@ -36,7 +36,7 @@ if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 	if ($res) {
 		$html = "<b>$vals[0] =&gt; $vals[1] =&gt; Sous famille</b><br><br>";
 		while($row = mysql_fetch_array($res))
-			$html .= "<b>$row[code]</b> $row[libelle]<br>";
+			$html .= "<div class=\"sousfamille\"><b>$row[code]</b> $row[libelle]</div>";
 
 		echo $html ;
 	} else { // erreur sql
@@ -50,7 +50,7 @@ if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 	if ($res) {
 		$html = "<b>$vals[0] =&gt; $vals[1] =&gt; $vals[2] =&gt; Chapitre</b><br><br>";
 		while($row = mysql_fetch_array($res))
-			$html .= "<b>$row[code]</b> $row[libelle]<br>";
+			$html .= "<div class=\"chapitre\"><b>$row[code]</b> $row[libelle]</div>";
 
 		echo $html ;
 	} else { // erreur sql
@@ -64,7 +64,7 @@ if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 	if ($res) {
 		$html = "<b>$vals[0] =&gt; $vals[1] =&gt; $vals[2] =&gt; $vals[3] =&gt; Sous chapitre</b><br><br>";
 		while($row = mysql_fetch_array($res))
-			$html .= "<b>$row[code]</b> $row[libelle]<br>";
+			$html .= "<div class=\"souschapitre\"><b>$row[code]</b> $row[libelle]</div>";
 
 		echo $html ;
 	} else { // erreur sql
@@ -97,5 +97,49 @@ if ($_GET['what'] == 'activite') { ////// RECHERCHE DES ACTIVITES
 	} else { // erreur sql
 		echo 'ERREUR SQL : '.mysql_error();
 	}
+}
+	
+		
+elseif ($_GET['what'] == 'get_type_produit_fournisseur' && isset($_GET['code_fournisseur']) && $_GET['code_fournisseur']) { ////// RECHERCHE DES TYPE DE PRODUIT CHEZ CE FOURNISSEUR
+	$res = mysql_query("SELECT famille_produit,marge FROM fournisseur_marge WHERE code_fournisseur='".strtoupper($_GET['code_fournisseur'])."' ORDER BY famille_produit ASC") or die("Ne peux pas récupérer la liste des type de produit ".mysql_error());
+	$type_produit = array();
+	while($row = mysql_fetch_array($res)) {
+		array_push($type_produit,$row);
+	}
+	echo json_encode($type_produit);
+
+
+
+} elseif ($_GET['what'] == 'save_type_produit' &&
+		isset($_GET['code_fournisseur']) && $_GET['code_fournisseur'] &&
+		isset($_GET['type']) && $_GET['type'] &&
+		isset($_GET['marge']) && $_GET['marge']) { ////// AJOUTE UN TYPE PRODUIT
+	
+	$marge = str_replace(',','.',$_GET['marge']);
+
+	mysql_query("REPLACE INTO fournisseur_marge (code_fournisseur,famille_produit,marge,last_editor,last_modification_date) VALUES (".
+				"'".strtoupper(mysql_escape_string($_GET['code_fournisseur']))."',".
+				"'".mysql_escape_string($_GET['type'])."',".
+				"'".mysql_escape_string($marge)."',".
+				"'".mysql_escape_string($_SERVER['REMOTE_ADDR'])."',".
+				"NOW()".
+			")") or die("Ne peux pas insérer le type produit ".mysql_error());
+	echo '1';
+
+
+
+} elseif ($_GET['what'] == 'delete_type_produit' &&
+		isset($_GET['code_fournisseur']) && $_GET['code_fournisseur'] &&
+		isset($_GET['type']) && $_GET['type']) { ////// SUPPRIME UN TYPE PRODUIT
+	
+	mysql_query("DELETE FROM fournisseur_marge WHERE code_fournisseur='".strtoupper(mysql_escape_string($_GET['code_fournisseur'])).
+					"' AND famille_produit='".mysql_escape_string($_GET['type'])."'") or die("Ne peux pas supprimer le type produit ".mysql_error());
+
+	echo '1';
+
+
+
+} else {
+	echo "Procedure '$_GET[what]' inconnu";
 }
 ?>
