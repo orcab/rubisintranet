@@ -182,6 +182,9 @@ function envoi_formulaire() {
 	else if      (document.creation_article.eco_taxe.value.length <= 0) {
 		alert("Veuillez saisir une ECO TAXE (0 si aucune éco taxe sur le produit)"); erreur = 1;
 	}
+	else if      (document.creation_article.marge.value.length <= 0 && document.creation_article.px_vente.value.length <= 0) {
+		alert("Veuillez saisir soit une marge (ou choisir le type de produit) ou un prix de vente"); erreur = 1;
+	}
 
 	if (!erreur) document.creation_article.submit();
 }
