@@ -73,8 +73,7 @@ img:hover {
 	<td><a href="fiche_fournisseur/index.php"><img src="fiche_fournisseur/gfx/fiche_fournisseur.png"><br>Fiches Fournisseurs</a></td>
 </tr>
 <tr>
-	<td></a>
-	</td>
+	<td><a href="feuille_temps/index.php"><img src="feuille_temps/gfx/icon.jpg"><br>Feuille de temps</a></td>
 	<td><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
 	<td></td>
 </tr>
