@@ -15,7 +15,6 @@ $feries['2009'] = array(
 	'1225'		// noel
 );
 
-
 // FERIE 2010
 $feries['2010'] = array(
 	'0101',		// 1er de l'an
@@ -30,8 +29,6 @@ $feries['2010'] = array(
 	'1225'		// noel
 );
 
-
-
 // FERIE 2011
 $feries['2011'] = array(
 	'0101',		// 1er de l'an
@@ -39,6 +36,48 @@ $feries['2011'] = array(
 	'0501',		// 1er mai
 	'0508',		// 8 mai
 	'0602',		// jeudi de l'ascension
+	'0714',		// 14 juillet
+	'0815',		// 15 aout
+	'1101',		// toussain
+	'1111',		// 11 novembre
+	'1225'		// noel
+);
+
+// FERIE 2012
+$feries['2012'] = array(
+	'0101',		// 1er de l'an
+	'0409',		// lundi de paques
+	'0501',		// 1er mai
+	'0508',		// 8 mai
+	'0517',		// jeudi de l'ascension
+	'0714',		// 14 juillet
+	'0815',		// 15 aout
+	'1101',		// toussain
+	'1111',		// 11 novembre
+	'1225'		// noel
+);
+
+// FERIE 2013
+$feries['2013'] = array(
+	'0101',		// 1er de l'an
+	'0401',		// lundi de paques
+	'0501',		// 1er mai
+	'0508',		// 8 mai
+	'0509',		// jeudi de l'ascension
+	'0714',		// 14 juillet
+	'0815',		// 15 aout
+	'1101',		// toussain
+	'1111',		// 11 novembre
+	'1225'		// noel
+);
+
+// FERIE 2014
+$feries['2014'] = array(
+	'0101',		// 1er de l'an
+	'0421',		// lundi de paques
+	'0501',		// 1er mai
+	'0508',		// 8 mai
+	'0529',		// jeudi de l'ascension
 	'0714',		// 14 juillet
 	'0815',		// 15 aout
 	'1101',		// toussain
