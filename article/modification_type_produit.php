@@ -308,7 +308,7 @@ $(document).ready(function(){
 
 
 	// pour un debug plus rapide, supprimer ensuite
-	$('#select_fournisseur').val('FINIMETAL'); 	$('#code_fournisseur').text('FINIME'); 	show_type_produit();
+	//$('#select_fournisseur').val('FINIMETAL'); 	$('#code_fournisseur').text('FINIME'); 	show_type_produit();
 });
 
 //-->
