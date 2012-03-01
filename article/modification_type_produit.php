@@ -197,10 +197,8 @@ function show_type_produit() {
 				draw_type('', 'Global', '');
 
 			$('#type_produit').append(
-				'<input type="button" id="add_button" class="add button" style="background-image:url(../js/boutton_images/add.png)" value="Ajouter un type" onclick="draw_type(\'\',\'\',\'\');bind_action_on_button();"/>'
+				'<input type="button" id="add_button" class="add button" style="background-image:url(../js/boutton_images/add.png)" value="Ajouter un type" onclick="draw_type(\'\',\'\',\'\');"/>'
 			);
-
-			bind_action_on_button();
 		}
 	});
 }
@@ -212,7 +210,7 @@ function draw_type(id,type,marge) {
 			'<div><input type="hidden" name="id" value="'+id+'"/>'+
 			'<div><input type="text" name="libelle" value="'+type+'" class="libelle" '+
 			(type == 'Global' ? 'readonly="readonly"':'')+'/> '+
-			'<input type="text" name="marge" value="'+marge+'" class="marge" onkeyup="input_only_float(this);" title="Valider"/>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="valider button" value=""/>'+
+			'<input type="text" name="marge" value="'+marge+'" class="marge only_float" title="Valider"/>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="valider button" value=""/>'+
 			(type != 'Global' ? '&nbsp;&nbsp;<input type="button" class="annuler button" value="" title="Supprimer"/>':'')+
 			'</div>'
 		);
@@ -220,15 +218,22 @@ function draw_type(id,type,marge) {
 		$('#add_button').before(
 			'<div><input type="hidden" name="id" value=""/>'+
 			'<input type="text" name="libelle" value="" class="libelle"/> '+
-			'<input type="text" name="marge" value="" class="marge" onkeyup="input_only_float(this);" title="Valider"/>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="valider button" value=""/>&nbsp;&nbsp;<input type="button" class="annuler button" value="" title="Supprimer"/></div>'
+			'<input type="text" name="marge" value="" class="marge only_float" title="Valider"/>%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="valider button" value=""/>&nbsp;&nbsp;<input type="button" class="annuler button" value="" title="Supprimer"/></div>'
 		);
 	}
 }
 
 
-function bind_action_on_button() {
+
+$(document).ready(function(){
+    var p = $("input[name=fournisseur]");
+	var offset = p.offset();
+	$('#completion_fourn').css({'top':offset.top + 22,'left':offset.left,'position':'absolute'});
+
+
+	// binding
 	// bouton supprimer
-	$('.annuler').click(function(){
+	$('body').delegate('input.annuler','click',function(){
 		if (confirm("Voulez vous vraiment supprimer ce type de produit ?")) {
 			$this = $(this);
 			$this	.attr('disabled','disabled')
@@ -249,8 +254,19 @@ function bind_action_on_button() {
 	});
 
 	// bouton valider
-	$('.valider').click(function(){
-		$this = $(this);
+	$('body').delegate('input.valider','click',function(){
+		var $this	= $(this);
+		var libelle = $this.parent('div').children('.libelle').val();
+		var marge	= $this.parent('div').children('.marge').val();
+
+		// vérifie les saisies pour ne pas valider n'importe quoi
+		if ($.trim(libelle) == '') {
+			alert("Le libellé n'est pas renseigné"); return;
+		}
+		if ($.trim(marge) == '') {
+			alert("La marge n'est pas renseignée"); return;
+		}
+
 		$this	.attr('disabled','disabled')
 				.css('background-image','url(gfx/loading5.gif)');
 
@@ -258,8 +274,8 @@ function bind_action_on_button() {
 			type: 'GET',
 			url:  'ajax.php',
 			data: 'what=save_type_produit&code_fournisseur='+$('#code_fournisseur').text()+
-										'&type='+$this.parent('div').children('.libelle').val()+
-										'&marge='+$this.parent('div').children('.marge').val(),
+										'&type='+libelle+
+										'&marge='+marge,
 			success: function(result){
 				// ok ca c'est bien passé
 				$this	.attr('disabled','')
@@ -267,23 +283,21 @@ function bind_action_on_button() {
 			}
 		});
 	});
-}
 
 
-function input_only_float(obj) {
-	if(obj.value.match(/[^0-9\.,]/)) {
-		alert("Seul les nombres sont autorisés");
-		obj.value = obj.value.substr(0,obj.value.length-1);
-	}
-}
+	//case pour des nombres
+	$('body').delegate('input.only_float','keyup',function(){
+		var val = $(this).val();
+		if(val.match(/[^0-9\.,]/)) {
+			alert("Seul les nombres à virgules sont autorisés");
+			$(this).val(val.substr(0,val.length-1));
+		}
+	});
+	
 
-
-$(document).ready(function(){
-    var p = $("input[name=fournisseur]");
-	var offset = p.offset();
-	$('#completion_fourn').css({'top':offset.top + 22,'left':offset.left,'position':'absolute'});
 
 	// pour un debug plus rapide, supprimer ensuite
+	//$('#select_fournisseur').val('FINIMETAL');
 	//$('#code_fournisseur').text('FINIME');
 	//show_type_produit();
 });
@@ -306,7 +320,7 @@ $(document).ready(function(){
 <tr>
 	<th class="label">Fournisseur :</th>
 	<td class="valeur">
-		<input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"> <span id="code_fournisseur"></span>
+		<input type="text" id="select_fournisseur" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"> <span id="code_fournisseur"></span>
 		<br/>
 		<select id="completion_fourn" name="completion_fourn" size="1" onclick="complette_fourn_click();"></select>
 	</td>
