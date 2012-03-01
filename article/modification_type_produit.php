@@ -47,6 +47,10 @@ input[readonly=readonly] {
 	color:grey;
 }
 
+input.valider {
+	visibility:hidden;
+}
+
 </style>
 
 <style type="text/css">@import url(../js/boutton.css);</style>
@@ -279,7 +283,8 @@ $(document).ready(function(){
 			success: function(result){
 				// ok ca c'est bien passé
 				$this	.attr('disabled','')
-						.css('background-image','url(../js/boutton_images/accept.png)');
+						.css({	'background-image':'url(../js/boutton_images/accept.png)',
+								'visibility':'hidden'});
 			}
 		});
 	});
@@ -293,13 +298,17 @@ $(document).ready(function(){
 			$(this).val(val.substr(0,val.length-1));
 		}
 	});
+
+
+	//en cas de changement de la valeur des libelle ou de la marge --> on affiche le bnouton valider
+	$('body').delegate('input[type=text]','keyup',function(){
+		$(this).parent('div').children('input.valider').css('visibility','visible');
+	});
 	
 
 
 	// pour un debug plus rapide, supprimer ensuite
-	//$('#select_fournisseur').val('FINIMETAL');
-	//$('#code_fournisseur').text('FINIME');
-	//show_type_produit();
+	$('#select_fournisseur').val('FINIMETAL'); 	$('#code_fournisseur').text('FINIME'); 	show_type_produit();
 });
 
 //-->
