@@ -104,6 +104,7 @@ elseif ($_GET['what'] == 'get_type_produit_fournisseur' && isset($_GET['code_fou
 	$res = mysql_query("SELECT famille_produit,marge FROM fournisseur_marge WHERE code_fournisseur='".strtoupper($_GET['code_fournisseur'])."' ORDER BY famille_produit ASC") or die("Ne peux pas récupérer la liste des type de produit ".mysql_error());
 	$type_produit = array();
 	while($row = mysql_fetch_array($res)) {
+		//print_r(array_map('htmlize',$row));
 		array_push($type_produit,$row);
 	}
 	echo json_encode($type_produit);
@@ -142,4 +143,6 @@ elseif ($_GET['what'] == 'get_type_produit_fournisseur' && isset($_GET['code_fou
 } else {
 	echo "Procedure '$_GET[what]' inconnu";
 }
+
+
 ?>

@@ -25,7 +25,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 	$designation3		= str_replace('"',"''",$_POST['designation3']);		$designation3	= str_replace(';',",",$designation3);
 	$ref_fournisseur	= str_replace('"',"''",$_POST['ref_fournisseur']);	$ref_fournisseur= str_replace(';',",",$ref_fournisseur);
 	
-	$coef = (1/(100 - (int)$_POST['marge']))*100;
+	$coef			= str_replace('.',',',sprintf("%.5f",(1/(100 - (int)$_POST['marge']))*100));
+	$px_achat		= str_replace('.',',',$_POST['px_achat']);
+	$px_achat_venir	= str_replace('.',',',$_POST['px_achat_venir']);
+	$px_vente		= str_replace('.',',',$_POST['px_vente']);
+	$eco_taxe		= str_replace('.',',',$_POST['eco_taxe']);
 
 	$html = <<<EOT
 <table>
@@ -38,15 +42,15 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Ref Fournisseur</td><td>$ref_fournisseur</td></tr>
 <tr><td>Gencode</td><td>$_POST[gencode]</td></tr>
 <tr><td>Apparait sur le tarif</td><td>$_POST[on_tarif]</td></tr>
-<tr><td>Px d'achat/public</td><td>$_POST[px_achat]</td></tr>
-<tr><td>Px d'achat à venir</td><td>$_POST[px_achat_venir]</td></tr>
+<tr><td>Px d'achat/public</td><td>$px_achat</td></tr>
+<tr><td>Px d'achat à venir</td><td>$px_achat_venir</td></tr>
 <tr><td>Date prix à venir</td><td>$_POST[date_achat_venir]</td></tr>
 <tr><td>Remise1</td><td>$_POST[remise1]</td></tr>
 <tr><td>Remise2</td><td>$_POST[remise2]</td></tr>
 <tr><td>Remise3</td><td>$_POST[remise3]</td></tr>
 <tr><td>Coef</td><td>$coef</td></tr>
-<tr><td>Px de vente</td><td>$_POST[px_vente]</td></tr>
-<tr><td>Eco Taxe</td><td>$_POST[eco_taxe]</td></tr>
+<tr><td>Px de vente</td><td>$px_vente</td></tr>
+<tr><td>Eco Taxe</td><td>$eco_taxe</td></tr>
 <tr><td>Servi sur stock</td><td>$_POST[stock]</td></tr>
 <tr><td>Stock mini</td><td>$_POST[stock_mini]</td></tr>
 <tr><td>Stock alerte</td><td>$_POST[stock_alerte]</td></tr>
@@ -66,37 +70,39 @@ EOT;
 	$sent = $mail->Send("Creation article : $_POST[designation]");
 
 	$titre = mysql_escape_string($_POST['designation']);
-	$description = <<<EOT
-$designation
-$designation2
-$designation3
-Fournisseur : $_POST[fournisseur]
-Code fournisseur : $_POST[code_fournisseur]
-Reference : $ref_fournisseur
-Gencode : $_POST[gencode]
-Sur Tarif ? : $_POST[on_tarif]
-Px d'achat/public : $_POST[px_achat]
-Remise1 : $_POST[remise1]
-Remise2 : $_POST[remise2]
-Remise3 : $_POST[remise3]
-Coef : $coef
-Px de vente : $_POST[px_vente]
-Eco Taxe : $_POST[eco_taxe]
-Servi sur stock : $_POST[stock]
-Stock mini : $_POST[stock_mini]
-Stock maxi : $_POST[stock_maxi]
-Stock alerte : $_POST[stock_alerte]
-Conditionnement : $_POST[conditionnement]
-Divisible : $_POST[divisible]
-Unité : $_POST[unite]
-Activite : $_POST[activite]
-Famille : $_POST[famille]
-Sous famille : $_POST[sousfamille]
-Chapitre : $_POST[chapitre]
-Sous chapitre : $_POST[souschapitre]
+	$description = '';
+	$description .= $designation				? $designation."\n":'';
+	$description .= $designation2				? $designation2."\n":'';
+	$description .= $designation3				? $designation3."\n":'';
+	$description .= $_POST['fournisseur']		? "Fournisseur : $_POST[fournisseur]\n":'';
+	$description .= $_POST['code_fournisseur']	? "Code fournisseur : $_POST[code_fournisseur]\n":'';
+	$description .= $ref_fournisseur			? "Reference : $ref_fournisseur\n":'';
+	$description .= $_POST['gencode']			? "Gencode : $_POST[gencode]\n":'';
+	$description .= $_POST['on_tarif']			? "Sur Tarif ? : $_POST[on_tarif]\n":'';
+	$description .= $px_achat					? "Px d'achat/public : $px_achat\n":'';
+	$description .= $_POST['remise1']			? "Remise1 : $_POST[remise1]\n":'';
+	$description .= $_POST['remise2']			? "Remise2 : $_POST[remise2]\n":'';
+	$description .= $_POST['remise3']			? "Remise3 : $_POST[remise3]\n":'';
+	$description .= $coef						? "Coef : $coef\n":'';
+	$description .= $px_vente					? "Px de vente : $px_vente\n":'';
+	$description .= $eco_taxe					? "Eco Taxe : $eco_taxe\n":'';
+	$description .= $px_achat_venir				? "Px d'achat a venir : $px_achat_venir\n":'';
+	$description .= $_POST['date_achat_venir']	? "Date prix à venir : $_POST[date_achat_venir]\n":'';
+	$description .= $_POST['stock']				? "Servi sur stock : $_POST[stock]\n":'';
+	$description .= $_POST['stock_mini']		? "Stock mini : $_POST[stock_mini]\n":'';
+	$description .= $_POST['stock_maxi']		? "Stock maxi : $_POST[stock_maxi]\n":'';
+	$description .= $_POST['stock_alerte']		? "Stock alerte : $_POST[stock_alerte]\n":'';
+	$description .= $_POST['conditionnement']	? "Conditionnement : $_POST[conditionnement]\n":'';
+	$description .= $_POST['divisible']			? "Divisible : $_POST[divisible]\n":'';
+	$description .= $_POST['unite']				? "Unité : $_POST[unite]\n":'';
+	$description .= $_POST['activite']			? "Activite : $_POST[activite]\n":'';
+	$description .= $_POST['famille']			? "Famille : $_POST[famille]\n":'';
+	$description .= $_POST['sousfamille']		? "Sous famille : $_POST[sousfamille]\n":'';
+	$description .= $_POST['chapitre']			? "Chapitre : $_POST[chapitre]\n":'';
+	$description .= $_POST['souschapitre']		? "Sous chapitre : $_POST[souschapitre]\n":'';
+	$description .=  $_POST['commentaire']		? "Commentaire : $_POST[commentaire]\n":'';
+	
 
-Commentaire : $_POST[commentaire]
-EOT;
 	$description = mysql_escape_string($description);
 	$res = mysql_query("INSERT INTO historique_article (titre,activite,description,de_la_part,status,date_demande) VALUES ('$titre','$_POST[activite]','$description','$_POST[from]',FALSE,now())") or die(mysql_error());
 
