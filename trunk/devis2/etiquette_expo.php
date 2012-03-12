@@ -10,7 +10,7 @@ $start = microtime(true);
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
 
-var TVA = 0.196;
+var TVA = <?= TTC1/100 ?>;
 
 function refresh_etiquette(sel,id) {
 	var box = sel[sel.selectedIndex].value;
@@ -50,7 +50,7 @@ function refresh_etiquette(sel,id) {
 										'<div class="reference">'+detail.reference+'</div>'+
 									'</td>'+
 										'<td class="designation">'+(qte > 1 ? '<strong>x'+qte+'</strong> ':'') + detail.designation+
-										'<div style="color:green;font-size:0.8em;">Code : '+detail.code_expo+'/'+detail.code_mcs+' '+
+										'<div style="color:green;font-size:0.8em;">Code : '+detail.code_mcs+' '+
 										(detail.mode=='pp' ? '<span class="pp">PP</span>':'')+'</div>'+ // prix public ou adh*1.5
 										'<div class="erreur">'+erreur+'</div>'+
 									'</td>'+
@@ -197,10 +197,7 @@ select
 	S.LOCAL,S.LOCA2,S.LOCA3
 from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 S
-		on  A.NOART=S.NOART and S.DEPOT='${LOGINOR_DEPOT}'
-where
-	A.ACTIV = '00S'
-and (LOCAL<>'' or LOCA2<>'' or LOCA3<>'')
+		on  A.NOART=S.NOART and S.DEPOT='EXP'
 group by LOCAL,LOCA2,LOCA3
 EOT;
 
