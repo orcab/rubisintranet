@@ -34,8 +34,9 @@ define('TTC2',7);
 
 
 // coef et marge pratiqué en salle expo
-define('MARGE_COOP',22);	$MARGE_COOP=MARGE_COOP;
-define('COEF_EXPO',1.5);	$COEF_EXPO=COEF_EXPO;
+define('MARGE_COOP',22);				$MARGE_COOP=MARGE_COOP;
+define('COEF_EXPO',1.5);				$COEF_EXPO=COEF_EXPO;
+define('CATALFOU','catalfou.sqlite');	$CATALFOU=CATALFOU;
 
 
 // jour de la semaine en FR
