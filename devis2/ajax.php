@@ -12,7 +12,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'complette_via_ref' && isset($_GET[
 	
 	// requete de selection des articles qui corresponde à aux caracteres de recherche
 	$sql = <<<EOT
-SELECT	a.rowid,nom_fournisseur,reference,designation1,min(prix1 * $COEF_EXPO,prix6) as px_public
+SELECT	a.rowid,nom_fournisseur,reference,designation1,min(prix1 * $COEF_EXPO,prix6) as px_public,code_mcs
 FROM	articles a
 		left join fournisseurs f     
           on a.code_fournisseur=f.code_fournisseur
