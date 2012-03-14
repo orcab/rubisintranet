@@ -100,6 +100,15 @@ function valide_form(mes_options) {
 }
 
 
+<?	// selection des phrases pré-établies pour les designations
+	//$res_devis = mysql_query("SELECT * FROM devis_phrase WHERE deleted=0") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
+	//while($row = mysql_fetch_array($res_devis)) {
+		
+	//}
+?>
+
+
+
 // variables globales
 var timer ;
 var tr ;
@@ -118,10 +127,11 @@ function draw_page(pageno) {
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
 		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
-						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>') + '</td>' +
-						'<td style="color:green;padding-right:10px;">'	+ all_results[i].nom_fournisseur + '</td>' +
-						'<td style="padding-right:10px;width:500px;">'	+ all_results[i].designation1 + '</td>' +
-						'<td style="font-weight:bold;">'				+ parseFloat(all_results[i].px_public).toFixed(2) + '&euro;</td>' +
+						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')			+ '</td>' +
+						'<td style="color:green;padding-right:10px;">'	+ all_results[i].nom_fournisseur												+ '</td>' +
+						'<td style="width:30px;">'						+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')			+ '&nbsp;</td>' +
+						'<td style="padding-right:10px;width:500px;">'	+ all_results[i].designation1													+ '</td>' +
+						'<td style="font-weight:bold;">'				+ parseFloat(all_results[i].px_public).toFixed(2)								+ '&euro;</td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
