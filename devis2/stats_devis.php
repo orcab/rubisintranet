@@ -2,7 +2,8 @@
 
 include('../inc/config.php');
 include('../inc/iCalParser/ical-parser-class.php');
-set_include_path(get_include_path().PATH_SEPARATOR.'../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
+error_reporting(E_ALL & ~E_DEPRECATED);
+set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'.PATH_SEPARATOR.'c:/EasyPHP/php/pear/'); // ajoute le chemin d'acces a Spreadsheet/Excel
 require_once '../inc/Spreadsheet/Excel/Writer.php';
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
@@ -26,7 +27,7 @@ $cumul = array('RDV' => array() , 'VISITE' => array(),'PROSPECT' => array() );
 		$events = $ical->iCalStreamDecoder($stream);
 		
 		foreach ($events as $e) {
-			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE|PROSPECT)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
+			if (array_key_exists('SUMMARY',$e) && preg_match('/^(RDV|VISITE|PROSPECT)/i',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
 				//on traite le rdv ou visite
 				$type = strtoupper($regs[1]);
 

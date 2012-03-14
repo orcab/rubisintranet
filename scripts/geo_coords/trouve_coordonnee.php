@@ -128,7 +128,7 @@ EOT;
 // parse de la bd des adhs
 $adhs_r = explode("\n",$adhs);
 	for($i=0 ; $i<sizeof($adhs_r) ; $i++) {
-		if (ereg('^(//|--)',$adhs_r[$i])) { continue; } // si commentaire, on saute
+		if (preg_match('/^(//|--)/',$adhs_r[$i])) { continue; } // si commentaire, on saute
 //	for($i=0 ; $i < 1 ; $i++) {
 		$infos = explode(';',$adhs_r[$i]);
 		$address = join(',',array($infos[1],$infos[2],$infos[3],$infos[4],'France')) ; // adr1, adr2, cp, ville, france

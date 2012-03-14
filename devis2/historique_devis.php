@@ -627,7 +627,7 @@ EOT;
 					><!-- on ferme la balise td -->
 <?				} ?>
 		</td><!-- Mt CMD -->
-		<td class="NUM_CMD_RUBIS"><?=eregi_replace("[^a-z0-9]","<br>",$row['num_cmd_rubis'])?></td><!-- N° CMD Rubis -->
+		<td class="NUM_CMD_RUBIS"><?=preg_replace("/[^a-z0-9]/i","<br>",$row['num_cmd_rubis'])?></td><!-- N° CMD Rubis -->
 		<? if ($droit & PEUT_ASSOCIER_CMD_AU_DEVIS) { // peut associer une cmd a une devis ?>
 				<td class="hide_when_print" style="border-left-width:3px;">
 					<a href="javascript:associe_cmd_devis('<?=$row['id']?>','<?=$row['numero']?>','<?=ereg_replace("[^A-Za-z0-9]",",",trim($row['num_cmd_rubis']))?>');" style="border:none;"><img src="gfx/yellow-triple.png" alt="Associe une commande &agrave; un devis" title="Associe une commande &agrave; un devis"></a>
