@@ -58,9 +58,6 @@ if($modif) { // modif
 
 	$row_devis = mysql_fetch_array($res_devis);
 }
-
-//print_r($row_devis);
-
 ?><html>
 <head>
 <title><?= $modif ? "Modification du $row_devis[numero]" : "Création du devis ".date('My')."-$id" ?></title>
@@ -68,11 +65,9 @@ if($modif) { // modif
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_devis.ico" />
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
-<style type="text/css">@import url('paging.css');</style>
 <script type="text/javascript" src="../js/jscalendar/calendar.js"></script>
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
-<script type="text/javascript" src="paging.js"></script>
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script type="text/javascript" src="../js/mobile.style.js"></script>
 <script language="javascript">
@@ -88,14 +83,10 @@ var auto_save = true;
 
 function affiche_adherent(obj) {
 	var value_selected = obj.options[obj.selectedIndex].value ;
-	if (value_selected == 'NON Adherent' || value_selected == 'CAB 56 (056039)') {
-		//document.creation_devis.artisan_code.value='';
+	if (value_selected == 'NON Adherent' || value_selected == 'CAB 56 (056039)')
 		$('#artisan_nom_libre').show('fast');
-	} else {
-		//var matches = value_selected.match(/ \((.+?)\)$/); // capture le code artisan dans le nom
-		//document.creation_devis.artisan_code.value=matches[1];
+	else
 		$('#artisan_nom_libre').hide('fast');
-	}
 }
 
 function cache_sugest() {
@@ -109,90 +100,15 @@ function valide_form(mes_options) {
 }
 
 
+// variables globales
+var timer ;
 var tr ;
+var div_offset;
+var div_height;
 var all_results = new Array();
 var nb_results_by_page = 20 ;
 var recherche = '';
 
-
-function make_all_bind() {
-
-	// unbind click
-	$('input[name^=a_maj], input[name^=a_opt], img').unbind('click');
-
-	// colorisation des input quand la souris est dessus
-	$('input[type=text], textarea').unbind('blur');
-	$('input[type=text], textarea').unbind('focus');
-	$('input[type=text], textarea').unbind('change');
-	$('input[type=text], textarea').blur(function()	{	$(this).css('background','');	});
-	$('input[type=text], textarea').focus(function(){	$(this).css('background','#e7eef3');	});
-	$('input[type=text], textarea').change(function(){	auto_save = true ;	}); // en cas de modif d'une valeur, on réactive l'auto_save
-
-	// ecriture dans les cases editable (designation ou prix)
-	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').unbind('change');
-	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').change(function() {
-		var parent_td = $(this).parents('tr').children('td') ;
-		if (parent_td.children('input[name^=a_reference]').val() && parent_td.children('input[name^=a_fournisseur]').val()) // si on a une référence et un fournisseur, c'est que l'on edit un article. Sinon on écrit juste un com'
-			parent_td.children('div.modification').show();
-	});
-
-
-	// click sur options
-	$('input[name^=a_opt]').click(function() {
-		$(this).parents('tr').children('td').children('input[name^=a_hid_opt]').val( $(this).attr('checked') ? '1' : '0'  );
-		recalcul_total();
-	});
-
-	// click sur MAJ
-	$('input[name^=a_maj]').click(function() {
-		$(this).parents('tr').children('td').children('input[name^=a_hid_maj]').val( $(this).attr('checked') ? '1' : '0'  );
-	});
-
-	// ajoute un ligne au dessus de la ligne courante
-	$('img[name^=a_add]').click(function() {
-		$(this).parents('tr').before( pattern_ligne );
-		make_all_bind();
-	});
-
-	// supprime une ligne du tableau en cliquant sur l'image
-	$('img[name^=a_del]').click(function() {
-		if (confirm("Voulez-vous vraiment supprimer cette ligne ?"))
-			$(this).parents('tr').remove();  // supprime le TR
-	});
-
-
-	// on doit aller chercher les infos dans la BD et les ramener sur la page
-	$('input[name^=a_reference]').unbind('keyup');
-	$('input[name^=a_reference]').keyup(function (e) {
-		if (e.which == 13 && all_results.length == 1) { // la touche ENREE et il n'y a qu'un seul résultat --> on le selectionne
-			insert_ligne(all_results[0].id); return;
-		}
-
-		tr = $(this).parents('tr');
-		recherche = $(this).val();
-		var div_offset = $(this).offset();
-		var div_height = $(this).height();
-		//alert(recherche + ' ' + recherche.length);
-		if (recherche.length >= 3) { // au moins trois car pour lancer la recherche
-			all_results = Array(); // on vide la mémoire des résultats
-
-			// on recherche dans la BD les nouvelles conrerespondances
-			$.getJSON('ajax.php', { what:'complette_via_ref', val: recherche  } ,
-				function(data){
-					// on les stock plus un affichage ultérieur
-					all_results = data ;
-					
-					// on affiche la premier epage de résultat
-					if (all_results.length > 0) draw_page(1);
-					else						$('div#sugest').html('<img src="../gfx/attention.png" /> Aucun résultat');
-
-					// placement du div
-					$('div#sugest').css('top',div_offset.top + div_height + 5).css('left',div_offset.left).show('fast');
-				} // fin fonction
-			); // fin getJson
-		}
-	});
-}
 
 function draw_page(pageno) {
 	var div = $('div#sugest');
@@ -201,11 +117,11 @@ function draw_page(pageno) {
 	div.html('<table id="results"><tbody>'); // on vide la boite de sugestion
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
-		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].id+'\');">' + 
+		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
 						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>') + '</td>' +
-						'<td style="color:green;padding-right:10px;">'		+ all_results[i].fournisseur + '</td>' +
-						'<td style="padding-right:10px;width:500px;">'		+ all_results[i].designation + '</td>' +
-						'<td style="font-weight:bold;">' + Math.round(all_results[i].px_expo * 100)/100 + '&euro;</td>' +
+						'<td style="color:green;padding-right:10px;">'	+ all_results[i].nom_fournisseur + '</td>' +
+						'<td style="padding-right:10px;width:500px;">'	+ all_results[i].designation1 + '</td>' +
+						'<td style="font-weight:bold;">'				+ parseFloat(all_results[i].px_public).toFixed(2) + '&euro;</td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
@@ -222,29 +138,31 @@ function draw_page(pageno) {
 
 // ou a choisit une ligne parmis les propositions --> on insert les données
 function insert_ligne(id) {
-	//alert(id);
 	$('div#sugest').hide(); // on cache la boite
-	$.getJSON('ajax.php', { what:'get_detail', val: id  } ,
+	
+	// un loading pour patienter
+	tr.children('td').children('input[name^=a_reference]').addClass('loading');
+
+	$.getJSON('ajax.php', { what:'get_detail', val: id  },
 			function(data){
 				var tmp = tr.children('td') ;
-				tmp.children('div.modification').hide();
+				//tmp.children('div.modification').hide();
 				tmp.children('input[name^=a_reference]').val(data.reference);
-				tmp.children('input[name^=a_fournisseur]').val(data.fournisseur);
-				tmp.children('textarea[name^=a_designation]').val(data.designation);
+				tmp.children('input[name^=a_fournisseur]').val(data.nom_fournisseur);
+				tmp.children('textarea[name^=a_designation]').val(data.designation1);
+				tmp.children('textarea[name^=a_2designation]').val(data.designation2 + (data.code_mcs ? "\nCode MCS : "+data.code_mcs : ''));
 				tmp.children('input[name^=a_qte]').val(1);
-				tmp.children('input[name^=a_pu]').val((Math.round(data.px_expo	* 100)/100)); // prix expo
-				tmp.children('span').children('input[name^=a_adh_pu]').val(Math.round(data.px_adh	* 100)/100); // prix adh
-				tmp.children('div[class=discret]').html('coop '		+ Math.round(data.px_achat_coop	* 100)/100 + 
-														'<br/>adh '	+ Math.round(data.px_adh		* 100)/100 + 
-														'<br/>expo '+ Math.round(data.px_expo		* 100)/100 + 
-														'<br/>pub '	+ Math.round(data.px_public		* 100)/100
-														);
-
+				tmp.children('input[name^=a_pu]').val(parseFloat(data.px_public).toFixed(2)); // prix expo
+				tmp.children('span').children('input[name^=a_adh_pu]').val(parseFloat(data.px_adh).toFixed(2)); // prix adh
+				
 				if ($('#discret_mode').attr('checked'))
 					$('.discret').show();
 				else 
 					$('.discret').hide();
 				recalcul_total();
+
+				// on supprime le loading
+				tmp.children('input[name^=a_reference]').removeClass('loading');
 			}
 	);
 	
@@ -298,12 +216,14 @@ $pattern_ligne = <<<EOT
 	<td><input type="text"		name="a_reference[]"	value=""		class="ref"			 autocomplete="off" /></td>
 	<td><input type="text"		name="a_fournisseur[]"	value=""		class="fournisseur"	 /></td>
 	<td>
-		<textarea				name="a_designation[]"	rows="3"	class="designation"></textarea>
-		<input type="hidden"	name="a_hid_maj[]"	value="0"/>
+		<textarea				rows="2"	class="designation designation1" name="a_designation[]"></textarea><br/>
+		<textarea				rows="2"	class="designation designation2" name="a_2designation[]"></textarea>
+<!--	<input type="hidden"	name="a_hid_maj[]"	value="0"/>
 		<div class="modification">
 			<img src="../gfx/info.png" /> Modifications apportées &nbsp;&nbsp;&nbsp;
 			<input type="checkbox" name="a_maj[]" />MAJ
 		</div>
+-->
 	</td>
 	<td>
 		<input type="text"		name="a_qte[]"		value="0"	class="qte" onkeyup="recalcul_total();"/>
@@ -321,9 +241,6 @@ EOT;
 ?>
 
 function sauvegarde_auto() {
-	$('#sauvegarde').css('opacity','1');
-	$('#sauvegarde').css('visibility','visible');
-
 	var valeur_deja_vu = {} ;
 	var data = {};
 	data.what = 'sauvegarde_auto' ;
@@ -350,34 +267,59 @@ function sauvegarde_auto() {
 
 	// on doit faire une auto_save
 	if (auto_save) {
+		$('#sauvegarde').css({'visibility':'visible'});
 		$.post('ajax.php', data,
 			  function(data){
 				$('#sauvegarde').fadeTo(3000,0);
-				window.setTimeout ("sauvegarde_auto()", 1000*60*2 );  // pour répété l'opération régulièrement toutes les 2min
-			  });
+				window.setTimeout("sauvegarde_auto()", 1000*60*2 );  // pour répéter l'opération régulièrement toutes les 2min
+		});
 	}
 }
 
 
+function lance_recherche() {
+	all_results = Array(); // on vide la mémoire des résultats
 
-var pattern_ligne = '<?=ereg_replace("[\n\r]",'',$pattern_ligne)?>' ;
+	// un loading pour patienter
+	tr.children('td').children('input[name^=a_reference]').addClass('loading');
+
+	// on recherche dans la BD les nouvelles conrerespondances
+	$.getJSON('ajax.php', { what:'complette_via_ref', val:recherche },
+		function(data){
+			// on les stock plus un affichage ultérieur
+			all_results = data ;
+			
+			// on affiche la premier epage de résultat
+			if (all_results.length > 0) draw_page(1);
+			else						$('div#sugest').html('<img src="../gfx/attention.png" /> Aucun résultat');
+
+			// placement du div
+			$('div#sugest').css('top',div_offset.top + div_height + 5).css('left',div_offset.left).show('fast');
+
+			// on supprime le loading
+			tr.children('td').children('input[name^=a_reference]').removeClass('loading');
+		} // fin fonction
+	); // fin getJson
+}
+
+
+var pattern_ligne = '<?=preg_replace("/[\n\r]/",'',$pattern_ligne)?>' ;
+
 
 
 $(document).ready(function(){
 		
-	// ajoute une ligne à la fin du tableau
+	// bouton qui ajoute une ligne à la fin du tableau
 	$('#add_ligne').click(function() {
 		$('#lignes tbody').append( pattern_ligne );
 		if ($('#discret_mode').attr('checked')) $('.discret').show(); // affiche ou non les cases spécial a la creation de la ligne
 		else									$('.discret').hide();
-		make_all_bind();
 	}); // fin add ligne
 	
-	// ajoute 10 lignes d'un coup
+	// bouton qui ajoute 10 lignes d'un coup
 	$('#add_dix_ligne').click(function() {
 		for(var i=0 ; i<=9 ; i++)
 			$('#lignes tbody').append( pattern_ligne );
-		make_all_bind();
 	});
 
 	// click sur le mode discret
@@ -388,17 +330,72 @@ $(document).ready(function(){
 			$('.discret').hide();
 	});
 
+	// active l'auto-save en cas de modification
+	$('body').delegate('input[type=text],textarea','change',function(){ auto_save = true ; }); // en cas de modif d'une valeur, on réactive l'auto_save
 
-		// au chargement de la page, on ajoute une ligne au tableau des details
+
+	// en cas de changement, on affiche l'option de validation des modifications dans la base
+//	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').change(function() {
+//		var parent_td = $(this).parents('tr').children('td') ;
+//		if (parent_td.children('input[name^=a_reference]').val() && parent_td.children('input[name^=a_fournisseur]').val()) // si on a une référence et un fournisseur, c'est que l'on edit un article. Sinon on écrit juste un com'
+//			parent_td.children('div.modification').show();
+//	});
+
+
+	// click sur options
+	$('body').delegate('input[name^=a_opt]','click',function() {
+		$(this).parents('tr').children('td').children('input[name^=a_hid_opt]').val( $(this).attr('checked') ? '1' : '0'  );
+		recalcul_total();
+	});
+
+	// click sur MAJ
+/*	$('body').delegate('input[name^=a_maj]','click',function() {
+		$(this).parents('tr').children('td').children('input[name^=a_hid_maj]').val( $(this).attr('checked') ? '1' : '0'  );
+	});
+*/
+
+	// ajoute un ligne au dessus de la ligne courante
+	$('body').delegate('img[name^=a_add]','click',function() {
+		$(this).parents('tr').before( pattern_ligne );
+	});
+
+	// supprime une ligne du tableau en cliquant sur l'image
+	$('body').delegate('img[name^=a_del]','click',function() {
+		if (confirm("Voulez-vous vraiment supprimer cette ligne ?"))
+			$(this).parents('tr').remove();  // supprime le TR
+	});
+
+
+	// on doit aller chercher les infos dans la BD et les ramener sur la page
+	$('body').delegate('input[name^=a_reference]','keyup',function (e) {
+		// supprime l'ancien timer pour que la recherche qui était lancer, ne se fasse pas
+		clearTimeout(timer);
+
+		if (e.which == 13 && all_results.length == 1) { // la touche ENREE et il n'y a qu'un seul résultat --> on le selectionne
+			insert_ligne(all_results[0].id); return;
+		}
+
+		tr			= $(this).parents('tr');
+		recherche	= $(this).val();
+		div_offset	= $(this).offset();
+		div_height	= $(this).height();
+		if (recherche.length >= 3) { // au moins trois car pour lancer la recherche
+			//lance la recherche dans 700 milisecond
+			timer = setTimeout("lance_recherche()",700);
+		}
+	});
+
+
+	// au chargement de la page, on ajoute une ligne au tableau des details
 <?	if (!$modif) { // si aucune ligne sur le devis, on en propose une ?>
 		$('#add_ligne').click();
 <?	} ?>
+	
 
-	make_all_bind();
 	recalcul_total();
 
+	// on lance la procédure auto-save
 	window.setTimeout ("sauvegarde_auto()", 1000*60*2 ); // on sauve regulierement
-
 }); // fin on document ready
 
 </script>
@@ -506,10 +503,10 @@ span#options {
 td.devis_id { font-weight:bold; }
 input.qte { text-align:center; }
 input.pu { text-align:right; }
-div.modification { 
+/*div.modification { 
 	display:none;
 	font-size:0.8em;
-}
+}*/
 
 div#sauvegarde {
 	visibility:hidden;
@@ -518,6 +515,28 @@ div#sauvegarde {
 	margin:0px;
 	padding:0px;
 }
+
+input[type=text]:focus,
+textarea:focus {
+	background-color:#e7eef3;
+}
+
+input.loading {
+	/*background-color:none;*/
+	background-image:url(gfx/loading.gif);
+	background-repeat:no-repeat;
+	background-position:center right;
+}
+
+#add_ligne		{ background-image: url(gfx/plus_one.png); }
+#add_dix_ligne	{ background-image: url(gfx/plus_ten.png);   padding-left: 25px; }
+
+.designation {
+	background-repeat: no-repeat;
+    background-position: 93% 100%;
+}
+.designation1 { background-image: url(gfx/cadre_client.png); }
+.designation2 { background-image: url(gfx/cadre_artisan.png); }
 
 </style>
 
@@ -568,7 +587,7 @@ div#sauvegarde {
 							echo ' selected';
 							$a_trouve_artisan = TRUE ;
 							$artisan_code = $row['numero'];
-						} elseif ($row['nom']=='CAB 56' && eregi('^CAB 56',$row_devis['artisan'])) {
+						} elseif ($row['nom']=='CAB 56' && preg_match('/^CAB 56/i',$row_devis['artisan'])) {
 							echo ' selected';
 							$artisan_code = '';
 						}
@@ -645,7 +664,7 @@ div#sauvegarde {
 	<table id="lignes">
 		<thead>
 		<tr>
-			<th class="no_ligne">#</th>
+			<th class="no_ligne"></th>
 			<th class="opt">Opt</th>
 			<th class="reference">Réf</th>
 			<th class="fournisseur">Fournisseur</th>
@@ -674,8 +693,18 @@ div#sauvegarde {
 				$custom_ligne = preg_replace('/\sname="a_reference\[\]"\s+value=""\s/i',' name="a_reference[]" value="'.$row_detail['ref_fournisseur'].'" ',$custom_ligne);
 			if ($row_detail['fournisseur'])
 				$custom_ligne = preg_replace('/\sname="a_fournisseur\[\]"\s+value=""\s/i',' name="a_fournisseur[]" value="'.$row_detail['fournisseur'].'" ',$custom_ligne);
-			if ($row_detail['designation'])
-				$custom_ligne = preg_replace('/\s+class="designation"\s*><\/textarea>/i',' class="designation">'.stripslashes($row_detail['designation']).'</textarea>',$custom_ligne);
+			if ($row_detail['designation']) {
+				preg_match('/^(.*?)<desi2>(.*?)<\/desi2>$/smi',$row_detail['designation'],$matches);
+				if (isset($matches[2])) {	// nouveau style avec le <desi2>
+					$desi1 = $matches[1];
+					$desi2 = $matches[2];
+				} else {			// ancien style sans desi2
+					$desi1 = $row_detail['designation'];
+					$desi2 = '';
+				}
+				$custom_ligne = preg_replace('/\s+name="a_designation\[\]"><\/textarea>\s*/i',' name="a_designation[]">'.stripslashes($desi1).'</textarea>',$custom_ligne);
+				$custom_ligne = preg_replace('/\s+name="a_2designation\[\]"><\/textarea>\s*/i',' name="a_2designation[]">'.stripslashes($desi2).'</textarea>',$custom_ligne);
+			}
 			if ($row_detail['qte'])
 				$custom_ligne = preg_replace('/\sname="a_qte\[\]"\s+value="0"\s/i',' name="a_qte[]" value="'.$row_detail['qte'].'" ',$custom_ligne);
 			if ($row_detail['puht'])
@@ -689,8 +718,8 @@ div#sauvegarde {
 		</tbody>
 		<tfoot>
 			<td style="text-align:left" colspan="8">
-				<input type="button" value="Ajouter une ligne" id="add_ligne" class="button" style="background:#e7eef3;" />&nbsp;
-				<input type="button" value="Ajouter dix lignes" id="add_dix_ligne" class="button" style="background:#e7eef3;" />
+				<input type="button" value="Ajouter une ligne"	id="add_ligne"		class="button divers" />&nbsp;
+				<input type="button" value="Ajouter dix lignes" id="add_dix_ligne"	class="button divers" />
 			</td>
 		</tfoot>
 	</table>
@@ -699,10 +728,10 @@ div#sauvegarde {
 <fieldset class="total">
     <legend>Total :</legend>
 	<div id="div_bouton">
-		<input type="button" value="Générer le devis" class="button pdf" style="background-color:#e7eef3;" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Générer le devis sans Entête" class="button pdf" style="background-color:#e7eef3;" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Générer le devis en prix ADH" class="button pdf discret" style="background-color:#e7eef3;" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Générer le devis en prix ADH sans Entête" class="button pdf discret" style="background-color:#e7eef3;" onclick="valide_form('px_adh,no_header');" />
+		<input type="button" value="Générer le devis"							class="button pdf divers" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Générer le devis sans Entête"				class="button pdf divers" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Générer le devis en prix ADH"				class="button pdf divers discret" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Générer le devis en prix ADH sans Entête"	class="button pdf divers discret" onclick="valide_form('px_adh,no_header');" />
 	</div>
 	<div id="div_total">
 		<span id="options"></span>&nbsp;&nbsp;

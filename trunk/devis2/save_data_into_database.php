@@ -124,12 +124,19 @@ $option				= 0 ;
 mysql_query("DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
 //devis_log("delete_ligne",$id_devis,"DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'");
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
+
+	// designation 1
+	$designation = $_POST['a_designation'][$i];
+	// si une designation 2 est saisie, on la rajoute en l'encadrant de balise <desi2>
+	$designation .= $_POST['a_2designation'][$i] ? "\n<desi2>".$_POST['a_2designation'][$i]."</desi2>":'';
+
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // ARTICLE SPÉCIFIÉ
+
 		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,`option`) VALUES" ;
 		$sql .= "('$id_devis','".
 				strtoupper(mysql_escape_string(stripslashes($_POST['a_reference'][$i])))."','".
 				strtoupper(mysql_escape_string(stripslashes($_POST['a_fournisseur'][$i])))."','".
-				mysql_escape_string(stripslashes($_POST['a_designation'][$i]))."','".
+				mysql_escape_string(stripslashes($designation))."','".
 				mysql_escape_string(stripslashes($_POST['a_qte'][$i]))."','".
 				mysql_escape_string(stripslashes(str_replace(',','.',$_POST['a_pu'][$i])))."','".
 				mysql_escape_string(stripslashes(str_replace(',','.',$_POST['a_adh_pu'][$i])))."','".
@@ -145,8 +152,9 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		mysql_query($sql) or die("Erreur dans creation des lignes devis : ".mysql_error()."<br>\n$sql");
 		
 	} elseif(!$_POST['a_reference'][$i] && $_POST['a_designation'][$i]) { // cas d'un commentaire
+
 		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,designation) VALUES" ;
-		$sql .= "($id_devis,'".mysql_escape_string($_POST['a_designation'][$i])."')" ;
+		$sql .= "($id_devis,'".mysql_escape_string(stripslashes($designation))."')" ;
 
 		mysql_query($sql) or die("Erreur dans creation des lignes devis (titre) : ".mysql_error());
 	}
@@ -155,6 +163,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 
 
 // ENREGISTREMENT DES MOFIDICATIONS ARTICLE DANS LA BASE (OU CREATION)
+/*
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if ($_POST['a_hid_maj'][$i] && $_POST['a_designation'][$i]) { // ARTICLE MIS A JOUR --> A ENREGISTRER
 	
@@ -164,8 +173,8 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 					"'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))."',".
 					"'".strtoupper(mysql_escape_string(preg_replace('/[^A-Z0-9]/i','',$_POST['a_reference'][$i])))."',". // reference simple
 					"'".mysql_escape_string($_POST['a_designation'][$i])."',".
-					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_pu'][$i]))."',". // prix expo
-					"'".mysql_escape_string(ereg_replace(',','.',$_POST['a_adh_pu'][$i]) * (1-(MARGE_COOP/100)) )."',". // prix d'achat coop (calculé a partir du prix adh saisie)
+					"'".mysql_escape_string(str_replace(',','.',$_POST['a_pu'][$i]))."',". // prix expo
+					"'".mysql_escape_string(str_replace(',','.',$_POST['a_adh_pu'][$i]) * (1-(MARGE_COOP/100)) )."',". // prix d'achat coop (calculé a partir du prix adh saisie)
 					"NOW(),". // date creation
 					"'$POST_escaped[artisan_representant]',". // qui 
 					"'$_SERVER[REMOTE_ADDR]'". // ip
@@ -176,8 +185,8 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		if (mysql_affected_rows() == 0) { // au cas ou l'article existe deja, on modifie
 			$sql =	"UPDATE IGNORE devis_article2 SET ".
 						"designation='".mysql_escape_string($_POST['a_designation'][$i])."',".
-						"px_coop='".	mysql_escape_string(ereg_replace(',','.',$_POST['a_pu'][$i]))."',".
-						"px_achat_coop='".	mysql_escape_string(ereg_replace(',','.',$_POST['a_adh_pu'][$i]) * (1-(MARGE_COOP/100)) )."',".
+						"px_coop='".	mysql_escape_string(str_replace(',','.',$_POST['a_pu'][$i]))."',".
+						"px_achat_coop='".	mysql_escape_string(str_replace(',','.',$_POST['a_adh_pu'][$i]) * (1-(MARGE_COOP/100)) )."',".
 						"date_modification=NOW(),".
 						"qui='$POST_escaped[artisan_representant]',".
 						"ip='$_SERVER[REMOTE_ADDR]'".
@@ -191,6 +200,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		}
 	}
 }
+*/
 
 
 

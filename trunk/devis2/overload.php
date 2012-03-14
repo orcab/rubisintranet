@@ -18,7 +18,10 @@ define('PNHT_WIDTH',20);
 define('PUHT_WIDTH',20);
 define('PTHT_WIDTH',20);
 
-define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) ); // s'appadate à la largeur de la page
+if (in_array('px_adh',$options))	// si le bon est destiné à l'artisan, on met toutes les infos
+	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) );
+else
+	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) );
 
 //echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
@@ -46,7 +49,6 @@ class PDF extends FPDF
 		$qrcode->displayFPDF($this, (PAGE_WIDTH / 2) - 10 , 0, 20);
 
 		// logo gauche et droite en haut de page si le theme le demande
-		//if (eregi('_avec_entete$',$values['devis.theme'])) {
 		if (!in_array('no_header',$options)) {
 			if (PDF_DEVIS_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_GAUCHE,0,0,62);
 			if (PDF_DEVIS_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_DROITE,PAGE_WIDTH - 50,0,50);
@@ -121,7 +123,7 @@ class PDF extends FPDF
 		// Date de création du devis
 		$this->SetFont('helvetica','',10);
 		$this->Cell(15, 5 ,"Devis du ");
-		$tmp = ereg('^([0-9]{4})-([0-9]{2})-([0-9]{2})',$date,$regs);
+		$tmp = preg_match('/^([0-9]{4})-([0-9]{2})-([0-9]{2})/',$date,$regs);
 		$this->Cell(77, 5 , "$regs[3]/$regs[2]/$regs[1]" );
 
 		// client tel 2
@@ -157,9 +159,11 @@ class PDF extends FPDF
 		$this->SetTextColor(0,0,0);
 		$this->SetDrawColor(0,0,0);
 		$this->SetFillColor(220,220,220); // gris clair
-		$this->Cell(REF_WIDTH,8,"Référence",1,0,'C',1);
 
-		$this->Cell(FOURNISSEUR_WIDTH,8,"Fournisseur",1,0,'C',1);
+		if (in_array('px_adh',$options)) {
+			$this->Cell(REF_WIDTH,8,"Référence",1,0,'C',1);
+			$this->Cell(FOURNISSEUR_WIDTH,8,"Fournisseur",1,0,'C',1);
+		}
 
 		$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
 		$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);

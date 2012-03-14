@@ -1,7 +1,8 @@
 <?
 include('../inc/config.php');
-set_include_path(get_include_path().PATH_SEPARATOR.'../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
-require_once '../inc/Spreadsheet/Excel/Writer.php';
+
+error_reporting(E_ALL & ~E_DEPRECATED);
+set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'.PATH_SEPARATOR.'c:/EasyPHP/php/pear/'); // ajoute le chemin d'acces a Spreadsheet/Excel
 
 $sql = isset($_GET['sql']) ? base64_decode(urldecode($_GET['sql'])) : '';
 

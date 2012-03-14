@@ -97,7 +97,7 @@ $cumul = array('RDV' => array() , 'VISITE' => array() , 'PROSPECT' => array() );
 		//print_r($events);
 
 		foreach ($events as $e) {
-			if (array_key_exists('SUMMARY',$e) && eregi('^(RDV|VISITE|PROSPECT)',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
+			if (array_key_exists('SUMMARY',$e) && preg_match('/^(RDV|VISITE|PROSPECT)/i',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
 				//on traite le rdv ou visite
 				$type = strtoupper($regs[1]);
 

@@ -17,7 +17,8 @@ use constant {
 	'COEF3' => 1,
 	'COEF4' => 1.05260,
 	'COEF5' => 1.12020,
-	'SUR_TARIF'	=> 1 << 0
+	'DIVERS_SUR_TARIF'		=> 1 << 0,
+	'DIVERS_FROM_CATALFOU'	=> 1 << 1
 };
 
 my %STOCK_CONSTANT = (	'AFA' => 1 << 0,
@@ -38,9 +39,11 @@ my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE};
 
 
 ###############################################################
-print print_time()."Suppression de l'ancienne base ...";
-unlink($options{'dbname'}) if -e $options{'dbname'};
-print " ok\n";
+if (-e $options{'dbname'}) {
+	print print_time()."Suppression de l'ancienne base ...";
+	unlink($options{'dbname'});
+	print " ok\n";
+}
 
 
 ############################################################### CONNEXION A LOGINOR POUR RECUPERER LES INFOS
@@ -123,7 +126,8 @@ select	A.NOART,											-- code article
 		DIAA1,												-- sur le catalogue 1|0
 		DAPCS,DAPCA,DAPCM,DAPCJ,							-- date d'application du tarif de vente
 		DARCS,DARCA,DARCM,DARCJ,							-- date de creation
-		DARMS,DARMA,DARMM,DARMJ								-- date de MAJ
+		DARMS,DARMA,DARMM,DARMJ,							-- date de MAJ
+		COMA1												-- commentaire article (contient le prix d'achat condition expo)
 from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 			left outer join ${prefix_base_rubis}GESTCOM.AARFOUP1 A_F
 				on A.NOART=A_F.NOART and A.FOUR1=A_F.NOFOU
@@ -133,11 +137,13 @@ from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 				on A.NOART=PR.NOART
 where
 		T.AGENC ='AFA'
-	and T.PVT09	='E'	-- tarif de vente en cours
+	and T.PVT09	='E'			-- tarif de vente en cours
 	and PR.AGENC='AFA'
-	and PR.PRV03='E'	-- tarif de revient en cours
-	and A.ARDIV='NON'
---	and A.NOART='15001323'
+	and PR.PRV03='E'			-- tarif de revient en cours
+	and A.ARDIV ='NON'
+	and A.NOART not like '15%'	-- pas d'article anciennement en expo
+	and A.ACTIV <>'00S'			-- pas d'article classé en expo
+--	and A.NOART='02009383'		-- pour les test
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
@@ -151,29 +157,39 @@ while($loginor->FetchRow()) {
 	my $reference_propre = $row{'REFFO'};
 	$reference_propre =~ s/[^A-Z0-9]//ig;
 
-	$sqlite->do("INSERT INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,conditionnement,sur_conditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,reference_propre,date_application,date_creation,date_maj) VALUES (".
-		"'".$row{'NOFOU'}."',".
-		"'".$row{'REFFO'}."',".
-		"'".$row{'NOART'}."',".
+	my $px_achat_expo = $row{'COMA1'};
+	$px_achat_expo =~ s/[^0-9\.,]//ig;	# supprime tout ce qui n'est pas chiffre
+	$px_achat_expo =~ s/,/\./ig;		# remplace les virgules par des points
+
+	#print "\nCOMA1:'$row{COMA1}'  \$px_achat_expo='$px_achat_expo'\n";
+
+	my $divers = 0 ;
+	$divers |= ($row{'DIAA1'} eq 'OUI' ? DIVERS_SUR_TARIF : 0);
+
+	$sqlite->do("INSERT INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,conditionnement,sur_conditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,reference_propre,date_application,date_creation,date_maj,prix_achat_expo) VALUES (".
+		"'$row{NOFOU}',".
+		"'$row{REFFO}',".
+		"'$row{NOART}',".
 		"'$row{DESI1}','$row{DESI2}','$row{DESI3}',".
-		"'".$row{'GENCO'}."',".
+		"'$row{GENCO}',".
 		"'$row{CONDI}','$row{SURCO}',".
-		"'".$row{'LUNTA'}."',".
+		"'$row{LUNTA}',".
 		"'$row{ACTIV}','$row{FAMI1}','$row{SFAM1}','$row{ART04}','$row{ART05}',".
-		"'".$row{'PARVT'}."',".
+		"'$row{PARVT}',".
 		"'$row{RMRV1}','$row{RMRV2}','$row{RMRV3}',".
 		"'$row{PVEN1}','$row{PVEN2}','$row{PVEN3}','$row{PVEN4}','$row{PVEN5}','$row{PVEN6}',".
-		"'".($row{'DIAA1'} eq 'OUI' ? SUR_TARIF : 0)."',".													# divers
-		"'".$reference_propre."',".
-		"'".($row{'DAPCS'} ? join('-',$row{'DAPCS'}.$row{'DAPCA'},$row{'DAPCM'},$row{'DAPCJ'}) : '')."',".	# date creation
+		"'$divers',".													# divers
+		"'$reference_propre',".
+		"'".($row{'DAPCS'} ? join('-',$row{'DAPCS'}.$row{'DAPCA'},$row{'DAPCM'},$row{'DAPCJ'}) : '')."',".	# date application
 		"'".($row{'DARCS'} ? join('-',$row{'DARCS'}.$row{'DARCA'},$row{'DARCM'},$row{'DARCJ'}) : '')."',".	# date creation
-		"'".($row{'DARMS'} ? join('-',$row{'DARMS'}.$row{'DARMA'},$row{'DARMM'},$row{'DARMJ'}) : '')."'".	# date maj
+		"'".($row{'DARMS'} ? join('-',$row{'DARMS'}.$row{'DARMA'},$row{'DARMM'},$row{'DARMJ'}) : '')."',".	# date maj
+		"'$px_achat_expo'".
 	")");
 	if ($sqlite->err()) { warn "$DBI::errstr\n"; }
 }
 print " ok\n";
 
-
+#$sqlite->commit;$sqlite->disconnect();exit;
 
 STOCK:
 # rajouter la notion de stock sur caudan et plescop
@@ -181,6 +197,8 @@ print print_time()."Select des stocks ...";
 my $sql = <<EOT;
 select	NOART,STSER,DEPOT
 from	${prefix_base_rubis}GESTCOM.ASTOFIP1
+where		NOART not like '15%'	-- pas d'article anciennement en expo
+		and (DEPOT='AFA' or DEPOT='AFL')
 --	where
 --		NOART='15001323'
 EOT
@@ -227,6 +245,7 @@ FROM ${prefix_base_rubis}GESTCOM.ACBARTP1
 where
 		ACBPRO='CATALFOU'	-- du catalogue fournisseur
 	and	ACBEMM<>''			-- pas de fournisseur vide
+	and ACBRFF<>''			-- pas de référence vide
 --	and ACBEMM='HANSGR' and ACBRFF='11042000'
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
@@ -246,15 +265,9 @@ while($loginor->FetchRow()) {
 	# calcul du prix d'achat net
 	my ($pa_net,$prix6) = (0,0);
 	$pa_net = $row{'ACBTPA'} ;
-	if ($row{'ACBRE1'}) {
-		$pa_net -= $pa_net * $row{'ACBRE1'}/100;
-	}
-	if ($row{'ACBRE2'}) {
-		$pa_net -= $pa_net * $row{'ACBRE2'}/100;
-	}
-	if ($row{'ACBRE3'}) {
-		$pa_net -= $pa_net * $row{'ACBRE3'}/100;
-	}
+	$pa_net -= $pa_net * $row{'ACBRE1'}/100 if $row{'ACBRE1'};
+	$pa_net -= $pa_net * $row{'ACBRE2'}/100 if $row{'ACBRE2'};
+	$pa_net -= $pa_net * $row{'ACBRE3'}/100 if $row{'ACBRE3'};
 
 	# prix public
 	$prix6 = $row{'ACBCF6'} ? $row{'ACBCF6'} : $row{'ACBTPA'};
@@ -262,46 +275,49 @@ while($loginor->FetchRow()) {
 	my $reference_propre = $row{'ACBRFF'};
 	$reference_propre =~ s/[^A-Z0-9]//ig;
 
-	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,reference_propre,date_application,date_creation,date_maj) VALUES (".
-		"'".$row{'ACBEMM'}."',".
-		"'".$row{'ACBRFF'}."',".
-		"'".$row{'ACBC09'}."',".
-		"'".$row{'ACBDE1'}."',".
-		"'".$row{'ACBDE2'}."',".
-		"'".$row{'ACBDE3'}."',".
-		"'".$row{'ACBGEN'}."',".
-		"'".$row{'ACBTPA'}."',".
-		"'".$row{'ACBRE1'}."',".
-		"'".$row{'ACBRE2'}."',".
-		"'".$row{'ACBRE3'}."',".
+	my $divers = DIVERS_FROM_CATALFOU;
+
+	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,reference_propre,date_application,date_creation,date_maj) VALUES (".
+		"'$row{ACBEMM}',".
+		"'$row{ACBRFF}',".
+		"'$row{ACBC09}',".
+		"'$row{ACBDE1}',".
+		"'$row{ACBDE2}',".
+		"'$row{ACBDE3}',".
+		"'$row{ACBGEN}',".
+		"'$row{ACBTPA}',".
+		"'$row{ACBRE1}',".
+		"'$row{ACBRE2}',".
+		"'$row{ACBRE3}',".
 		"'".($pa_net * $row{'ACBCF1'})."',".	# prix adh
 		"'".($pa_net * COEF2)."',".
 		"'".($pa_net * COEF3)."',".
 		"'".($pa_net * COEF4)."',".
 		"'".($pa_net * COEF5)."',".
-		"'".$prix6."',".
-		"'".$reference_propre."',".
+		"'$prix6',".
+		"'$divers',".
+		"'$reference_propre',".
 		"'".($row{'ACBSPR'} ? join('-',$row{'ACBSPR'}.$row{'ACBAPR'},$row{'ACBMPR'},$row{'ACBJPR'}) : '')."',".	# date application
 		"'".($row{'ACBDCS'} ? join('-',$row{'ACBDCS'}.$row{'ACBDCA'},$row{'ACBDCM'},$row{'ACBDCJ'}) : '')."',".	# date creation
 		"'".($row{'ACBDMS'} ? join('-',$row{'ACBDMS'}.$row{'ACBDMA'},$row{'ACBDMM'},$row{'ACBDMJ'}) : '')."'".	# date maj
 	")");
 
-	# met a jour le prix d'un article expo s'il existe deja (les prix expo sont faux, il faut tenir compte du prix catalogue fournisseur)
-	$sqlite->do("UPDATE articles set ".
-		"prix_achat_brut='".$row{'ACBTPA'}."',".
-		"remise1='".$row{'ACBRE1'}."',".
-		"remise2='".$row{'ACBRE2'}."',".
-		"remise3='".$row{'ACBRE3'}."',".
-		"prix1='".($pa_net * $row{'ACBCF1'})."',".	# prix adh
-		"prix2='".($pa_net * COEF2)."',".
-		"prix3='".($pa_net * COEF3)."',".
-		"prix4='".($pa_net * COEF4)."',".
-		"prix5='".($pa_net * COEF5)."',".
-		"prix6='".$prix6."' ".
-		"WHERE code_fournisseur='".$row{'ACBEMM'}."' ".
-		"AND reference='".$row{'ACBRFF'}."' ".
-		"AND code_mcs LIKE '15%'"  # article expo
-	);
+#	# met a jour le prix d'un article expo s'il existe deja (les prix expo sont faux, il faut tenir compte du prix catalogue fournisseur)
+#	$sqlite->do("UPDATE articles set ".
+#		"prix_achat_brut='".$row{'ACBTPA'}."',".
+#		"remise1='".$row{'ACBRE1'}."',".
+#		"remise2='".$row{'ACBRE2'}."',".
+#		"remise3='".$row{'ACBRE3'}."',".
+#		"prix1='".($pa_net * $row{'ACBCF1'})."',".	# prix adh
+#		"prix2='".($pa_net * COEF2)."',".
+#		"prix3='".($pa_net * COEF3)."',".
+#		"prix4='".($pa_net * COEF4)."',".
+#		"prix5='".($pa_net * COEF5)."',".
+#		"prix6='".$prix6."' ".
+#		"WHERE code_fournisseur='".$row{'ACBEMM'}."' ".
+#		"AND reference='".$row{'ACBRFF'}."' ".
+#		"AND code_mcs LIKE '15%'"  # article expo
+#	);
 
 	if ($sqlite->err()) { warn "$DBI::errstr\n"; }
 }
@@ -365,8 +381,8 @@ CREATE TABLE [articles] (
   [designation3] CHAR(40),
   [gencode] CHAR(13),
   [stock_agence] INTEGER(2) DEFAULT 0,	-- 2^0 = AFA, 2^1 = AFL
-  [conditionnement] DECIMAL(10, 4) DEFAULT 0,
-  [sur_conditionnement] DECIMAL(10, 4) DEFAULT 0,
+  [conditionnement] DECIMAL(10, 4) DEFAULT NULL,
+  [sur_conditionnement] DECIMAL(10, 4) DEFAULT NULL,
   [unite] CHAR(3) DEFAULT NULL,
   [activite] CHAR(3) DEFAULT NULL,
   [famille] CHAR(3) DEFAULT NULL,
@@ -383,12 +399,13 @@ CREATE TABLE [articles] (
   [prix4] DECIMAL(10, 4) NOT NULL DEFAULT 0,
   [prix5] DECIMAL(10, 4) NOT NULL DEFAULT 0,
   [prix6] DECIMAL(10, 4) NOT NULL DEFAULT 0,
-  [divers] INTEGER(1) NOT NULL DEFAULT 0,		-- catalogue ou pas
+  [divers] INTEGER(1) NOT NULL DEFAULT 0,		-- catalogue papier ou pas, catalfou ou pas
   [reference_propre] CHAR(15) NOT NULL,
   [date_application] DATE DEFAULT NULL,
   [date_creation] DATE NOT NULL,
   [date_maj] DATE DEFAULT NULL,
-  CONSTRAINT [] PRIMARY KEY ([code_fournisseur], [reference])
+  [prix_achat_expo] DECIMAL(10, 4) DEFAULT NULL
+  --CONSTRAINT [] PRIMARY KEY ([code_fournisseur], [reference])
 );
 EOT
 $sqlite->do($sql);
