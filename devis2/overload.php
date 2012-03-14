@@ -21,7 +21,7 @@ define('PTHT_WIDTH',20);
 if (in_array('px_adh',$options))	// si le bon est destiné à l'artisan, on met toutes les infos
 	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (REF_WIDTH + FOURNISSEUR_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) );
 else
-	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) );
+	define('DESIGNATION_DEVIS_WIDTH',PAGE_WIDTH - LEFT_MARGIN - RIGHT_MARGIN - (FOURNISSEUR_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH) );
 
 //echo DESIGNATION_DEVIS_WIDTH.' '.DESIGNATION_DEVIS_NET_WIDTH;
 
@@ -160,11 +160,10 @@ class PDF extends FPDF
 		$this->SetDrawColor(0,0,0);
 		$this->SetFillColor(220,220,220); // gris clair
 
-		if (in_array('px_adh',$options)) {
+		if (in_array('px_adh',$options))
 			$this->Cell(REF_WIDTH,8,"Référence",1,0,'C',1);
-			$this->Cell(FOURNISSEUR_WIDTH,8,"Fournisseur",1,0,'C',1);
-		}
 
+		$this->Cell(FOURNISSEUR_WIDTH,8,"Fournisseur",1,0,'C',1);
 		$this->Cell(DESIGNATION_DEVIS_WIDTH,8,"Désignation",1,0,'C',1);
 		$this->Cell(QTE_WIDTH,8,"Qté",1,0,'C',1);
 		$this->Cell(PUHT_WIDTH,8,"P.U HT",1,0,'C',1);
@@ -207,7 +206,7 @@ class PDF extends FPDF
 
 
 
-// pour faire des pointillés
+	// pour faire des pointillés
 	function SetDash($black=false,$white=false)
     {
         if($black and $white)
@@ -219,7 +218,7 @@ class PDF extends FPDF
 
 
 
-// GESTION DES RECTANGLE ARRONDI
+	// GESTION DES RECTANGLE ARRONDI
 	function RoundedRect($x, $y, $w, $h,$r, $style = '')
     {
         $k = $this->k;
