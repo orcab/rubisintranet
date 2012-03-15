@@ -17,6 +17,8 @@ FROM	articles a
 		left join fournisseurs f     
           on a.code_fournisseur=f.code_fournisseur
 WHERE	reference LIKE '$val%'
+		OR cle1 LIKE '$val%'
+		OR cle2 LIKE '$val%'
 	-- OR reference_propre LIKE '$val%'
 ORDER BY reference ASC
 EOT;
