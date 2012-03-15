@@ -46,7 +46,7 @@ function draw_page(pageno) {
 						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur														+ '</td>' +
 						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')					+ '&nbsp;</td>' +
 						'<td class="designation">'	+ all_results[i].designation1															+ '</td>' +
-						'<td class="px">'				+ parseFloat(all_results[i].px_public).toFixed(2)									+ '&euro;</td>' +
+						'<td class="px">'			+ parseFloat(all_results[i].px_public).toFixed(2)										+ '&euro;</td>' +
 						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;')	+ '</td>' +
 					'</tr>'
 		); // on affiche les suggestions
@@ -76,7 +76,7 @@ function insert_ligne(id) {
 			// on affecte les valeurs au champs HTML
 			tr.children('td[class^=reference]')		.text(data.reference);
 			tr.children('td[class^=fournisseur]')	.text(data.nom_fournisseur);
-			tr.children('td[class^=designation]')	.text(data.designation1);
+			tr.children('td[class^=designation]')	.html(data.designation1 + '<br/>' + data.designation2 + (data.code_mcs ? '<br/><span class="code_mcs">Code MCS : '+data.code_mcs+'</span>' : ''));
 			tr.children('td[class^=px_avec_coef]')	.html(parseFloat(data.px_avec_coef).toFixed(2)	+ '&euro;'); // prix expo
 			tr.children('td[class^=px_public]')		.html(parseFloat(data.px_public).toFixed(2)		+ '&euro;'); // prix pub
 			tr.children('td[class^=modification]')	.html(data.date_application_format); // date application tarif
@@ -220,6 +220,8 @@ table#lignes .px_utilise { font-weight:bold; color:red; }
 
 table#lignes td.pub { color:grey; }
 table#lignes td.modification { text-align:center; }
+
+.code_mcs { font-style:italic; color:grey; }
 
 </style>
 
