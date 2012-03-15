@@ -128,12 +128,12 @@ function draw_page(pageno) {
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
 		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
-						'<td class="ref">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')	+ '</td>' +
+						'<td class="ref">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')+'</td>'+
 						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur										+ '</td>' +
-						'<td class="logo">'						+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')	+ '&nbsp;</td>' +
+						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')	+ '&nbsp;</td>' +
 						'<td class="designation">'	+ all_results[i].designation1											+ '</td>' +
-						'<td class="px">'				+ parseFloat(all_results[i].px_public).toFixed(2)						+ '&euro;</td>' +
-						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;')		+ '</td>' +
+						'<td class="px">'			+ parseFloat(all_results[i].px_public).toFixed(2)						+ '&euro;</td>' +
+						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;') + '</td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
