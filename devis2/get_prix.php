@@ -8,6 +8,8 @@ include('../inc/config.php');
 <head>
 <title>Consultation des tarifs EXPO</title>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<style type="text/css">@import url(../js/boutton.css);</style>
+<style type="text/css">@import url(devis.css);</style>
 <script type="text/javascript" src="../js/jquery.js"></script>
 <script language="javascript">
 
@@ -40,10 +42,12 @@ function draw_page(pageno) {
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
 		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
-						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>') + '</td>' +
-						'<td style="color:green;padding-right:10px;">'	+ all_results[i].nom_fournisseur + '</td>' +
-						'<td style="padding-right:10px;width:500px;">'	+ all_results[i].designation1 + '</td>' +
-						'<td style="font-weight:bold;">'				+ parseFloat(all_results[i].px_public).toFixed(2) + '&euro;</td>' +
+						'<td class="ref">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')+'</td>'+
+						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur														+ '</td>' +
+						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')					+ '&nbsp;</td>' +
+						'<td class="designation">'	+ all_results[i].designation1															+ '</td>' +
+						'<td class="px">'				+ parseFloat(all_results[i].px_public).toFixed(2)									+ '&euro;</td>' +
+						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;')	+ '</td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
@@ -64,7 +68,7 @@ function insert_ligne(id) {
 	$('div#sugest').hide();
 
 	// on met un loading
-	tr.children('td[class^=fournisseur]').addClass('loading');
+	tr.children('td').children('input[name^=a_reference]').addClass('loading');
 
 	// on lance la recherche d'information
 	$.getJSON('ajax.php', { what:'get_detail', val: id  } ,
@@ -111,7 +115,7 @@ var pattern_ligne = '<?=ereg_replace("[\n\r]",'',$pattern_ligne)?>' ;
 
 function lance_recherche() {
 	//on affiche le sablier de recherche
-	tr.children('td[class^=fournisseur]').addClass('loading');
+	tr.children('td').children('input[name^=a_reference]').addClass('loading');
 	all_results = Array(); // on vide la mémoire des résultats
 
 	// on recherche dans la BD les nouvelles conrerespondances
@@ -128,7 +132,7 @@ function lance_recherche() {
 			$('div#sugest').css('top',div_offset.top + div_height + 5).css('left',div_offset.left).show('fast');
 
 			//on cache le sablier de recherche
-			tr.children('td[class^=fournisseur]').removeClass('loading');
+			tr.children('td').children('input[name^=a_reference]').removeClass('loading');
 		} // fin fonction
 	); // fin getJson
 }
@@ -163,13 +167,6 @@ $(document).ready(function(){
 </script>
 
 <style>
-
-body {
-	font-family:verdana;
-	font-size:0.8em;
-}
-
-sup { font-size:10px; }
 
 fieldset {
 	width:85%;
@@ -214,7 +211,7 @@ table#lignes .reference, table#lignes .fournisseur, table#lignes .designation { 
 
 fieldset#detail table td { padding-top:4px; }
 
-table#lignes th.reference { width:110px; }
+table#lignes th.reference	{ width:110px; }
 table#lignes th.designation { width:400px; }
 table#lignes th.fournisseur { width:120px; }
 
@@ -223,47 +220,6 @@ table#lignes .px_utilise { font-weight:bold; color:red; }
 
 table#lignes td.pub { color:grey; }
 table#lignes td.modification { text-align:center; }
-
-div#sugest {
-	border:solid 1px #6290B3;
-	background:#e7eef3;
-	font-size:0.7em;
-	display:none;
-	position:absolute;
-	top:0;
-	left:0;
-	cursor:pointer;
-	padding:3px;
-}
-
-div#sugest tr:hover { background:yellow; }
-
-#results td { border:solid 1px black; }
-#results td.fournisseur { color:green; }
-#results td.designation { font-style:italic; }
-
-span.navig { font-size:1.5em; }
-
-span.navig a {
-	text-decoration:none;
-	color:red;
-}
-
-span#options {
-	font-weight:normal;
-	font-size:0.8em;
-}
-
-.loading {
-	background-color:none;
-	background-image:url(gfx/loading4.gif);
-	background-repeat:no-repeat;
-	background-position:top left;
-}
-
-input[name^=a_reference]:focus {
-	background:#e7eef3;
-}
 
 </style>
 
