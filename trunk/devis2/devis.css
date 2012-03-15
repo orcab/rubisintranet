@@ -1,0 +1,58 @@
+/* aspect général */
+body {
+	font-family:verdana;
+	font-size:0.8em;
+}
+
+/* les exposant */
+sup {	font-size:10px; }
+
+
+/* tableau des sujestions d'article */
+div#sugest {
+	border:solid 1px #6290B3;
+	background:#e7eef3;
+	font-size:0.7em;
+	display:none;
+	position:absolute;
+	top:0;
+	left:0;
+	cursor:pointer;
+	padding:3px;
+}
+
+div#sugest tr:hover { background:yellow; }
+
+div#sugest td.ref			{ padding-right:10px; }
+div#sugest td.fournisseur	{ color:green; padding-right:10px; }
+div#sugest td.logo			{ width:30px; }
+div#sugest td.designation	{ padding-right:10px; width:200px; }
+div#sugest td.px			{ font-weight:bold; }
+div#sugest td.pp {
+    padding-left: 2px;
+    font-weight: bold;
+    color: white;
+    background-color: green;
+	width:2em;
+}
+
+
+
+/* gestion de l'animation de loading */
+input.loading { background:url('gfx/loading.gif') white center right no-repeat; }
+
+
+
+/* mise en avant des case saisisable */
+input[type=text]:focus,
+textarea:focus {
+	background-color:#e7eef3;
+}
+
+
+/* la navigation dans les sujestions */
+span.navig { font-size:1.5em; }
+span.navig a {
+	text-decoration:none;
+	color:red;
+}

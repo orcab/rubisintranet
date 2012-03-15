@@ -12,7 +12,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'complette_via_ref' && isset($_GET[
 	
 	// requete de selection des articles qui corresponde à aux caracteres de recherche
 	$sql = <<<EOT
-SELECT	a.rowid,nom_fournisseur,reference,designation1,min(prix1 * $COEF_EXPO,prix6) as px_public,code_mcs
+SELECT	a.rowid,nom_fournisseur,reference,designation1,(prix1 * $COEF_EXPO) as px_avec_coef,prix6,code_mcs
 FROM	articles a
 		left join fournisseurs f     
           on a.code_fournisseur=f.code_fournisseur
@@ -37,6 +37,21 @@ EOT;
 	$json = array();
 	$res = $sqlite->query($sql) or die("Impossible de lancer la requete de selection des articles : ".array_pop($sqlite->errorInfo()));
 	while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+		$row['px_public']	= 0 ;
+		$row['px_from']		= '';
+		if		($row['prix6'] <= 0) {					// prix public vide, on prend le prix adh * coef
+			$row['px_public']	= $row['px_avec_coef'];
+			$row['px_from']		= 'adh';
+
+		} elseif	($row['px_avec_coef'] < $row['prix6'])	{	// prix adh inférieur au prix public, on prend le prix adh * coef
+			$row['px_public'] = $row['px_avec_coef'];
+			$row['px_from']		= 'adh';
+
+		} else {										// prix public inférieur au prix adh, on prend le prix public
+			$row['px_public'] = $row['prix6'];
+			$row['px_from']		= 'pp';
+		}
+
 		$row['designation1'] = utf8_encode($row['designation1']);
 		array_push($json,$row);
 	}
@@ -50,7 +65,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'get_detail' && isset($_GET['va
 	$id = mysql_escape_string(strtoupper($_GET['val'])) ;
 	$sql = <<<EOT
 SELECT	nom_fournisseur,reference,designation1,designation2,code_mcs,
-		min(prix1 * $COEF_EXPO,prix6) as px_public,
+		prix6,
 		(prix1 * $COEF_EXPO) as px_avec_coef,
 		(prix1) as px_adh,
 		strftime('%d/%m/%Y',date_application) AS date_application_format
@@ -78,6 +93,14 @@ EOT;
 	$row = $res->fetch(PDO::FETCH_ASSOC);
 	$row['designation1'] = utf8_encode($row['designation1']);
 	$row['designation2'] = utf8_encode($row['designation2']);
+	$row['px_public']	= 0 ;
+	if		($row['prix6'] <= 0)						// prix public vide, on prend le prix adh * coef
+		$row['px_public']	= $row['px_avec_coef'];
+	elseif	($row['px_avec_coef'] < $row['prix6'])		// prix adh inférieur au prix public, on prend le prix adh * coef
+		$row['px_public'] = $row['px_avec_coef'];
+	else												// prix public inférieur au prix adh, on prend le prix public
+		$row['px_public'] = $row['prix6'];
+
 	echo json_encode($row);
 	
 } // fin RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID

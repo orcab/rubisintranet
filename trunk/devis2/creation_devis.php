@@ -65,6 +65,7 @@ if($modif) { // modif
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_devis.ico" />
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/jscalendar/calendar-brown.css);</style>
+<style type="text/css">@import url(devis.css);</style>
 <script type="text/javascript" src="../js/jscalendar/calendar.js"></script>
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
@@ -100,12 +101,12 @@ function valide_form(mes_options) {
 }
 
 
+var phrases = [];
 <?	// selection des phrases pré-établies pour les designations
-	//$res_devis = mysql_query("SELECT * FROM devis_phrase WHERE deleted=0") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
-	//while($row = mysql_fetch_array($res_devis)) {
-		
-	//}
-?>
+	$res = mysql_query("SELECT mot_cle,phrase FROM devis_phrase WHERE deleted=0") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
+	while($row = mysql_fetch_array($res)) { ?>
+		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=preg_replace("/[\n|\r]+/",'\\n',$row['phrase'])?>";
+<?	} ?>
 
 
 
@@ -127,11 +128,12 @@ function draw_page(pageno) {
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
 		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
-						'<td style="padding-right:10px;">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')			+ '</td>' +
-						'<td style="color:green;padding-right:10px;">'	+ all_results[i].nom_fournisseur												+ '</td>' +
-						'<td style="width:30px;">'						+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')			+ '&nbsp;</td>' +
-						'<td style="padding-right:10px;width:500px;">'	+ all_results[i].designation1													+ '</td>' +
-						'<td style="font-weight:bold;">'				+ parseFloat(all_results[i].px_public).toFixed(2)								+ '&euro;</td>' +
+						'<td class="ref">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')	+ '</td>' +
+						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur										+ '</td>' +
+						'<td class="logo">'						+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')	+ '&nbsp;</td>' +
+						'<td class="designation">'	+ all_results[i].designation1											+ '</td>' +
+						'<td class="px">'				+ parseFloat(all_results[i].px_public).toFixed(2)						+ '&euro;</td>' +
+						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;')		+ '</td>' +
 					'</tr>'
 		); // on affiche les suggestions
 	}
@@ -180,30 +182,39 @@ function insert_ligne(id) {
 
 
 function recalcul_total() {
-	total = 0;
-	option = 0;
+	var total		= 0.0;
+	var total_adh	= 0.0;
+	var option		= 0;
 	$('input[name^=a_qte]').each(function() {
 		var parent_tr	= $(this).parents('tr');
 		var parent_td	= parent_tr.children('td');
 		var pu			= parseFloat(parent_td.children('input[name^=a_pu]').val().replace(',','.'));
 		var pu_adh		= parseFloat(parent_td.children('span').children('input[name^=a_adh_pu]').val().replace(',','.'));
 		var qte			= parseFloat(parent_td.children('input[name^=a_qte]').val().replace(',','.'));
+
 		if (pu_adh <= 0 && qte > 0) // si le prix est a 0, on le met en évidence
 			parent_td.children('span').children('input[name^=a_adh_pu]').css('background-color','red').css('background-image','none');
 
 		if (pu >= 0 && qte >=0) {
-			var val = (Math.round(qte * pu * 100)/100) ;
-			parent_tr.children('td[name^=a_pt]').html(val + '&euro;');
+			var val		= qte * pu ;
+			var val_adh = qte * pu_adh ;
+			parent_tr.find('span.total_px_public').html(val.toFixed(2) + '&euro;');
+			parent_tr.find('span.total_px_adh').html(val_adh.toFixed(2) + '&euro;');
 			// on vérifie si c'est une option
-			if (parent_td.children('input[name^=a_opt]').attr('checked')) // cas d'une option, on ne l'a compte pas dans le total
+			if (parent_td.children('input[name^=a_opt]').attr('checked')) { // cas d'une option, on ne l'a compte pas dans le total
 				option++;
-			else
-				total += val ;
-		} else
-			parent_tr.children('td[name^=a_pt]').text('');
+			} else {
+				total		+= val ;
+				total_adh	+= val_adh ;
+			}
+		} else {
+			parent_tr.find('span.total_px_public').text('');
+			parent_tr.find('span.total_px_adh').text('');
+		}
 	});
 
-	$('span#total').text(Math.round(total * 100)/100);
+	$('span#total').text(total.toFixed(2));
+	$('span#total_adh').text(total_adh.toFixed(2));
 	if (option > 0)
 		$('span#options').text("Le total ne tient pas compte " + (option > 1 ? "des "+option+" options choisies" : "de l'option choisie"));
 	else
@@ -225,8 +236,10 @@ $pattern_ligne = <<<EOT
 	</td>
 	<td><input type="text"		name="a_reference[]"	value=""		class="ref"			 autocomplete="off" /></td>
 	<td><input type="text"		name="a_fournisseur[]"	value=""		class="fournisseur"	 /></td>
-	<td>
+	<td nowrap="nowrap">
+		<input type="button" class="phrase" value="..." />
 		<textarea				rows="2"	class="designation designation1" name="a_designation[]"></textarea><br/>
+		<input type="button" class="phrase" value="..." />
 		<textarea				rows="2"	class="designation designation2" name="a_2designation[]"></textarea>
 <!--	<input type="hidden"	name="a_hid_maj[]"	value="0"/>
 		<div class="modification">
@@ -244,7 +257,10 @@ $pattern_ligne = <<<EOT
 		<span class="discret"><br/>Adh <input type="text"	name="a_adh_pu[]"	value="0" class="pu" /></span>
 		<div class="discret"></div>
 	</td>
-	<td name="a_pt"></td>
+	<td name="a_pt">
+		<span class="total_px_public"></span>
+		<span class="discret"><br/><span class="total_px_adh"></span></span>
+	</td>
 </tr>
 EOT;
 
@@ -411,16 +427,16 @@ $(document).ready(function(){
 </script>
 
 <style>
-body {
-	font-family:verdana;
-	font-size:0.8em;
-}
-
-sup {	font-size:10px; }
 
 fieldset {	border:solid 1px #6290B3; }
 
-.discret { display:none; }
+.discret {
+	display:none;
+	color:#5595C6;
+}
+
+.discret input { color:#5595C6; }
+input.discret  { color:#5595C6; }
 
 fieldset#detail table tr {	border-bottom:dotted 1px #6290B3; }
 
@@ -464,11 +480,6 @@ fieldset#detail table td,fieldset#detail table th {
 fieldset#detail table td { padding-top:4px; }
 fieldset#detail table td.opt,fieldset#detail table th.opt { text-align:left; }
 
-textarea.designation {	width:100%; }
-input.qte	{	width:3em; }
-input.pu	{	width:5em; }
-
-
 div#div_bouton {
 	float:left;
 	text-align:left;
@@ -480,39 +491,9 @@ div#div_total {
 	font-weight:bold;
 }
 
-div#sugest {
-	border:solid 1px #6290B3;
-	background:#e7eef3;
-	font-size:0.7em;
-	display:none;
-	position:absolute;
-	top:0;
-	left:0;
-	cursor:pointer;
-	padding:3px;
-}
-
-div#sugest tr:hover { background:yellow; }
-
-#results td { border:solid 1px black; }
-#results td.fournisseur { color:green; }
-#results td.designation { font-style:italic; }
-
-span.navig { font-size:1.5em; }
-
-span.navig a {
-	text-decoration:none;
-	color:red;
-}
-
-span#options {
-	font-weight:normal;
-	font-size:0.8em;
-}
-
 td.devis_id { font-weight:bold; }
-input.qte { text-align:center; }
-input.pu { text-align:right; }
+input.qte	{ text-align:center;	width:3em; }
+input.pu	{ text-align:right;		width:5em; }
 /*div.modification { 
 	display:none;
 	font-size:0.8em;
@@ -526,27 +507,28 @@ div#sauvegarde {
 	padding:0px;
 }
 
-input[type=text]:focus,
-textarea:focus {
-	background-color:#e7eef3;
+span#options {
+	font-weight:normal;
+	font-size:0.8em;
 }
 
-input.loading {
-	/*background-color:none;*/
-	background-image:url(gfx/loading.gif);
-	background-repeat:no-repeat;
-	background-position:center right;
-}
+/* sert a mettre les totaux en face des input de prix unitaire */
+.total_px_public	{ line-height: 140%; }
+.total_px_adh		{ line-height: 200%; }
+
 
 #add_ligne		{ background-image: url(gfx/plus_one.png); }
 #add_dix_ligne	{ background-image: url(gfx/plus_ten.png);   padding-left: 25px; }
 
-.designation {
+textarea.designation {
 	background-repeat: no-repeat;
     background-position: 93% 100%;
+	width:30em;
 }
 .designation1 { background-image: url(gfx/cadre_client.png); }
 .designation2 { background-image: url(gfx/cadre_artisan.png); }
+
+input.phrase { vertical-align:top; }
 
 </style>
 
@@ -746,6 +728,7 @@ input.loading {
 	<div id="div_total">
 		<span id="options"></span>&nbsp;&nbsp;
 		Total <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total"></span> &euro;
+		<span class="discret"><br/>Total adh <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total_adh"></span> &euro;</span>
 	</div>
 </fieldset>
 
