@@ -26,7 +26,7 @@ div#sugest tr:hover { background:yellow; }
 div#sugest td.ref			{ padding-right:10px; }
 div#sugest td.fournisseur	{ color:green; padding-right:10px; }
 div#sugest td.logo			{ width:30px; }
-div#sugest td.designation	{ padding-right:10px; width:200px; }
+div#sugest td.designation	{ padding-right:10px; width:300px; }
 div#sugest td.px			{ font-weight:bold; }
 div#sugest td.pp {
     padding-left: 2px;
