@@ -101,12 +101,43 @@ function valide_form(mes_options) {
 }
 
 
+// gestion des phrases
+var last_btn_phrase_push;
 var phrases = [];
 <?	// selection des phrases pré-établies pour les designations
 	$res = mysql_query("SELECT mot_cle,phrase FROM devis_phrase WHERE deleted=0") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
 	while($row = mysql_fetch_array($res)) { ?>
 		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=preg_replace("/[\n|\r]+/",'\\n',$row['phrase'])?>";
 <?	} ?>
+
+function affiche_choix_phrase(btn_elm) {
+	// placement du div
+	last_btn_phrase_push = btn_elm;	// on stock quel bouton a été appuyer pour pouvoir affecté le texte au bon textarea ensuite (les div sont générique)
+	var div_offset = $(btn_elm).offset();
+	var div_height = $(btn_elm).height();
+	var html = '<ul>';
+	for(var mot_cle in phrases) {
+		html += '<li>'+mot_cle+'</li>';
+	}
+	html += '</ul><div style="float:right;"><a href="javascript:cache_choix_phrase();">Fermer [X]</a></div>';
+
+	$('div#phrase').css({'top': div_offset.top + div_height + 5, 'left': div_offset.left }).html(html).show('fast');
+}
+
+function cache_choix_phrase() {
+	$('div#phrase').hide('fast');
+}
+
+// on clique sur la phrase de notre choix
+function affiche_phrase(li_elm) {
+	var phrase= phrases[$(li_elm).text()];
+	cache_choix_phrase();
+
+	// colle la phrase dans le bon cadre
+	var textarea;
+	textarea = $(last_btn_phrase_push).next('textarea.designation');	
+	$(textarea).text($(textarea).text() + "\n" + phrase);
+}
 
 
 
@@ -237,9 +268,9 @@ $pattern_ligne = <<<EOT
 	<td><input type="text"		name="a_reference[]"	value=""		class="ref"			 autocomplete="off" /></td>
 	<td><input type="text"		name="a_fournisseur[]"	value=""		class="fournisseur"	 /></td>
 	<td nowrap="nowrap">
-		<input type="button" class="phrase" value="..." />
+		<input type="button" class="phrase phrase_cli" value="..." />
 		<textarea				rows="2"	class="designation designation1" name="a_designation[]"></textarea><br/>
-		<input type="button" class="phrase" value="..." />
+		<input type="button" class="phrase phrase_adh" value="..." />
 		<textarea				rows="2"	class="designation designation2" name="a_2designation[]"></textarea>
 <!--	<input type="hidden"	name="a_hid_maj[]"	value="0"/>
 		<div class="modification">
@@ -320,7 +351,7 @@ function lance_recherche() {
 			else						$('div#sugest').html('<img src="../gfx/attention.png" /> Aucun résultat');
 
 			// placement du div
-			$('div#sugest').css('top',div_offset.top + div_height + 5).css('left',div_offset.left).show('fast');
+			$('div#sugest').css({ 'top':div_offset.top + div_height + 5 , 'left':div_offset.left }).show('fast');
 
 			// on supprime le loading
 			tr.children('td').children('input[name^=a_reference]').removeClass('loading');
@@ -350,14 +381,15 @@ $(document).ready(function(){
 
 	// click sur le mode discret
 	$('#discret_mode').click(function() {
-		if ($(this).attr('checked'))
-			$('.discret').show();
-		else 
-			$('.discret').hide();
+		if ($(this).attr('checked'))	$('.discret').show();
+		else							$('.discret').hide();
 	});
 
+	
 	// active l'auto-save en cas de modification
-	$('body').delegate('input[type=text],textarea','change',function(){ auto_save = true ; }); // en cas de modif d'une valeur, on réactive l'auto_save
+	$('body').delegate('input[type=text],textarea','change',function(){
+		auto_save = true ;
+	}); // en cas de modif d'une valeur, on réactive l'auto_save
 
 
 	// en cas de changement, on affiche l'option de validation des modifications dans la base
@@ -409,6 +441,17 @@ $(document).ready(function(){
 			//lance la recherche dans 700 milisecond
 			timer = setTimeout("lance_recherche()",700);
 		}
+	});
+
+	
+	// affichage des phrases pré-enregistrées
+	$('body').delegate('input.phrase','click',function() {
+		affiche_choix_phrase(this);
+	});
+
+	// affichage des phrases pré-enregistrées
+	$('div#phrase').delegate('li','click',function() {
+		affiche_phrase(this);
 	});
 
 
@@ -530,6 +573,25 @@ textarea.designation {
 
 input.phrase { vertical-align:top; }
 
+/* phrases */
+div#phrase {
+	border:solid 1px #6290B3;
+	background:#e7eef3;
+	font-size:0.7em;
+	display:none;
+	position:absolute;
+	top:0;
+	left:0;
+	cursor:pointer;
+	padding:3px;
+}
+
+div#phrase ul {
+	list-style-image: url('gfx/arrow.png');
+	padding-left: 20px;
+    margin: 0;
+}
+
 </style>
 
 <body>
@@ -537,6 +599,7 @@ input.phrase { vertical-align:top; }
 <? include('../inc/naviguation.php'); ?>
 
 <div id="sugest"></div><!-- pour la sugestion des résultat ajax -->
+<div id="phrase"></div><!-- pour la sugestion des phrases -->
 
 <form method="post" action="generation_devis_pdf.php" name="creation_devis">
 <input type="hidden" name="les_options" value="" />

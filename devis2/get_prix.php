@@ -203,7 +203,6 @@ fieldset table td, fieldset table th {
 	padding:0px;
 	padding-bottom:5px;
 	font-size:0.8em;
-
 }
 
 table#lignes td, table#lignes th { vertical-align:top; }
