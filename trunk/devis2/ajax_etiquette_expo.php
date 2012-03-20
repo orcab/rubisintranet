@@ -10,7 +10,9 @@ select
 	AF.NOFOU,AF.REFFO,
 	F.NOMFO,
 	S.LOCAL, S.LOCA2, S.LOCA3,
-	(PV.PVEN1 * $COEF_EXPO) as PX_AVEC_COEF,PV.PVEN6 as PX_PUBLIC
+	(PV.PVEN1 * $COEF_EXPO) as PX_AVEC_COEF,
+	PV.PVEN6 as PX_PUBLIC,
+	TANU0 as ECOTAXE												-- ecotaxe dans la table ATABLEP1
 from			${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 	left join	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 AF
 		on  A.NOART=AF.NOART and A.FOUR1=AF.NOFOU
@@ -20,12 +22,14 @@ from			${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 		on  A.FOUR1=F.NOFOU
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOCKP1 QTE
 		on QTE.NOART=A.NOART and QTE.DEPOT='EXP' 
-	left join AFAGESTCOM.ATARPVP1 PV
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATARPVP1 PV
 		on A.NOART=PV.NOART
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
+				on A.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where
-			(LOCAL like '%$_GET[val]%' or LOCA2 like '%$_GET[val]%' or LOCA3 like '%$_GET[val]%')
-		and PV.AGENC ='AFA' and PV.PVT09='E'
---		and QTE.QTINV>0
+			(LOCAL like '%$_GET[val]%' or LOCA2 like '%$_GET[val]%' or LOCA3 like '%$_GET[val]%')	-- la localisation correspond au critere de recherche
+		and PV.AGENC ='AFA' and PV.PVT09='E'	-- prix en cours
+--		and QTE.QTINV>0							-- au moins 1 dans le stock
 EOT;
 
 	//echo "\n$sql"; exit;
@@ -64,7 +68,8 @@ EOT;
 														'code_fournisseur'	=> $row['NOFOU'],
 														'fournisseur'		=> $row['NOMFO'],
 														'reference'			=> $row['REFFO'],
-														'code_mcs'			=> $row['NOART']	
+														'code_mcs'			=> $row['NOART'],
+														'ecotaxe'			=> $row['ECOTAXE']
 													);
 
 		$mode	= '';
@@ -81,6 +86,7 @@ EOT;
 			$mode = 'adh';
 		}
 		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = $mode;
+		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] += $row['ECOTAXE'] ; // on rajoute l'écotaxe
 
 	} // while chaque article
 

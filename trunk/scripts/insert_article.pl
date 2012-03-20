@@ -26,7 +26,8 @@ select	A.NOART as CODE_ARTICLE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
 		--ROUND(T.COEF1 * PR.PRVT2,2) as PRIX_NET,   -- coef de vente * par le PR2
 		ROUND(T.PVEN1,2) as PRIX_NET,
-		DIAA1 as SUR_TARIF
+		DIAA1 as SUR_TARIF,
+		TANU0 as ECOTAXE									-- L'ecotaxe dans la table ATABLEP1
 from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 			left outer join ${prefix_base_rubis}GESTCOM.AARFOUP1 A_F
 				on A.NOART=A_F.NOART and A.FOUR1=A_F.NOFOU
@@ -36,6 +37,8 @@ from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 				on A.NOART=T.NOART
 			left join ${prefix_base_rubis}GESTCOM.ATARPAP1 PR
 				on A.NOART=PR.NOART
+			left join ${prefix_base_rubis}GESTCOM.ATABLEP1 TAXE
+				on A.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where	ETARE=''
 	and T.AGENC ='AFA'
 	and T.PVT09	='E' -- tarif de vente en cours
@@ -51,8 +54,8 @@ my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_US
 $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
+$mysql->query("DROP TABLE article;");
 $mysql->query(join('',<DATA>)); # construction de la table si elle n'existe pas
-$mysql->query("TRUNCATE TABLE article;");
 print " ok\n";
 
 
@@ -72,7 +75,7 @@ while($loginor->FetchRow()) {
 	push @chemin, $row{'SOUSCHAPITRE'}	if $row{'SOUSCHAPITRE'} ;
 	my $chemin = join('.',@chemin);
 	
-	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net,sur_tarif) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}',$sur_tarif);") or warn( Dumper(\%row) );
+	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net,sur_tarif,ecotaxe) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}','$sur_tarif','$row{ECOTAXE}');") or warn( Dumper(\%row) );
 }
 close F ;
 print " ok\n";
@@ -123,6 +126,7 @@ CREATE TABLE IF NOT EXISTS `article` (
   `prix_brut` decimal(10,2) default NULL,
   `prix_net` decimal(10,2) default NULL,
   `sur_tarif` tinyint(1) NOT NULL,
+  `ecotaxe` decimal(10,2) default NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code_article` (`code_article`),
   KEY `fourn` (`fournisseur`)

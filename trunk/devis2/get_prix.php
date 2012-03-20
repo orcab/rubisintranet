@@ -35,30 +35,32 @@ var recherche = '';
 
 
 function draw_page(pageno) {
-	var div = $('div#sugest');
 	lastpage   = Math.ceil(all_results.length / nb_results_by_page);
-
-	div.html('<table id="results"><tbody>'); // on vide la boite de sugestion
+	html = '<table id="results"><tbody>'; // on construit la boite de sugestion
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
-		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
+		html +=	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
 						'<td class="ref">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')+'</td>'+
-						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur														+ '</td>' +
-						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')					+ '&nbsp;</td>' +
-						'<td class="designation">'	+ all_results[i].designation1															+ '</td>' +
-						'<td class="px">'			+ parseFloat(all_results[i].px_public).toFixed(2)										+ '&euro;</td>' +
-						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;')	+ '</td>' +
-					'</tr>'
-		); // on affiche les suggestions
-	}
+						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur										+ '</td>' +
+						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')	+ '&nbsp;</td>' +
+						'<td class="designation">'	+ all_results[i].designation1											+ '</td>' +
+						'<td class="px">'			+ parseFloat(all_results[i].px_public).toFixed(2)						+ '&euro;</td>' +
+						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;') + '</td>' +
+						'<td class="ecotaxe">'+ (all_results[i].ecotaxe > 0 ? '('+all_results[i].ecotaxe+'&euro;)':'&nbsp;')	+ '</td>' +
+					'</tr>' ; // on affiche les suggestions
+	} // fino pour chaque résultat
 
-	div.append('</tbody><tfoot><tr><td colspan="4">'+all_results.length+' résultat(s)&nbsp;&nbsp;&nbsp;&nbsp;');
+	html +=	'</tbody><tfoot><tr><td colspan="7">'+all_results.length+' résultat(s)&nbsp;&nbsp;&nbsp;&nbsp;';
 	
-	if (pageno > 1) div.append('<span class="navig"><a href="javascript:draw_page(1);">&lt;&lt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+ parseInt(pageno-1) +');">&lt;prec.</a></span>&nbsp;&nbsp;&nbsp;&nbsp;');
-	div.append('Page '+pageno);
-	if (pageno < lastpage) div.append('&nbsp;&nbsp;&nbsp;&nbsp;<span class="navig"><a href="javascript:draw_page('+ parseInt(pageno+1) +');">suiv.&gt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+lastpage+');">&gt;&gt;</a></span>');
+	if (pageno > 1)
+		html +=	'<span class="navig"><a href="javascript:draw_page(1);">&lt;&lt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+ parseInt(pageno-1) +');">&lt;prec.</a></span>&nbsp;&nbsp;&nbsp;&nbsp;';
+	html +=	'Page '+pageno ;
+	if (pageno < lastpage)
+		html +=	'&nbsp;&nbsp;&nbsp;&nbsp;<span class="navig"><a href="javascript:draw_page('+ parseInt(pageno+1) +');">suiv.&gt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+lastpage+');">&gt;&gt;</a></span>';
 
-	div.append('<div style="float:right;"><a href="javascript:cache_sugest();">Fermer [X]</a></div></td></tr></tfoot></table>');
+	html +=	'<div style="float:right;"><a href="javascript:cache_sugest();">Fermer [X]</a></div></td></tr></tfoot></table>';
+
+	$('div#sugest').html(html); // rendering du résultat
 }
 
 
@@ -76,14 +78,18 @@ function insert_ligne(id) {
 			// on affecte les valeurs au champs HTML
 			tr.children('td[class^=reference]')		.text(data.reference);
 			tr.children('td[class^=fournisseur]')	.text(data.nom_fournisseur);
-			tr.children('td[class^=designation]')	.html(data.designation1 + '<br/>' + data.designation2 + (data.code_mcs ? '<br/><span class="code_mcs">Code MCS : '+data.code_mcs+'</span>' : ''));
-			tr.children('td[class^=px_avec_coef]')	.html(parseFloat(data.px_avec_coef).toFixed(2)	+ '&euro;'); // prix expo
-			tr.children('td[class^=px_public]')		.html(parseFloat(data.px_public).toFixed(2)		+ '&euro;'); // prix pub
-			tr.children('td[class^=modification]')	.html(data.date_application_format); // date application tarif
+			tr.children('td[class^=designation]')	.html(	data.designation1 + '<br/>' +
+															data.designation2 +
+															(data.ecotaxe>0 ? '<br/><span class="ecotaxe">Dont '+data.ecotaxe.replace('.',',')+"€ d'ecotaxe</span>" : '')+
+															(data.code_mcs  ? '<br/><span class="code_mcs">Code MCS : '+data.code_mcs+'</span>' : '')
+			);
+			tr.children('td[class^=px_avec_coef_ecotaxe]')	.html(parseFloat(data.px_avec_coef_ecotaxe).toFixed(2)	+ '&euro;'); // prix expo
+			tr.children('td[class^=px_public]')				.html(parseFloat(data.px_public).toFixed(2)				+ '&euro;'); // prix pub
+			tr.children('td[class^=modification]')			.html(data.date_application_format); // date application tarif
 
 			// on ajoute une class pour le prix le plus bas
-			if (data.px_avec_coef < data.px_public)
-				tr.children('td[class^=px_avec_coef]').addClass('px_utilise');
+			if (data.px_avec_coef_ecotaxe < data.px_public)
+				tr.children('td[class^=px_avec_coef_ecotaxe]').addClass('px_utilise');
 			else
 				tr.children('td[class^=px_public]').addClass('px_utilise');
 
@@ -102,7 +108,7 @@ $pattern_ligne = <<<EOT
 	<td class="reference"><input type="text" name="a_reference[]" size="10" value="" class="ref" autocomplete="off" /></td>
 	<td class="fournisseur"></td>
 	<td class="designation"></td>
-	<td class="px_avec_coef"></td>
+	<td class="px_avec_coef_ecotaxe"></td>
 	<td class="px_public"></td>
 	<td class="modification"></td>
 </tr>
@@ -214,7 +220,7 @@ table#lignes th.reference	{ width:110px; }
 table#lignes th.designation { width:400px; }
 table#lignes th.fournisseur { width:120px; }
 
-table#lignes .px_avec_coef,table#lignes .px_public { text-align:right; }
+table#lignes .px_avec_coef_ecotaxe,table#lignes .px_public { text-align:right; }
 table#lignes .px_utilise { font-weight:bold; color:red; }
 
 table#lignes td.pub { color:grey; }
@@ -240,7 +246,7 @@ table#lignes td.modification { text-align:center; }
 			<th class="reference">Réf</th>
 			<th class="fournisseur">Fournisseur</th>
 			<th class="designation">Désignation</th>
-			<th class="px_avec_coef">Px adh avec coef<sup>ht</sup></th>
+			<th class="px_avec_coef_ecotaxe">Px adh avec coef<sup>ht</sup></th>
 			<th class="px_public">Px Public<sup>ht</sup></th>
 			<th class="modification">Date tarif</th>
 		</tr>

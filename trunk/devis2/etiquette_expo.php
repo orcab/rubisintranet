@@ -54,7 +54,9 @@ function refresh_etiquette(sel,id) {
 										(detail.mode=='pp' ? '<span class="pp">PP</span>':'')+'</div>'+ // prix public ou adh*1.5
 										'<div class="erreur">'+erreur+'</div>'+
 									'</td>'+
-										'<td class="prix" nowrap="nowrap">'+(qte > 1 ? '<span style="font-style:normal;">'+qte+'x</span> ':'') + (detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+
+										'<td class="prix" nowrap="nowrap">'+(qte > 1 ? '<span style="font-style:normal;">'+qte+'x</span> ':'') +
+											(detail.px_public ? (detail.px_public * TVA + detail.px_public).toFixed(2)  + '&nbsp;&euro; <span class="ttc">ttc</span>':'NC')+
+											(detail.ecotaxe>0 ? '<br/><span class="ecotaxe">dont '+parseFloat(detail.ecotaxe).toFixed(2)+"&euro; d'ecotaxe</span>":'')+
 									'</td>'+
 								'</tr>';
 						
@@ -147,7 +149,6 @@ table.articles td {
 
 table.articles tr:last-child td { border: none; } /* pas de bordure sur le dernier block */
 
-
 .erreur { color: red; }
 
 td.designation {
@@ -162,6 +163,11 @@ td.designation {
 
 .ttc { font-weight:normal; }
 
+.ecotaxe {
+    font-weight: normal;
+    font-size: 0.9em;
+}
+
 span.pp { /* flag prix public */
     border: none;
     padding-left: 2px;
@@ -171,12 +177,8 @@ span.pp { /* flag prix public */
     background-color: green;
 }
 
-.logo_artipole {
-    float: right;
-}
-.logo_mcs {
-    float: left;
-}
+.logo_artipole	{ float: right; }
+.logo_mcs		{  float: left; }
 
 @media print {
 	.hide_when_print { display:none; }
