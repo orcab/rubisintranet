@@ -64,7 +64,7 @@ function redirect(ou) {
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/article/creation_article.php")) { // test si le fichier exists ?>
 	<li<?= stripos($_SERVER['SCRIPT_FILENAME'],'article/creation_article.php') !== false ?' class="active"':''?>>
-		<div class="libelle">Création articles</div>
+		<div class="libelle">Cr&eacute;ation articles</div>
 		<div class="icon"	onclick="redirect('/intranet/article/creation_article.php');"
 							style="background-image:url(/intranet/gfx/icon-article-mini.png);"								
 							onmouseover="$(this).prev('div.libelle').css('background','white');"
@@ -86,7 +86,7 @@ function redirect(ou) {
 
 <?	if (file_exists("$_SERVER[DOCUMENT_ROOT]/intranet/commande_adherent/historique_commande.php")) { // test si le fichier exists ?>
     <li<?= stripos($_SERVER['SCRIPT_FILENAME'],'commande_adherent/historique_commande.php') !== false ?' class="active"':''?>>
-		<div class="libelle">Cde Adhérents</div>
+		<div class="libelle">Cde Adh&eacute;rents</div>
 		<div class="icon"	onclick="redirect('/intranet/commande_adherent/historique_commande.php');"
 							style="background-image:url(/intranet/gfx/icon-cde-adh-mini.png);"								
 							onmouseover="$(this).prev('div.libelle').css('background','white');"

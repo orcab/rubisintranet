@@ -70,6 +70,7 @@ if($modif) { // modif
 <script type="text/javascript" src="../js/jscalendar/lang/calendar-fr.js"></script>
 <script type="text/javascript" src="../js/jscalendar/calendar-setup.js"></script>
 <script type="text/javascript" src="../js/jquery.js"></script>
+<script language="javascript" src="../js/utf8.js"></script>
 <script type="text/javascript" src="../js/mobile.style.js"></script>
 <script language="javascript">
 
@@ -119,7 +120,7 @@ function affiche_choix_phrase(btn_elm) {
 	for(var mot_cle in phrases) {
 		html += '<li>'+mot_cle+'</li>';
 	}
-	html += '</ul><div style="float:right;"><a href="javascript:cache_choix_phrase();">Fermer [X]</a></div>';
+	html += '</ul><div style="float:right;text-align:right;margin-top:1em;"><a href="javascript:cache_choix_phrase();">Fermer [X]</a><br/><a href="modification_phrase.php" target="_blank">Editer les phrases</a></div>';
 
 	$('div#phrase').css({'top': div_offset.top + div_height + 5, 'left': div_offset.left }).html(html).show('fast');
 }
@@ -152,30 +153,32 @@ var recherche = '';
 
 
 function draw_page(pageno) {
-	var div = $('div#sugest');
 	lastpage   = Math.ceil(all_results.length / nb_results_by_page);
-
-	div.html('<table id="results"><tbody>'); // on vide la boite de sugestion
+	html = '<table id="results"><tbody>'; // on construit la boite de sugestion
 	
 	for(i=nb_results_by_page * (pageno-1) ; i<all_results.length && i<nb_results_by_page * (pageno-1) + nb_results_by_page ; i++) {
-		div.append(	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
+		html +=	'<tr onclick="insert_ligne(\''+all_results[i].rowid+'\');">' + 
 						'<td class="ref">' + all_results[i].reference.toUpperCase().replace(recherche.toUpperCase(),'<strong>'+recherche.toUpperCase()+'</strong>')+'</td>'+
 						'<td class="fournisseur">'	+ all_results[i].nom_fournisseur										+ '</td>' +
 						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')	+ '&nbsp;</td>' +
 						'<td class="designation">'	+ all_results[i].designation1											+ '</td>' +
 						'<td class="px">'			+ parseFloat(all_results[i].px_public).toFixed(2)						+ '&euro;</td>' +
 						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;') + '</td>' +
-					'</tr>'
-		); // on affiche les suggestions
-	}
+						'<td class="ecotaxe">'+ (all_results[i].ecotaxe > 0 ? '('+all_results[i].ecotaxe+'&euro;)':'&nbsp;')	+ '</td>' +
+					'</tr>' ; // on affiche les suggestions
+	} // fino pour chaque résultat
 
-	div.append('</tbody><tfoot><tr><td colspan="4">'+all_results.length+' résultat(s)&nbsp;&nbsp;&nbsp;&nbsp;');
+	html +=	'</tbody><tfoot><tr><td colspan="7">'+all_results.length+' résultat(s)&nbsp;&nbsp;&nbsp;&nbsp;';
 	
-	if (pageno > 1) div.append('<span class="navig"><a href="javascript:draw_page(1);">&lt;&lt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+ parseInt(pageno-1) +');">&lt;prec.</a></span>&nbsp;&nbsp;&nbsp;&nbsp;');
-	div.append('Page '+pageno);
-	if (pageno < lastpage) div.append('&nbsp;&nbsp;&nbsp;&nbsp;<span class="navig"><a href="javascript:draw_page('+ parseInt(pageno+1) +');">suiv.&gt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+lastpage+');">&gt;&gt;</a></span>');
+	if (pageno > 1)
+		html +=	'<span class="navig"><a href="javascript:draw_page(1);">&lt;&lt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+ parseInt(pageno-1) +');">&lt;prec.</a></span>&nbsp;&nbsp;&nbsp;&nbsp;';
+	html +=	'Page '+pageno ;
+	if (pageno < lastpage)
+		html +=	'&nbsp;&nbsp;&nbsp;&nbsp;<span class="navig"><a href="javascript:draw_page('+ parseInt(pageno+1) +');">suiv.&gt;</a>&nbsp;&nbsp;&nbsp;<a href="javascript:draw_page('+lastpage+');">&gt;&gt;</a></span>';
 
-	div.append('<div style="float:right;"><a href="javascript:cache_sugest();">Fermer [X]</a></div></td></tr></tfoot></table>');
+	html +=	'<div style="float:right;"><a href="javascript:cache_sugest();">Fermer [X]</a></div></td></tr></tfoot></table>';
+
+	$('div#sugest').html(html); // rendering du résultat
 }
 
 
@@ -192,7 +195,7 @@ function insert_ligne(id) {
 				//tmp.children('div.modification').hide();
 				tmp.children('input[name^=a_reference]').val(data.reference);
 				tmp.children('input[name^=a_fournisseur]').val(data.nom_fournisseur);
-				tmp.children('textarea[name^=a_designation]').val(data.designation1);
+				tmp.children('textarea[name^=a_designation]').val(data.designation1 + (data.ecotaxe>0 ? "\nDont "+data.ecotaxe.replace('.',',')+"€ d'ecotaxe" : ''));
 				tmp.children('textarea[name^=a_2designation]').val(data.designation2 + (data.code_mcs ? "\nCode MCS : "+data.code_mcs : ''));
 				tmp.children('input[name^=a_qte]').val(1);
 				tmp.children('input[name^=a_pu]').val(parseFloat(data.px_public).toFixed(2)); // prix expo

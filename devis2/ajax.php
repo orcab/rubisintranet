@@ -12,7 +12,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'complette_via_ref' && isset($_GET[
 	
 	// requete de selection des articles qui corresponde à aux caracteres de recherche
 	$sql = <<<EOT
-SELECT	a.rowid,nom_fournisseur,reference,designation1,(prix1 * $COEF_EXPO) as px_avec_coef,prix6,code_mcs
+SELECT	a.rowid,nom_fournisseur,reference,designation1,(prix1 * $COEF_EXPO) as px_avec_coef,prix6,code_mcs,ecotaxe
 FROM	articles a
 		left join fournisseurs f     
           on a.code_fournisseur=f.code_fournisseur
@@ -55,9 +55,10 @@ EOT;
 		}
 
 		$row['designation1'] = utf8_encode($row['designation1']);
+		$row['px_public'] += $row['ecotaxe'];	 // on rajoute l'ecotaxe
 		array_push($json,$row);
 	}
-	echo json_encode($json);
+	echo json_encode($json); // on envoi la réponse au navigateur
 
 } // fin RECHERCHE DES INFO VIA LA REF FOURNISSEUR
 
@@ -66,10 +67,10 @@ EOT;
 elseif (isset($_GET['what']) && $_GET['what'] == 'get_detail' && isset($_GET['val'])) { 
 	$id = mysql_escape_string(strtoupper($_GET['val'])) ;
 	$sql = <<<EOT
-SELECT	nom_fournisseur,reference,designation1,designation2,code_mcs,
+SELECT	nom_fournisseur,reference,designation1,designation2,code_mcs,ecotaxe,
 		prix6,
 		(prix1 * $COEF_EXPO) as px_avec_coef,
-		(prix1) as px_adh,
+		prix1 as px_adh,
 		strftime('%d/%m/%Y',date_application) AS date_application_format
 FROM	articles a
 		left join fournisseurs f     
@@ -103,7 +104,10 @@ EOT;
 	else												// prix public inférieur au prix adh, on prend le prix public
 		$row['px_public'] = $row['prix6'];
 
-	echo json_encode($row);
+	$row['px_public'] += $row['ecotaxe']; // on rajoute l'ecotaxe
+	$row['px_avec_coef_ecotaxe'] = $row['px_avec_coef'] + $row['ecotaxe']; // on rajoute l'ecotaxe
+
+	echo json_encode($row); // on envoi la réponse au navigateur
 	
 } // fin RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
 
@@ -155,6 +159,42 @@ elseif (isset($_POST['what']) && $_POST['what'] == 'sauvegarde_auto') {
 	save_data_into_database(TRUE); // sauvegarde en brouillon
 } // fin sauvegarde_auto
 
+
+
+
+////// RECHERCHE DES PHRASES PRE-ENREGSITREES
+elseif (isset($_GET['what']) && $_GET['what'] == 'get_phrase') { 
+	$res = mysql_query("SELECT * FROM devis_phrase ORDER BY mot_cle ASC") or die("Ne peux pas récupérer la liste des phrases ".mysql_error());
+	$rows = array();
+	while($row = mysql_fetch_array($res)) {
+		array_push($rows,array_map('utf8_encode',$row)); // encodage utf8
+	}
+	echo json_encode($rows);
+}
+
+
+////// AJOUTE UNE PHRASE
+elseif (isset($_GET['what']) && $_GET['what'] == 'save_phrase' &&
+		isset($_GET['mot_cle']) && $_GET['mot_cle'] &&
+		isset($_GET['phrase']) && $_GET['phrase']) { 
+	
+	mysql_query("REPLACE INTO devis_phrase (mot_cle,phrase,last_editor,last_modification_date) VALUES (".
+				"'".mysql_escape_string($_GET['mot_cle'])."',".
+				"'".mysql_escape_string($_GET['phrase'])."',".
+				"'".mysql_escape_string($_SERVER['REMOTE_ADDR'])."',".
+				"NOW()".
+			")") or die("Ne peux pas insérer la phrase ".mysql_error());
+	echo '1';
+}
+
+
+////// SUPPRIME UNe PHRASE
+elseif (isset($_GET['what']) && $_GET['what'] == 'delete_phrase' &&
+		isset($_GET['mot_cle']) && $_GET['mot_cle']) { 
+	
+	mysql_query("DELETE FROM devis_phrase WHERE mot_cle='".mysql_escape_string($_GET['mot_cle'])."'") or die("Ne peux pas supprimer la phrase ".mysql_error());
+	echo '1';
+}
 
 
 
