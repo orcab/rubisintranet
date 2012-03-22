@@ -1,6 +1,9 @@
 <?
-
 include('../inc/config.php');
+
+$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+$droit = recuperer_droit();
 
 ?><html>
 <head>
@@ -75,7 +78,11 @@ img:hover {
 <tr>
 	<td><a href="feuille_temps/index.php"><img src="feuille_temps/gfx/icon.jpg"><br>Feuille de temps</a></td>
 	<td><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
-	<td></td>
+	<td>
+<?		if ($droit & PEUT_EDITER_ARTICLE_EN_MASSE) { ?>
+			<a href="edition_article_en_masse/index.php"><img src="edition_article_en_masse/gfx/edition_article_en_masse.png"><br>Edition d'article en masse</a>
+<?		} ?>
+	</td>
 </tr>
 
 </table>
