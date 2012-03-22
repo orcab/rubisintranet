@@ -1,5 +1,4 @@
 <?
-
 include('inc/config.php');
 
 session_start();
@@ -16,21 +15,11 @@ body,td{
 	font-size:0.8em;
 }
 
-a img { 
-	border:none;
-}
+a img { border:none; }
+a { text-decoration:none; }
+a:hover { text-decoration:underline; }
 
-a {
-	text-decoration:none;
-}
-
-a:hover {
-	text-decoration:underline;
-}
-
-img:hover {
-	-moz-transform: scale(1.1);
-}
+img:hover { -moz-transform: scale(1.1); }
 
 div#header {
 	width:96%;
@@ -46,18 +35,14 @@ div#footer {
 	background-image:-moz-linear-gradient( top , #fdfdfd, #eee );
 	width:96%;
 	margin-top:10px;
-	height:180px;
 	padding-left:50px;
 	font-weight:bold;
 	padding-top:5px;
 	font-size:0.8em;
+    height: 250px;
 }
 
 /* style des evenements */
-
-img#prev {
-	visibility:hidden;
-}
 
 div#footer h2 {
 	font-size:0.9em;
@@ -65,99 +50,52 @@ div#footer h2 {
 	font-weight:normal;
 }
 
+div#events {
+    height: 198px;
+    overflow: auto;
+    width: 87%;
+    margin: auto;
+}
 div.cal-event {
-	background:url(gfx/calendar.gif) no-repeat 4px top;
-	margin-bottom:10px;
-	float:left;
-	width:20%;
-	padding-left:26px;
-	border-right:solid 1px #CCC;
-	border-bottom:solid 1px #CCC;
-	margin-right:20px;
-	height:100px;
-	border-bottom-right-radius: 10px;
-	display:none;
+    border-bottom: 1px solid #CCCCCC;
+    border-bottom-right-radius: 10px;
+    border-right: 1px solid #CCCCCC;
+    float: left;
+    margin-bottom: 10px;
+    margin-right: 20px;
+    min-height: 90px;
+    width: 23em;
+    background-image: -moz-linear-gradient(-230deg, #DFDFDF, white);
 }
-
+div.anniversaire	{ background-image: -moz-linear-gradient(-230deg, lightblue, white); }
+div.conges			{ background-image: -moz-linear-gradient(-230deg, lightgreen, white); }
+div.inventaire		{ background-image: -moz-linear-gradient(-230deg, yellow, white); }
+div.ferie			{ background-image: -moz-linear-gradient(-230deg, pink, white); }
 div.cal-date {
-	font-weight:bold;
+    background: url("gfx/calendar.gif") no-repeat scroll 4px top transparent;
+    font-weight: bold;
+    height: 16px;
+    padding-left: 26px;
 }
-
 div.cal-summary {
-	font-weight:normal;
+    font-weight: normal;
+    padding-left: 26px;
 }
-
 div.cal-description {
-	color:grey;
-	font-weight:normal;
+    color: grey;
+    font-weight: normal;
+    padding-left: 26px;
 }
-
 div.cal-location {
-	color:#88F;
-	font-weight:normal;
+    color: #8888FF;
+    font-weight: normal;
+    padding-left: 26px;
 }
 
 </style>
 
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery.ui.all.js"></script>
-<script>
-
-var event_block = 0; // block en cours d'affichage
-
-// quand tout est chargé
-$(document).ready(function(){
-	// on affiche les 4 premiers events
-	for(var i=0 ; i<4 ; i++)
-		$('#cal-event-'+i).slideDown();
-	event_block = 0; // on a affiché le premier block
-});
-
-
-
-function prev_events() {
-	// on affiche les 4 events precedent
-	if (event_block>0) { // si on est pas deja sur le premier groupe
-		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
-			$('#cal-event-'+i).hide();
-		
-		event_block--;
-		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
-			$('#cal-event-'+i).slideDown();
-
-		show_or_hide_arrows();
-	}
-}
-
-function next_events() {
-	// on affiche les 4 events suivants
-	if (event_block < Math.round(total_events/4)) { // si on est pas deja sur le dernier groupe
-		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
-			$('#cal-event-'+i).hide();
-		
-		event_block++;
-		for(var i=event_block*4 ; i<(event_block*4 + 4) ; i++)
-			$('#cal-event-'+i).slideDown();
-		
-		show_or_hide_arrows();
-	}
-}
-
-function show_or_hide_arrows() {
-	//$('h2').text("event_block="+event_block+"      Math.round(total_events/4)-3="+(Math.round(total_events/4)-1));
-
-	if (event_block==0)
-		$('#prev').css('visibility','hidden');
-	else
-		$('#prev').css('visibility','visible');
-
-	if (event_block==(Math.round(total_events/4)-1))
-		$('#next').css('visibility','hidden');
-	else
-		$('#next').css('visibility','visible');
-}
-
-</script>
 
 </head>
 <body style="margin:0px;padding:0px;">
@@ -186,7 +124,7 @@ function show_or_hide_arrows() {
 
 <div id="footer">
 	<h2>Evenements à MCS dans les semaines à venir</h2>
-	<img id="prev" src="gfx/precedent.png" style="clear:both;margin:auto;display:block;margin-bottom:5px;" onclick="prev_events();"/>
+	<div id="events">
 	<?	// charge le fichier json des evenements
 		$ini_filename = 'scripts/ical2sqlite.ini';
 		if (file_exists($ini_filename)) {
@@ -215,7 +153,6 @@ EOT;
 				// on affiche les evenements classés
 				$i=0;
 				while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
-
 					// hack pour les evenement sur une journée (ou plusieurs). la date de fin doit etre diminuer de 1
 					if (preg_match('/ 00:00:00$/',$row['start']) &&
 						preg_match('/(\d{4})-(\d{2})-(\d{2}) 00:00:00$/',$row['end'],$matches)) {
@@ -229,11 +166,8 @@ EOT;
 
 						if ($row['end'] < date('Y-m-d')) // si la date de fin modifié est inférieur à aujourd'hui --> on saute
 							continue;
-
 						//echo "end:'$row[end]'";
 					}
-
-					
 
 					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['start'],$date_start);
 					preg_match('/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/',$row['end'],$date_end);
@@ -258,7 +192,16 @@ EOT;
 					$heure_end = date('H:i',$date_end_time);
 					$date_end_formater = $jours_mini[date('w',$date_end_time)]." $date_end_formater";
 ?>
-					<div class="cal-event" id="cal-event-<?=$i?>">
+					<div class="cal-event<? // gestion des evenements particulier
+											if		(preg_match('/\banniversaires?\b/i',$row['summary']))
+												echo ' anniversaire';
+											elseif (preg_match('/\bcong[ée]s? +/i',utf8_decode($row['summary'])))
+												echo  ' conges';
+											elseif (preg_match('/\binventaires?\b/i',$row['summary']))
+												echo  ' inventaire';
+											elseif (preg_match('/\bf[ée]ri[ée]s?\b/i',utf8_decode($row['summary'])))
+												echo  ' ferie';
+										?>">
 						<div class="cal-date">
 							<?=$date_start_formater?> <?=$heure_start <> '00:00'?$heure_start:'' ?>
 <?							if ($date_end_formater <> $date_start_formater || $heure_end <> '00:00') { ?>
@@ -274,18 +217,14 @@ EOT;
 					$i++;
 				} // fin while events
 			} else {
-				?>Impossible de trouver le fichier json <em><?=$ini['files']['sqlite_output']?></em><?
+				?>Impossible de trouver la base sqlite iCal <em><?=$ini['files']['sqlite_output']?></em><?
 			}
 		} else {
 			 ?>Impossible de trouver le fichier de configuration <em><?=$ini_filename?></em><?
 		}
 	?>
+	</div><!-- fin events -->
+</div><!-- fin footer -->
 
-	<img id="next" src="gfx/suivant.png" style="clear:both;margin:auto;display:block;" onclick="next_events();"/>
-</div>
-
-<script>
-	var total_events = <?=$i?>;
-</script>
 </body>
 </html>
