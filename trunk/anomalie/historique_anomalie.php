@@ -47,9 +47,9 @@ if (isset($_POST['filtre_createur']))	$_SESSION['anomalie_filtre_createur']	= $_
 if (isset($_POST['filtre_numero']))		$_SESSION['anomalie_filtre_numero']		= $_POST['filtre_numero'];
 if (isset($_POST['filtre_evolution']))	$_SESSION['anomalie_filtre_evolution']	= $_POST['filtre_evolution'];
 if (isset($_GET['filtre_classement']))	$_SESSION['anomalie_filtre_classement'] = $_GET['filtre_classement'];
-if (isset($_SERVER['HTTP_REFERER']) && eregi('detail_fournisseur\.php',$_SERVER['HTTP_REFERER']))  $_SESSION['anomalie_from_fiche_fournisseur'] = $_GET['filtre_fournisseur']; // on arrive des fiches fournisseurs
+if (isset($_SERVER['HTTP_REFERER']) && preg_match('/detail_fournisseur\.php/i',$_SERVER['HTTP_REFERER']))  $_SESSION['anomalie_from_fiche_fournisseur'] = $_GET['filtre_fournisseur']; // on arrive des fiches fournisseurs
 
-if (isset($_SERVER['HTTP_REFERER']) && eregi('historique_anomalie.php',$_SERVER['HTTP_REFERER'])) { // si on vient d'une recherche, on modifie les coches
+if (isset($_SERVER['HTTP_REFERER']) && preg_match('/historique_anomalie\.php/i',$_SERVER['HTTP_REFERER'])) { // si on vient d'une recherche, on modifie les coches
 	if (isset($_POST['action']) && $_POST['action']=='saisie_commentaire'	||	// ne rien faire si l'on vient de saisir un commentaire
 		isset($_GET['action']) && $_GET['action']=='delete_commentaire'		||	// ne rien faire si l'on vient de supprimer un commentaire
 		isset($_GET['filtre_classement']))										// ne rien faire si l'on vient de changer le classement

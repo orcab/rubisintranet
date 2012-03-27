@@ -151,11 +151,12 @@ function lance_traitement() {
 		//progressBar.update(3); // dessine la progressbar
 		for(var i=0 ; i<articles.length ; i++) {
 			$.ajax({
-				type: 'GET',
-				url:  'ajax.php',
-				data: 'what='+action+'&code_article='+articles[i],
+				type:		'GET',
+				url:		'ajax.php',
+				async:		false,
+				dataType:	'json',
+				data:		'what='+action+'&code_article='+articles[i],
 				//data: 'what=test&code_article='+articles[i],
-				dataType: 'json',
 				success: function(json){
 					// le traitement est effectué, on met a jour la progressbar
 					progressBar.update(++nb_article_traite);
