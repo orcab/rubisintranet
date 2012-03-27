@@ -84,7 +84,7 @@ function detail_utilisateur(id,prenom) {
 	document.utilisateur.detail_utilisateur_machine.value='';
 	document.utilisateur.detail_utilisateur_printer.selectedIndex=0;
 <?			foreach (get_defined_constants() as $constante => $valeur) {
-				if (ereg('^PEUT_',$constante)) { // une constante de droit ?>
+				if (preg_match('/^PEUT_/',$constante)) { // une constante de droit ?>
 					document.utilisateur.detail_utilisateur_<?=$constante?>.checked=false;
 <?				}
 			}
@@ -127,7 +127,7 @@ function detail_utilisateur(id,prenom) {
 						document.utilisateur.detail_utilisateur_printer.selectedIndex = json['printer'] ;
 
 <?						foreach (get_defined_constants() as $constante => $valeur) {
-							if (ereg('^PEUT_',$constante)) { // une constante de droit ?>
+							if (preg_match('/^PEUT_/',$constante)) { // une constante de droit ?>
 								document.utilisateur.detail_utilisateur_<?=$constante?>.checked= <?=$valeur?> & json['droit'] ? true:false ;
 <?							}
 						}
@@ -162,7 +162,7 @@ function valider_detail_utilisateur() {
 					'&droit='		+ (<?
 						$tmp = array();
 						foreach (get_defined_constants() as $constante => $valeur) {
-							if (ereg('^PEUT_',$constante)) { // une constante de droit
+							if (preg_match('/^PEUT_/',$constante)) { // une constante de droit
 								$tmp[] = "(document.utilisateur.detail_utilisateur_$constante.checked ? $valeur:0)";
 							}
 						}
@@ -252,7 +252,7 @@ function valider_detail_utilisateur() {
 		<th style="vertical-align:top;">Droit</th>
 		<td style="text-align:right;">
 <?			foreach (get_defined_constants() as $constante => $valeur) {
-				if (ereg('^PEUT_',$constante)) { // une constante de droit ?>
+				if (preg_match('/^PEUT_/',$constante)) { // une constante de droit ?>
 					<?=$constante?> <input type="checkbox" name="detail_utilisateur_<?=$constante?>"><br>
 <?				}
 			}

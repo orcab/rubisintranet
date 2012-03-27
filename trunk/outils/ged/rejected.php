@@ -406,6 +406,4 @@ $(document).ready(function(){
 </form>
 </body>
 </html>
-<?
-mysql_close($mysql);
-?>
+<? mysql_close($mysql); ?>

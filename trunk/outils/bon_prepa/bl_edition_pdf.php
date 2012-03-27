@@ -48,12 +48,15 @@ define('DEBUG',false);
 
 $sql_entete = <<<EOT
 select	NOBON,DSECS,DSECA,DSECM,DSECJ,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,MONTBT,TELCL,TLCCL,TOUCL,TELCC,TLXCL,COMC1,BON.NOCLI,TYVTE,
-		TABLE_PARAM.LIRPR as NOM_VENDEUR, -- libelle réduit (pour le nom du vendeur)
-		CLIENT.BLVAL,	-- BL valorisé ou pas
+		TABLE_PARAM.LIRPR as NOM_VENDEUR,	-- libelle réduit (pour le nom du vendeur)
+		CLIENT.BLVAL,						-- BL valorisé ou pas
+		CHANTIER.CHAD1,						-- nom du chantier
 		NINT1 as NB_COLIS, NINT2 as NB_PALETTE, NINT3 as NB_CHAUFFEAU, NINT4 as NB_PAROI, NINT5 as NB_PVC, NINT6 as NB_CUIVRE
 from			${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
 	left join	${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 		on		BON.NOCLI = CLIENT.NOCLI
+	left join ${LOGINOR_PREFIX_BASE}GESTCOM.AENTCHP1 CHANTIER
+			on		BON.NOCHA=CHANTIER.CHCHA and BON.NOCLI=CHANTIER.CHCLI
 	left join	${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TABLE_PARAM
 		on		TABLE_PARAM.TYPPR='LIV'		-- liste des vendeur
 			and	TABLE_PARAM.CODPR=BON.LIVSB	-- code vendeur du bon
@@ -157,7 +160,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 	if ($row['PROFI'] == 9) { // cas d'un commentaire
 		if ($row['CONSA']) {
-			if (ereg('^ +',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
+			if (preg_match('/^ +/',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
 				$pdf->SetFillColor(255);
 			} else {
 				//$pdf->SetFillColor(240); // pas d'espace définit un TITRE

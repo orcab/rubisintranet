@@ -9,7 +9,7 @@ $message = '' ;
 //////////////////////// AJOUT DE LIGNE A SURVEILLER /////////////////////////////
 if (isset($_POST['what']) && $_POST['what']=='cde_a_suivre') {
 	foreach($_POST as $cle=>$val) {
-		if (eregi("^check_([^\/]+)\/([^\/]+)\/([^\/]+)$",$cle,$regs)) { // si l'objet est a enregistrer
+		if (preg_match("/^check_([^\/]+)\/([^\/]+)\/([^\/]+)$/i",$cle,$regs)) { // si l'objet est a enregistrer
 			$no_cli = $regs[1]; $no_bon = strtoupper($regs[2]); $no_ligne = $regs[3];
 			// on ajoute les surveillances
 			mysql_query("INSERT INTO suivi_cde_spe (no_client,no_bon,no_ligne,date_saisie) VALUES ('$no_cli','$no_bon','$no_ligne',NOW())") ;

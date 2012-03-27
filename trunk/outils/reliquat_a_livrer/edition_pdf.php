@@ -35,7 +35,7 @@ for($i=0 ; $i<sizeof($ligne_cde_ok) ; $i++) {
 
 	if ($row['PROFI'] == 9) { // cas d'un commentaire
 		if ($row['CONSA']) {
-			if (ereg('^ +',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
+			if (preg_match('/^ +/',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
 				$pdf->SetFillColor(255);
 			} else {
 				$pdf->SetFillColor(240); // pas d'espace définit un titre

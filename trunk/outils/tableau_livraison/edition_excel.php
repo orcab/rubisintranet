@@ -2,7 +2,8 @@
 include('../../inc/config.php');
 require_once('etat.php');
 
-set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
+error_reporting(E_ALL & ~E_DEPRECATED);
+set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'.PATH_SEPARATOR.'c:/EasyPHP/php/pear/'); // ajoute le chemin d'acces a Spreadsheet/Excel
 require_once '../../inc/Spreadsheet/Excel/Writer.php';
 
 if (!(isset($_GET['id']) && $_GET['id'])) {

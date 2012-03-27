@@ -19,7 +19,7 @@ $date_last_open_day_ddmmyyyy	= date('d/m/Y', $tmp);
 // recherche tous les bons fournisseurs de la journée en parametre
 $date_yyyymmdd					= '';
 $date = array() ;
-if (isset($_POST['filtre_date']) && $_POST['filtre_date'] && ereg('^([0-9]{2})\/([0-9]{2})\/([0-9]{2})([0-9]{2})$',$_POST['filtre_date'],$regs)) {
+if (isset($_POST['filtre_date']) && $_POST['filtre_date'] && preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{2})([0-9]{2})$/',$_POST['filtre_date'],$regs)) {
 	$date_yyyymmdd					= join('-',array_reverse(explode('/',$_POST['filtre_date'])));
 	$date = array($regs[3],$regs[4],$regs[2],$regs[1]) ;
 

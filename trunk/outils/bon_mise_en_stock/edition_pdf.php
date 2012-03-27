@@ -79,7 +79,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 	if ($row['CFPRF'] == 9) { // cas d'un commentaire
 		if ($row['CFCOM']) {
-			if (ereg('^ +',$row_original['CFCOM']))// un espace devant le commentaire défini un COMMENTAIRE
+			if (preg_match('/^ +/',$row_original['CFCOM']))// un espace devant le commentaire défini un COMMENTAIRE
 				$pdf->SetFillColor(255);
 			else
 				$pdf->SetFillColor(240); // pas d'espace définit un titre

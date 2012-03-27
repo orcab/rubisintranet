@@ -85,7 +85,12 @@ class PDF extends FPDF
 		// Date de création du devis
 		$this->SetFont('helvetica','BI',11);
 		$this->Cell(20, 5 ,"Suivi par : ");
-		$this->Cell(100, 5 , $row_entete['NOM_VENDEUR']);
+		$this->Cell(30, 5 , $row_entete['NOM_VENDEUR']);
+
+		// chantier
+		$this->SetFont('helvetica','BI',11);
+		$this->Cell(20, 5 ,"Chantier : ");
+		$this->Cell(50, 5 , $row_entete['CHAD1']);
 	
 		// Référence
 		$this->SetFont('helvetica','',11);
