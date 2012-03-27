@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS `article` (
   `prix_net` decimal(10,2) default NULL,
   `sur_tarif` tinyint(1) NOT NULL,
   `ecotaxe` decimal(10,2) default NULL,
+  `suspendu` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code_article` (`code_article`),
   KEY `fourn` (`fournisseur`)

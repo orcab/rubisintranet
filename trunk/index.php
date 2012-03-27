@@ -123,7 +123,7 @@ div.cal-location {
 </center>
 
 <div id="footer">
-	<h2>Evenements à MCS dans les semaines à venir</h2>
+	<h2>Evenements à MCS dans l'ann&eacute;e à venir</h2>
 	<div id="events">
 	<?	// charge le fichier json des evenements
 		$ini_filename = 'scripts/ical2sqlite.ini';
@@ -142,9 +142,9 @@ div.cal-location {
 SELECT `start`,`end`,summary,description,location
 FROM events
 WHERE
-     (`start`>=date('now') AND `start`<=date('now','+1 year')) 
+     (`start`>=date('now') AND `start`<=date('now','+1 year'))
      OR
-     (`end`>=date('now') AND `end`<=date('now','+1 year'))     
+     (`end`>=date('now') AND `end`<=date('now','+1 year'))
 ORDER BY
       `start` ASC
 EOT;
@@ -156,12 +156,12 @@ EOT;
 					// hack pour les evenement sur une journée (ou plusieurs). la date de fin doit etre diminuer de 1
 					if (preg_match('/ 00:00:00$/',$row['start']) &&
 						preg_match('/(\d{4})-(\d{2})-(\d{2}) 00:00:00$/',$row['end'],$matches)) {
-						$date_end_time = mktime(	0,	// hour
-													0,	// min
-													0,	// sec
-													$matches[2],				// mounth
-													$matches[3] - 1,				// day
-													$matches[1]) ;			// year (4 digit)
+						$date_end_time = mktime(	0,					// hour
+													0,					// min
+													0,					// sec
+													$matches[2],		// mounth
+													$matches[3] - 1,	// day
+													$matches[1]) ;		// year (4 digit)
 						$row['end'] = date('Y-m-d 00:00:00',$date_end_time);
 
 						if ($row['end'] < date('Y-m-d')) // si la date de fin modifié est inférieur à aujourd'hui --> on saute
@@ -175,9 +175,9 @@ EOT;
 					$date_start_time = mktime(	isset($date_start[4])?$date_start[4]:0,	// hour
 												isset($date_start[5])?$date_start[5]:0,	// min
 												isset($date_start[6])?$date_start[6]:0,	// sec
-												$date_start[2],				// mounth
-												$date_start[3],				// day
-												$date_start[1]) ;			// year (4 digit)
+												$date_start[2],							// mounth
+												$date_start[3],							// day
+												$date_start[1]) ;						// year (4 digit)
 					$date_start_formater = date('d M Y',$date_start_time);
 					$heure_start = date('H:i',$date_start_time);
 					$date_start_formater = $jours_mini[date('w',$date_start_time)]." $date_start_formater";
@@ -185,9 +185,9 @@ EOT;
 					$date_end_time = mktime(	isset($date_end[4])?$date_end[4]:0,	// hour
 												isset($date_end[5])?$date_end[5]:0,	// min
 												isset($date_end[6])?$date_end[6]:0,	// sec
-												$date_end[2],				// mounth
-												$date_end[3],				// day
-												$date_end[1]) ;			// year (4 digit)
+												$date_end[2],						// mounth
+												$date_end[3],						// day
+												$date_end[1]) ;						// year (4 digit)
 					$date_end_formater = date('d M Y',$date_end_time);
 					$heure_end = date('H:i',$date_end_time);
 					$date_end_formater = $jours_mini[date('w',$date_end_time)]." $date_end_formater";

@@ -9,6 +9,8 @@ use strict ;
 use DBI qw(:sql_types);				# pour gérer SQLite
 use Config::IniFiles;
 use Time::Local; # convert sec, min, hour, day, mounth, year into sec since 1970
+use Data::Uniqid qw ( luniqid );
+use File::Copy; # move
 
 my $ini	= new Config::IniFiles( -file => 'ical2sqlite.ini' );
 my $sqlite = DBI->connect('dbi:SQLite:'.$ini->val(qw/files sqlite_output/),'','',{ RaiseError => 0, AutoCommit => 0 }) or die("Pas de DB");
@@ -21,7 +23,9 @@ print print_time()."Insertion des events...";
 my %data ;
 my %event_data ;
 my $in_event = 0;
-open(F,'<'.$ini->val(qw/files ical_input/)) or die "Could not open ical file '".$ini->val(qw/files ical_input/)."' ($!)";
+my $uniqid = luniqid;
+copy($ini->val(qw/files ical_input/), "$uniqid.ics") or die "Copy failed: $!";
+open(F,"<$uniqid.ics") or die "Could not open ical file '$uniqid.ics' ($!)";
 my $last_variable = '';
 my $buffer = '';
 while(<F>) {  # pour chaque ligne du fichier
@@ -36,7 +40,7 @@ while(<F>) {  # pour chaque ligne du fichier
 		#print "je sors d'un event\n\n";
 		$in_event = 0;
 
-		$sqlite->do("INSERT OR REPLACE INTO events ('uid','created','lastmodified','dtstamp','start','end','location','summary','description','original_text') VALUES (".
+		$sqlite->do("INSERT OR REPLACE INTO events ('uid','created','lastmodified','dtstamp','start','end','location','summary','description','frequency','original_text') VALUES (".
 			"'".$event_data{'UID'}."',".
 			"'".icaldate2sqldate($event_data{'CREATED'}			? $event_data{'CREATED'}		: $event_data{'CREATED;TZID'})."',".
 			"'".icaldate2sqldate($event_data{'LAST-MODIFIED'})."',".
@@ -46,6 +50,7 @@ while(<F>) {  # pour chaque ligne du fichier
 			"'".quotify($event_data{'LOCATION'})."',".
 			"'".quotify($event_data{'SUMMARY'})."',".
 			"'".quotify($event_data{'DESCRIPTION'})."',".
+			"'".quotify(exists $event_data{'FREQUENCY'} ? $event_data{'FREQUENCY'}:'')."',".
 			"'".quotify($buffer)."'".
 		")");
 
@@ -55,8 +60,12 @@ while(<F>) {  # pour chaque ligne du fichier
 		$event_data{$last_variable} .= $1;
 	} else {
 		if ($in_event) { # on est dans un evenement, donc on stock l'attribut
-			if (/^ *(.+?)[:=](.+?) *$/) {	#match DTSTART;TZID=Europe/Paris:20110910T151500   or    DTSTAMP:20110909T124842Z
+			if (/^ *RRULE *: *FREQ *= *(.+?) *$/) { # gestion de la frequence
+				$event_data{'FREQUENCY'} = $1;
+
+			} elsif (/^ *(.+?)[:=](.+?) *$/) {	#match DTSTART;TZID=Europe/Paris:20110910T151500   or    DTSTAMP:20110909T124842Z
 				#print "je stock '$1' => '$2'\n" ;
+
 				$event_data{$1} = $2;
 				$last_variable = $1;
 			}
@@ -64,7 +73,7 @@ while(<F>) {  # pour chaque ligne du fichier
 	}
 }
 close F;
-
+unlink("$uniqid.ics");
 
 print " ok\n";
 
@@ -75,7 +84,6 @@ print print_time()."END\n\n";
 ####################################################################################################################
 
 sub init_sqlite {
-# creation des tables articles + fournisseur + index + triggers #####################################################################################""
 	my $sql = <<EOT ;
 CREATE TABLE [events] (
   [uid] CHAR, 
@@ -84,10 +92,11 @@ CREATE TABLE [events] (
   [dtstamp] DATETIME, 
   [start] DATETIME NOT NULL, 
   [end] DATETIME NOT NULL, 
-  [location] TEXT, 
-  [summary] TEXT, 
-  [description] TEXT, 
-  [original_text] TEXT,
+  [location] TEXT DEFAULT NULL, 
+  [summary] TEXT DEFAULT NULL, 
+  [description] TEXT DEFAULT NULL,
+  [frequency] CHAR DEFAULT NULL,
+  [original_text] TEXT DEFAULT NULL,
   CONSTRAINT [] PRIMARY KEY ([uid])
 );
 EOT
