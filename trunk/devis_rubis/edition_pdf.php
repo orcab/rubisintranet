@@ -84,7 +84,7 @@ while($row = odbc_fetch_array($detail_devis)) {
 	$row['PRINE'] = sprintf('%0.2f',$row['PRINE']);
 
 	if ($row['CONSA'] && $row['PRINE'] <= 0) { // cas d'un commentaire
-		if (ereg('^ +',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
+		if (preg_match('/^ +/',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
 			$pdf->SetFillColor(255);
 		} else {
 			$pdf->SetFillColor(230); // pas d'espace définit un titre
