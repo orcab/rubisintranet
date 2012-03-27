@@ -102,7 +102,12 @@ class PDF extends FPDF
 		$vendeur = '';
 		if (trim($row_entete['LIVSB']))
 			$vendeur = isset($vendeurs[trim($row_entete['LIVSB'])]) ? $vendeurs[trim($row_entete['LIVSB'])] : trim($row_entete['LIVSB']);
-		$this->Cell(100, 5 , $vendeur);
+		$this->Cell(30, 5 , $vendeur);
+
+		// chantier
+		$this->SetFont('helvetica','BI',11);
+		$this->Cell(20, 5 ,"Chantier : ");
+		$this->Cell(50, 5 , $row_entete['CHAD1']);
 	
 		// Référence
 		$this->SetFont('helvetica','',11);

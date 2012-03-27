@@ -2,7 +2,8 @@
 include('../../inc/config.php');
 set_time_limit(0);
 
-set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'); // ajoute le chemin d'acces a Spreadsheet/Excel
+error_reporting(E_ALL & ~E_DEPRECATED);
+set_include_path(get_include_path().PATH_SEPARATOR.'../../inc'.PATH_SEPARATOR.'c:/EasyPHP/php/pear/'); // ajoute le chemin d'acces a Spreadsheet/Excel
 require_once '../../inc/Spreadsheet/Excel/Writer.php';
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");

@@ -25,11 +25,16 @@ if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniqueme
 	$ligne_R = "and TRAIT='R'" ;
 
 $sql_entete = <<<EOT
-select BON.NOCLI,NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,MONTBT,TELCL,TLCCL,TOUCL,TELCC,TLXCL,COMC1
-from ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON, ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+select	BON.NOCLI,NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,MONTBT,
+		TELCL,TLCCL,TOUCL,TELCC,TLXCL,COMC1,
+		CHANTIER.CHAD1						-- nom du chantier
+from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+			on		BON.NOCLI=CLIENT.NOCLI
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AENTCHP1 CHANTIER
+			on		BON.NOCHA=CHANTIER.CHCHA and BON.NOCLI=CHANTIER.CHCLI
 where	NOBON='$NOBON_escape'
 	and BON.NOCLI='$NOCLI_escape'
-	and BON.NOCLI = CLIENT.NOCLI
 EOT;
 
 $sql_detail = <<<EOT
@@ -104,7 +109,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 	if ($row['PROFI'] == 9) { // cas d'un commentaire
 		if ($row['CONSA']) {
-			if (ereg('^ +',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
+			if (preg_match('/^ +/',$row_original['CONSA'])) { // un espace devant le commentaire défini un COMMENTAIRE
 				$pdf->SetFillColor(255);
 			} else {
 				$pdf->SetFillColor(240); // pas d'espace définit un titre

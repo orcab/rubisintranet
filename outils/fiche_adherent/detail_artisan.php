@@ -725,7 +725,7 @@ EOT;
 				while (false !== ($file = $d->read())) { 
 					if ($file == '.' || $file == '..') continue ;
 ?>					<li><img src="gfx/icons/<?
-					eregi('\.(.+)$',$file,$regs);
+					preg_match('/\.(.+)$/i',$file,$regs);
 					$ext = $regs[1];
 					switch ($ext) {
 						case 'doc': case 'docx': case 'odt': case 'txt':										echo 'doc-docx-odt.png'; break;
