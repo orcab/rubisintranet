@@ -61,7 +61,7 @@ function update_path(selecteur) {
 <div style="float:right;border:solid 1px black;margin-right:3px;padding:5px;font-family:fixedsys;">
 Coef<br/>
 <?	foreach (get_defined_constants() as $constante => $valeur) {
-		if (eregi('^TARIF_COEF_(.+)',$constante,$regs)) { // une constante de coef tarif ?>
+		if (preg_match('/^TARIF_COEF_(.+)/i',$constante,$regs)) { // une constante de coef tarif ?>
 			<?=$regs[1]?> <?=$valeur?><br>
 <?		}
 	}

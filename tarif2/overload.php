@@ -387,7 +387,7 @@ function html2rgb($rgb) {
 	$style = array();
 
 	foreach (explode(',',$rgb) as $html_color) { // pour chaque style, on tranforme la valeur HTML en valeur r,g,b
-		if (eregi('^#([A-F0-9][A-F0-9])([A-F0-9][A-F0-9])([A-F0-9][A-F0-9])$',$html_color,$regs)) { // s'il la couleur html est bien formée
+		if (preg_match('/^#([A-F0-9][A-F0-9])([A-F0-9][A-F0-9])([A-F0-9][A-F0-9])$/i',$html_color,$regs)) { // s'il la couleur html est bien formée
 			$style[] = hexdec($regs[1]);
 			$style[] = hexdec($regs[2]);
 			$style[] = hexdec($regs[3]);
