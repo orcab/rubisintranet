@@ -162,6 +162,7 @@ EOT;
 
 			$worksheet->write( $i, PRIX_REVIENT_BRUT,		$tarif_encours['prix_revient_brut']  ,$format_prix);
 			$worksheet->write( $i, PRIX_REVIENT_BRUT_VENIR,	$row['PRIX_REVIENT_BRUT']  ,$format_prix_futur);
+			$worksheet->writeFormula($i, DELTA_REVIENT_BRUT, '=('.excel_column(PRIX_REVIENT_BRUT_VENIR).($i+1).'/'.excel_column(PRIX_REVIENT_BRUT).($i+1).')-1' ,$format_pourcentage);
 
 			$worksheet->write( $i, REMISE,				ereg_replace('.0000$','',$tarif_encours['remise1']).' / '.ereg_replace('.0000$','',$tarif_encours['remise2']).' / '.ereg_replace('.0000$','',$tarif_encours['remise3'])  ,$format_cell);
 			$worksheet->write( $i, REMISE_VENIR,		ereg_replace('.0000$','',$row['REMISE1']).' / '.ereg_replace('.0000$','',$row['REMISE2']).' / '.ereg_replace('.0000$','',$row['REMISE3'])  ,$format_cell_futur);
