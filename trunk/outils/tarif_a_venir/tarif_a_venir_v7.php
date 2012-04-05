@@ -31,7 +31,7 @@ select
 	CONCAT(PVEDJ,CONCAT('/',CONCAT(PVEDM,CONCAT('/',CONCAT(PVEDS,PVEDA))))) as DATE_APPLICATION_PV,
 	CONCAT(PRVDS,CONCAT(PRVDA,CONCAT(PRVDM,PRVDJ))) as DATE_APPLICATION_PR_YYYYMMDD,
 	CONCAT(PVEDS,CONCAT(PVEDA,CONCAT(PVEDM,PVEDJ))) as DATE_APPLICATION_PV_YYYYMMDD,
-	RMRV1 as REMISE1,RMRV2 as REMISE2,RMRV3 as REMISE3, PNRVT as PRIX_REVIENT,
+	PARVT as PRIX_REVIENT_BRUT,RMRV1 as REMISE1,RMRV2 as REMISE2,RMRV3 as REMISE3, PNRVT as PRIX_REVIENT,
 	COEF1 as COEF, PVEN1 as PRIX_VENTE,
 	PR.PRV03 as TYPE_PR,
 	PV.PVT09 as TYPE_PV
@@ -73,6 +73,9 @@ EOT;
 	define('NOM_FOURNISSEUR',$i++);
 	define('REF_FOURNISSEUR',$i++);
 	define('DATE_APPLICATION',$i++);
+	define('PRIX_REVIENT_BRUT',$i++);
+	define('PRIX_REVIENT_BRUT_VENIR',$i++);
+	define('DELTA_REVIENT_BRUT',$i++);
 	define('REMISE',$i++);
 	define('REMISE_VENIR',$i++);
 	define('PRIX_REVIENT',$i++);
@@ -112,22 +115,25 @@ EOT;
 	$format_coef_futur->setNumFormat('0.00000');
 
 	// La premiere ligne
-	$worksheet->write(0,NO_ARTICLE,			'Code article',$format_title);
-	$worksheet->write(0,DESIGNATION, 		'Désignation',$format_title); $worksheet->setColumn(DESIGNATION,DESIGNATION,30);
-	$worksheet->write(0,NOM_FOURNISSEUR, 	'Fournisseur',$format_title); $worksheet->setColumn(NOM_FOURNISSEUR,NOM_FOURNISSEUR,12);
-	$worksheet->write(0,REF_FOURNISSEUR,	'Référence',$format_title);
-	$worksheet->write(0,DATE_APPLICATION,	"Date d'application",$format_title); $worksheet->setColumn(DATE_APPLICATION,DATE_APPLICATION,12);
-	$worksheet->write(0,REMISE,				'Remise',$format_title);
-	$worksheet->write(0,REMISE_VENIR,		'Remise F',$format_title);
-	$worksheet->write(0,PRIX_REVIENT,		'Px R',$format_title);
-	$worksheet->write(0,PRIX_REVIENT_VENIR,	'Px RF',$format_title);
-	$worksheet->write(0,DELTA_REVIENT,		'Diff R',$format_title);
-	$worksheet->write(0,COEF,				'Coef V',$format_title);
-	$worksheet->write(0,COEF_VENIR,			'Coef VF',$format_title);
-	$worksheet->write(0,DELTA_COEF,			'Delta Coef',$format_title);
-	$worksheet->write(0,PRIX_VENTE,			'Px V',$format_title);
-	$worksheet->write(0,PRIX_VENTE_VENIR,	'Px VF',$format_title);
-	$worksheet->write(0,DELTA_VENTE,		'Diff V',$format_title);
+	$worksheet->write(0,NO_ARTICLE,				'Code article',$format_title);
+	$worksheet->write(0,DESIGNATION, 			'Désignation',$format_title); $worksheet->setColumn(DESIGNATION,DESIGNATION,30);
+	$worksheet->write(0,NOM_FOURNISSEUR, 		'Fournisseur',$format_title); $worksheet->setColumn(NOM_FOURNISSEUR,NOM_FOURNISSEUR,12);
+	$worksheet->write(0,REF_FOURNISSEUR,		'Référence',$format_title);
+	$worksheet->write(0,DATE_APPLICATION,		"Date d'application",$format_title); $worksheet->setColumn(DATE_APPLICATION,DATE_APPLICATION,12);
+	$worksheet->write(0,PRIX_REVIENT_BRUT,		'Px R brut',$format_title);
+	$worksheet->write(0,PRIX_REVIENT_BRUT_VENIR,'Px R brut F',$format_title);
+	$worksheet->write(0,DELTA_REVIENT_BRUT,		'Diff Px R brut',$format_title);
+	$worksheet->write(0,REMISE,					'Remise',$format_title);
+	$worksheet->write(0,REMISE_VENIR,			'Remise F',$format_title);
+	$worksheet->write(0,PRIX_REVIENT,			'Px R',$format_title);
+	$worksheet->write(0,PRIX_REVIENT_VENIR,		'Px RF',$format_title);
+	$worksheet->write(0,DELTA_REVIENT,			'Diff R',$format_title);
+	$worksheet->write(0,COEF,					'Coef V',$format_title);
+	$worksheet->write(0,COEF_VENIR,				'Coef VF',$format_title);
+	$worksheet->write(0,DELTA_COEF,				'Delta Coef',$format_title);
+	$worksheet->write(0,PRIX_VENTE,				'Px V',$format_title);
+	$worksheet->write(0,PRIX_VENTE_VENIR,		'Px VF',$format_title);
+	$worksheet->write(0,DELTA_VENTE,			'Diff V',$format_title);
 	
 	
 	$loginor	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
@@ -136,12 +142,13 @@ EOT;
 	$tarif_encours = array('remise1'=>'','remise2'=>'','remise3'=>'','prix_revient'=>'','coef'=>'','prix_vente'=>'');
 	while($row = odbc_fetch_array($res)) {
 		if ($row['TYPE_PR'] == 'E' && $row['TYPE_PV'] == 'E') { // tarif encours --> on stock pour l'afficher ensuite
-			$tarif_encours['remise1']		= $row['REMISE1'];
-			$tarif_encours['remise2']		= $row['REMISE2'];
-			$tarif_encours['remise3']		= $row['REMISE3'];
-			$tarif_encours['prix_revient']	= $row['PRIX_REVIENT'];
-			$tarif_encours['coef']			= $row['COEF'];
-			$tarif_encours['prix_vente']	= $row['PRIX_VENTE'];
+			$tarif_encours['remise1']			= $row['REMISE1'];
+			$tarif_encours['remise2']			= $row['REMISE2'];
+			$tarif_encours['remise3']			= $row['REMISE3'];
+			$tarif_encours['prix_revient']		= $row['PRIX_REVIENT'];
+			$tarif_encours['prix_revient_brut']	= $row['PRIX_REVIENT_BRUT'];
+			$tarif_encours['coef']				= $row['COEF'];
+			$tarif_encours['prix_vente']		= $row['PRIX_VENTE'];
 			continue;
 
 	//	} elseif ($row['TYPE_PR'] == 'A' && $row['TYPE_PV'] == 'A') { // tarif a venir --> on affiche
@@ -152,6 +159,10 @@ EOT;
 			$worksheet->write( $i, NOM_FOURNISSEUR ,	trim($row['NOM_FOURNISSEUR'])  ,$format_cell);
 			$worksheet->write( $i, REF_FOURNISSEUR,		trim($row['REF_FOURNISSEUR'])  ,$format_cell);
 			$worksheet->write( $i, DATE_APPLICATION,	$row['DATE_APPLICATION_PR']  ,$format_cell);
+
+			$worksheet->write( $i, PRIX_REVIENT_BRUT,		$tarif_encours['prix_revient_brut']  ,$format_prix);
+			$worksheet->write( $i, PRIX_REVIENT_BRUT_VENIR,	$row['PRIX_REVIENT_BRUT']  ,$format_prix_futur);
+
 			$worksheet->write( $i, REMISE,				ereg_replace('.0000$','',$tarif_encours['remise1']).' / '.ereg_replace('.0000$','',$tarif_encours['remise2']).' / '.ereg_replace('.0000$','',$tarif_encours['remise3'])  ,$format_cell);
 			$worksheet->write( $i, REMISE_VENIR,		ereg_replace('.0000$','',$row['REMISE1']).' / '.ereg_replace('.0000$','',$row['REMISE2']).' / '.ereg_replace('.0000$','',$row['REMISE3'])  ,$format_cell_futur);
 			$worksheet->write( $i, PRIX_REVIENT,		$tarif_encours['prix_revient']  ,$format_prix);
@@ -159,7 +170,7 @@ EOT;
 			$worksheet->writeFormula($i, DELTA_REVIENT, '=('.excel_column(PRIX_REVIENT_VENIR).($i+1).'/'.excel_column(PRIX_REVIENT).($i+1).')-1' ,$format_pourcentage);
 			$worksheet->write( $i, COEF,				$tarif_encours['coef']  ,$format_coef);
 			$worksheet->write( $i, COEF_VENIR,			$row['COEF']  ,$format_coef_futur);
-			$worksheet->write( $i, DELTA_COEF,			$row['COEF']  ,$format_pourcentage);
+			$worksheet->writeFormula($i, DELTA_COEF,	'=('.excel_column(COEF_VENIR).($i+1).'/'.excel_column(COEF).($i+1).')-1' ,$format_pourcentage);
 			$worksheet->write( $i, PRIX_VENTE,			$tarif_encours['prix_vente']  ,$format_prix);
 			$worksheet->write( $i, PRIX_VENTE_VENIR,	$row['PRIX_VENTE']  ,$format_prix_futur);
 			$worksheet->writeFormula($i, DELTA_VENTE,	'=('.excel_column(PRIX_VENTE_VENIR).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
