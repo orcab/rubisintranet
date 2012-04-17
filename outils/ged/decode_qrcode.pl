@@ -198,7 +198,8 @@ EOT
 						'/gray',												# en niveau de gris
 						'/contrast=10',											# auguement le contraste de 10pt
 						'"/convert='.$directory_thumbnail.'\\$N_thumb.jpg"',	# le fichier de sortie
-						'/jpgq=70'												# fixe la qualité jpeg a 70
+						'/jpgq=70',												# fixe la qualité jpeg a 70
+						'/silent'												# ne s'arrête pas en cas d'erreur
 				);
 		`$cmd`;
 		#print "\n$cmd\n";
