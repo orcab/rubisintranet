@@ -1,7 +1,7 @@
 <?php
 	include('../../inc/config.php');
 	
-	define('REMOVE_IMAGE_PATH','C:/easyphp/www');
+	define('PREFIX_IMAGE_PATH','../../tarif2/miniatures/');
 
 	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
@@ -535,7 +535,7 @@ $(document).ready(function(){
 		<!-- photo -->
 		<td rowspan="2" class="photo" style="text-align:left;vertical-align:middle;">
 <?				if (isset($_SESSION['chemin']) && array_key_exists($_SESSION['chemin'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="<?=preg_replace('!^'.REMOVE_IMAGE_PATH.'!i','',$IMAGES[$_SESSION['chemin']][0])?>"/>
+					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$_SESSION['chemin']][0]?>"/>
 <?				} ?>
 		</td>
 		<td style="text-align:left;border:none;vertical-align:top;">
@@ -627,7 +627,7 @@ EOT;
 			<!-- photo -->
 			<td class="photo">
 <?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="<?=preg_replace('!^'.REMOVE_IMAGE_PATH.'!i','',$IMAGES[$row['code_article']][0])?>"/>
+					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/>
 <?				} ?>
 			</td>
 			<!-- code article -->
