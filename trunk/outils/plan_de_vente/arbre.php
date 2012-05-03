@@ -20,6 +20,10 @@ a {
 .menu {
 	font-size:7pt;
 }
+
+#domRoot .empty {
+	color:grey;
+}
 </STYLE>
 
 <!-- Code for browser detection. DO NOT REMOVE.              -->

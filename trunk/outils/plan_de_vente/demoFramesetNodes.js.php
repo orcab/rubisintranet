@@ -21,16 +21,35 @@ foldersTree = gFld("<i>ROOT</i>", "")
 // ne rien changer au dessus d'ici
 
 <?
+// stock toutes les familles
+$pdv = array();
+$res = mysql_query("SELECT * from pdvente ORDER BY chemin ASC") or die("Ne peux pas récupérer les infos de la table pdvente : ".mysql_error());
+while($row = mysql_fetch_array($res))
+	$pdv[$row['chemin']]=$row;
+
 // recupération du nombre d'article par categ
-$nb_article_by_categ = array();
+$nb_article_cumul_by_categ = array();
 $res = mysql_query("SELECT chemin,COUNT(*) as nb FROM article GROUP BY chemin") or die("Ne peux pas récupérer les chemin de la table article : ".mysql_error());
 while($row = mysql_fetch_array($res)) {
-	$nb_article_by_categ[$row['chemin']] = $row['nb'] ;
+	$chemin_exploded = explode('.',$row['chemin']);
+	for($i=0;$i<sizeof($chemin_exploded);$i++) { // on parcours chaque parti du chemin pour faire un cumul
+		$chemin_slice = join('.',array_slice($chemin_exploded,0,$i+1));
+
+		if (!array_key_exists($chemin_slice,$nb_article_cumul_by_categ))
+			$nb_article_cumul_by_categ[$chemin_slice] = 0;
+
+		if (array_key_exists($chemin_slice,$pdv)) // la famille de l'article existe
+			$nb_article_cumul_by_categ[$chemin_slice] += $row['nb'];
+	}
 }
 
 // construction de l'arbre
 $res = mysql_query("SELECT * from pdvente ORDER BY chemin ASC") or die("Ne peux pas récupérer les infos de la table pdvente : ".mysql_error());
 
-while($row = mysql_fetch_array($res)) { ?>
-	aux<?=$row['niveau']?> = insFld(<?= $row['niveau'] == 1 ? 'foldersTree' : 'aux'.($row['niveau'] - 1) ?>, gFld("<div class=\"menu\"><b><?=$row['libelle']?></b> <?=isset($nb_article_by_categ[$row['chemin']]) ? '('.$nb_article_by_categ[$row['chemin']].')' : ''?> [<?=$row['chemin']?>]</div>", "affiche_article.php?chemin=<?=$row['chemin']?>"));
+foreach($pdv as $row) {
+	$libelle = "<div class=\\\"menu ".(!isset($nb_article_cumul_by_categ[$row['chemin']]) || $nb_article_cumul_by_categ[$row['chemin']]==0 ? 'empty' : '')."\\\"><b>$row[libelle]</b> ";
+	$libelle .= isset($nb_article_cumul_by_categ[$row['chemin']])	? '('.$nb_article_cumul_by_categ[$row['chemin']].')'	:'' ;
+	$libelle .= " [$row[chemin]]</div>";
+?>
+	aux<?=$row['niveau']?> = insFld(<?= $row['niveau'] == 1 ? 'foldersTree' : 'aux'.($row['niveau'] - 1) ?>, gFld("<?=$libelle?>","affiche_article.php?chemin=<?=$row['chemin']?>"));
 <? } ?>
