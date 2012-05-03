@@ -716,7 +716,7 @@ EOT;
 		</tr>
 <?	}
 	
-	if (isset($_SESSION['chemin'])) {
+	if (isset($_SESSION['chemin']) && 0) {
 		$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
 		$tmp = explode('.',$_SESSION['chemin']);
