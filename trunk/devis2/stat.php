@@ -60,18 +60,19 @@ while($row = mysql_fetch_array($res)) { ?>
 		<img id="graph_cde" src="graph_cde.php" style="margin-bottom:20px;" /><!-- STATS DES COMMANDES / DEVIS REALISES -->
 	</fieldset>
 </form>
+
 <br/>
-<!--<img src="graph_visite.php" style="margin-bottom:20px;" />-->
+<img src="graph_visite.php" style="margin-bottom:20px;" />
 <br/>
-<!--<img src="graph2.php" style="margin-bottom:20px;" />-->
+<img src="graph2.php" style="margin-bottom:20px;" />
 
 <div style="margin:auto;width:50%;border:solid 1px grey;padding:10px;"><a href="stats_devis.php">Télécharger les stats au format Excel</div>
 
 <br/>
-<!--<img src="graph_adh.php" style="margin-bottom:20px;" />-->
+<img src="graph_adh.php" style="margin-bottom:20px;" />
 
 <br/>
-<!--<img src="graph_act.php" style="margin-bottom:20px;" />-->
+<img src="graph_act.php" style="margin-bottom:20px;" />
 
 </center>
 

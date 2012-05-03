@@ -79,7 +79,7 @@ $graph->SetScale('textlin');
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
 $graph->Set90AndMargin(0,10,30,10); // Rotate graph 90 degrees and set margin
-$graph->title->Set('Rapport par adhérent');
+$graph->title->Set('Rendez-vous par adhérent');
 
 $graph->xaxis->SetTickLabels($datax);
 //$graph->xaxis->SetFont(FF_ARIAL,FS_NORMAL,7);

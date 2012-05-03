@@ -9,6 +9,9 @@ update AFAGESTCOM.ASTOFIP1 set STO10='N' where DEPOT='AFZ' or DEPOT='9FA' or DEP
 -- passe les servi sur stock à "non" sur les dépot autre que principaux
 update AFAGESTCOM.ASTOFIP1 set STSER='NON' where STSER='OUI' and (DEPOT='AFZ' or DEPOT='9FA' or DEPOT='EXP') -- fiche de stock
 
+-- passe les produits CAB56 à non servis sur stock
+update AFAGESTCOM.ASTOFIP1 set STSER='NON' where NOART in (select NOART from AFAGESTCOM.AARTICP1 where ACTIV='00R')
+
 -- Fournisseur unique pour le dépot de Lorient : CESAFA
 update AFAGESTCOM.ASTOFIP1 set STFOU='CESAFA' where DEPOT='AFL' -- fiche de stock
 
