@@ -16,6 +16,12 @@ define('MONTANT_COMMANDE',1);
 define('DEVIS',2);
 define('TAUX',3);
 
+$where = array();
+$where[] = "artisan<>'EDITION'";
+if (isset($_GET['representant']) && $_GET['representant'] != 'tous')
+	$where[] = "representant='".mysql_escape_string($_GET['representant'])."'";
+$where = join(' AND ',$where);
+
 //chargement des données
 // calcul du taux de devis/cmd de la salle
 $sql = <<<EOT
@@ -24,7 +30,7 @@ SELECT  DISTINCT ( DATE_FORMAT( `date` , '%b %Y' )) AS date_formater,
 		DATE_FORMAT( `date` , '%Y' ) AS annee,
         COUNT(id) AS nb_devis
 FROM  devis
-WHERE artisan<>'EDITION'
+WHERE $where
 GROUP BY date_formater
 ORDER BY `date` ASC
 EOT;
@@ -40,7 +46,7 @@ WHERE     num_cmd_rubis NOT LIKE 'ANNULE'
       AND num_cmd_rubis NOT LIKE 'SUSPENDU'
       AND num_cmd_rubis IS NOT NULL
       AND num_cmd_rubis <> ''
-	  AND artisan<>'EDITION'
+	  AND $where
 GROUP BY date_formater
 ORDER BY `date` ASC
 EOT;
@@ -85,7 +91,7 @@ $graph = new Graph(1200,650);
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
 $graph->SetMargin(70,50,100,60);
-$graph->title->Set('Evolution mois par mois');
+$graph->title->Set('Evolution mois par mois'.(isset($_GET['representant']) && $_GET['representant'] != 'tous' ? ' de '.ucfirst($_GET['representant']):''));
 
 $graph->SetScale('textlin');
 $graph->SetY2Scale('lin');
@@ -104,7 +110,7 @@ $graph->xaxis->SetLabelAngle(90);
 $graph->xaxis->SetTickLabels(array_keys($cmd_rubis));
 
 $graph->legend->SetShadow('gray@0.4',5);
-$graph->legend->SetPos(0.21,0,'right','top');
+$graph->legend->SetPos(0,0,'right','top');
 
 
 

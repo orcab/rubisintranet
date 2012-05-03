@@ -19,15 +19,18 @@ while ($row = mysql_fetch_array($res))
 
 $stats = array(); // format $adherent[056089] = 56 rdv ;
 
-if ($stream = join('',file('http://www.google.com/calendar/ical/oi3c84064vjruvmkrsbbgn69go%40group.calendar.google.com/private-b5ad0090953fcf19110ac0be6aaeb152/basic.ics'))) { // telecharge le fichier chez google
+if ($stream = join('',file('http://www.google.com/calendar/ical/expo%40coopmcs.com/private-3ae63b499166ac392e09e8a0a890dccd/basic.ics'))) { // telecharge le fichier chez google
 //if ($stream = join('',file('expo.ics'))) { // telecharge le fichier chez google
 	
 	$ical = new iCal();
 	$events = $ical->iCalStreamDecoder($stream);
 	
+	//print_r($events); exit;
+
 	foreach ($events as $e) {
 		if (	array_key_exists('SUMMARY',$e)					// début d'evenement
 			&&	preg_match('/^(?:RDV|VISITE?|PROSPECT)/i',$e['SUMMARY'])	// RDV, VISITE ou PROSPECT
+			&&  !preg_match('/0?56039/',$e['SUMMARY'])	// pas de la cab
 			&&	preg_match('/(0?56\d{3})/',$e['SUMMARY'],$regs)	// un adhérent est renseigné
 			) {
 		
@@ -71,7 +74,7 @@ foreach ($stats as $key => $val) {
 //print_r($datay);
 
 // Set the basic parameters of the graph 
-$graph = new Graph(1200,1000,'auto');
+$graph = new Graph(1200,2000,'auto');
 $graph->SetScale('textlin');
 $graph->SetMarginColor('white');
 $graph->SetFrame(false);
