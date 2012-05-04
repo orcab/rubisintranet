@@ -45,8 +45,10 @@ print "OK\n";
 
 # il y a des erreurs
 my $message = '';
+my $nb_erreur = 0;
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
+	$nb_erreur++;
 	#print Dumper(\%row);
 	$message .= <<EOT ;
 Adhérent : $row{NOM_CLIENT} ($row{CODE_CLIENT})
@@ -72,22 +74,23 @@ EOT
 #print $message;
 
 # envoi le mail avec le rapport d'erreur
-my $smtp = Net::SMTP->new($cfg->{SMTP_SERVEUR}) or die "Pas de connexion SMTP: $!\n";
-$smtp->auth($cfg->{SMTP_USER},$cfg->{SMTP_PASS} );
-$smtp->mail(FROM_EMAIL);
-$smtp->to(TO_EMAIL);
+if ($nb_erreur > 0) {
+	my $smtp = Net::SMTP->new($cfg->{SMTP_SERVEUR}) or die "Pas de connexion SMTP: $!\n";
+	$smtp->auth($cfg->{SMTP_USER},$cfg->{SMTP_PASS} );
+	$smtp->mail(FROM_EMAIL);
+	$smtp->to(TO_EMAIL);
 
-$smtp->data();
-$smtp->datasend('To: '.TO_NAME.' <'.TO_EMAIL.">\n");
-$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
-$smtp->datasend("Subject: Erreur d'integration de commande web du $jour/$mois/$annee\n");
-$smtp->datasend("\n");
-$smtp->datasend("Voici les erreurs d'intégration de commande web dans Rubis pour la journée du $jour/$mois/$annee\n\n");
-$smtp->datasend($message);
-$smtp->dataend();
+	$smtp->data();
+	$smtp->datasend('To: '.TO_NAME.' <'.TO_EMAIL.">\n");
+	$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
+	$smtp->datasend("Subject: Erreur d'integration de commande web du $jour/$mois/$annee\n");
+	$smtp->datasend("\n");
+	$smtp->datasend("Voici les erreurs d'intégration de commande web dans Rubis pour la journée du $jour/$mois/$annee\n\n");
+	$smtp->datasend($message);
+	$smtp->dataend();
 
-$smtp->quit;
-
+	$smtp->quit;
+}
 
 print print_time()."END\n\n";
 
