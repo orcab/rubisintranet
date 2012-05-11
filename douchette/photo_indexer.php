@@ -39,11 +39,12 @@ EOT;
 	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
 	$noart = mysql_escape_string($_POST['noart']);
-	$res = mysql_query("INSERT INTO photo_indexer (code_article,`date`) VALUES ('$noart',NOW())") or die(mysql_error());
+	$res = mysql_query("INSERT INTO photo_indexer (code_article,`date`,renamed) VALUES ('$noart',NOW(),0)") or die(mysql_error());
+	$nb_article_a_traiter = e('nb_article_a_traiter',mysql_query("SELECT count(code_article) as nb_article_a_traiter FROM photo_indexer where renamed=0"));
 	
 	mysql_close($mysql);
 
-	$message = "Article enregistré dans la liste";
+	$message = "Article enregistré dans la liste<br/>$nb_article_a_traiter article".($nb_article_a_traiter > 1 ? 's':'');
 }
 ?>
 <html>
