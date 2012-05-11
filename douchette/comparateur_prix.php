@@ -18,8 +18,10 @@ from				${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 						on ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
 where	   (ARTICLE.NOART='$reference')					-- saisie d'un code article MCS
 		or (ARTICLE_FOURNISSEUR.REFFO='$reference')		-- saisie d'une référence fournisseur
-		or (ARTICLE.GENCO='$reference')					-- saisie d'un code barre fournisseur
-		or (ARTICLE_FOURNISSEUR.AFOGE='$reference') or (ARTICLE_FOURNISSEUR.AFOG2='$reference') or (ARTICLE_FOURNISSEUR.AFOG3='$reference')	-- saisie d'un code barre MCS
+		or (ARTICLE.GENCO='$reference')					-- saisie d'un code barre MCS
+		or (ARTICLE_FOURNISSEUR.AFOGE='$reference')		-- saisie d'un code barre fournisseur
+		or (ARTICLE_FOURNISSEUR.AFOG2='$reference')
+		or (ARTICLE_FOURNISSEUR.AFOG3='$reference')	
 EOT;
 
 //echo $sql;

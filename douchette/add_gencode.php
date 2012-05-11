@@ -28,10 +28,11 @@ EOT;
 		$resultats[0]['AFOG3'] = trim($resultats[0]['AFOG3']);
 		//print_r($resultats);
 
-		if (!$row['AFOG3']) // si pas de code barre MCS renseigné --> on le calcul
-			odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set AFOG3='".calcul_gencode_from_noart($resultats[0]['NOART'])."' where NOART='".$resultats[0]['NOART']."'")  or die("Impossible de lancer la requete : $sql");
-		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set GENCO='$gencode' where NOART='".$resultats[0]['NOART']."'")  or die("Impossible de lancer la requete : $sql");
-		//echo "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set GENCO='$gencode' where NOART='".$resultats[0]['NOART']."'";
+		if (!$row['AFOG3']) { // si pas de code barre MCS renseigné --> on le calcul
+			odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set AFOG3='".$gencode."' where NOART='".$resultats[0]['NOART']."'")  or die("Impossible de lancer la requete : $sql");
+		}
+		odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set GENCO='".calcul_gencode_from_noart($resultats[0]['NOART'])."' where NOART='".$resultats[0]['NOART']."'")  or die("Impossible de lancer la requete : $sql");
+
 		$message = "Code barre enregistré";
 	} elseif (sizeof($resultats) <= 0) { // Aucune référence trouvé dans le systeme --> afficher une erreur
 		$message = "La référence tapée ne correspond à aucun article";
@@ -46,8 +47,8 @@ EOT;
 	$loginor= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$code	= strtoupper(mysql_escape_string(trim($_POST['code'])));
 	$gencode= strtoupper(mysql_escape_string(trim($_POST['gencode'])));
-	odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set AFOG3='".calcul_gencode_from_noart($code)."' where NOART='$code'")  or die("Impossible de lancer la requete : $sql");
-	odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set GENCO='$gencode' where NOART='$code'")  or die("Impossible de lancer la requete : $sql");
+	odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set AFOG3='".$gencode."' where NOART='$code'")  or die("Impossible de lancer la requete : $sql");
+	odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set GENCO='".calcul_gencode_from_noart($code)."' where NOART='$code'")  or die("Impossible de lancer la requete : $sql");
 	$message = "Code barre enregistré";
 	odbc_close($loginor);
 }
