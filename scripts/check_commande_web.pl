@@ -8,8 +8,8 @@ use POSIX qw(strftime);
 use Win32::ODBC;
 use Net::SMTP;
 
-use constant TO_EMAIL	=> 'benjamin.poulain@coopmcs.com';
-use constant TO_NAME	=> 'Benjamin Poulain';
+my @TO_EMAIL	= ('benjamin.poulain@coopmcs.com','thierry.lemoignic@coopmcs.com','aymeric.merigot@coopmcs.com');
+my @TO_NAME		= ('Benjamin Poulain','Thierry Le Moignic','Aymeric Merigot');
 use constant FROM_EMAIL	=> 'commande@coopmcs.com';
 use constant FROM_NAME	=> 'Erreur commande web';
 
@@ -78,10 +78,10 @@ if ($nb_erreur > 0) {
 	my $smtp = Net::SMTP->new($cfg->{SMTP_SERVEUR}) or die "Pas de connexion SMTP: $!\n";
 	$smtp->auth($cfg->{SMTP_USER},$cfg->{SMTP_PASS} );
 	$smtp->mail(FROM_EMAIL);
-	$smtp->to(TO_EMAIL);
+	$smtp->to(@TO_EMAIL);
 
 	$smtp->data();
-	$smtp->datasend('To: '.TO_NAME.' <'.TO_EMAIL.">\n");
+	$smtp->datasend('To: '.$TO_NAME[0].' <'.$TO_EMAIL[0].">\n");
 	$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
 	$smtp->datasend("Subject: Erreur d'integration de commande web du $jour/$mois/$annee\n");
 	$smtp->datasend("\n");

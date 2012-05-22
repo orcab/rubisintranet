@@ -21,7 +21,7 @@ function rscandir($base='', &$data=array()) {
 		//$data[] = $base.$value.'/'; /* add it to the $data array */
 		$data = rscandir($base.$value.'/', $data); /* then make a recursive call with the current $value as the $base supplying the $data array to carry into the recursion */
     }  elseif (is_file($base.$value) && (preg_match("/(.+?)\.(?:jpe?g|png|gif)$/i",$value,$regs))) { /* else if the current $value is a file */
-		$data[$regs[1]][] = preg_replace('!^'.REMOVE_IMAGE_PATH.'!i','',$base.$value);
+		$data[strtoupper($regs[1])][] = preg_replace('!^'.REMOVE_IMAGE_PATH.'!i','',$base.$value);
 		//print_r($data);
 		//exit;
 		//$data[$regs[1]][] = $base.$value; /* just add the current $value to the $data array */

@@ -16,12 +16,14 @@ $PRINT_EDITION_DATE=TRUE; // pas une constante car modifié dans 'equipe.php'
 
 define('FONT_SIZE_CATEG',12);
 define('FONT_SIZE_CODE',8);
+define('FONT_SIZE_FOURN',8);
 define('FONT_SIZE_REF',8);
 define('FONT_SIZE_PRIX',8);
 define('FONT_SIZE_ECOTAXE',8);
 define('FONT_SIZE_DESIGNATION',7);
-define('WIDTH_CODE',20);
-define('WIDTH_DESIGNATION',70);
+define('WIDTH_CODE',15);
+define('WIDTH_DESIGNATION',60);
+define('WIDTH_FOURN',15);
 define('WIDTH_REF',20);
 define('WIDTH_PRIX',15);
 define('WIDTH_ECOTAXE',10);
@@ -119,7 +121,7 @@ $condition = join(' and ',$condition);
 // recherche des articles à exporter pour le tarif
 	$sql = <<<EOT
 select	
-		ARTICLE.NOART,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,SERST,
+		ARTICLE.NOART,FOUR1,DESI1,ACTIV,FAMI1,SFAM1,ART04,ART05,SERST,
 		CONCAT(ACTIV,CONCAT('.',CONCAT(FAMI1,CONCAT('.',CONCAT(SFAM1,CONCAT('.',CONCAT(ART04,CONCAT('.',ART05)))))))) as CHEMIN,
 		REFFO,PVEN1,
 		CDKIT,
@@ -134,7 +136,7 @@ from
 				on ARTICLE.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where $condition
 order by
-	ACTIV ASC,FAMI1 ASC,SFAM1 ASC,ART04 ASC,ART05 ASC,DESI1 ASC,DESI2 ASC,DESI3 ASC
+	ACTIV ASC,FAMI1 ASC,SFAM1 ASC,ART04 ASC,ART05 ASC,FOUR1 ASC,DESI1 ASC,DESI2 ASC,DESI3 ASC
 EOT;
 
 //echo $sql ; exit;
@@ -145,7 +147,7 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 // creation de l'objet PDF
 $pdf=new PDF();
 $pdf->SetDisplayMode('fullpage','two');
-$pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_REF,WIDTH_PRIX,WIDTH_ECOTAXE)); // a sortir de la boucle quand tout marchera bien
+$pdf->SetWidths(array(WIDTH_CODE,WIDTH_DESIGNATION,WIDTH_FOURN,WIDTH_REF,WIDTH_PRIX,WIDTH_ECOTAXE)); // a sortir de la boucle quand tout marchera bien
 
 // on passe sur chaque article
 $coef_multiplicateur = 1;
@@ -280,6 +282,7 @@ while($row = odbc_fetch_array($res)) {
 	$ecotaxe_cumul_kit	= 0 ;
 	$noart				= '' ;
 	$designation		= '' ;
+	$fourn				= '' ;
 	$ref				= '' ;
 	$prix				= '' ;
 	$ecotaxe			= '' ;
@@ -288,7 +291,7 @@ while($row = odbc_fetch_array($res)) {
 	if ($row['CDKIT'] == 'OUI') { // il s'agit d'un article en kit. On doit afficher les composants avec les prix
 		// on va chercher le détail des articles composants
 $sql = <<<EOT
-select		DETAIL_KIT.NOART,NUCOM,REFFO,DESI1,PVEN1,SERST,
+select		DETAIL_KIT.NOART,FOUR1,NUCOM,REFFO,DESI1,PVEN1,SERST,
 			TANU0 as ECOTAXE
 from		${LOGINOR_PREFIX_BASE}GESTCOM.AKITDEP1 DETAIL_KIT
 				left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
@@ -309,6 +312,7 @@ EOT;
 			$designation	.= "\n".trim($row_kit['DESI1']).' (x'.sprintf('%d',$row_kit['NUCOM']).')';
 
 			// calcul de la taille max de la font de la référence
+			$fourn			.= "\n".trim($row_kit['FOUR1']);
 			$ref			.= "\n".trim($row_kit['REFFO']);
 			$font_size_max = min($pdf->redux_font_size($row_kit['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
 
@@ -323,6 +327,7 @@ EOT;
 
 	$noart			= $row['NOART'].( $row['SERST']=='NON' ? ' *' :'' ). ($kit ? "\n$noart" : '');
 	$designation	= $row['DESI1'] . ($kit ? "\nKit composé de $kit éléments :$designation" : '');
+	$fourn			= $row['FOUR1'] . ($kit ? "\n$fourn" : '');
 	$ref			= $row['REFFO'] . ($kit ? "\n$ref" : '');
 	$prix			= $kit ? "$prix_cumul_kit\n$prix" : sprintf('%0.2f',$prix_de_base * $coef_multiplicateur) ;
 	$ecotaxe		= $kit ? "$ecotaxe_cumul_kit\n$ecotaxe" : $row['ECOTAXE'] ;
@@ -332,10 +337,12 @@ EOT;
 	
 	//debug("avant $row[NOART] GetY=".$pdf->GetY()."\n");
 	// on imprime la ligne
-	// code_article,designation,ref,prix
+	// code_article,designation,fourn,ref,prix
 	$pdf->Row(	array( //   font-family , font-weight, font-size, font-color, text-align
 							array('text' => $noart			, 'font-style' => 'B'	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_CODE ),
+//							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => min($pdf->redux_font_size($designation,FONT_SIZE_DESIGNATION,WIDTH_DESIGNATION),FONT_SIZE_DESIGNATION)),
 							array('text' => $designation	, 'font-style' => ''	, 'text-align' => 'L'	,	'font-size' => FONT_SIZE_DESIGNATION),
+							array('text' => $fourn			,													'font-size' => $font_size_max),
 							array('text' => $ref			,													'font-size' => $font_size_max),
 							array('text' => $prix			, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_PRIX), // le prix est multiplié par une valeur de config.php en fonction de l'activité
 							array('text' => $ecotaxe ? $ecotaxe:''		, 'font-color' => array($style[RED_PRICE],$style[GREEN_PRICE],$style[BLUE_PRICE]), 'text-align' => 'R', 'font-size' => FONT_SIZE_ECOTAXE)

@@ -171,11 +171,12 @@ class PDF extends FPDF
 		$this->SetFillColor($style[RED_PAGE],$style[GREEN_PAGE],$style[BLUE_PAGE]);
 		$this->SetTextColor($style[RED_HEADER],$style[GREEN_HEADER],$style[BLUE_HEADER]);
 		$this->SetFont('helvetica','B',7);
-		$this->Cell(WIDTH_CODE		,6,'CODE','LT',0,'L',1);
-		$this->Cell(WIDTH_DESIGNATION,6,'DÉSIGNATION','T',0,'L',1);
-		$this->Cell(WIDTH_REF		,6,'RÉF.','T',0,'L',1);
-		$this->Cell(WIDTH_PRIX		,6,'PRIX '.EURO.' HT','T',0,'L',1);
-		$this->Cell(WIDTH_ECOTAXE	,6,'ECO '.EURO,'TR',0,'L',1);
+		$this->Cell(WIDTH_CODE			,6,'CODE','LT',0,'L',1);
+		$this->Cell(WIDTH_DESIGNATION	,6,'DÉSIGNATION','T',0,'L',1);
+		$this->Cell(WIDTH_FOURN			,6,'FOUR.','T',0,'L',1);
+		$this->Cell(WIDTH_REF			,6,'RÉF.','T',0,'L',1);
+		$this->Cell(WIDTH_PRIX			,6,'PRIX '.EURO.' HT','T',0,'L',1);
+		$this->Cell(WIDTH_ECOTAXE		,6,'ECO '.EURO,'TR',0,'L',1);
 		$this->Ln();
 	}
 

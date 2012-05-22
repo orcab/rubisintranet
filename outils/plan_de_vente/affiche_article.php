@@ -621,7 +621,7 @@ EOT;
 
 
 	while($row = mysql_fetch_array($res)) {
-			$row['code_article'] = trim($row['code_article']);
+			$row['code_article'] = trim(strtoupper($row['code_article']));
 ?>
 		<tr id="<?=$row['code_article']?>">
 			<!-- photo -->
