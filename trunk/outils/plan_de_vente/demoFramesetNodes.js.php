@@ -44,7 +44,7 @@ while($row = mysql_fetch_array($res)) {
 }
 
 // construction de l'arbre
-$res = mysql_query("SELECT * from pdvente ORDER BY chemin ASC") or die("Ne peux pas récupérer les infos de la table pdvente : ".mysql_error());
+//$res = mysql_query("SELECT * from pdvente ORDER BY chemin ASC") or die("Ne peux pas récupérer les infos de la table pdvente : ".mysql_error());
 
 foreach($pdv as $row) {
 	$libelle = "<div class=\\\"menu ".(!isset($nb_article_cumul_by_categ[$row['chemin']]) || $nb_article_cumul_by_categ[$row['chemin']]==0 ? 'empty' : '')."\\\"><b>$row[libelle]</b> ";
