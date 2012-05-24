@@ -108,7 +108,7 @@ var phrases = [];
 <?	// selection des phrases pré-établies pour les designations
 	$res = mysql_query("SELECT mot_cle,phrase FROM devis_phrase WHERE deleted=0") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
 	while($row = mysql_fetch_array($res)) { ?>
-		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=preg_replace("/[\n|\r]+/",'\\n',$row['phrase'])?>";
+		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=utf8_decode(preg_replace("/[\n|\r]+/",'\\n',preg_replace('/"/',"\\\"",$row['phrase'])))?>";
 <?	} ?>
 
 function affiche_choix_phrase(btn_elm) {
