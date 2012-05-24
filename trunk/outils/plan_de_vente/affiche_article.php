@@ -580,7 +580,7 @@ $(document).ready(function(){
 	</tr>
 <?	
 	$sql = <<<EOT
-SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif,conditionnement,unite,
+SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif,conditionnement,unite,date_creation,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
@@ -588,7 +588,7 @@ SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as mini_afl,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as reappro_afl
 FROM	article A
-WHERE	SUSPENDU=''
+WHERE	1=1
 		and
 
 EOT;
@@ -640,7 +640,16 @@ EOT;
 			</td>
 			<!-- designation -->
 			<td class="designation" style="font-size:9px;">
-				<pre><?	if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
+				<pre>
+<?				// si l'article a moins de deux mois, on affiche un logo nouveau
+				$date_creation	= date_create($row['date_creation']);
+				$now			= date_create('now');
+				$interval		= date_diff($now, $date_creation)->format('%a');
+				if ($interval < 60) { // article de mions de deux mois ?>
+<img src="gfx/new.png" style="vertical-align:middle;" title="Article de moins de 2 mois crée le <?=join('/',array_reverse(explode('-',$row['date_creation'])))?>"/> <?
+				}
+				
+				if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
 					$designation = $row['designation'];
 					foreach ($phrase as $mot) {
 						if ($mot) $designation = preg_replace("/(".$mot.")/i","<strong>$1</strong>",$designation);
