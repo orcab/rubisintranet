@@ -24,24 +24,26 @@ select	A.NOART as CODE_ARTICLE,
 		AFOG3 as GENCOD,SERST as SERVI_SUR_STOCK,CONDI as CONDITIONNEMENT,SURCO as SURCONDITIONNEMENT,LUNTA as UNITE,
 		ACTIV as ACTIVITE,FAMI1 as FAMILLE,SFAM1 as SOUSFAMILLE,ART04 as CHAPITRE,ART05 as SOUSCHAPITRE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
-		--ROUND(T.COEF1 * PR.PRVT2,2) as PRIX_NET,   -- coef de vente * par le PR2
-		ROUND(T.PVEN1,2) as PRIX_NET,
+		ROUND(PV.PVEN1,3) as PRIX_VENTE_ADH,
+		ROUND(PV.PVEN6,3) as PRIX_VENTE_PUBLIC,
+		PARVT as PRIX_ACHAT_BRUT,
 		DIAA1 as SUR_TARIF,
-		TANU0 as ECOTAXE									-- L'ecotaxe dans la table ATABLEP1
+		TANU0 as ECOTAXE,									-- L'ecotaxe dans la table ATABLEP1
+		DARCS as SIECLE_CREATION,DARCA as ANNEE_CREATION,DARCM as MOIS_CREATION,DARCJ as JOUR_CREATION
 from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 			left outer join ${prefix_base_rubis}GESTCOM.AARFOUP1 A_F
 				on A.NOART=A_F.NOART and A.FOUR1=A_F.NOFOU
 			left join ${prefix_base_rubis}GESTCOM.AFOURNP1 F
 				on A_F.NOFOU=F.NOFOU
-			left join ${prefix_base_rubis}GESTCOM.ATARPVP1 T
-				on A.NOART=T.NOART
+			left join ${prefix_base_rubis}GESTCOM.ATARPVP1 PV
+				on A.NOART=PV.NOART
 			left join ${prefix_base_rubis}GESTCOM.ATARPAP1 PR
 				on A.NOART=PR.NOART
 			left join ${prefix_base_rubis}GESTCOM.ATABLEP1 TAXE
 				on A.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where	ETARE=''
-	and T.AGENC ='AFA'
-	and T.PVT09	='E' -- tarif de vente en cours
+	and PV.AGENC ='AFA'
+	and PV.PVT09	='E' -- tarif de vente en cours
 	and PR.AGENC='AFA'
 	and PR.PRV03='E' -- tarif de revient en cours
 	and A.ARDIV<>'OUI'
@@ -55,7 +57,7 @@ my $mysql = Mysql->connect($cfg->{MYSQL_HOST},$cfg->{MYSQL_BASE},$cfg->{MYSQL_US
 $mysql->selectdb($cfg->{MYSQL_BASE}) or die "Peux pas selectionner la base mysql";
 
 print print_time()."Suppression de la base ...";
-$mysql->query("DROP TABLE article;");
+$mysql->query("DROP TABLE IF EXISTS article;");
 $mysql->query(join('',<DATA>)); # construction de la table si elle n'existe pas
 print " ok\n";
 
@@ -68,6 +70,20 @@ while($loginor->FetchRow()) {
 	my $servi_sur_stock = $row{'SERVI_SUR_STOCK'}	eq 'OUI' ? 1:0;
 	my $sur_tarif		= $row{'SUR_TARIF'}			eq 'OUI' ? 1:0;
 
+	#calcul du prix public
+	$row{'TARIF_PUBLIC'} = $row{'PRIX_VENTE_PUBLIC'}; # on prend le champ réservé en premier lieu
+
+	if ($row{'TARIF_PUBLIC'} < $row{'PRIX_ACHAT_BRUT'}) { # si le tarif public est inférieur au prix d'achat sans remise, on prend le plus haut
+		$row{'TARIF_PUBLIC'} = $row{'PRIX_ACHAT_BRUT'};
+	}
+
+	if ($row{'TARIF_PUBLIC'} < $row{'PRIX_VENTE_ADH'}) {
+		$row{'TARIF_PUBLIC'} = 0 ; # si le prix public est inférieur au prix adh --> prix négocier donc prix public NC
+	}
+
+	# date de creation de l'article
+	$row{'DATE_CREATION'}		= "$row{SIECLE_CREATION}$row{ANNEE_CREATION}-$row{MOIS_CREATION}-$row{JOUR_CREATION}";
+
 	my @chemin = ();
 	push @chemin, $row{'ACTIVITE'}		if $row{'ACTIVITE'} ;
 	push @chemin, $row{'FAMILLE'}		if $row{'FAMILLE'} ;
@@ -76,7 +92,7 @@ while($loginor->FetchRow()) {
 	push @chemin, $row{'SOUSCHAPITRE'}	if $row{'SOUSCHAPITRE'} ;
 	my $chemin = join('.',@chemin);
 	
-	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_brut,prix_net,sur_tarif,ecotaxe) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_NET}','$row{PRIX_NET}','$sur_tarif','$row{ECOTAXE}');") or warn( Dumper(\%row) );
+	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_net,prix_public,sur_tarif,ecotaxe,date_creation) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_VENTE_ADH}','$row{PRIX_PUBLIC}','$sur_tarif','$row{ECOTAXE}','$row{DATE_CREATION}');") or warn( Dumper(\%row) );
 }
 close F ;
 print " ok\n";
@@ -124,11 +140,11 @@ CREATE TABLE IF NOT EXISTS `article` (
   `fournisseur` varchar(35) default NULL,
   `ref_fournisseur` varchar(255) default NULL,
   `ref_fournisseur_condensee` varchar(255) default NULL,
-  `prix_brut` decimal(10,2) default NULL,
   `prix_net` decimal(10,2) default NULL,
+  `prix_public` decimal(10,2) default NULL,
   `sur_tarif` tinyint(1) NOT NULL,
   `ecotaxe` decimal(10,2) default NULL,
-  `suspendu` tinyint(1) NOT NULL DEFAULT '0',
+  `date_creation` date NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code_article` (`code_article`),
   KEY `fourn` (`fournisseur`)
