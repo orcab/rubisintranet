@@ -171,7 +171,23 @@ function check_enter_on_gencode(e) {
 
 	<h3 id="titre3"><?=$message?></h3>
 
-<? if (sizeof($resultats) >= 1) { // on a deja saisie un code, on propose de la valider l'article ?>
+<? if (sizeof($resultats) >= 1) { // on a deja saisie un code, on propose de la valider l'article
+
+		// on charge les images en mémoire
+		define('PREFIX_IMAGE_PATH','../tarif2/miniatures/');
+
+		$IMAGES = array();
+		if (file_exists('../outils/plan_de_vente/images_data.php'))
+			include '../outils/plan_de_vente/images_data.php';
+		else
+			echo ("Impossible de charger le fichier de cache des images");
+		//print_r($IMAGES);exit;
+
+		$resultats[0]['NOART']	= trim($resultats[0]['NOART']);
+		$resultats[0]['NOFOU']	= trim($resultats[0]['NOFOU']);
+		$resultats[0]['REFFO']	= trim($resultats[0]['REFFO']);
+		$resultats[0]['DESI1']	= trim($resultats[0]['DESI1']);
+?>
 	<table>
 		<tr>
 			<th>Code</th>
@@ -179,24 +195,30 @@ function check_enter_on_gencode(e) {
 			<th>Réf</th>
 		</tr>
 		<tr>
-			<td id="code_<?=$i+1?>"><?=trim($resultats[0]['NOART'])?></td>
-			<td><br/><?=trim($resultats[0]['NOFOU'])?></td>
-			<td><?=trim($resultats[0]['REFFO'])?></td>
+			<td><?=$resultats[0]['NOART']?></td>
+			<td><br/><?=$resultats[0]['NOFOU']?></td>
+			<td><?=$resultats[0]['REFFO']?></td>
 		</tr>
 		<tr>
-			<td colspan="3" style="margin-bottom:10px;border-bottom:dotted 1px green;color:#BB0;"><?=trim($resultats[0]['DESI1'])?></td>
+			<td colspan="3" style="margin-bottom:10px;border-bottom:dotted 1px green;color:#BB0;"><?=$resultats[0]['DESI1']?></td>
 		</tr>
 	</table>
 	<br/>
 	<table>
 		<tr>
 			<td><input type="submit" height="30" value="    OK    "/></td>
-			<td><input type="button" height="30" value="  ANNULER  "/></td>
+			<td><input type="button" height="30" value="  ANNULER  " onclick="document.location.href='photo_indexer.php';"/></td>
 		</tr>
 	</table>
+<?				if (array_key_exists($resultats[0]['NOART'],$IMAGES)) { // il y a une photo ?>
+						<div style="margin:auto;">
+						<br/>
+							<center><img class="photo" width="120" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$resultats[0]['NOART']][0]?>"/></center>
+						</div>
+<?				} ?>
 
 	<input type="hidden" name="what" value="valide_gencode" />
-	<input type="hidden" name="noart" value="<?=trim($resultats[0]['NOART'])?>" />
+	<input type="hidden" name="noart" value="<?=$resultats[0]['NOART']?>" />
 
 <?	} else { // fin if resultat
 		// 	aucun code barre de saisie, on propose la saisie ?>
