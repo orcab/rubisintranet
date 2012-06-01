@@ -18,8 +18,20 @@ define('TAUX',3);
 
 $where = array();
 $where[] = "artisan<>'EDITION'";
+
+// PARAMETRE "REPRESENTANT"
 if (isset($_GET['representant']) && $_GET['representant'] != 'tous')
 	$where[] = "representant='".mysql_escape_string($_GET['representant'])."'";
+
+// PARAMETRE "DATE_START"
+if (isset($_GET['date_start']))
+	$where[] = "`date`>='".mysql_escape_string($_GET['date_start'])."-01'";
+
+// PARAMETRE "DATE_END"
+if (isset($_GET['date_end']))
+	$where[] = "`date`<='".mysql_escape_string($_GET['date_end'])."-31'";
+
+
 $where = join(' AND ',$where);
 
 //chargement des données

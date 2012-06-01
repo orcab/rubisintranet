@@ -20,6 +20,14 @@
 <!-- include du style des tooltip, d'autre disponible -->
 <link rel="stylesheet" href="js/tip-darkgray/tip-darkgray.css" type="text/css" /> 
 <link rel="stylesheet" href="js/tip-darkgray/tip-darkgray2.css" type="text/css" /> 
+
+<style>
+/* GOOGLE HACK Pour supprimer le lien Terms of use en bas a droite et le lien GOOGLE en bas a gauche de la carte qui fait des bugs de navigation */
+.gmnoprint, .gmnoscreen, a[href^="http://www.google.com"], div#map_canvas > div > div:nth-child(2) {
+	display:none;
+}
+</style>
+
 <script type="text/javascript">
 
 var markersArray = []; //Tableau pour l'affichage du point rouge sur la carte
