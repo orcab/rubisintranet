@@ -1,12 +1,20 @@
 <?
 
 include('../inc/config.php');
+include('google_calendar.php');
 include('../inc/iCalParser/ical-parser-class.php');
 include ('../inc/jpgraph/src/jpgraph.php');
 include ('../inc/jpgraph/src/jpgraph_bar.php');
 
 define('PLOMBIER',   1 << 0);
 define('ELECTRICIEN',1 << 1);
+
+// PARAMETRE "DATE_START"
+$date_start = isset($_GET['date_start'])	? (int)str_replace('-','',$_GET['date_start'])	: '' ; // $date_start = 200805 (int)
+
+// PARAMETRE "DATE_END"
+$date_end	= isset($_GET['date_end'])		? (int)str_replace('-','',$_GET['date_end'])	: '' ;// $date_end = 201106 (int)
+
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
@@ -19,7 +27,7 @@ while ($row = mysql_fetch_array($res))
 
 $stats = array(); // format $adherent[056089] = 56 rdv ;
 
-if ($stream = join('',file('http://www.google.com/calendar/ical/expo%40coopmcs.com/private-3ae63b499166ac392e09e8a0a890dccd/basic.ics'))) { // telecharge le fichier chez google
+if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier chez google
 //if ($stream = join('',file('expo.ics'))) { // telecharge le fichier chez google
 	
 	$ical = new iCal();
@@ -33,14 +41,34 @@ if ($stream = join('',file('http://www.google.com/calendar/ical/expo%40coopmcs.c
 			&&  !preg_match('/0?56039/',$e['SUMMARY'])	// pas de la cab
 			&&	preg_match('/(0?56\d{3})/',$e['SUMMARY'],$regs)	// un adhérent est renseigné
 			) {
-		
-			if (strlen($regs[1]) == 5) $regs[1] = '0'.$regs[1];
-			//echo $e['SUMMARY']." ".$regs[1]."\n";
 
-			if (isset($stats[$regs[1]]))
-				$stats[$regs[1]]++;
+			$adh = $regs[1];
+		
+			$nom_cle_start = '';
+			foreach($e as $key=>$val) {
+					if (substr($key,0,7) == 'DTSTART') {
+						$nom_cle_start = $key;
+						break;
+					}
+			}
+
+			$date_annee = substr($e[$nom_cle_start],0,4) ;
+			$date_mois = substr($e[$nom_cle_start],4,2) ;
+			
+			$date_event = (int)($date_annee.$date_mois);
+			//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
+			if ($date_start && $date_end && ($date_event < $date_start || $date_event > $date_end)) { // on rejette
+				//echo "Date d'event hors limit --> rejette\n<br>";
+				continue;
+			}
+
+			if (strlen($adh) == 5) $adh = '0'.$adh;
+			//echo $e['SUMMARY']." ".$adh."\n";
+
+			if (isset($stats[$adh]))
+				$stats[$adh]++;
 			else
-				$stats[$regs[1]] = 1;
+				$stats[$adh] = 1;
 
 		} // fin if RDV|VISITE|PROSPECT
 	} 

@@ -1,6 +1,7 @@
 <?
 
 include('../inc/config.php');
+include('google_calendar.php');
 include('../inc/iCalParser/ical-parser-class.php');
 include('../inc/jpgraph/src/jpgraph.php');
 include('../inc/jpgraph/src/jpgraph_line.php');
@@ -20,6 +21,26 @@ define('RDV',4);
 define('VISITE',5);
 define('PROSPECT',6);
 
+$date_start = '';
+$date_end	= '';
+
+$where = array();
+$where[] = "artisan<>'EDITION'";
+
+// PARAMETRE "DATE_START"
+if (isset($_GET['date_start'])) {
+	$where[] = "`date`>='".mysql_escape_string($_GET['date_start'])."-01'";
+	$date_start = (int)str_replace('-','',$_GET['date_start']);
+}
+
+// PARAMETRE "DATE_END"
+if (isset($_GET['date_end'])) {
+	$where[] = "`date`<='".mysql_escape_string($_GET['date_end'])."-31'";
+	$date_end = (int)str_replace('-','',$_GET['date_end']);
+}
+
+$where = join(' AND ',$where);
+
 //chargement des données
 // calcul du taux de devis/cmd de la salle
 $sql = <<<EOT
@@ -28,7 +49,7 @@ SELECT  DISTINCT ( DATE_FORMAT( `date` , '%b %Y' )) AS date_formater,
 		DATE_FORMAT( `date` , '%Y' ) AS annee,
         COUNT(id) AS nb_devis
 FROM  devis
-WHERE artisan<>'EDITION'
+WHERE $where
 GROUP BY date_formater
 ORDER BY `date` ASC
 EOT;
@@ -44,7 +65,7 @@ WHERE     num_cmd_rubis NOT LIKE 'ANNULE'
       AND num_cmd_rubis NOT LIKE 'SUSPENDU'
       AND num_cmd_rubis IS NOT NULL
       AND num_cmd_rubis <> ''
-	  AND artisan<>'EDITION'
+	  AND $where
 GROUP BY date_formater
 ORDER BY `date` ASC
 EOT;
@@ -88,7 +109,7 @@ foreach($cmd_rubis as $vals)
 // chargement des données rdv et visite
 $cumul = array('RDV' => array() , 'VISITE' => array() , 'PROSPECT' => array() );
 	
-	if ($stream = join('',file('http://www.google.com/calendar/ical/oi3c84064vjruvmkrsbbgn69go%40group.calendar.google.com/private-b5ad0090953fcf19110ac0be6aaeb152/basic.ics'))) { // telecharge le fichier chez google
+	if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier chez google
 	//if ($stream = join('',file('basic.ics'))) { // telecharge le fichier chez google
 		
 		$ical = new iCal();
@@ -111,6 +132,13 @@ $cumul = array('RDV' => array() , 'VISITE' => array() , 'PROSPECT' => array() );
 
 				$date_annee = substr($e[$nom_cle_start],0,4) ;
 				$date_mois = substr($e[$nom_cle_start],4,2) ;
+
+				$date_event = (int)($date_annee.$date_mois);
+				//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
+				if ($date_start && $date_end && ($date_event < $date_start || $date_event > $date_end)) { // on rejette
+					//echo "Date d'event hors limit --> rejette\n<br>";
+					continue;
+				}
 
 				$date = $mois[$date_mois - 1].' '.$date_annee ;
 				
