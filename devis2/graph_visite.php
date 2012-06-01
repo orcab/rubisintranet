@@ -16,6 +16,14 @@ define('RDV',4);
 define('VISITE',5);
 define('PROSPECT',6);
 
+
+// PARAMETRE "DATE_START"
+$date_start = isset($_GET['date_start'])	? (int)str_replace('-','',$_GET['date_start'])	: '' ; // $date_start = 200805 (int)
+
+// PARAMETRE "DATE_END"
+$date_end	= isset($_GET['date_end'])		? (int)str_replace('-','',$_GET['date_end'])	: '' ;// $date_end = 201106 (int)
+
+
 // chargement des données rdv et visite
 	//if ($stream = join('',file('basic.ics'))) { // telecharge le fichier chez google
 	if ($stream = join('',file('http://www.google.com/calendar/ical/oi3c84064vjruvmkrsbbgn69go%40group.calendar.google.com/private-b5ad0090953fcf19110ac0be6aaeb152/basic.ics'))) { // telecharge le fichier chez google
@@ -40,6 +48,14 @@ define('PROSPECT',6);
 
 				$date_annee = substr($e[$nom_cle_start],0,4) ;
 				$date_mois = substr($e[$nom_cle_start],4,2) ;
+				
+				$date_event = (int)($date_annee.$date_mois);
+				//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
+				if ($date_start && $date_end && ($date_event < $date_start || $date_event > $date_end)) { // on rejette
+					//echo "Date d'event hors limit --> rejette\n<br>";
+					continue;
+				}
+
 
 				//$date = $mois[$date_mois - 1].' '.$date_annee ;
 				$date = $date_annee.'-'.$date_mois;
