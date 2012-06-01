@@ -1,6 +1,7 @@
 <?
 
 include('../inc/config.php');
+include('google_calendar.php');
 include('../inc/iCalParser/ical-parser-class.php');
 include('../inc/jpgraph/src/jpgraph.php');
 include('../inc/jpgraph/src/jpgraph_line.php');
@@ -26,7 +27,7 @@ $date_end	= isset($_GET['date_end'])		? (int)str_replace('-','',$_GET['date_end'
 
 // chargement des données rdv et visite
 	//if ($stream = join('',file('basic.ics'))) { // telecharge le fichier chez google
-	if ($stream = join('',file('http://www.google.com/calendar/ical/oi3c84064vjruvmkrsbbgn69go%40group.calendar.google.com/private-b5ad0090953fcf19110ac0be6aaeb152/basic.ics'))) { // telecharge le fichier chez google
+	if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier chez google
 		
 		$ical = new iCal();
 		$events = $ical->iCalStreamDecoder($stream);

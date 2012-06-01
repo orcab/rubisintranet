@@ -41,16 +41,16 @@ function reload_graph_cde() {
 
 
 
-function reload_graph_visite() {
-	var date_start	= $('#date_visite_start').val();
-	var date_end	= $('#date_visite_end').val();
+function reload_graph(champs,element) {
+	var date_start	= $('#'+champs+'_start').val();
+	var date_end	= $('#'+champs+'_end').val();
 
 	if (parseInt(date_start.replace(/-/,'')) > parseInt(date_end.replace(/-/,''))) {
 		alert("Attention, la date de départ est supérieur à la date de fin");
 		return;
 	}
 
-	$('#graph_visite').attr('src','graph_visite.php?'+
+	$('#'+element).attr('src',element+'.php?'+
 		'&date_start='+date_start+
 		'&date_end='+date_end
 	);
@@ -66,7 +66,7 @@ function reload_graph_visite() {
 <form name="cde">
 
 
-<!-- Graphique des devis réalisés -->
+<!-- GRAPHIQUE DES DEVIS RÉALISÉS -->
 	<fieldset>
 		<legend>
 			<select id="choix_representant" name="choix_representant">
@@ -128,7 +128,7 @@ et le <select id="date_cde_end" name="date_cde_end">
 <br/>
 
 
-<!-- Graphique des visites en salle expo -->
+<!-- GRAPHIQUE DES VISITES EN SALLE EXPO -->
 <fieldset>
 	<legend>
 		Entre le <select id="date_visite_start" name="date_visite_start">
@@ -148,28 +148,101 @@ et le <select id="date_cde_end" name="date_cde_end">
 				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
-		<input type="button" class="valider button" value="OK" onclick="reload_graph_visite();"/>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_visite','graph_visite');"/>
 	</legend>
 	<img id="graph_visite" src="graph_visite.php" style="margin-bottom:20px;" />
 </fieldset>
 <br/>
 
+
+
+<!-- GRAPHIQUE QUI MIXTE LES VISITES ET LES DEVIS -->
+<fieldset>
+	<legend>
+		Entre le <select id="date_mixte_start" name="date_mixte_start">
+<?			// POUR SELECTIONNER UNE DATE DE DEPART
+			$i=0;
+			mysql_data_seek($res,0); // reset le curseur
+			while($row = mysql_fetch_array($res)) { ?>
+				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+<?			} ?>
+			</select>
+
+			et le <select id="date_mixte_end" name="date_mixte_end">
+<?			// POUR SELECTIONNER UNE DATE DE FIN
+			$i=0;
+			mysql_data_seek($res,0); // reset le curseur
+			while($row = mysql_fetch_array($res)) { ?>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+<?			} ?>
+			</select>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_mixte','graph2');"/>
+	</legend>
+<img id="graph2" src="graph2.php" style="margin-bottom:20px;" />
+</fieldset>
+
+
+<!-- RÉSULTAT AU FORMAT EXCEL -->
+<div style="margin:auto;width:50%;border:solid 1px grey;padding:10px;"><a href="stats_devis.php">Télécharger les stats au format Excel</a></div>
+
+
+
+<br/>
+<!-- RENDEZ-VOUS PAR ADHÉRENT -->
+<fieldset>
+	<legend>
+		Entre le <select id="date_adh_start" name="date_adh_start">
+<?			// POUR SELECTIONNER UNE DATE DE DEPART
+			$i=0;
+			mysql_data_seek($res,0); // reset le curseur
+			while($row = mysql_fetch_array($res)) { ?>
+				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+<?			} ?>
+			</select>
+
+			et le <select id="date_adh_end" name="date_adh_end">
+<?			// POUR SELECTIONNER UNE DATE DE FIN
+			$i=0;
+			mysql_data_seek($res,0); // reset le curseur
+			while($row = mysql_fetch_array($res)) { ?>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+<?			} ?>
+			</select>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_adh','graph_adh');"/>
+	</legend>
+<img id="graph_adh" src="graph_adh.php" style="margin-bottom:20px;" />
+</fieldset>
+
+
+
+
+<br/>
+<!-- CAMEMBERT PAR ACTIVITÉ -->
+<fieldset>
+	<legend>
+		Entre le <select id="date_act_start" name="date_act_start">
+<?			// POUR SELECTIONNER UNE DATE DE DEPART
+			$i=0;
+			mysql_data_seek($res,0); // reset le curseur
+			while($row = mysql_fetch_array($res)) { ?>
+				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+<?			} ?>
+			</select>
+
+			et le <select id="date_act_end" name="date_act_end">
+<?			// POUR SELECTIONNER UNE DATE DE FIN
+			$i=0;
+			mysql_data_seek($res,0); // reset le curseur
+			while($row = mysql_fetch_array($res)) { ?>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+<?			} ?>
+			</select>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_act','graph_act');"/>
+	</legend>
+	<img id="graph_act" src="graph_act.php" style="margin-bottom:20px;" />
+</fieldset>
+
 </form>
-
-<!-- Graphique qui mixte les visites et les devis -->
-<img src="graph2.php" style="margin-bottom:20px;" />
-
-
-
-<div style="margin:auto;width:50%;border:solid 1px grey;padding:10px;"><a href="stats_devis.php">Télécharger les stats au format Excel</div>
-
-<br/>
-<!-- Rendez-vous par adhérent -->
-<img src="graph_adh.php" style="margin-bottom:20px;" />
-
-<br/>
-<!-- Camembert par activité -->
-<img src="graph_act.php" style="margin-bottom:20px;" />
 
 </center>
 
