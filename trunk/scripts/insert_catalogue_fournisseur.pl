@@ -152,6 +152,8 @@ EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
 
+
+my %code_mcs_deja_vu = ();
 print print_time()."Insertion des articles crees ...";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
@@ -194,6 +196,7 @@ while($loginor->FetchRow()) {
 		"'$row{ECOTAXE}'".
 	")");
 	if ($sqlite->err()) { warn "$DBI::errstr\n"; }
+	$code_mcs_deja_vu{$row{'NOART'}} = 1 ; # on enregsitre qu'il existe deja un article avec ce code mcs pour ne pas faire de doublon avec le catalfou
 }
 print " ok\n";
 
@@ -269,6 +272,10 @@ while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
 	#print Dumper(\%row);
 	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
+
+	if ($code_mcs_deja_vu{$row{'ACBC09'}} == 1) { # on a deja sauvé l'article dans la base des article crée --> on saute pour éviter les doublons
+		next;
+	}
 
 	if (!$row{'ACBRE1'}) { $row{'ACBRE1'} = 0; }
 	if (!$row{'ACBRE2'}) { $row{'ACBRE2'} = 0; }

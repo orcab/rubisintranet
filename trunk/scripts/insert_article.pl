@@ -26,7 +26,7 @@ select	A.NOART as CODE_ARTICLE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
 		ROUND(PV.PVEN1,3) as PRIX_VENTE_ADH,
 		ROUND(PV.PVEN6,3) as PRIX_VENTE_PUBLIC,
-		PARVT as PRIX_ACHAT_BRUT,
+		PARVT as PRIX_ACHAT_BRUT, RMRV1 as REMISE1, RMRV2 as REMISE2, RMRV3 as REMISE3,PRVT2 as PRIX_ACHAT_NET,
 		DIAA1 as SUR_TARIF,
 		TANU0 as ECOTAXE,									-- L'ecotaxe dans la table ATABLEP1
 		DARCS as SIECLE_CREATION,DARCA as ANNEE_CREATION,DARCM as MOIS_CREATION,DARCJ as JOUR_CREATION
@@ -92,7 +92,7 @@ while($loginor->FetchRow()) {
 	push @chemin, $row{'SOUSCHAPITRE'}	if $row{'SOUSCHAPITRE'} ;
 	my $chemin = join('.',@chemin);
 	
-	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_net,prix_public,sur_tarif,ecotaxe,date_creation) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_VENTE_ADH}','$row{PRIX_PUBLIC}','$sur_tarif','$row{ECOTAXE}','$row{DATE_CREATION}');") or warn( Dumper(\%row) );
+	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_achat_brut,prix_revient,prix_net,prix_public,remise1,remise2,remise3,sur_tarif,ecotaxe,date_creation) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_ACHAT_BRUT}','$row{PRIX_ACHAT_NET}','$row{PRIX_VENTE_ADH}','$row{PRIX_PUBLIC}','$row{REMISE1}','$row{REMISE2}','$row{REMISE3}','$sur_tarif','$row{ECOTAXE}','$row{DATE_CREATION}');") or warn( Dumper(\%row) );
 }
 close F ;
 print " ok\n";
@@ -123,29 +123,34 @@ sub print_time {
 
 __DATA__
 CREATE TABLE IF NOT EXISTS `article` (
-  `id` int(11) NOT NULL auto_increment,
-  `code_article` varchar(15) NOT NULL,
-  `designation` varchar(122) default NULL COMMENT 'trois fois 40 car + 2CR',
-  `gencod` varchar(13) default NULL COMMENT 'code barre',
-  `servi_sur_stock` tinyint(1) NOT NULL,
-  `conditionnement` int(11) default NULL,
-  `surconditionnement` int(11) default NULL,
-  `unite` enum('BTE','CEN','COL','HEU','KG','L','MIL','ML','M2','M3','PCE','PLA','SAC','TON','UN') NOT NULL,
-  `activite` varchar(3) default NULL,
-  `famille` varchar(3) default NULL,
-  `sousfamille` varchar(3) default NULL,
-  `chapitre` varchar(3) default NULL,
-  `souschapitre` varchar(3) default NULL,
-  `chemin` varchar(19) NOT NULL,
-  `fournisseur` varchar(35) default NULL,
-  `ref_fournisseur` varchar(255) default NULL,
-  `ref_fournisseur_condensee` varchar(255) default NULL,
-  `prix_net` decimal(10,2) default NULL,
-  `prix_public` decimal(10,2) default NULL,
-  `sur_tarif` tinyint(1) NOT NULL,
-  `ecotaxe` decimal(10,2) default NULL,
-  `date_creation` date NOT NULL,
-  PRIMARY KEY  (`id`),
-  UNIQUE KEY `code_article` (`code_article`),
-  KEY `fourn` (`fournisseur`)
+	`id` int(11) NOT NULL auto_increment,
+	`code_article` varchar(15) NOT NULL,
+	`designation` varchar(122) default NULL COMMENT 'trois fois 40 car + 2CR',
+	`gencod` varchar(13) default NULL COMMENT 'code barre',
+	`servi_sur_stock` tinyint(1) NOT NULL,
+	`conditionnement` int(11) default NULL,
+	`surconditionnement` int(11) default NULL,
+	`unite` enum('BTE','CEN','COL','HEU','KG','L','MIL','ML','M2','M3','PCE','PLA','SAC','TON','UN') NOT NULL,
+	`activite` varchar(3) default NULL,
+	`famille` varchar(3) default NULL,
+	`sousfamille` varchar(3) default NULL,
+	`chapitre` varchar(3) default NULL,
+	`souschapitre` varchar(3) default NULL,
+	`chemin` varchar(19) NOT NULL,
+	`fournisseur` varchar(35) default NULL,
+	`ref_fournisseur` varchar(255) default NULL,
+	`ref_fournisseur_condensee` varchar(255) default NULL,
+	`prix_achat_brut` decimal(10,2) default NULL,
+	`prix_revient` decimal(10,2) default NULL,
+	`prix_net` decimal(10,2) default NULL,
+	`prix_public` decimal(10,2) default NULL,
+	`remise1` int(11) default NULL,
+	`remise2` int(11) default NULL,
+	`remise3` int(11) default NULL,
+	`sur_tarif` tinyint(1) NOT NULL,
+	`ecotaxe` decimal(10,2) default NULL,
+	`date_creation` date NOT NULL,
+	PRIMARY KEY  (`id`),
+	UNIQUE KEY `code_article` (`code_article`),
+	KEY `fourn` (`fournisseur`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
