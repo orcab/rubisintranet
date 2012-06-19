@@ -590,7 +590,7 @@ $(document).ready(function(){
 	</tr>
 <?	
 	$sql = <<<EOT
-SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_revient,prix_net,prix_achat_brut,remise1,remise2,remise3,sur_tarif,conditionnement,unite,date_creation,
+SELECT	code_article,fournisseur,ref_fournisseur,chemin,designation,servi_sur_stock,prix_revient,prix_net,prix_achat_brut,remise1,remise2,remise3,sur_tarif,conditionnement,unite,date_creation,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
@@ -649,8 +649,8 @@ EOT;
 				<?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['ref_fournisseur']) : $row['ref_fournisseur']?>
 			</td>
 			<!-- designation -->
-			<td class="designation" style="font-size:8px;">
-				<pre>
+			<td class="designation" style="font-size:9px;">
+				<pre style="font-size:9px;">
 <?				// si l'article a moins de deux mois, on affiche un logo nouveau
 				$date_creation	= date_create($row['date_creation']);
 				$now			= date_create('now');
@@ -672,6 +672,9 @@ EOT;
 <?				if ($row['conditionnement'] > 1) { ?>
 					<strong class="condi">Vendu par <?=$row['conditionnement']?><?=$row['unite']?></strong>
 <?				} ?>
+
+				<!-- article similaire -->
+				<div style="text-align:right;"><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><img src="gfx/loupe.png" style="vertical-align:bottom;"/> Articles similiares</a></div>
 			</td>
 			
 			<!-- gestion des stock -->
