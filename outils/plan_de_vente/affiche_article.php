@@ -538,8 +538,35 @@ $(document).ready(function(){
 </div>
 <? } ?>
 
+<style>
+
+table#entete { width:100%; }
+table#entete #chemin {
+	text-align:left;
+	vertical-align:top;
+	border:solid 1px #0C3A6D;
+	color:white;
+	background-color:#0C3A6D;
+	font-size:0.8em;
+}
+table#entete #chemin div {
+	width:69%;
+	text-align:left;
+	float:left;
+}
+
+table#entete #chemin a {
+	color:white;
+	font-weight:bold;
+}
+
+a:hover {
+	text-decoration:underline;
+}
+</style>
+
 <!-- entete + bouton de selection -->
-	<table style="width:100%;">
+	<table id="entete">
 	<tr>
 		<!-- photo -->
 		<td rowspan="2" class="photo" style="text-align:left;vertical-align:middle;">
@@ -547,15 +574,30 @@ $(document).ready(function(){
 					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$_SESSION['chemin']][0]?>"/>
 <?				} ?>
 		</td>
-		<td style="text-align:left;border:none;vertical-align:top;">
-<?			if (isset($_SESSION['chemin'])) { ?>
-				[<?=$_SESSION['chemin']?>] <b><?=e('libelle',mysql_fetch_array(mysql_query("SELECT libelle FROM pdvente WHERE chemin='".mysql_escape_string($_SESSION['chemin'])."'")))?></b>
-<?			} 
-		
+		<td id="chemin">
+			<div>&nbsp;
+<?			if (isset($_SESSION['chemin'])) {
+				
+				// décortique le chemin pour retrouver les libéllés
+				$codes_chemin = explode('.',$_SESSION['chemin']);
+				$condition = array();
+				for($i=0 ; $i<sizeof($codes_chemin); $i++) {
+					$condition[] = "chemin='".join('.',array_slice($codes_chemin,0,$i+1))."'" ;
+				}
+
+				$res = mysql_query("SELECT chemin,libelle FROM pdvente WHERE ".join(" OR ",$condition)." ORDER BY chemin ASC") or die("Ne peux pas retrouver les libéllés des familles ".mysql_error()); // recupere tous les libellés
+				$i=0;
+				while($row = mysql_fetch_array($res)) { //$chemin_libelle[] = $row['libelle']; ?>
+					<?= $i>0 ? ' &rArr; ':'' ?><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=join('.',array_slice($codes_chemin,0,$i+1))?>"><?=$row['libelle']?></a>
+<?					$i++;
+				} ?>
+<?			}
+
 			if (isset($_SESSION['search_text'])) { ?>
 				Recherche de [<b><?=$_SESSION['search_text']?></b>]
 <?			}  ?>
-		</td>
+		</div>
+</td>
 	</tr>
 <? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 	<tr>
@@ -567,6 +609,7 @@ $(document).ready(function(){
 	</tr>
 <? } ?>
 	</table>
+
 
 <table id="article">
 	<tr>
@@ -674,7 +717,7 @@ EOT;
 <?				} ?>
 
 				<!-- article similaire -->
-				<div style="text-align:right;"><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><img src="gfx/loupe.png" style="vertical-align:bottom;"/> Articles similiares</a></div>
+				<div style="text-align:right;"><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><img src="gfx/loupe.png" style="vertical-align:bottom;"/>Articles similaires</a></div>
 			</td>
 			
 			<!-- gestion des stock -->
