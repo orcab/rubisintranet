@@ -141,6 +141,15 @@ div#photo {
 	z-index:99;
 }
 
+td.prix_net {
+	font-size:1.1em;
+	font-weight:bold;
+}
+
+td.prix_revient {
+	font-size:0.9em;
+}
+
 </style>
 <style type="text/css">@import url(../../js/boutton.css);</style>
 <style type="text/css">@import url(../../js/infobulle.css);</style>
@@ -573,14 +582,15 @@ $(document).ready(function(){
 		<? } ?>
 		<th class="servi_sur_stock" nowrap>S<a href="affiche_article.php?order=servi_sur_stock ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=servi_sur_stock DESC"><img src="/intranet/gfx/desc.png"></th>
 		<th class="sur_tarif" nowrap>T<a href="affiche_article.php?order=sur_tarif ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=sur_tarif DESC"><img src="/intranet/gfx/desc.png"></th>
-		<th class="prix_net" nowrap>Prix<a href="affiche_article.php?order=prix_net ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=prix_net DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="prix_revient" nowrap>PR<a href="affiche_article.php?order=prix_revient ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=prix_revient DESC"><img src="/intranet/gfx/desc.png"></th>
+		<th class="prix_net" nowrap>PV<a href="affiche_article.php?order=prix_net ASC"><img src="/intranet/gfx/asc.png"></a><a href="affiche_article.php?order=prix_net DESC"><img src="/intranet/gfx/desc.png"></th>
 		<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 			<th nowrap>SUS</th>
 		<? } ?>
 	</tr>
 <?	
 	$sql = <<<EOT
-SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_net,sur_tarif,conditionnement,unite,date_creation,
+SELECT	code_article,fournisseur,ref_fournisseur,designation,servi_sur_stock,prix_revient,prix_net,prix_achat_brut,remise1,remise2,remise3,sur_tarif,conditionnement,unite,date_creation,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
@@ -639,7 +649,7 @@ EOT;
 				<?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['ref_fournisseur']) : $row['ref_fournisseur']?>
 			</td>
 			<!-- designation -->
-			<td class="designation" style="font-size:9px;">
+			<td class="designation" style="font-size:8px;">
 				<pre>
 <?				// si l'article a moins de deux mois, on affiche un logo nouveau
 				$date_creation	= date_create($row['date_creation']);
@@ -708,8 +718,21 @@ EOT;
 					</a>
 				<? } ?>
 			</td>
+			<!-- prix revient -->
+			<td class="prix_revient" nowrap="nowrap" title="Prix achat brut : <?=$row['prix_achat_brut']."\n"?>Remises : <?=$row['remise1']?> + <?=$row['remise2']?> + <?=$row['remise3']."\n"?>Prix revient : <?=$row['prix_revient']."\n"?>Marge/Coef : <? 
+				$coef	= $row['prix_net'] / $row['prix_revient'];
+				$marge	= 100 - (1/$coef * 100);
+				printf("%0.2f/%0.5f\n",$marge,$coef);
+			?>Prix vente : <?=$row['prix_net']."\n"?>"><?
+				if ($row['conditionnement'] > 1) {
+					printf('%d%s x %0.2f&euro;', $row['conditionnement'], $row['unite'], $row['prix_revient'] );
+					printf('<br/><small>%0.2f&euro;</small>',$row['conditionnement']*$row['prix_revient']);
+				} else {
+					printf('%0.2f&euro;',$row['prix_revient']);
+				} ?>
+			</td>
 			<!-- prix net -->
-			<td class="prix_net" nowrap><?
+			<td class="prix_net" nowrap="nowrap"><?
 				if ($row['conditionnement'] > 1) {
 					printf('%d%s x %0.2f&euro;', $row['conditionnement'], $row['unite'], $row['prix_net'] );
 					printf('<br/><small>%0.2f&euro;</small>',$row['conditionnement']*$row['prix_net']);
