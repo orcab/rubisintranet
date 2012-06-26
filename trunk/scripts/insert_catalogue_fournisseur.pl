@@ -261,7 +261,7 @@ where
 		ACBPRO='CATALFOU'	-- du catalogue fournisseur
 	and	ACBEMM<>''			-- pas de fournisseur vide
 	and ACBRFF<>''			-- pas de référence vide
-	and ACBEMM='PAULMA' and ACBRFF='93542'	-- pour les tests
+--	and ACBEMM='PAULMA' and ACBRFF='93542'	-- pour les tests
 ORDER BY ACBSPR DESC,ACBAPR DESC,ACBMPR DESC,ACBJPR DESC   -- dans l'ordre des dates d'application pour avoir les plus recents en premier
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
