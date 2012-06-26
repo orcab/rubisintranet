@@ -111,6 +111,7 @@ while($loginor->FetchRow()) {
 }
 print "ok\n";
 
+goto CATALOGUE;
 
 ARTICLE:
 print print_time()."Select des articles crees ...";
@@ -244,8 +245,10 @@ select
 	ACBRFF,								-- ref fournisseur
 	ACBDE1,ACBDE2,ACBDE3,				-- designation
 	ACBGEN,								-- gencode
-	ACBCF1,								-- coef 1
-	ACBCF6,								-- prix public
+	ACBCF1,								-- valeur pour prix 1
+	ACBCF6,								-- valeur pour prix 6
+	ACBA11,								-- type pour prix 1 (coef ou prix net) 1=coef	3=prix net
+	ACBA16,								-- type pour prix 6 (coef ou prix net) 1=coef	3=prix net
 	ACBTPA,								-- prix d'achat brut
 	ACBRE1,ACBRE2,ACBRE3,				-- remise
 	ACBSPR,ACBAPR,ACBMPR,ACBJPR,		-- date d'application
@@ -258,7 +261,7 @@ where
 		ACBPRO='CATALFOU'	-- du catalogue fournisseur
 	and	ACBEMM<>''			-- pas de fournisseur vide
 	and ACBRFF<>''			-- pas de référence vide
---	and ACBEMM='DAIKIN' and ACBRFF='EBHQ011BB6W1'	-- pour les tests
+	and ACBEMM='PAULMA' and ACBRFF='93542'	-- pour les tests
 ORDER BY ACBSPR DESC,ACBAPR DESC,ACBMPR DESC,ACBJPR DESC   -- dans l'ordre des dates d'application pour avoir les plus recents en premier
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
@@ -277,23 +280,32 @@ while($loginor->FetchRow()) {
 		next;
 	}
 
-	if (!$row{'ACBRE1'}) { $row{'ACBRE1'} = 0; }
-	if (!$row{'ACBRE2'}) { $row{'ACBRE2'} = 0; }
-	if (!$row{'ACBRE3'}) { $row{'ACBRE3'} = 0; }
+	$row{'ACBRE1'} = 0 if !$row{'ACBRE1'} ;
+	$row{'ACBRE2'} = 0 if !$row{'ACBRE2'} ;
+	$row{'ACBRE3'} = 0 if !$row{'ACBRE3'} ;
 
 	# calcul du prix d'achat net
-	my ($pa_net,$prix6) = (0,0);
+	my ($pa_net,$prix1,$prix6) = (0,0,0);
 	$pa_net = $row{'ACBTPA'} ;
 	$pa_net -= $pa_net * $row{'ACBRE1'}/100 if $row{'ACBRE1'};
 	$pa_net -= $pa_net * $row{'ACBRE2'}/100 if $row{'ACBRE2'};
 	$pa_net -= $pa_net * $row{'ACBRE3'}/100 if $row{'ACBRE3'};
 
-	# prix public
-	$prix6 = $row{'ACBCF6'} ? $row{'ACBCF6'} : $row{'ACBTPA'};
-	
-	my $reference_propre = $row{'ACBRFF'};
-	$reference_propre =~ s/[^A-Z0-9]//ig;
+	# prix adh
+	if ($row{'ACBA11'} == 1) {			# la colonne ACBCF1 est un coef
+		$prix1 = $pa_net * $row{'ACBCF1'} ;
+	} elsif ($row{'ACBA11'} == 3) {		# la colonne ACBCF1 est un prix net
+		$prix1 = $row{'ACBCF1'} ;
+	}
 
+	# prix public
+	if ($row{'ACBA11'} == 3) {			# la colonne ACBCF6 est un prix net
+		$prix6 = $row{'ACBCF6'} ? $row{'ACBCF6'} : $row{'ACBTPA'};
+	} elsif ($row{'ACBA11'} == 1) {		# la colonne ACBCF6 est un coef
+		$prix6 = $pa_net * $row{'ACBCF6'} ;
+	}
+	
+	my $reference_propre = $row{'ACBRFF'};	$reference_propre =~ s/[^A-Z0-9]//ig;
 	my $divers = DIVERS_FROM_CATALFOU;
 
 	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,reference_propre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,date_application,date_creation,date_maj,ecotaxe) VALUES (".
@@ -309,7 +321,7 @@ while($loginor->FetchRow()) {
 		"'$row{ACBRE1}',".
 		"'$row{ACBRE2}',".
 		"'$row{ACBRE3}',".
-		"'".($pa_net * $row{'ACBCF1'})."',".	# prix adh
+		"'$prix1',".	# prix adh
 		"'".($pa_net * COEF2)."',".
 		"'".($pa_net * COEF3)."',".
 		"'".($pa_net * COEF4)."',".
