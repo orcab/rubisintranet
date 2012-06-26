@@ -111,7 +111,7 @@ while($loginor->FetchRow()) {
 }
 print "ok\n";
 
-goto CATALOGUE;
+#goto CATALOGUE;
 
 ARTICLE:
 print print_time()."Select des articles crees ...";
@@ -253,6 +253,8 @@ select
 	ACBRE1,ACBRE2,ACBRE3,				-- remise
 	ACBSPR,ACBAPR,ACBMPR,ACBJPR,		-- date d'application
 	ACBC09,								-- code MCS
+	ACBCL7,								-- classe ventilation 7
+	ACBDPT,								-- activité
 	TANU0 as ECOTAXE					-- L'ecotaxe dans la table ATABLEP1
 FROM ${prefix_base_rubis}GESTCOM.ACBARTP1 CATALFOU
 		left join ${prefix_base_rubis}GESTCOM.ATABLEP1 TAXE
@@ -308,7 +310,7 @@ while($loginor->FetchRow()) {
 	my $reference_propre = $row{'ACBRFF'};	$reference_propre =~ s/[^A-Z0-9]//ig;
 	my $divers = DIVERS_FROM_CATALFOU;
 
-	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,reference_propre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,date_application,date_creation,date_maj,ecotaxe) VALUES (".
+	$sqlite->do("INSERT OR IGNORE INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,reference_propre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,date_application,date_creation,date_maj,activite,ecotaxe) VALUES (".
 		"'$row{ACBEMM}',".
 		"'$row{ACBRFF}',".
 		"'$row{ACBC09}',".
@@ -331,6 +333,7 @@ while($loginor->FetchRow()) {
 		"'".($row{'ACBSPR'} ? join('-',$row{'ACBSPR'}.$row{'ACBAPR'},$row{'ACBMPR'},$row{'ACBJPR'}) : '')."',".	# date application
 		"'".($row{'ACBDCS'} ? join('-',$row{'ACBDCS'}.$row{'ACBDCA'},$row{'ACBDCM'},$row{'ACBDCJ'}) : '')."',".	# date creation
 		"'".($row{'ACBDMS'} ? join('-',$row{'ACBDMS'}.$row{'ACBDMA'},$row{'ACBDMM'},$row{'ACBDMJ'}) : '')."',".	# date maj
+		"'".($row{'ACBDPT'} ? $row{'ACBDPT'} : $row{'ACBCL7'})."',".											# activite ou classe ventilation en fonction des infos
 		"'$row{ECOTAXE}'".
 	")") if !exists $deja_vu{"$row{ACBEMM}.$row{ACBRFF}"}; # on insere dans la base si la référence n'a pas deja été traitée
 
