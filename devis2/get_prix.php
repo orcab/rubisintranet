@@ -88,7 +88,7 @@ function insert_ligne(id) {
 			tr.children('td[class^=modification]')			.html(data.date_application_format); // date application tarif
 
 			// on ajoute une class pour le prix le plus bas
-			if (data.px_avec_coef_ecotaxe < data.px_public)
+			if (data.px_avec_coef_ecotaxe < data.px_public && data.activite != '00D')
 				tr.children('td[class^=px_avec_coef_ecotaxe]').addClass('px_utilise');
 			else
 				tr.children('td[class^=px_public]').addClass('px_utilise');

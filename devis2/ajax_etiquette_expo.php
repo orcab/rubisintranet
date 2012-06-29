@@ -6,7 +6,7 @@ if ($_GET['what'] == 'get_detail_box' && isset($_GET['val']) && $_GET['val']) { 
 	// va récupérer la liste articles (et des infos) présent dans le box
 	$sql = <<<EOT
 select
-	A.NOART,A.DESI1,
+	A.NOART,A.DESI1,A.ACTIV,
 	AF.NOFOU,AF.REFFO,
 	F.NOMFO,
 	S.LOCAL, S.LOCA2, S.LOCA3,
@@ -72,8 +72,9 @@ EOT;
 														'ecotaxe'			=> $row['ECOTAXE']
 													);
 
-		$mode	= '';
+		/*$mode	= '';
 		if	($row['PX_PUBLIC'] > 0) {
+
 			if ($row['PX_PUBLIC'] <= $row['PX_AVEC_COEF']) { // si un prix public est renseigné, on prend le moins cher des deux
 				$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = round($row['PX_PUBLIC'],2) ;
 				$mode = 'pp';
@@ -81,11 +82,31 @@ EOT;
 				$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = round($row['PX_AVEC_COEF'],2) ;
 				$mode = 'adh';
 			}
+
 		} else {
 			$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = round($row['PX_AVEC_COEF'],2);	// sinon on prend le prix calculé avec la formule
 			$mode = 'adh';
 		}
-		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = $mode;
+		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = $mode;*/
+
+
+		
+		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = 0;
+		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = '';
+
+		if		($row['PX_PUBLIC'] <= 0) {					// prix public vide, on prend le prix adh * coef
+			$articles["$row[NOFOU];$row[REFFO]"]['px_public']	= $row['PX_AVEC_COEF'];
+			$articles["$row[NOFOU];$row[REFFO]"]['mode']		= 'adh';
+
+		} elseif	($row['PX_AVEC_COEF'] < $row['PX_PUBLIC'] && $row['ACTIV'] != '00D')	{	// prix adh inférieur au prix public, on prend le prix adh * coef. ne marche pas pour les articles elec
+			$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = $row['PX_AVEC_COEF'];
+			$articles["$row[NOFOU];$row[REFFO]"]['mode']		= 'adh';
+
+		} else {										// prix public inférieur au prix adh, on prend le prix public
+			$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = $row['PX_PUBLIC'];
+			$articles["$row[NOFOU];$row[REFFO]"]['mode']		= 'pp';
+		}
+
 		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] += $row['ECOTAXE'] ; // on rajoute l'écotaxe
 
 	} // while chaque article
