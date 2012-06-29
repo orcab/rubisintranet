@@ -323,7 +323,7 @@ die "$DBI::errstr\n" if $sqlite->err();
 print "OK\n";
 
 print print_time()."Select des devis expo ...";
-my $res = $mysql->query("SELECT * FROM devis WHERE supprime=0");	# selection des devis expo actif
+my $res = $mysql->query("SELECT * FROM devis WHERE supprime=0 and code_artisan<>'' and code_artisan not null and code_artisan<>'EDITIO'");	# selection des devis expo actif
 print "OK\n";
 
 print print_time()."Insertion des devis expo dans la base SQLite ...";
@@ -633,6 +633,19 @@ $sqlite->do($sql);
 
 #index
 $sqlite->do('CREATE INDEX IF NOT EXISTS [id_devis] ON [devis_expo_detail] ([id_devis])');
+
+
+# comme le CREATE TRIGGER IF NOT EXISTS ne marche pas cette version, on est obligé de tester à la main si le trigger existe ou pas.
+@rows = $sqlite->selectrow_array("SELECT count(*) FROM sqlite_master WHERE type='trigger' AND name='cle_etrangere_devis_expo' AND tbl_name='devis_expo'") or die $sqlite->errstr;
+if ($rows[0] == 0) { # si aucun trigger --> on le créé
+	$sql = <<EOT ;
+CREATE TRIGGER "cle_etrangere_devis_expo"
+	BEFORE DELETE ON devis_expo
+	BEGIN
+		DELETE FROM devis_expo_detail WHERE id_devis=old.id;
+	END
+EOT
+	$sqlite->do($sql);
 
 $sqlite->commit; # valide les table et les trigger
 } #fin init_sqlite

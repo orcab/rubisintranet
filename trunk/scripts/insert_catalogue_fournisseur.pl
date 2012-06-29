@@ -116,8 +116,9 @@ print "ok\n";
 ARTICLE:
 print print_time()."Select des articles crees ...";
 my $sql = <<EOT;
-select	A.NOART,											-- code article
-		DESI1,DESI2,DESI3,									-- deisgnations
+select	A.ETARE,											-- suspendu ou pas
+		A.NOART,											-- code article
+		DESI1,DESI2,DESI3,									-- designations
 		GENCO,												-- gencode
 		CONDI,SURCO,LUNTA,									-- conditionnement + unité d'achat
 		ACTIV,FAMI1,SFAM1,ART04,ART05,						-- plan de vente
@@ -147,8 +148,7 @@ where
 	and A.ARDIV ='NON'
 	and A.NOART not like '15%'	-- pas d'article anciennement en expo
 	and A.ACTIV <>'00S'			-- pas d'article classé en expo
-	and A.ETARE	=''				-- article non suspendu
---	and A.NOART	='04015147'		-- pour les test
+--	and A.NOART	='02014929'		-- pour les test
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";
@@ -158,50 +158,57 @@ my %code_mcs_deja_vu = ();
 print print_time()."Insertion des articles crees ...";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
+
 	#print Dumper(\%row);
-	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
-	
-	my $reference_propre = $row{'REFFO'};
-	$reference_propre =~ s/[^A-Z0-9]//ig;
 
-	my $px_achat_expo = $row{'COMA1'};
-	$px_achat_expo =~ s/[^0-9\.,]//ig;	# supprime tout ce qui n'est pas chiffre
-	$px_achat_expo =~ s/,/\./ig;		# remplace les virgules par des points
+	if ($row{'ETARE'} eq '') { # article non suspendu
+		map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
+		
+		my $reference_propre = $row{'REFFO'};
+		$reference_propre =~ s/[^A-Z0-9]//ig;
 
-	#print "\nCOMA1:'$row{COMA1}'  \$px_achat_expo='$px_achat_expo'\n";
+		my $px_achat_expo = $row{'COMA1'};
+		$px_achat_expo =~ s/[^0-9\.,]//ig;	# supprime tout ce qui n'est pas chiffre
+		$px_achat_expo =~ s/,/\./ig;		# remplace les virgules par des points
 
-	my $divers = 0 ;
-	$divers |= ($row{'DIAA1'} eq 'OUI' ? DIVERS_SUR_TARIF : 0);
+		#print "\nCOMA1:'$row{COMA1}'  \$px_achat_expo='$px_achat_expo'\n";
 
-	$sqlite->do("INSERT INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,reference_propre,cle1,cle2,cle3,conditionnement,sur_conditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,date_application,date_creation,date_maj,prix_achat_expo,ecotaxe) VALUES (".
-		"'$row{NOFOU}',".
-		"'$row{REFFO}',".
-		"'$row{NOART}',".
-		"'$row{DESI1}','$row{DESI2}','$row{DESI3}',".
-		"'$row{GENCO}',".
-		"'$reference_propre',".
-		"'$row{AFOGE}',".
-		"'$row{AFOG2}',".
-		"'$row{AFOG3}',".
-		"'$row{CONDI}','$row{SURCO}',".
-		"'$row{LUNTA}',".
-		"'$row{ACTIV}','$row{FAMI1}','$row{SFAM1}','$row{ART04}','$row{ART05}',".
-		"'$row{PARVT}',".
-		"'$row{RMRV1}','$row{RMRV2}','$row{RMRV3}',".
-		"'$row{PVEN1}','$row{PVEN2}','$row{PVEN3}','$row{PVEN4}','$row{PVEN5}','$row{PVEN6}',".
-		"'$divers',".													# divers
-		"'".($row{'DAPCS'} ? join('-',$row{'DAPCS'}.$row{'DAPCA'},$row{'DAPCM'},$row{'DAPCJ'}) : '')."',".	# date application
-		"'".($row{'DARCS'} ? join('-',$row{'DARCS'}.$row{'DARCA'},$row{'DARCM'},$row{'DARCJ'}) : '')."',".	# date creation
-		"'".($row{'DARMS'} ? join('-',$row{'DARMS'}.$row{'DARMA'},$row{'DARMM'},$row{'DARMJ'}) : '')."',".	# date maj
-		"'$px_achat_expo',".
-		"'$row{ECOTAXE}'".
-	")");
-	if ($sqlite->err()) { warn "$DBI::errstr\n"; }
-	$code_mcs_deja_vu{$row{'NOART'}} = 1 ; # on enregsitre qu'il existe deja un article avec ce code mcs pour ne pas faire de doublon avec le catalfou
+		my $divers = 0 ;
+		$divers |= ($row{'DIAA1'} eq 'OUI' ? DIVERS_SUR_TARIF : 0);
+
+		$sqlite->do("INSERT INTO articles (code_fournisseur,reference,code_mcs,designation1,designation2,designation3,gencode,reference_propre,cle1,cle2,cle3,conditionnement,sur_conditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,prix_achat_brut,remise1,remise2,remise3,prix1,prix2,prix3,prix4,prix5,prix6,divers,date_application,date_creation,date_maj,prix_achat_expo,ecotaxe) VALUES (".
+			"'$row{NOFOU}',".
+			"'$row{REFFO}',".
+			"'$row{NOART}',".
+			"'$row{DESI1}','$row{DESI2}','$row{DESI3}',".
+			"'$row{GENCO}',".
+			"'$reference_propre',".
+			"'$row{AFOGE}',".
+			"'$row{AFOG2}',".
+			"'$row{AFOG3}',".
+			"'$row{CONDI}','$row{SURCO}',".
+			"'$row{LUNTA}',".
+			"'$row{ACTIV}','$row{FAMI1}','$row{SFAM1}','$row{ART04}','$row{ART05}',".
+			"'$row{PARVT}',".
+			"'$row{RMRV1}','$row{RMRV2}','$row{RMRV3}',".
+			"'$row{PVEN1}','$row{PVEN2}','$row{PVEN3}','$row{PVEN4}','$row{PVEN5}','$row{PVEN6}',".
+			"'$divers',".													# divers
+			"'".($row{'DAPCS'} ? join('-',$row{'DAPCS'}.$row{'DAPCA'},$row{'DAPCM'},$row{'DAPCJ'}) : '')."',".	# date application
+			"'".($row{'DARCS'} ? join('-',$row{'DARCS'}.$row{'DARCA'},$row{'DARCM'},$row{'DARCJ'}) : '')."',".	# date creation
+			"'".($row{'DARMS'} ? join('-',$row{'DARMS'}.$row{'DARMA'},$row{'DARMM'},$row{'DARMJ'}) : '')."',".	# date maj
+			"'$px_achat_expo',".
+			"'$row{ECOTAXE}'".
+		")");
+		if ($sqlite->err()) { warn "$DBI::errstr\n"; }
+	}
+
+	$code_mcs_deja_vu{$row{'NOART'}} = 1 ; # on enregistre qu'il existe deja un article avec ce code mcs pour ne pas faire de doublon avec le catalfou
 }
 print " ok\n";
 
 #$sqlite->commit;$sqlite->disconnect();exit;
+
+#print Dumper(\%code_mcs_deja_vu);
 
 STOCK:
 # rajouter la notion de stock sur caudan et plescop
@@ -263,7 +270,7 @@ where
 		ACBPRO='CATALFOU'	-- du catalogue fournisseur
 	and	ACBEMM<>''			-- pas de fournisseur vide
 	and ACBRFF<>''			-- pas de référence vide
---	and ACBEMM='PAULMA' and ACBRFF='93542'	-- pour les tests
+--	and ACBEMM='SANIJU' and ACBRFF='550186'	-- pour les tests
 ORDER BY ACBSPR DESC,ACBAPR DESC,ACBMPR DESC,ACBJPR DESC   -- dans l'ordre des dates d'application pour avoir les plus recents en premier
 EOT
 $loginor->Sql($sql); # regarde les articles actifs

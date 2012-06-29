@@ -12,7 +12,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'complette_via_ref' && isset($_GET[
 	
 	// requete de selection des articles qui corresponde à aux caracteres de recherche
 	$sql = <<<EOT
-SELECT	a.rowid,nom_fournisseur,reference,designation1,(prix1 * $COEF_EXPO) as px_avec_coef,prix6,code_mcs,ecotaxe
+SELECT	a.rowid,nom_fournisseur,reference,designation1,(prix1 * $COEF_EXPO) as px_avec_coef,prix6,code_mcs,ecotaxe,activite
 FROM	articles a
 		left join fournisseurs f     
           on a.code_fournisseur=f.code_fournisseur
@@ -41,11 +41,12 @@ EOT;
 	while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
 		$row['px_public']	= 0 ;
 		$row['px_from']		= '';
+
 		if		($row['prix6'] <= 0) {					// prix public vide, on prend le prix adh * coef
 			$row['px_public']	= $row['px_avec_coef'];
 			$row['px_from']		= 'adh';
 
-		} elseif	($row['px_avec_coef'] < $row['prix6'])	{	// prix adh inférieur au prix public, on prend le prix adh * coef
+		} elseif	($row['px_avec_coef'] < $row['prix6'] && $row['activite'] != '00D')	{	// prix adh inférieur au prix public, on prend le prix adh * coef. ne marche pas pour les articles elec
 			$row['px_public'] = $row['px_avec_coef'];
 			$row['px_from']		= 'adh';
 
@@ -67,7 +68,7 @@ EOT;
 elseif (isset($_GET['what']) && $_GET['what'] == 'get_detail' && isset($_GET['val'])) { 
 	$id = mysql_escape_string(strtoupper($_GET['val'])) ;
 	$sql = <<<EOT
-SELECT	nom_fournisseur,reference,designation1,designation2,code_mcs,ecotaxe,
+SELECT	nom_fournisseur,reference,designation1,designation2,code_mcs,ecotaxe,activite,
 		prix6,
 		(prix1 * $COEF_EXPO) as px_avec_coef,
 		prix1 as px_adh,
@@ -99,7 +100,7 @@ EOT;
 	$row['px_public']	= 0 ;
 	if		($row['prix6'] <= 0)						// prix public vide, on prend le prix adh * coef
 		$row['px_public']	= $row['px_avec_coef'];
-	elseif	($row['px_avec_coef'] < $row['prix6'])		// prix adh inférieur au prix public, on prend le prix adh * coef
+	elseif	($row['px_avec_coef'] < $row['prix6'] && $row['activite'] != '00D')		// prix adh inférieur au prix public, on prend le prix adh * coef. ne marche pas pour les article elec
 		$row['px_public'] = $row['px_avec_coef'];
 	else												// prix public inférieur au prix adh, on prend le prix public
 		$row['px_public'] = $row['prix6'];
