@@ -98,7 +98,7 @@ table#recherche td {
 div#relance {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:10px;
+	border-radius:10px;
 	background:white;
 	display:none;
 	position:absolute;

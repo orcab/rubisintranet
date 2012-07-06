@@ -177,7 +177,7 @@ table#recherche td {
 div#commentaire {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:10px;
+	border-radius:10px;
 	background:white;
 	display:none;
 	position:absolute;

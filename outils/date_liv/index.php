@@ -406,7 +406,7 @@ body,td {
 table {
 	width:50%;
 	border:solid 1px grey;
-	-moz-border-radius:10px 10px;
+	border-radius:10px 10px;
 	margin:auto;
 }
 

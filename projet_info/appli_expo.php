@@ -281,7 +281,7 @@ function initialize() {
 														//Css de la div
 														$(controlDiv).css({	'background-color': 'rgba(255,255,255,0)',
 																			'border': '0px solid black',
-																			'-moz-border-radius':'0em',
+																			'border-radius':'0em',
 																			'padding':'0px'
 														});
 														//Affiche l'image de d'ouverture de la div
@@ -294,7 +294,7 @@ function initialize() {
 			if ($(controlDiv).children('img').attr('src')== "images/icon_map/add64px.png") {
 				$('.adh10').poshytip('hide').removeClass('tooltips_showed'); // Masque l'aide de 10adh
 				$(controlDiv).css({	'background-color': 'rgba(255,255,255,0.8)',
-									'-moz-border-radius':'1em',
+									'border-radius':'1em',
 									'padding':'5px'
 								});
 				$(controlDiv).animate({	'width':'400px',

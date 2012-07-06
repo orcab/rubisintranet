@@ -70,7 +70,7 @@ init_sqlite();
 END_INIT: ;
 
 
-
+#goto DEVIS_EXPO;
 
 goto END_BON if $skip{'bon'};
 print print_time()."Select des lignes de bon ...";
@@ -198,13 +198,12 @@ while($loginor->FetchRow()) {
 	die "$DBI::errstr\n" if $sqlite->err();
 
 	$old_bon = "$row{NOBON}.$row{NOCLI}";
-}
+} # fin while cde
 
 # met a jour le nomber de ligne preparées et livrées
 $sqlite->do("UPDATE OR IGNORE cde_rubis SET nb_ligne='$nb_ligne', nb_livre='$nb_livre', nb_prepa='$nb_prepa' WHERE id_bon='$old_bon'");
 print "OK\n";
 END_BON: ;
-
 
 
 
@@ -312,8 +311,8 @@ END_VENDEURS: ;
 
 
 
+DEVIS_EXPO: ;
 goto END_DEVIS_EXPO if $skip{'devis_expo'};
-
 # supprime les anciens devis expo
 print print_time()."Suppression des anciens devis expo ...";
 $sqlite->do("DELETE FROM devis_expo_detail");
@@ -323,7 +322,7 @@ die "$DBI::errstr\n" if $sqlite->err();
 print "OK\n";
 
 print print_time()."Select des devis expo ...";
-my $res = $mysql->query("SELECT * FROM devis WHERE supprime=0 and code_artisan<>'' and code_artisan not null and code_artisan<>'EDITIO'");	# selection des devis expo actif
+my $res = $mysql->query("SELECT * FROM devis WHERE supprime=0 and code_artisan<>'' and code_artisan is not null and code_artisan<>'EDITIO'");	# selection des devis expo actif
 print "OK\n";
 
 print print_time()."Insertion des devis expo dans la base SQLite ...";
@@ -582,8 +581,6 @@ $sqlite->do($sql);
 
 
 
-
-
 # creation des table DEVIS EXPO #####################################################################################""
 	$sql = <<EOT ;
 CREATE TABLE IF NOT EXISTS [devis_expo] (
@@ -646,6 +643,7 @@ CREATE TRIGGER "cle_etrangere_devis_expo"
 	END
 EOT
 	$sqlite->do($sql);
+}
 
 $sqlite->commit; # valide les table et les trigger
 } #fin init_sqlite

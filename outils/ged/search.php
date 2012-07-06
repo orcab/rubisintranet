@@ -41,7 +41,7 @@ option.tiers-suspendu {
 
 fieldset {
 	border:solid 1px #6290B3;
-	-moz-border-radius:5px;
+	border-radius:5px;
 	margin-bottom:2em;
 }
 
@@ -53,8 +53,8 @@ fieldset legend {
 	padding:3px;
 	width:80px;
 	text-align:center;
-	-moz-border-radius:5px;
-	-moz-box-shadow: 0 0 5px #6290B3;
+	border-radius:5px;
+	box-shadow: 0 0 5px #6290B3;
 }
 
 div#more_options {
@@ -79,7 +79,7 @@ div.document {
 div.document:hover {
 	border-color:yellow;
 	background-color:#fafaea;
-	-moz-box-shadow: 0 0 5px yellow;
+	box-shadow: 0 0 5px yellow;
 }
 
 div.document img {

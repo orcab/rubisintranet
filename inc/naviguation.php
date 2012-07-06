@@ -38,7 +38,7 @@ ul#tabnav li.active {
     padding: 4px;
 	padding-left:29px;
 	border:solid 1px #66b9cc;
-	-moz-border-radius:7px 7px 0 0;
+	border-radius:7px 7px 0 0;
 	background-color:#e8f6f8;
 }
 

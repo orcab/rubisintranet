@@ -18,7 +18,7 @@ $droit = recuperer_droit();
 div#dialogue {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:15px;
+	border-radius:15px;
 	background:white;
 	display:none;
 	position:absolute;
@@ -30,7 +30,7 @@ div#dialogue {
 div#detail-utilisateur {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:15px;
+	border-radius:15px;
 	background:white;
 	display:none;
 	position:absolute;

@@ -62,7 +62,7 @@ div#main { margin:5px; }
 
 fieldset {
 	border:solid 1px #6290B3;
-	-moz-border-radius:5px;
+	border-radius:5px;
 	margin-bottom:2em;
 }
 
@@ -73,8 +73,8 @@ fieldset legend {
 	font-weight:bold;
 	padding:3px;
 	text-align:center;
-	-moz-border-radius:5px;
-	-moz-box-shadow: 0 0 5px #6290B3;
+	border-radius:5px;
+	box-shadow: 0 0 5px #6290B3;
 }
 
 div#type_document { display:none; }
@@ -99,7 +99,7 @@ div.document {
 div.document:hover {
 	border-color:yellow;
 	background-color:#fafaea;
-	-moz-box-shadow: 0 0 5px yellow;
+	box-shadow: 0 0 5px yellow;
 }
 
 div.document img {
@@ -135,7 +135,7 @@ div#footer {
 div#getInfos {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:10px;
+	border-radius:10px;
 	background:white;
 	display:none;
 	position:absolute;
@@ -143,7 +143,7 @@ div#getInfos {
 	left:7%;
 	width:70%;
 	height:50%;
-	-moz-box-shadow: 0px 0px 10px 0px white;
+	box-shadow: 0px 0px 10px 0px white;
 	z-index:200;
 }
 

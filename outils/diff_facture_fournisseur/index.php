@@ -214,7 +214,7 @@ td.manuelle { color:grey; }
 div#choix-fournisseur {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:15px;
+	border-radius:15px;
 	background:white;
 	display:none;
 	position:absolute;

@@ -38,14 +38,14 @@ input[type="button"] {
 	height:275px;
 	background-color:white;
 	display:none;
-	-moz-border-radius:1em 1em 1em 1em;
+	border-radius:1em 1em 1em 1em;
 	font-weight:bold;
 	font-size:1.3em;
 }
 
 /* Bouton fermer du message */ 
 #close_imprim {
-	-moz-border-radius:1em 1em 1em 1em;
+	border-radius:1em 1em 1em 1em;
 	background:url("images/icon_map/close64px.png") no-repeat scroll 0 0 transparent;
 	height:64px;
 	width:64px;
@@ -79,7 +79,7 @@ input[type="button"] {
 	height:90%;
 	background-color:white;
 	display:none;
-	-moz-border-radius:1em 1em 1em 1em;
+	border-radius:1em 1em 1em 1em;
 	z-index : 10000;
 }
 
@@ -106,7 +106,7 @@ td#logo-artipole {
 
 /* Bouton fermer de la div d'un adh */
 #close {
-	-moz-border-radius:1em 1em 1em 1em;
+	border-radius:1em 1em 1em 1em;
 	background:url("images/icon_map/close64px.png") no-repeat scroll 0 0 transparent;
 	height:64px;
 	width:64px;
@@ -137,7 +137,7 @@ td img {
 
 /* Div pour la description d'un adh */
 #text_desc{
-	-moz-border-radius:1em 1em 1em 1em;
+	border-radius:1em 1em 1em 1em;
 	font-family:Verdana;
 	font-size:16px;
 	padding:10px;
@@ -171,7 +171,7 @@ td#photo3 {
 											/* Css pour la fenêre des 10 adhérents */
 /* CSS du bouton fermer de la liste des 10 adh */
 #close_liste {
-	-moz-border-radius:1em 1em 1em 1em;
+	border-radius:1em 1em 1em 1em;
 	background:url("images/icon_map/close64px.png") no-repeat scroll 0 0 transparent;
 	height:64px;
 	width:64px;
@@ -184,4 +184,4 @@ td#photo3 {
 	bottom : 5px;
 	position : absolute;
 }
-											/* Fin Css pour la fenêre des 10 adhérents */
+/* Fin Css pour la fenêre des 10 adhérents */
