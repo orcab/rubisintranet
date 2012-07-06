@@ -47,7 +47,7 @@ form {
 	position:absolute;
 	background-color:#FF776B;
 	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
+	border-radius: 5px;
 	border:solid 2px black;
 	color:black;
 	font-size:0.5em;

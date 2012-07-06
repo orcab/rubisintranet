@@ -42,7 +42,7 @@ form {
 
 fieldset {
 	border:solid 1px #6290B3;
-	-moz-border-radius:5px;
+	border-radius:5px;
 /*	margin-bottom:em;*/
 	
 }
@@ -54,8 +54,8 @@ legend {
 	font-weight:bold;
 	padding:3px;
 	text-align:center;
-	-moz-border-radius:5px;
-	-moz-box-shadow: 0 0 5px #6290B3;
+	border-radius:5px;
+	box-shadow: 0 0 5px #6290B3;
 }
 
 fieldset div {

@@ -179,7 +179,7 @@ fieldset {
 	margin:auto;
 	margin-top:20px;
 	border:solid 1px #6290B3;
-	-moz-border-radius:10px;
+	border-radius:10px;
 }
 
 fieldset#detail table tr { border-bottom:dotted 1px #6290B3; }

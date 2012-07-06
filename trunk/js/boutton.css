@@ -6,7 +6,7 @@ input.button {
 	padding-left:20px;
 	padding-top:3px;	padding-bottom:3px;
 	font-weight:bold;
-	-moz-border-radius:6px;
+	border-radius:6px;
 	-webkit-border-radius:6px;
 }
 
@@ -17,7 +17,7 @@ input.valider {
 input.valider:hover {
 	background-color:#e6efc2;
 	border-color:#c6d880;
-	-moz-border-radius:6px;
+	border-radius:6px;
 	-webkit-border-radius:6px;
 }
 
@@ -28,7 +28,7 @@ input.annuler {
 input.annuler:hover {
 	background-color:#fbe3e4;
 	border-color:#fbc2c4;
-	-moz-border-radius:6px;
+	border-radius:6px;
 	-webkit-border-radius:6px;
 }
 
@@ -45,7 +45,7 @@ input.divers {
 input.divers:hover {
 	background-color:#dff4ff;
 	border-color:#c2e1ef;
-	-moz-border-radius:6px;
+	border-radius:6px;
 	-webkit-border-radius:6px;
 }
 
@@ -69,7 +69,7 @@ select, textarea {
 /* test type jQuery mobile */
 label.mobile {
 	border:solid 1px #ccc;
-	-moz-border-radius:5px;
+	border-radius:5px;
 	padding:5px;
 	text-shadow:none;
 	color:#111;
@@ -89,7 +89,7 @@ label.mobile:not(.mobile-checked):hover {
 	border-color:#aaa;
 	text-shadow:none;
 	background-image:-moz-linear-gradient( top, #fefefe, #f5f5f5 );
-	-moz-box-shadow: 0 0 2px #aaa;
+	box-shadow: 0 0 2px #aaa;
 	cursor:pointer;
 }
 
@@ -100,7 +100,7 @@ label.mobile-checked {
 	font-weight:bold;
 	cursor:pointer;
 	text-shadow:grey 0px -1px;
-	-moz-box-shadow: 0 0 5px #6a9dca;
+	box-shadow: 0 0 5px #6a9dca;
 }
 
 label.mobile > input[type="checkbox"] {

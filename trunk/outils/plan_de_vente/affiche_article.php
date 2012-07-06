@@ -88,7 +88,7 @@ table#article td.stock img { margin-top:20px; }
 div#dialogue {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:15px;
+	border-radius:15px;
 	background:white;
 	display:none;
 	position:absolute;
@@ -100,7 +100,7 @@ div#dialogue {
 div#detail-article, div#arbre-deplacement {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:15px;
+	border-radius:15px;
 	background:white;
 	display:none;
 	position:absolute;
@@ -449,7 +449,7 @@ $(document).ready(function(){
 		<td><select name="detail_article_gestionnaire" size="1" id="detail_article_gestionnaire">
 				<option value="" selected></option>
 				<option value="BT">Bernard</option>
-				<option value="CG">Charles</option>
+				<option value="RLF">Régis</option>
 				<option value="JM">Jérémy</option>
 				<option value="CK">Claude K.</option>
 			</select>

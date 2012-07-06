@@ -14,7 +14,7 @@ $message ='' ;
 body { font-family:verdana; font-size:0.9em; }
 a img { border:none; }
 input,textarea { border:solid 2px #AAA; }
-fieldset { -moz-border-radius:6px; border:solid 1px grey; }
+fieldset { border-radius:6px; border:solid 1px grey; }
 
 table#liste-fournisseur {
 	border-spacing: 0px;
@@ -40,7 +40,7 @@ tr.fournisseur			{	background-image:-moz-linear-gradient( top , #fdfdfd, #eee );
 tr.fournisseur:hover	{
 	color:white;
 	text-shadow:grey 0px -1px;
-	-moz-box-shadow: 0 0 9px #6a9dca;
+	box-shadow: 0 0 9px #6a9dca;
 	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
 }
 
@@ -91,7 +91,7 @@ table.liste td:hover {
 	background-image:-moz-linear-gradient( top, #83b8e2, #5393c5 );
 	color:white;
 	text-shadow:grey 0px -1px;
-	-moz-box-shadow: 0 0 9px #6a9dca;
+	box-shadow: 0 0 9px #6a9dca;
 }
 
 
@@ -105,12 +105,12 @@ table.liste td:hover {
 div#intervention {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:10px;
+	border-radius:10px;
 	background:white;
 	display:none;
 	position:absolute;
 	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
-	-moz-box-shadow: 5px 5px 20px 0px grey;
+	box-shadow: 5px 5px 20px 0px grey;
 }
 
 

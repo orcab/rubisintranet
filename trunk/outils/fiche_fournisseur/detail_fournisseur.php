@@ -74,7 +74,7 @@ $row = mysql_fetch_array($res);
 body { font-family:verdana; font-size:0.9em; }
 a img { border:none; }
 input,textarea { border:solid 2px #AAA; }
-fieldset { -moz-border-radius:6px; border:solid 1px grey; }
+fieldset { border-radius:6px; border:solid 1px grey; }
 legend { font-weight:bold; font-size:0.9em; padding-right:5px;}
 
 h1 {
@@ -99,12 +99,12 @@ div#edit-complement { display:none; }
 div#new-intervention {
 	padding:20px;
 	border:solid 2px black;
-	-moz-border-radius:10px;
+	border-radius:10px;
 	background:white;
 	display:none;
 	position:absolute;
 	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
-	-moz-box-shadow: 5px 5px 20px 0px grey;
+	box-shadow: 5px 5px 20px 0px grey;
 	z-index:200;
 }
 
@@ -209,7 +209,7 @@ span.size {
 }
 
 div.big-block {
-	-moz-border-radius:6px;
+	border-radius:6px;
 	border:solid 1px grey;
 	width:99%;
 	margin:auto;
@@ -221,12 +221,12 @@ div#upload-file {
 	padding:20px;
 	padding-top:5px;
 	border:solid 2px black;
-	-moz-border-radius:10px;
+	border-radius:10px;
 	background:white;
 	display:none;
 	position:absolute;
 	/* (inset ?)    x-offset  y-offset  blur-raduis  spread-radius   color  --> for opactiy : rgba(0, 0, 0, 0.5)    */
-	-moz-box-shadow: 5px 5px 20px 0px grey;
+	box-shadow: 5px 5px 20px 0px grey;
 }
 div#upload-file h2 { font-size:0.8em; }
 

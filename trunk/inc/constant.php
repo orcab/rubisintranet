@@ -216,4 +216,10 @@ function is_ean13($ean13) {
 	else
 		return true;
 }
+
+
+function pas_identifie() {
+	echo "ERREUR. Vous n'êtes pas identifié.";
+	exit;
+}
 ?>
