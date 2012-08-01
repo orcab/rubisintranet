@@ -41,37 +41,40 @@ $row_entete		= array_map('trim',$row_entete);
 
 
 // génération du doc PDF
-$pdf=new PDF('P','mm',array(PAGE_WIDTH,PAGE_HEIGHT));
+$pdf=new PDF('L','mm','A4');
 $pdf->SetDisplayMode('fullpage','single');
 $pdf->SetMargins(LEFT_MARGIN,TOP_MARGIN,RIGHT_MARGIN); // marge gauche et haute
 $pdf->AddPage();
 $pdf->SetTextColor(0);
 $pdf->SetFont('helvetica','B',38);
 
+$x_origine  = 100;
+$y_origine  = 36;
+
 $interligne = 14;
-$oldY = 25;
+//$oldY = 25;
 
 // fournisseur
-$pdf->SetY($oldY);
-$pdf->MultiCell(0,10,$row_entete['NOMFO'],0);
+$pdf->SetXY($x_origine,$y_origine);
+$pdf->MultiCell(0,10,$row_entete['NOMFO'],0,'L');
 
 // reference
-$pdf->SetY($oldY += $interligne + 8);
+$pdf->SetY($y_origine + 20);
 $pdf->MultiCell(0,10,$row_entete['REFFO'],0);
 
 // designation
-$pdf->SetY($oldY += $interligne);
+$pdf->SetY($y_origine + 34);
 $pdf->MultiCell(0,10,$row_entete['DESI1'],0);
 
 // noart + qte
 $pdf->SetFont('helvetica','B',60);
-$pdf->SetY($oldY += $interligne * 2);
+$pdf->SetY($y_origine + 59);
 $pdf->MultiCell(0,10,$row_entete['NOART']."QTE: $qte_escape",0);
 
 // code barre
-$pdf->SetY($oldY += $interligne);
+$pdf->SetY($y_origine + 75);
 if (is_ean13($row_entete['EAN13']))
-	$pdf->EAN13(LEFT_MARGIN, $oldY , $row_entete['EAN13'] , 40 , 2 );
+	$pdf->EAN13(LEFT_MARGIN, $y_origine + 75 , $row_entete['EAN13'] , 40 , 2 );
 
 // localisation
 $localisations = array();
@@ -79,7 +82,7 @@ if ($row_entete['LOCAL'])	$localisations[] = $row_entete['LOCAL'];
 if ($row_entete['LOCA2'])	$localisations[] = $row_entete['LOCA2'];
 if ($row_entete['LOCA3'])	$localisations[] = $row_entete['LOCA3'];
 $pdf->SetFont('helvetica','B',25);
-$pdf->SetY($oldY += $interligne * 3);
+$pdf->SetY($y_origine + 117);
 $pdf->MultiCell(0,10,join(' / ',$localisations),0);
 
 

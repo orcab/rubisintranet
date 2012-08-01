@@ -32,20 +32,21 @@ $row_entete		= array_map('trim',$row_entete);
 
 
 // génération du doc PDF
-$pdf=new PDF('P','mm',array(PAGE_WIDTH,PAGE_HEIGHT));
+$pdf=new PDF('L','mm','A4');
 $pdf->SetDisplayMode('fullpage','single');
 $pdf->SetMargins(LEFT_MARGIN,TOP_MARGIN,RIGHT_MARGIN); // marge gauche et haute
 $pdf->AddPage();
 $pdf->SetTextColor(0);
 $pdf->SetFont('helvetica','B',36);
 
+$pdf->SetXY(150,85);
+$pdf->MultiCell(0,10,$row_entete['NOMSB'],'0','L');
 
-$pdf->MultiCell(0,10,$row_entete['NOMSB']);
-$pdf->SetY(113);
+$pdf->SetY(85+37);
+$pdf->MultiCell(0,10,$row_entete['RFCSB'],'0','L');
 
-$pdf->MultiCell(0,10,$row_entete['RFCSB']);
-$pdf->SetY(150);
 
+$pdf->SetY(85+74);
 $pdf->SetFont('helvetica','B',70);
 $pdf->Cell(0,10,strtoupper($NOBON_escape));
 

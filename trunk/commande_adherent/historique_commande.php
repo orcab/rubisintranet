@@ -395,8 +395,8 @@ function send_return_mail(img,nobon,nomcli,email) {
 	$date_inf_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_inf'])));
 	$date_sup_formater = join('-',array_reverse(explode('/',$_SESSION['cde_adh_filtre_date_sup'])));
 	
-	if ($_SESSION['cde_adh_filtre_date_inf'] && $_SESSION['cde_adh_filtre_date_inf'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) >= '$date_inf_formater'" ;
-	if ($_SESSION['cde_adh_filtre_date_sup'] && $_SESSION['cde_adh_filtre_date_sup'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) <= '$date_sup_formater'" ;
+	if ($_SESSION['cde_adh_filtre_date_inf'] && $_SESSION['cde_adh_filtre_date_inf'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) >= '".mysql_escape_string($date_inf_formater)."'" ;
+	if ($_SESSION['cde_adh_filtre_date_sup'] && $_SESSION['cde_adh_filtre_date_sup'] != 'Aucune') $where[] = "CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) <= '".mysql_escape_string($date_sup_formater)."'" ;
 	if ($_SESSION['cde_adh_filtre_adherent'])	$where[] = "NOMSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_adherent']))."%'" ;
 	if ($_SESSION['cde_adh_filtre_vendeur'])	{
 		$tmp = explode(',',$_SESSION['cde_adh_filtre_vendeur']);
@@ -407,16 +407,16 @@ function send_return_mail(img,nobon,nomcli,email) {
 	if ($_SESSION['cde_adh_filtre_reference'])	$where[] = "RFCSB like '%".strtoupper(mysql_escape_string($_SESSION['cde_adh_filtre_reference']))."%'" ;
 	if ($_SESSION['cde_adh_filtre_numero'])		$where[] = "CDE_ENTETE.NOBON like '".strtoupper(trim(mysql_escape_string($_SESSION['cde_adh_filtre_numero'])))."%'" ;
 
-	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] '$_SESSION[cde_adh_filtre_montant]'" ;
+	$where[] = "MONTBT $_SESSION[cde_adh_filtre_signe_montant] '".mysql_escape_string($_SESSION['cde_adh_filtre_montant'])."'" ;
 	$where[] = "NBLIG > '0'" ;						// au moins une ligne sur le bon
 	$where[] = "ETSEE = ''" ;						// commande non annulée
 	$where[] = "CDE_ENTETE.AGENC = AGENCE.AGECO" ;	// jointure bon<->agence
 
 	if ($_SESSION['cde_adh_filtre_agence']) // si une agence de spécifié
-		$where[] = "CDE_ENTETE.AGENC = '$_SESSION[cde_adh_filtre_agence]'" ; // uniquement pour l'agence en cours
+		$where[] = "CDE_ENTETE.AGENC = '".mysql_escape_string($_SESSION['cde_adh_filtre_agence'])."'" ; // uniquement pour l'agence en cours
 
 	if ($_SESSION['cde_adh_filtre_type_vente']) // si une agence de spécifié
-		$where[] = "CDE_ENTETE.TYVTE = '$_SESSION[cde_adh_filtre_type_vente]'" ; // type de vente EMP ou LIV
+		$where[] = "CDE_ENTETE.TYVTE = '".mysql_escape_string($_SESSION['cde_adh_filtre_type_vente'])."'" ; // type de vente EMP ou LIV
 
 	// gere les recherche sur article et type de commande
 	if ($_SESSION['cde_adh_filtre_article'] || $_SESSION['cde_adh_filtre_type_cde']) {
@@ -448,7 +448,7 @@ function send_return_mail(img,nobon,nomcli,email) {
 	elseif	($_SESSION['cde_adh_filtre_classement'] == 'DATELIV ASC')
 		$ordre = 'DLSSB ASC, DLASB ASC, DLMSB ASC, DLJSB ASC';
 	else
-		$ordre = $_SESSION['cde_adh_filtre_classement'];
+		$ordre = mysql_escape_string($_SESSION['cde_adh_filtre_classement']);
 
 	$tables = join(',',$tables);
 
