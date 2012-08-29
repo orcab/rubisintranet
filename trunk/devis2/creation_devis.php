@@ -497,6 +497,7 @@ fieldset legend {
 div#cadre-exterieur {
 	border:solid 1px black;
 	padding:15px;
+	margin-bottom:50px;
 }
 
 fieldset#entete, fieldset#detail { margin-bottom:20px; }
@@ -595,6 +596,20 @@ div#phrase ul {
     margin: 0;
 }
 
+#historique-devis {
+	margin-right:3em;
+}
+
+#pied-de-page {
+    border: solid 1px black;
+    position: fixed;
+    bottom: 5;
+    width: 96%;
+    text-align: right;
+	padding-right:2em;
+	background-color:white;
+}
+
 </style>
 
 <body>
@@ -607,6 +622,7 @@ div#phrase ul {
 <form method="post" action="generation_devis_pdf.php" name="creation_devis">
 <input type="hidden" name="les_options" value="" />
 <input type="hidden" name="id_devis" value="<?=$id?>" />
+
 <div id="cadre-exterieur">
 
 <fieldset id="entete">
@@ -704,7 +720,7 @@ div#phrase ul {
 	</td>
 </tr>
 <tr>
-	<td colspan="3"><label for="discret_mode" class="mobile"><input type="checkbox" id="discret_mode" name="discret_mode"/>Mode spécial</label></td>
+	<td colspan="3"></td>
 	<th>Email</th>
 	<td>
 		<input type="text" name="client_email" TABINDEX="13" value="<?= $modif ? $row_devis['email_client']: ''?>" size="45">
@@ -797,12 +813,13 @@ div#phrase ul {
 		<span class="discret"><br/>Total adh <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total_adh"></span> &euro;</span>
 	</div>
 </fieldset>
-
 </form>
-
 </div>
-<div class="hide_when_print" style="border:solid 1px black;margin-top:10px;">
-<input type="button" class="button divers" style="background-image:url(../gfx/list.gif);margin:4px;" onclick="document.location.href='historique_devis.php';" value="Historique des devis">
+
+
+<div class="hide_when_print" id="pied-de-page">
+<input type="button" class="button divers" id="historique-devis" style="background-image:url(../gfx/list.gif);margin:4px;" onclick="document.location.href='historique_devis.php';" value="Historique des devis">
+<label for="discret_mode" class="mobile"><input type="checkbox" id="discret_mode" name="discret_mode"/>Mode sp&eacute;cial</label></td>
 </div>
 </body>
 </html>
