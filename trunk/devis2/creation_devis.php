@@ -803,9 +803,9 @@ div#phrase ul {
     <legend>Total :</legend>
 	<div id="div_bouton">
 		<input type="button" value="Générer le devis"							class="button pdf divers" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Générer le devis sans Entête"				class="button pdf divers" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<!--<input type="button" value="Générer le devis sans Entête"				class="button pdf divers" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;-->
 		<input type="button" value="Générer le devis en prix ADH"				class="button pdf divers discret" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Générer le devis en prix ADH sans Entête"	class="button pdf divers discret" onclick="valide_form('px_adh,no_header');" />
+		<!--<input type="button" value="Générer le devis en prix ADH sans Entête"	class="button pdf divers discret" onclick="valide_form('px_adh,no_header');" />-->
 	</div>
 	<div id="div_total">
 		<span id="options"></span>&nbsp;&nbsp;
@@ -823,6 +823,4 @@ div#phrase ul {
 </div>
 </body>
 </html>
-<?
-mysql_close($mysql);
-?>
+<? mysql_close($mysql); ?>
