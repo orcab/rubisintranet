@@ -497,7 +497,7 @@ fieldset legend {
 div#cadre-exterieur {
 	border:solid 1px black;
 	padding:15px;
-	margin-bottom:50px;
+	margin-bottom:70px;
 }
 
 fieldset#entete, fieldset#detail { margin-bottom:20px; }
@@ -527,15 +527,18 @@ fieldset#detail table td,fieldset#detail table th {
 fieldset#detail table td { padding-top:4px; }
 fieldset#detail table td.opt,fieldset#detail table th.opt { text-align:left; }
 
-div#div_bouton {
-	float:left;
+#div_bouton {
 	text-align:left;
+	vertical-align:top;
+	padding-top: 5px;
 }
 
-div#div_total {
-	float:right;
+#div_total {
 	text-align:right;
 	font-weight:bold;
+	width:33%;
+	vertical-align:top;
+	padding-top: 5px;
 }
 
 td.devis_id { font-weight:bold; }
@@ -604,10 +607,11 @@ div#phrase ul {
     border: solid 1px black;
     position: fixed;
     bottom: 5;
-    width: 96%;
-    text-align: right;
+    width: 98%;
+	text-align: left;
 	padding-right:2em;
 	background-color:white;
+	font-size:0.9em;
 }
 
 </style>
@@ -799,28 +803,30 @@ div#phrase ul {
 	</table>
 </fieldset>
 
-<fieldset class="total">
-    <legend>Total :</legend>
-	<div id="div_bouton">
-		<input type="button" value="Générer le devis"							class="button pdf divers" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<!--<input type="button" value="Générer le devis sans Entête"				class="button pdf divers" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;-->
-		<input type="button" value="Générer le devis en prix ADH"				class="button pdf divers discret" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<!--<input type="button" value="Générer le devis en prix ADH sans Entête"	class="button pdf divers discret" onclick="valide_form('px_adh,no_header');" />-->
-	</div>
-	<div id="div_total">
-		<span id="options"></span>&nbsp;&nbsp;
-		Total <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total"></span> &euro;
-		<span class="discret"><br/>Total adh <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total_adh"></span> &euro;</span>
-	</div>
-</fieldset>
 </form>
 </div>
 
 
-<div class="hide_when_print" id="pied-de-page">
-<input type="button" class="button divers" id="historique-devis" style="background-image:url(../gfx/list.gif);margin:4px;" onclick="document.location.href='historique_devis.php';" value="Historique des devis">
-<label for="discret_mode" class="mobile"><input type="checkbox" id="discret_mode" name="discret_mode"/>Mode sp&eacute;cial</label></td>
-</div>
+<table class="hide_when_print" id="pied-de-page">
+<tr>
+	<td style="width:33%;height:50px;vertical-align:top;">
+		<input type="button" class="button divers" id="historique-devis" style="background-image:url(../gfx/list.gif);margin:4px;" onclick="document.location.href='historique_devis.php';" value="Historique des devis">
+		<label for="discret_mode" class="mobile"><input type="checkbox" id="discret_mode" name="discret_mode"/>Mode sp&eacute;cial</label>
+	</td>
+	<td id="div_bouton">
+		<input type="button" value="Générer le devis"							class="button pdf divers" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<!--<input type="button" value="Générer le devis sans Entête"				class="button pdf divers" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;-->
+		<input type="button" value="Générer le devis en prix ADH"				class="button pdf divers discret" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
+		<!--<input type="button" value="Générer le devis en prix ADH sans Entête"	class="button pdf divers discret" onclick="valide_form('px_adh,no_header');" />-->
+	</td>
+	<td id="div_total">
+		<span id="options"></span>&nbsp;&nbsp;
+		Total <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total"></span> &euro;
+		<span class="discret"><br/>Total adh <sup>ht</sup>&nbsp;:&nbsp;&nbsp;<span id="total_adh"></span> &euro;</span>
+	</td>
+</tr>
+</table>
+
 </body>
 </html>
 <? mysql_close($mysql); ?>
