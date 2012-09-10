@@ -41,16 +41,21 @@ class PDF extends FPDF
 		$this->SetFont('helvetica','',10);
 		$this->SetTextColor(0,0,0);
 		$this->SetXY(70,2);
-		$this->MultiCell(120,5,"Coordonnées adhérent :\n".
-				$row_entete['NOMSB'].
-				($row_entete['AD1SB']?"\n$row_entete[AD1SB]":'').
-				($row_entete['AD2SB']?"\n$row_entete[AD2SB]":'').
-				($row_entete['CPOSB']?"\n$row_entete[CPOSB]":'')." ".
-				($row_entete['BUDSB']?$row_entete['BUDSB']:'').
-				($row_entete['TELCL']?"\nTél : $row_entete[TELCL]":''). ($row_entete['TELCC']?"   Tél 2 : $row_entete[TELCC]":'').
-				($row_entete['TLCCL']?"\nFax : $row_entete[TLCCL]":''). ($row_entete['TLXCL']?"   Tél 3 : $row_entete[TLXCL]":'').
-				($row_entete['COMC1']?"  Email : ".strtolower($row_entete['COMC1']):'')
-		);
+		$adresse_client =	$row_entete['NOMSB'].
+							($row_entete['AD1SB']?"\n$row_entete[AD1SB]":'').
+							($row_entete['AD2SB']?"\n$row_entete[AD2SB]":'').
+							($row_entete['CPOSB']?"\n$row_entete[CPOSB]":'')." ".
+							($row_entete['BUDSB']?$row_entete['BUDSB']:'').
+							($row_entete['TELCL']?"\nTél : $row_entete[TELCL]":'') ;
+
+		// stepahne mahé ne veut pas de ses coordonnées sur les bons de livraison
+		if ($row_entete['NOCLI'] != '056022')
+			$adresse_client .=	($row_entete['TELCC']?"   Tél 2 : $row_entete[TELCC]":'').
+								($row_entete['TLCCL']?"\nFax : $row_entete[TLCCL]":'').
+								($row_entete['TLXCL']?"   Tél 3 : $row_entete[TLXCL]":'') ;
+
+		$adresse_client .= ($row_entete['COMC1']?"  Email : ".strtolower($row_entete['COMC1']):'');
+		$this->MultiCell(120,5,"Coordonnées adhérent :\n$adresse_client");
 
 		// rectangle en top de page
 		$this->SetDrawColor(0,0,0);
