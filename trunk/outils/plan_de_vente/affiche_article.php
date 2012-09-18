@@ -150,6 +150,9 @@ td.prix_revient {
 	font-size:0.9em;
 }
 
+tr.nonstock { display:none; }
+tr.stock { }
+
 </style>
 <style type="text/css">@import url(../../js/boutton.css);</style>
 <style type="text/css">@import url(../../js/infobulle.css);</style>
@@ -409,6 +412,29 @@ $(document).ready(function(){
 					})
 					.show();
 	});// fin mouseover
+
+
+	$('label.mobile > input[type=checkbox]').click(function(){
+		if(this.checked)
+			$(this).parents('label').addClass('mobile-checked');
+		else
+			$(this).parents('label').removeClass('mobile-checked');
+	});
+
+	$('label.mobile > input[type=checkbox]').each(function(){
+		if(this.checked)
+			$(this).parents('label').addClass('mobile-checked');
+	});
+
+
+	// click sur affiche les produits non stocké
+	$('#show_produit_stock').click(function(){
+		//$(this).parent('label').text('<input id="show_produit_stock" type="checkbox">Cacher les prod');
+		if(this.checked)
+			$('.nonstock').show();
+		else
+			$('.nonstock').hide();
+	});
 }); // document.ready
 
 
@@ -602,6 +628,7 @@ a:hover {
 <? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 	<tr>
 		<td style="text-align:right;border:none;">
+			<label for="show_produit_stock" class="mobile" style="width:20em;margin-right:3em;"><input id="show_produit_stock" type="checkbox">Afficher les produits non stockés</label>
 			<input value="Tout sélectionner" class="button divers" style="background-image:url(gfx/basket_add.png);" type="button" onclick="tout_selectionner();">
 			<input value="Inverser la sélection" class="button divers" style="background-image:url(gfx/basket_invert.png);" type="button" onclick="inverser_selection();">
 			<input value="Déplacer la sélection" class="button divers" style="margin-top:4px;background-image:url(gfx/arrow_switch.png);" type="button" onclick="affiche_arbre_deplacement();">
@@ -676,7 +703,7 @@ EOT;
 	while($row = mysql_fetch_array($res)) {
 			$row['code_article'] = trim(strtoupper($row['code_article']));
 ?>
-		<tr id="<?=$row['code_article']?>">
+		<tr id="<?=$row['code_article']?>" class="<?=($row['stock_afa'].$row['stock_afl'] == '' ? ' nonstock':'stock')?>">
 			<!-- photo -->
 			<td class="photo">
 <?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
