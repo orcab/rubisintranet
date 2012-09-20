@@ -625,17 +625,17 @@ a:hover {
 		</div>
 </td>
 	</tr>
-<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 	<tr>
 		<td style="text-align:right;border:none;">
 			<label for="show_produit_stock" class="mobile" style="width:20em;margin-right:3em;"><input id="show_produit_stock" type="checkbox">Afficher les produits non stockés</label>
+<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 			<input value="Tout sélectionner" class="button divers" style="background-image:url(gfx/basket_add.png);" type="button" onclick="tout_selectionner();">
 			<input value="Inverser la sélection" class="button divers" style="background-image:url(gfx/basket_invert.png);" type="button" onclick="inverser_selection();">
 			<input value="Déplacer la sélection" class="button divers" style="margin-top:4px;background-image:url(gfx/arrow_switch.png);" type="button" onclick="affiche_arbre_deplacement();">
+<? } ?>
 		</td>
 	</tr>
-<? } ?>
-	</table>
+</table>
 
 
 <table id="article">
