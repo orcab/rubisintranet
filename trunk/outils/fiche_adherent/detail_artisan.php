@@ -288,6 +288,8 @@ input#commentaire_participants_autres {
 
 img.qrcode { display:none; }
 
+img.photo { max-width: 150px; }
+
 @media print {
 	.hide_when_print { display:none; }
 	img.qrcode { display:block; }
@@ -650,8 +652,15 @@ EOT;
 	<div class="big-block" style="width:47%;float:left;">
 		<h2>Coordonnées (Rubis)</h2>
 		<table class="coordonnees-rubis" style="width:100%;">
-			<tr><td><img src="gfx/code.png"/></td><td><?=$id?></td>
-				<td rowspan="15"><img src="../../gfx/qrcode.php?text=<?
+			<tr>
+				<td><img src="gfx/code.png"/></td><td><?=$id?></td>
+				<td rowspan="15">
+<?					// recherche une photo pour l'artisan (en png ou jpg)
+					$photos = glob("../../photos/adherents/$id.*") ;
+					if (sizeof($photos) > 0) { // au moins une photo trouvée ?>
+						<img class="photo" src="../../photos/adherents/<?=$photos[0]?>"/><br/>
+<?					} ?>
+				<img src="../../gfx/qrcode.php?text=<?
 					echo urlencode(json_encode(array('t'=>'fiche_adherent','c'=>$id,'d'=>time())));
 				?>" class="qrcode"/></td>
 			</tr>
