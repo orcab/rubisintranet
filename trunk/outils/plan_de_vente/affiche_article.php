@@ -699,9 +699,13 @@ EOT;
 
 	$res = mysql_query($sql) or die("Ne peux pas récupérer les infos de la table article : ".mysql_error());
 
-
+	$nb_stock = 0 ;
 	while($row = mysql_fetch_array($res)) {
-			$row['code_article'] = trim(strtoupper($row['code_article']));
+		$stock = $row['stock_afa'].$row['stock_afl'] == '' ? false : true ;
+		if ($stock)
+			$nb_stock++;
+
+		$row['code_article'] = trim(strtoupper($row['code_article']));
 ?>
 		<tr id="<?=$row['code_article']?>" class="<?=($row['stock_afa'].$row['stock_afl'] == '' ? ' nonstock':'stock')?>">
 			<!-- photo -->
@@ -864,5 +868,19 @@ EOT;
 	} // chemin non définit ?>
 </table>
 </form>
+
+<? if ($nb_stock <= 0) { ?>
+	<script type="text/javascript">
+	<!--
+	$(document).ready(function(){
+		// si aucun l'article affiché est stocké, on affiche les non stocké
+		$('#show_produit_stock').attr('checked','checked');
+		$('#show_produit_stock').parents('label').addClass('mobile-checked');
+		$('.nonstock').show();
+	});
+	//-->
+	</script>
+<? } ?>
+
 </body>
 </html>
