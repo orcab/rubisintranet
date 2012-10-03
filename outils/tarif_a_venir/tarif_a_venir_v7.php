@@ -24,9 +24,9 @@ $where = ($where) ? ' and '.join(' and ',$where) : '';
 
 $sql = <<<EOT
 select
-	ARTICLE.NOART as NO_ARTICLE, ARTICLE.DESI1 as DESIGNATION1, ARTICLE.DESI2 as DESIGNATION2, ARTICLE.DESI3 as DESIGNATION3,
+	ARTICLE.NOART as NO_ARTICLE, ARTICLE.DESI1 as DESIGNATION_TARIFV71, ARTICLE.DESI2 as DESIGNATION_TARIFV72, ARTICLE.DESI3 as DESIGNATION_TARIFV73,
 	NOMFO as NOM_FOURNISSEUR,
-	REFFO as REF_FOURNISSEUR,
+	REFFO as REF_FOURNISSEUR_TARIFV7,
 	CONCAT(PRVDJ,CONCAT('/',CONCAT(PRVDM,CONCAT('/',CONCAT(PRVDS,PRVDA))))) as DATE_APPLICATION_PR,
 	CONCAT(PVEDJ,CONCAT('/',CONCAT(PVEDM,CONCAT('/',CONCAT(PVEDS,PVEDA))))) as DATE_APPLICATION_PV,
 	CONCAT(PRVDS,CONCAT(PRVDA,CONCAT(PRVDM,PRVDJ))) as DATE_APPLICATION_PR_YYYYMMDD,
@@ -38,15 +38,15 @@ select
 from
 	${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE,
 	${LOGINOR_PREFIX_BASE}GESTCOM.AFOURNP1 FOURNISSEUR,
-	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 REF_FOURNISSEUR,
+	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 REF_FOURNISSEUR_TARIFV7,
 	${LOGINOR_PREFIX_BASE}GESTCOM.ATARPAP1 PR,
 	${LOGINOR_PREFIX_BASE}GESTCOM.ATARPVP1 PV
 where
 		ARTICLE.ETARE=''					-- article non suspendu
 	and ARTICLE.FOUR1=FOURNISSEUR.NOFOU
-	and ARTICLE.NOART=REF_FOURNISSEUR.NOART
-	and REF_FOURNISSEUR.NOFOU=FOURNISSEUR.NOFOU
-		and REF_FOURNISSEUR.AGENC='$LOGINOR_AGENCE'
+	and ARTICLE.NOART=REF_FOURNISSEUR_TARIFV7.NOART
+	and REF_FOURNISSEUR_TARIFV7.NOFOU=FOURNISSEUR.NOFOU
+		and REF_FOURNISSEUR_TARIFV7.AGENC='$LOGINOR_AGENCE'
 	and PV.NOART=ARTICLE.NOART
 		and PV.AGENC='$LOGINOR_AGENCE'
 	and PR.NOART=ARTICLE.NOART
@@ -69,9 +69,9 @@ EOT;
 
 	$i=0;
 	define('NO_ARTICLE',$i++);
-	define('DESIGNATION',$i++);
+	define('DESIGNATION_TARIFV7',$i++);
 	define('NOM_FOURNISSEUR',$i++);
-	define('REF_FOURNISSEUR',$i++);
+	define('REF_FOURNISSEUR_TARIFV7',$i++);
 	define('DATE_APPLICATION',$i++);
 	define('PRIX_REVIENT_BRUT',$i++);
 	define('PRIX_REVIENT_BRUT_VENIR',$i++);
@@ -116,9 +116,9 @@ EOT;
 
 	// La premiere ligne
 	$worksheet->write(0,NO_ARTICLE,				'Code article',$format_title);
-	$worksheet->write(0,DESIGNATION, 			'Désignation',$format_title); $worksheet->setColumn(DESIGNATION,DESIGNATION,30);
+	$worksheet->write(0,DESIGNATION_TARIFV7, 			'Désignation',$format_title); $worksheet->setColumn(DESIGNATION_TARIFV7,DESIGNATION_TARIFV7,30);
 	$worksheet->write(0,NOM_FOURNISSEUR, 		'Fournisseur',$format_title); $worksheet->setColumn(NOM_FOURNISSEUR,NOM_FOURNISSEUR,12);
-	$worksheet->write(0,REF_FOURNISSEUR,		'Référence',$format_title);
+	$worksheet->write(0,REF_FOURNISSEUR_TARIFV7,		'Référence',$format_title);
 	$worksheet->write(0,DATE_APPLICATION,		"Date d'application",$format_title); $worksheet->setColumn(DATE_APPLICATION,DATE_APPLICATION,12);
 	$worksheet->write(0,PRIX_REVIENT_BRUT,		'Px R brut',$format_title);
 	$worksheet->write(0,PRIX_REVIENT_BRUT_VENIR,'Px R brut F',$format_title);
@@ -155,9 +155,9 @@ EOT;
 		} elseif ($row['DATE_APPLICATION_PR_YYYYMMDD'] > $today_yyyymmdd || $row['DATE_APPLICATION_PV_YYYYMMDD'] > $today_yyyymmdd) { // tarif a venir --> on affiche
 		
 			$worksheet->write( $i, NO_ARTICLE,			trim($row['NO_ARTICLE'])  ,$format_article);
-			$worksheet->write( $i, DESIGNATION ,		trim(trim($row['DESIGNATION1']).' '.trim($row['DESIGNATION2']).' '.trim($row['DESIGNATION3'])),$format_cell);
+			$worksheet->write( $i, DESIGNATION_TARIFV7 ,		trim(trim($row['DESIGNATION_TARIFV71']).' '.trim($row['DESIGNATION_TARIFV72']).' '.trim($row['DESIGNATION_TARIFV73'])),$format_cell);
 			$worksheet->write( $i, NOM_FOURNISSEUR ,	trim($row['NOM_FOURNISSEUR'])  ,$format_cell);
-			$worksheet->write( $i, REF_FOURNISSEUR,		trim($row['REF_FOURNISSEUR'])  ,$format_cell);
+			$worksheet->write( $i, REF_FOURNISSEUR_TARIFV7,		trim($row['REF_FOURNISSEUR_TARIFV7'])  ,$format_cell);
 			$worksheet->write( $i, DATE_APPLICATION,	$row['DATE_APPLICATION_PR']  ,$format_cell);
 
 			$worksheet->write( $i, PRIX_REVIENT_BRUT,		$tarif_encours['prix_revient_brut']  ,$format_prix);
@@ -180,7 +180,7 @@ EOT;
 	}
 
 	// on rajoute les différences global
-/*	$worksheet->write( $i, REF_FOURNISSEUR,			"Total"  ,$format_title);
+/*	$worksheet->write( $i, REF_FOURNISSEUR_TARIFV7,			"Total"  ,$format_title);
 	$worksheet->writeFormula($i, PRIX_VENTE,		'=SUM('.excel_column(PRIX_VENTE).'2:'.excel_column(PRIX_VENTE).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, PRIX_VENTE_VENIR,	'=SUM('.excel_column(PRIX_VENTE_VENIR).'2:'.excel_column(PRIX_VENTE_VENIR).$i.')' ,$format_prix);
 	$worksheet->writeFormula($i, DELTA_VENTE,		'=('.excel_column(PRIX_VENTE_VENIR).($i+1).'/'.excel_column(PRIX_VENTE).($i+1).')-1' ,$format_pourcentage);
