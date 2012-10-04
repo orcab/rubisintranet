@@ -42,7 +42,7 @@ img:hover {
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="ordinateur/index.php"><img src="ordinateur/gfx/computer.png"><br>Ordinateur</a><br></td>
 	<td><a href="plan_de_vente/index.html"><img src="plan_de_vente/gfx/plan_de_vente.png"><br>Plan de vente</a></td>
-	<td style="width:50%;padding-bottom:20px;"><a href="cde_client_cde_fournisseur/index.php"><img src="cde_client_cde_fournisseur/gfx/assoc.png"><br>Relier cde adhérents et cde fournisseurs</a></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="barcode_generator/index.php"><img src="barcode_generator/gfx/icon.jpg"><br>Code barre</a></td>
 </tr>
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br>EDI</a><br></td>
@@ -83,6 +83,12 @@ img:hover {
 			<a href="edition_article_en_masse/index.php"><img src="edition_article_en_masse/gfx/edition_article_en_masse.png"><br>Edition d'article en masse</a>
 <?		} ?>
 	</td>
+</tr>
+
+<tr>
+	<td></td>
+	<td><a href="cde_client_cde_fournisseur/index.php"><img src="cde_client_cde_fournisseur/gfx/assoc.png"><br>Relier cde adhérents et cde fournisseurs</a></td>
+	<td></td>
 </tr>
 
 </table>

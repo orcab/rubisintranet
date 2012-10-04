@@ -212,7 +212,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 
 		//echo var_dump($_POST);
 
-		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10'))) // on veut que les fleche soit affichées
+		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30'))) // on veut que les fleche soit affichées
 			$pdf->Image("arrow_$emplacement[niveau]_".$themes[$theme]['text'].".png",
 						$origine['x'] + mm2pt(55),
 						$origine['y'] + mm2pt(48) );
