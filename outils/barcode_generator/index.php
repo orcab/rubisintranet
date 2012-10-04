@@ -23,35 +23,8 @@ fieldset {
 <body>
 <form method="post" action="etiquette.php">
 
-<fieldset style="float:right;"><legend>Liste des emplacements</legend>
-	<textarea name="emplacements" style="width:25em;height:20em;">M23 I 005 00 D
-D21 P 002 10 A
-P12 I 001 20 A
-D01 I 003 30 B
-M01 I 005 40 C
-D16 P 002 50 A
-M23 I 005 60 D
-D21 P 002 70 A
-P12 I 001 80 A
-D01 I 003 90 B
-M01 I 005 60 C
-D16 P 002 10 A
-M23 I 005 80 D
-D21 P 002 20 A
-P12 I 001 10 A
-D01 I 003 30 B
-M01 I 005 60 C
-D16 P 002 10 A
-P12 I 001 10 A
-D01 I 003 30 B
-M01 I 005 60 C
-D16 P 002 10 A
-M23 I 005 80 D
-D21 P 002 20 A
-P12 I 001 10 A
-D01 I 003 30 B
-M01 I 005 60 C
-D16 P 002 10 A</textarea>
+<fieldset style="float:right;"><legend>Liste des emplacements<br/>exemple : M23 I 005 00 D</legend>
+	<textarea name="emplacements" style="width:25em;height:20em;"></textarea>
 </fieldset>
 
 <fieldset><legend>Format d'&eacute;tiquettes</legend>
