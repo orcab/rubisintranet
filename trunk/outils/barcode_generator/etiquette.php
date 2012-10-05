@@ -82,7 +82,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	// mise au propre des données
 	// alle face	colonne niv	emp
 	// D01	P		001		20	A
-	// 4	1		1		2	2  (tout en alphanum)
+	// 4	1		3		2	2  (tout en alphanum)
 	// clé pose : 3 dernier car en dec du CRC
 	$emplacement['brut']		= $textes[$i];
 	$emplacement['clean']		= preg_replace('/[^0-9a-z]/i','',$emplacement['brut']);
@@ -99,16 +99,10 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	$emplacement['crc']			= sprintf('%u',crc32($emplacement['code_barre']));
 	$emplacement['cle_pose']	= substr($emplacement['crc'],strlen($emplacement['crc'])-3,3);
 
-	if ($emplacement['niveau'] == '') {
-		echo var_dump($emplacement); exit;
-	}
-
 	// choix du theme de couleur
 	$theme = $emplacement['niveau'];
 	if (!array_key_exists($theme,$themes))
 		$theme = 'default';
-
-	//echo var_dump($emplacement);
 
 	// on cree une nouvelle page si l'on depasse le nombre d'étiquette par page
 	if ($etiquette_position + 1 > $max_etiquette_on_page) {
@@ -126,8 +120,6 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 						'y'=>$page_origine['y'] + $format_etiquette['y'] * $ligne	+ $marge_y * $ligne,
 					);
 
-	//$pdf->SetFillColor(255,255,255);
-
 	// détermine la couleur de l'étiquette en fonction du theme
 	$bgcolor=htlmColor2fpdfColor($themes[$theme]['background']);
 	
@@ -138,12 +130,6 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	//echo var_dump(htlmColor2fpdfColor($themes[$theme]['background']));
 
 	if ($_POST['format_etiquette'] == 'L6009') {
-	/*	$pdf->Code128(	$origine['x'] + $format_etiquette['x'] / 2,
-						$origine['y'] + $bar_height / 2 + mm2pt(2.5),
-						$emplacement['code_barre'],
-						115,
-						$bar_height);
-*/
 	/*	Barcode::fpdf($pdf,'000000',
 						$origine['x'] + $format_etiquette['x'] / 2,
 						$origine['y'] + $bar_height / 2 + mm2pt(2.5),
@@ -158,7 +144,6 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	    $im   = imagecreatetruecolor($image_width, $image_height);
 		imagefilledrectangle($im, 0, 0, $image_width, $image_height ,ImageColorAllocate($im,0xff,0xff,0xff));   // fond blanc
 	    $data = Barcode::gd($im, ImageColorAllocate($im,0x00,0x00,0x00), $image_width / 2, $image_height / 2, $angle, 'code128', $emplacement['code_barre'] , 1, $image_height);
-		//echo var_dump($data);
 		$filename = 'tmp/'.$emplacement['code_barre'].' (code128).png'; // génération d'une image sur le disque
 		imagepng($im,$filename);
 
@@ -209,8 +194,6 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		$pdf->Text($origine['x'] + mm2pt( 4),$origine['y'] + $font_size * 2,			"$emplacement[colonne]");							# colonne
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size ,	"$emplacement[niveau] $emplacement[emplacement]");	# hauteur + emplacement
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size*2 ,	"[$emplacement[cle_pose]]");						# clé
-
-		//echo var_dump($_POST);
 
 		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30'))) // on veut que les fleche soit affichées
 			$pdf->Image("arrow_$emplacement[niveau]_".$themes[$theme]['text'].".png",

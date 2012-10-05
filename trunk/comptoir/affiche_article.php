@@ -422,7 +422,7 @@ EOT;
 	$i=0;
 	$nb_stock = 0 ;
 	while($row = mysql_fetch_array($res)) {
-			$stock = $row['stock_afa'].$row['stock_afl'] == '' ? false : true ;
+			$stock = $row['stock_afa']>0 ? false : true ;
 			if ($stock)
 				$nb_stock++;
 

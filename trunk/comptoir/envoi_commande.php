@@ -46,8 +46,9 @@ $entete['SNTCHA'] = $code_cab ? sprintf('%03d',$code_cab) : 'SANS'; # code chant
 // header
 $buffer =  "SNOCLI;SNOBON;SNTROF;SNTCHA;SNTBOS;SNTBOA;SNTBOM;SNTBOJ;SNTLIS;SNTLIA;SNTLIM;SNTLIJ;SNTRFC;SNTRFS;SNTRFA;SNTRFM;SNTRFJ;SNTVTE;SNTTTR;SNTPRO;SNTGAL;SEOLIG;SENART;SENROF;SENTYP;SENQTE;SENCSA\r\n";
 
-// detail
+// detail des articles
 $ligne = 1;
+$date = date('YmjHis');
 for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 	
 	$detail = array();
@@ -64,7 +65,7 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 
 	$buffer .= join(';',array(
 				$entete['SNOCLI'], # n° client
-				date('YmjHis'),	   # numero unique
+				$date,			   # numero unique
 				'R',               # R
 				$entete['SNTCHA'], # code chantier
 				$entete['SNTBOS'], # date bon
@@ -93,6 +94,38 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 			) // fin array
 		)."\r\n";	 // fin join
 }
+
+// rajout d'un commentaire pour préciser que l'artisan est au comptoir
+$buffer .=  join(';',array(
+				$entete['SNOCLI'], # n° client
+				$date,			   # numero unique
+				'R',               # R
+				$entete['SNTCHA'], # code chantier
+				$entete['SNTBOS'], # date bon
+				$entete['SNTBOA'],
+				$entete['SNTBOM'],
+				$entete['SNTBOJ'],
+				$entete['SNTLIS'], # date de liv
+				$entete['SNTLIA'],
+				$entete['SNTLIM'],
+				$entete['SNTLIJ'],
+				$entete['SNTRFC'], # reference
+				$entete['SNTBOS'], # date cde client
+				$entete['SNTBOA'],
+				$entete['SNTBOM'],
+				$entete['SNTBOJ'],
+				'EMP',
+				'NON',
+				'CPT',
+				'O',
+				$ligne + 2,
+				'',
+				'R',
+				'COM',
+				'',
+				'Artisan au comptoir'
+			) // fin array
+		)."\r\n";	 // fin join
 
 
 // copie du buffer dans le fichier temp
