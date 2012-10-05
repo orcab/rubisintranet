@@ -82,7 +82,7 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 				$entete['SNTBOJ'],
 				'EMP',
 				'NON',
-				'CDC',
+				'CPT',
 				'O',
 				$detail['SEOLIG'],
 				$detail['SENART'],
@@ -97,7 +97,8 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 
 // copie du buffer dans le fichier temp
 $ini = parse_ini_file('../scripts/pop2rubis.ini',true);
-$TEMP = fopen($ini['file']['path_file'],'a') ; //or die "Ne peux pas creer le fichier CSV temporaire '".$ini['file']['path_temporary_file']."'";
+$csv_filename = preg_replace('/CDC\.CSV$/i','CPT.CSV',$ini['file']['path_file']) ;
+$TEMP = fopen($csv_filename,'a') ; //or die "Ne peux pas creer le fichier CSV temporaire '".$ini['file']['path_temporary_file']."'";
 fwrite($TEMP,$buffer);
 fclose($TEMP);
 
@@ -183,8 +184,6 @@ $(document).ready(function() {
 	$('body').delegate('#print_page','click',function(){
 		window.print()
 	});
-	
-
 });
 //-->
 </script>
