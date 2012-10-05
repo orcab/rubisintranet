@@ -416,7 +416,7 @@ WHERE	1=1
 $sql
 EOT;
 
-	echo $sql;
+	//echo $sql;
 	$res = mysql_query($sql) or die("Ne peux pas récupérer les infos de la table article : ".mysql_error());
 
 	$i=0;
