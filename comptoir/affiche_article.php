@@ -351,7 +351,7 @@ $(document).ready(function() {
 <img src="gfx/stock2-3.png" /> Stock suffisant&nbsp;&nbsp;&nbsp;
 <img src="gfx/reappro.png" style="vertical-align:top;"/> Réappro en cours
 
-<label for="show_produit_stock" class="mobile mobile-block" style="width:20em;"><input id="show_produit_stock" type="checkbox">Afficher les produits non stockés</label>
+<label for="show_produit_stock" class="mobile mobile-block" style="width:20em;"><input id="show_produit_stock" type="checkbox">Afficher les produits sans stock</label>
 </div>
 
 <table id="article" class="tablesorter">
@@ -416,13 +416,14 @@ WHERE	1=1
 $sql
 EOT;
 
-	//echo $sql;
+	echo $sql;
 	$res = mysql_query($sql) or die("Ne peux pas récupérer les infos de la table article : ".mysql_error());
 
 	$i=0;
 	$nb_stock = 0 ;
 	while($row = mysql_fetch_array($res)) {
-			$stock = $row['stock_afa']>0 ? false : true ;
+			$stock =  ($row['stock_afa'] != '' && $row['stock_afa']>0) ? true : false;
+			//$stock =  ($row['stock_afa'] == '') ? false : true ;
 			if ($stock)
 				$nb_stock++;
 
