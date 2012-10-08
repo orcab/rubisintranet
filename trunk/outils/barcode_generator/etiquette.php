@@ -35,8 +35,10 @@ if ($_POST['format_etiquette'] == 'L6009') {
 	$angle = 0 ;
 	$font_size = 11;
 	$page_origine = array('x'=>mm2pt(14),'y'=>mm2pt(25.4));
-
-
+	$max_etiquette_on_ligne = 4;
+	$max_ligne_on_page = 12 ;
+	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
+	
 
 } elseif ($_POST['format_etiquette'] == 'L7993') {
 	$_POST['orientation_page'] = 'P';
@@ -49,6 +51,9 @@ if ($_POST['format_etiquette'] == 'L6009') {
 	$angle = 32 ;
 	$font_size = 35;
 	$page_origine = array('x'=>mm2pt(6),'y'=>mm2pt(13));
+	$max_etiquette_on_ligne = 2;
+	$max_ligne_on_page = 4 ;
+	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
 }
 
 
@@ -61,21 +66,10 @@ $page_size_x = $page_size[$_POST['format_page']][$_POST['orientation_page']][0];
 $page_size_y = $page_size[$_POST['format_page']][$_POST['orientation_page']][1];
 
 
-if ($_POST['format_etiquette'] == 'L6009') {
-	$max_etiquette_on_ligne = 4;
-	$max_ligne_on_page = 12 ;
-	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
-
-
-} elseif ($_POST['format_etiquette'] == 'L7993') {
-	$max_etiquette_on_ligne = 2;
-	$max_ligne_on_page = 4 ;
-	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
-}
-
-
-$etiquette_position = 0;
-$page = 1;
+if (isset($_POST['jump']) && preg_match('/\d/',$_POST['jump'])) // si un jump d'étiquette est préciser, on démarre avec des étiquettes blanches
+	$etiquette_position = intval($_POST['jump']);
+else
+	$etiquette_position = 0;
 
 for($i=0 ; $i<sizeof($textes) ; $i++) {
 
@@ -107,7 +101,6 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	// on cree une nouvelle page si l'on depasse le nombre d'étiquette par page
 	if ($etiquette_position + 1 > $max_etiquette_on_page) {
 		$pdf->AddPage();
-		$page++;
 		$etiquette_position = 0;
 	}
 
@@ -178,12 +171,12 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		$pdf->SetFillColor(255,255,255);
 
 		$pdf->Polygon(array( // losange
-							$origine['x'] + mm2pt( 70.25)			,	$origine['y'],						//p1
-							$origine['x'] + $format_etiquette['x']	,	$origine['y'] ,						//p2
-							$origine['x'] + $format_etiquette['x']	,	$origine['y'] + mm2pt(18),			//p3
-							$origine['x'] + mm2pt(19.25)			,	$origine['y'] +  $format_etiquette['y'],	//p4
-							$origine['x']							,	$origine['y'] +  $format_etiquette['y'],	//p5
-							$origine['x']							,	$origine['y'] + mm2pt(43.75),			//p6
+							$origine['x'] + mm2pt( 71)				,	$origine['y'] - mm2pt(0.5),						//p1
+							$origine['x'] + $format_etiquette['x']	,	$origine['y'] ,									//p2
+							$origine['x'] + $format_etiquette['x']	,	$origine['y'] + mm2pt(18),						//p3
+							$origine['x'] + mm2pt(19.25)			,	$origine['y'] +  $format_etiquette['y'],		//p4
+							$origine['x']							,	$origine['y'] +  $format_etiquette['y'],		//p5
+							$origine['x']							,	$origine['y'] + mm2pt(43.75),					//p6
 						),'F');
 
 		Barcode::fpdf($pdf,'000000', $origine['x'] + $format_etiquette['x'] / 2,  $origine['y'] + $format_etiquette['y'] / 2 - mm2pt(3), $angle,  'code39', $emplacement['code_barre'], $bar_width, $bar_height);
