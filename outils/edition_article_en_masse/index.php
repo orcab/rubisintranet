@@ -223,6 +223,10 @@ $(document).ready(function(){
 			<option value="achat-interdit">Achats interdit</option>
 			<option value="achat-autorise">Achats autorisé</option>
 		</optgroup>
+		<optgroup label="Catalogue papier">
+			<option value="catalogue-on">Mettre au catalogue</option>
+			<option value="catalogue-off">Enlever du catalogue</option>
+		</optgroup>
 	</select><br/>
 	<input type="button" id="valider" class="valider button" value="Lancer le traitement"/>
 </div>

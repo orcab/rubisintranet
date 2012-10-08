@@ -62,6 +62,25 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'achat-autorise'
 }
 
 
+
+// MET AU CATALOGUE DES CODES ARTICLES
+elseif (isset($_GET['what']) && $_GET['what'] == 'catalogue-on'
+	&&	isset($_GET['code_article']) && $_GET['code_article']) {
+
+	$res = odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set DIAA1='OUI' where NOART='".mysql_escape_string($_GET['code_article'])."'"); # stock
+	echo json_encode(array('result'=>1));
+}
+
+
+// SUPPRIME DU CATALOGUE DES CODES ARTICLES
+elseif (isset($_GET['what']) && $_GET['what'] == 'catalogue-off'
+	&&	isset($_GET['code_article']) && $_GET['code_article']) {
+
+	$res = odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set DIAA1='NON' where NOART='".mysql_escape_string($_GET['code_article'])."'"); # stock
+	echo json_encode(array('result'=>1));
+}
+
+
 else {
 	echo "Procedure '$_GET[what]' inconnu";
 }
