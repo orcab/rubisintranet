@@ -46,7 +46,10 @@ a:hover {
 </tr>
 <tr>
 	<td></td>
-	<td><a href="photo_indexer.php"><img src="gfx/photo_indexer.gif"><br>Association de photos</a></td>
+	<td>
+	<!--<a href="photo_indexer.php"><img src="gfx/photo_indexer.gif"><br>Association de photos</a>-->
+		<a href="vl_produit.php"><img src="gfx/vl_produit.gif"><br>VL des produits</a>
+	</td>
 	<td></td>
 </tr>
 </table>
