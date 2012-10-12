@@ -261,12 +261,6 @@ $(document).ready(function() {
 	});
 	*/
 
-	// clique sur le bouton deconnexion
-	$('body').delegate('#deconnexion','click',function(){
-		parent.document.location.href='index.php?deconnexion=1';
-	});
-
-	
 	$('body').delegate('input.affiche_article','click',function(){
 			parent.basefrm.document.location.href='affiche_article.php?search_text=' + $(this).attr('title') ;
 	});
@@ -328,10 +322,6 @@ $(document).ready(function() {
   <noscript>
    A tree for site navigation will open here if you enable JavaScript in your browser.
   </noscript>
-
-<div style="text-align:center;">
-	<input id="deconnexion" type="button" value="Déconnexion" class="button annuler" style="background-image:url(gfx/delete_32.png);padding-left:40px;" />
-</div>
 
 <div id="cadre-bestof">
 	<h1>Vos 10 achats courant</h1>

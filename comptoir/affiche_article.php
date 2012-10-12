@@ -20,8 +20,8 @@ if ($_SERVER['HTTP_HOST'] == 'www.coopmcs.com') {
 }
 
 $IMAGES = array();
-if (file_exists('images_data.php'))
-	include 'images_data.php';
+if (file_exists('../outils/plan_de_vente/images_data.php'))
+	include '../outils/plan_de_vente/images_data.php';
 else
 	echo ("Impossible de charger le fichier de cache des images");
 //print_r($IMAGES);exit;
@@ -289,6 +289,12 @@ $(document).ready(function() {
 		$(this).select();
 	});
 
+
+	// clique sur le bouton deconnexion
+	$('body').delegate('#deconnexion','click',function(){
+		parent.document.location.href='index.php?deconnexion=1';
+	});
+
 }); // document.ready
 
 //-->
@@ -522,7 +528,7 @@ EOT;
 	</tfoot>
 </table>
 </form>
-
+<br/><br/><br/>
 <? if ($nb_stock <= 0) { ?>
 	<script type="text/javascript">
 	<!--
@@ -535,6 +541,25 @@ EOT;
 	//-->
 	</script>
 <? } ?>
+
+<style>
+#footer {
+    background-color: #0C3A6D;
+    color: white;
+    font-size: 1em;
+    width: 50%;
+    border-radius: 20px 0 0 0;
+    text-align: right;
+    padding: 5px;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+}
+</style>
+<div id="footer">
+	Utilisateur connecté : <?=$info_user['name']?>&nbsp;
+	<input id="deconnexion" type="button" value="Déconnexion" class="button annuler" style="background-image:url(gfx/delete_32.png);padding-left:40px;" />
+</div>
 
 </body>
 </html>
