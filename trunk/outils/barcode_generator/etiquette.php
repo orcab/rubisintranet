@@ -188,7 +188,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size ,	"$emplacement[niveau] $emplacement[emplacement]");	# hauteur + emplacement
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size*2 ,	"[$emplacement[cle_pose]]");						# clé
 
-		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30'))) // on veut que les fleche soit affichées
+		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30','40','50','60','70','80','90'))) // on veut que les fleche soit affichées
 			$pdf->Image("arrow_$emplacement[niveau]_".$themes[$theme]['text'].".png",
 						$origine['x'] + mm2pt(55),
 						$origine['y'] + mm2pt(48) );

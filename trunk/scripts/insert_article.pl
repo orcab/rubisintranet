@@ -21,7 +21,7 @@ print print_time()."Select des articles actifs ...";
 my $sql = <<EOT;
 select	A.NOART as CODE_ARTICLE,
 		DESI1 as DESIGNATION1,DESI2 as DESIGNATION2,DESI3 as DESIGNATION3,
-		AFOG3 as GENCOD,SERST as SERVI_SUR_STOCK,CONDI as CONDITIONNEMENT,SURCO as SURCONDITIONNEMENT,LUNTA as UNITE,
+		AFOG3 as GENCOD,SERST as SERVI_SUR_STOCK,CONDI as CONDITIONNEMENT,SURCO as SURCONDITIONNEMENT,CDCON as CONDI_DIVISIBLE,LUNTA as UNITE,
 		ACTIV as ACTIVITE,FAMI1 as FAMILLE,SFAM1 as SOUSFAMILLE,ART04 as CHAPITRE,ART05 as SOUSCHAPITRE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
 		ROUND(PV.PVEN1,3) as PRIX_VENTE_ADH,
@@ -83,6 +83,9 @@ while($loginor->FetchRow()) {
 
 	# date de creation de l'article
 	$row{'DATE_CREATION'}		= "$row{SIECLE_CREATION}$row{ANNEE_CREATION}-$row{MOIS_CREATION}-$row{JOUR_CREATION}";
+
+	# si conditionnement divisible, on efface la notion de conditonnement
+	$row{'CONDITIONNEMENT'} = 1 if $row{'CONDI_DIVISIBLE'} eq 'OUI';
 
 	my @chemin = ();
 	push @chemin, $row{'ACTIVITE'}		if $row{'ACTIVITE'} ;
