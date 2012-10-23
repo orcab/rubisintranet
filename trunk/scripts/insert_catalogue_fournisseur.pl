@@ -270,7 +270,7 @@ where
 		ACBPRO='CATALFOU'	-- du catalogue fournisseur
 	and	ACBEMM<>''			-- pas de fournisseur vide
 	and ACBRFF<>''			-- pas de référence vide
---	and ACBEMM='SANIJU' and ACBRFF='550186'	-- pour les tests
+--	and ACBEMM='LEDA' and ACBRFF='L11PL04119C'	-- pour les tests
 ORDER BY ACBSPR DESC,ACBAPR DESC,ACBMPR DESC,ACBJPR DESC   -- dans l'ordre des dates d'application pour avoir les plus recents en premier
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
@@ -308,9 +308,9 @@ while($loginor->FetchRow()) {
 	}
 
 	# prix public
-	if ($row{'ACBA11'} == 3) {			# la colonne ACBCF6 est un prix net
+	if ($row{'ACBA16'} == 3) {			# la colonne ACBCF6 est un prix net
 		$prix6 = $row{'ACBCF6'} ? $row{'ACBCF6'} : $row{'ACBTPA'};
-	} elsif ($row{'ACBA11'} == 1) {		# la colonne ACBCF6 est un coef
+	} elsif ($row{'ACBA16'} == 1) {		# la colonne ACBCF6 est un coef
 		$prix6 = $pa_net * $row{'ACBCF6'} ;
 	}
 	

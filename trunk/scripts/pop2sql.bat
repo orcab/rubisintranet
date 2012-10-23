@@ -1,1 +1,1 @@
-pop2sql.exe >> pop2sql.log
+perl pop2sql.pl >> pop2sql.log

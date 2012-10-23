@@ -18,6 +18,8 @@ my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_
 open(SQL,'+>qte_article.sql') or die "ne peux pas creer le fichier SQL ($!)" ;
 # SQL de creation de la table
 print SQL <<EOT ;
+DROP TABLE `qte_article`;
+
 CREATE TABLE IF NOT EXISTS `qte_article` (
   `code_article`	varchar(15) NOT NULL,
   `depot`			varchar(3) NOT NULL,

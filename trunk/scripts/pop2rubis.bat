@@ -1,1 +1,1 @@
-pop2rubis.exe >> pop2rubis.log
+perl pop2rubis.pl >> pop2rubis.log
