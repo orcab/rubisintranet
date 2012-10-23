@@ -34,7 +34,7 @@ if ($_POST['format_etiquette'] == 'L6009') {
 	//$angle = 15 ;
 	$angle = 0 ;
 	$font_size = 11;
-	$page_origine = array('x'=>mm2pt(14),'y'=>mm2pt(25.4));
+	$page_origine = array('x'=>mm2pt(10.5),'y'=>mm2pt(21));
 	$max_etiquette_on_ligne = 4;
 	$max_ligne_on_page = 12 ;
 	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
@@ -72,22 +72,29 @@ else
 	$etiquette_position = 0;
 
 for($i=0 ; $i<sizeof($textes) ; $i++) {
+	$textes[$i] = strtoupper(trim($textes[$i]));
+	if ($textes[$i] == '') continue; // on saute les lignes vide
 
 	// mise au propre des données
 	// alle face	colonne niv	emp
 	// D01	P		001		20	A
-	// 4	1		3		2	2  (tout en alphanum)
+	// on split sur les espace ou tabulation
 	// clé pose : 3 dernier car en dec du CRC
-	$emplacement['brut']		= $textes[$i];
-	$emplacement['clean']		= preg_replace('/[^0-9a-z]/i','',$emplacement['brut']);
+	$tmp = preg_split('/\s+/',$textes[$i]);
+	if (sizeof($tmp) != 5) die("erreur '".$textes[$i]."' malformé") ; // on affiche une erreur car la ligne est malformée
 
-	if ($textes[$i] == '') continue; // on saute les lignes vide
+	$emplacement['allee']		= $tmp[0];
+	$emplacement['face']		= $tmp[1];
+	$emplacement['colonne']		= $tmp[2];
+	$emplacement['niveau']		= $tmp[3];
+	$emplacement['emplacement']	= $tmp[4];
 
-	$emplacement['allee']		= substr($emplacement['clean'],0,3);
-	$emplacement['face']		= substr($emplacement['clean'],3,1);
-	$emplacement['colonne']		= substr($emplacement['clean'],4,3);
-	$emplacement['niveau']		= substr($emplacement['clean'],7,2);
-	$emplacement['emplacement']	= substr($emplacement['clean'],9,2);
+	if (strlen($emplacement['allee']) > 4)								die("erreur dans '".$textes[$i]."' allee '$emplacement[allee]' trop long") ;
+	if (strlen($emplacement['face']) > 1)								die("erreur dans '".$textes[$i]."' face '$emplacement[face]' trop long") ;
+	if (!($emplacement['face'] == 'I' || $emplacement['face'] == 'P'))	die("erreur dans '".$textes[$i]."' face '$emplacement[face]' non valide") ;
+	if (strlen($emplacement['colonne']) > 3)							die("erreur dans '".$textes[$i]."' colonne '$emplacement[colonne]' trop long") ;
+	if (strlen($emplacement['niveau']) > 2)								die("erreur dans '".$textes[$i]."' niveau '$emplacement[niveau]' trop long") ;
+	if (strlen($emplacement['emplacement']) > 2)						die("erreur dans '".$textes[$i]."' emplacement '$emplacement[emplacement]' trop long") ;
 
 	$emplacement['code_barre']	= $emplacement['allee'].' '.$emplacement['face'].$emplacement['colonne'].$emplacement['niveau'].$emplacement['emplacement'];
 	$emplacement['crc']			= sprintf('%u',crc32($emplacement['code_barre']));
@@ -132,18 +139,19 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		if (!is_dir('tmp')) mkpath('tmp');
 
 		// génération d'une image
-		$image_width = 156;
+		$image_width = 160;
 		$image_height= 40;
 	    $im   = imagecreatetruecolor($image_width, $image_height);
 		imagefilledrectangle($im, 0, 0, $image_width, $image_height ,ImageColorAllocate($im,0xff,0xff,0xff));   // fond blanc
-	    $data = Barcode::gd($im, ImageColorAllocate($im,0x00,0x00,0x00), $image_width / 2, $image_height / 2, $angle, 'code128', $emplacement['code_barre'] , 1, $image_height);
-		$filename = 'tmp/'.$emplacement['code_barre'].' (code128).png'; // génération d'une image sur le disque
+	    $data = Barcode::gd($im, ImageColorAllocate($im,0x00,0x00,0x00), $image_width / 2, $image_height / 2, $angle, 'code93', $emplacement['code_barre'] , 1, $image_height);
+		$filename = 'tmp/'.$emplacement['code_barre'].' (code93).png'; // génération d'une image sur le disque
 		imagepng($im,$filename);
 
-		// importation de l'image que le doc PDF
 		$pdf->Image($filename,
-					$origine['x'] + ($format_etiquette['x'] - mm2pt($image_height))/2 -mm2pt(1),
-					$origine['y'] + mm2pt(2.5) );
+					$origine['x']  - mm2pt(1.5),
+					$origine['y'] + mm2pt(2.5),
+					$format_etiquette['x'] + mm2pt(2)
+		);
 
 		// rectangle coloré
 		$pdf->SetFillColor($bgcolor['red'],$bgcolor['green'],$bgcolor['blue']);

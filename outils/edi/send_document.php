@@ -141,13 +141,15 @@ EOT;
 			$mail = new SMTP;
 			$mail->Delivery('relay');
 			$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
-			//$mail->AddTo('benjamin.poulain@coopmcs.com', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
+			//$mail->AddTo('ryo@wanadoo.fr', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
 			$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-			$mail->From('edi@coopmcs.com');
+			$mail->From('no-reply@coopmcs.com');
 
 			$mail->Html($html);
-			$sent = $mail->Send($titre);
-			echo now()." [SEND] $row[nom] : $type_doc\n";
+			if ($sent = $mail->Send($titre))
+				echo now()." [SEND] $row[nom] : $type_doc\n";
+			else
+				echo now()." [NOT SEND] $row[nom] : $type_doc (".trim($mail->result).")\n";
 		}
 	} // foreach type de document
 } // fin while artisan

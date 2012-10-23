@@ -1,1 +1,1 @@
-insert_preference.exe >> insert_preference.log
+perl insert_preference.pl >> insert_preference.log
