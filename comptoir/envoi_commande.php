@@ -42,9 +42,8 @@ $entete['SNTRFC'] = substr($ref,0,20);
 // chantier
 $entete['SNTCHA'] = $code_cab ? sprintf('%03d',$code_cab) : 'SANS'; # code chantier CAB ou 'SANS'
 
-
 // header
-$buffer =  "SNOCLI;SNOBON;SNTROF;SNTCHA;SNTBOS;SNTBOA;SNTBOM;SNTBOJ;SNTLIS;SNTLIA;SNTLIM;SNTLIJ;SNTRFC;SNTRFS;SNTRFA;SNTRFM;SNTRFJ;SNTVTE;SNTTTR;SNTPRO;SNTGAL;SEOLIG;SENART;SENROF;SENTYP;SENQTE;SENCSA\r\n";
+$buffer = "SNOCLI;SNOBON;SNTROF;SNTCHA;SNTBOS;SNTBOA;SNTBOM;SNTBOJ;SNTLIS;SNTLIA;SNTLIM;SNTLIJ;SNTRFC;SNTRFS;SNTRFA;SNTRFM;SNTRFJ;SNTVTE;SNTTTR;SNTPRO;SNTGAL;SEOLIG;SENART;SENROF;SENTYP;SENQTE;SENCSA\r\n";
 
 // detail des articles
 $ligne = 1;
@@ -128,12 +127,17 @@ $buffer .=  join(';',array(
 		)."\r\n";	 // fin join
 
 
-// copie du buffer dans le fichier temp
-$ini = parse_ini_file('../scripts/pop2rubis.ini',true);
-$csv_filename = preg_replace('/CDC\.CSV$/i','CPT.CSV',$ini['file']['path_file']) ;
-$TEMP = fopen($csv_filename,'a') ; //or die "Ne peux pas creer le fichier CSV temporaire '".$ini['file']['path_temporary_file']."'";
-fwrite($TEMP,$buffer);
-fclose($TEMP);
+// copie du buffer dans le fichier CSV
+$letter= 'T';
+$location = '\\\\10.211.200.1\\QDLS\\AFA';
+$user = LOGINOR_USER;
+$pass = LOGINOR_PASS;
+system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
+$csv_filename = "$letter:/WEB/CPT.CSV";
+
+$CSV = fopen($csv_filename,'a') or die("Ne peux pas ouvrir le fichier CSV '$csv_filename'");
+fwrite($CSV,$buffer) or die("Ne peux pas ecrire les données dans le fichier CSV '$csv_filename'");
+fclose($CSV);
 
 //echo $buffer;
 

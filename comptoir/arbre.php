@@ -216,32 +216,15 @@ function delete_cde(id_panier) {
 }
 
 function verif_champs() {
-	return document.rechercher.search_text.value.length >= 2 ? true : false ;
+	if (document.rechercher.search_text_box.value.length >= 2) {
+		document.rechercher.search_text.value = document.rechercher.search_text_box.value;
+		document.rechercher.search_text_box.value = '';
+		return true;
+	} else {
+		return false;
+	}
 }
 
-/*
-function save_panier_as_favori() {
-	var nom_panier=prompt("Donnez un nom à cette commande favorite :");
-	if (nom_panier) {
-		$.ajax({
-				url: 'ajax.php',
-				type: 'GET',
-				data: 'what=save_panier_as_favori&code_user=<?=$info_user['username']?>&nom_panier='+nom_panier,
-				success: function(result){
-					if (result) // erreur
-						alert(result);
-					else // pas d'erreur, on recharge la page pour avoir la nouvelle cde favorite en visuel
-						$.ajax({ //  On va chercher les cde favorites
-								url: 'ajax.php',
-								type: 'GET',
-								data: 'what=get_favori&code_user=<?=$info_user['username']?>',
-								success: function(result){ $('#panier-favori').html(result); }	
-						});
-				}
-		});
-	} // si nom_panier
-}
-*/
 
 // une fois la page chargé.
 $(document).ready(function() {
@@ -252,14 +235,6 @@ $(document).ready(function() {
 			success: function(result){ $('#panier').html(result); }	
 	});
 
-	/*
-	$.ajax({ //  On va chercher les cde favorites
-			url: 'ajax.php',
-			type: 'GET',
-			data: 'what=get_favori&code_user=<?=$info_user['username']?>',
-			success: function(result){ $('#panier-favori').html(result); }	
-	});
-	*/
 
 	$('body').delegate('input.affiche_article','click',function(){
 			parent.basefrm.document.location.href='affiche_article.php?search_text=' + $(this).attr('title') ;
@@ -287,7 +262,9 @@ $(document).ready(function() {
 
 <body>
 <form name="rechercher" method="POST" action="affiche_article.php" style="margin-bottom:5px;" target="basefrm" onsubmit="return verif_champs();">
-<input type="text" name="search_text" size="14" style="margin-left:5px;"> <input type="submit" class="button valider" style="background-image:url(gfx/find.png);" value="Rechercher"><br>
+<input type="text" name="search_text_box" size="14" style="margin-left:5px;"/> <input type="submit" class="button valider" style="background-image:url(gfx/find.png);" value="Rechercher"/>
+<input type="hidden" name="search_text" value=""/>
+<br>
 <span style="margin-left:5px;">(code, référence, désignation)</span>
 </form>
 
@@ -298,12 +275,6 @@ $(document).ready(function() {
 	<!--<h1 style="border-top:dotted 1px white;"><span style="cursor:pointer;" onclick="save_panier_as_favori();">Enregistrer en favoris <img src="gfx/arrow_white_orange.gif" align="absbottom"/></span></h1>-->
 </div>
 
-<!--
-<div id="cadre-panier-favori">
-	<h1>Vos paniers favoris</h1>
-	<div id="panier-favori"></div>
-</div>
--->
   <!------------------------------------------------------------->
   <!-- IMPORTANT NOTICE:                                       -->
   <!-- Removing the following link will prevent this script    -->

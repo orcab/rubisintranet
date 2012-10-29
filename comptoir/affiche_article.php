@@ -232,6 +232,7 @@ function ajout_panier(code_article,conditionnement) {
 				data: 'what=ajout_panier&code_article='+escape(code_article)+':'+qte,
 				success: function(result){ top.frames[0].document.getElementById('panier').innerHTML=result; }	
 		});
+		document.article.elements['qte_'+code_article].value = '';
 	} else {
 		alert("Quantité à 0. Saisissez une quantité");
 	}
@@ -518,7 +519,6 @@ EOT;
 			</td>
 			<td class="panier">
 				<input type="button" value="Ajouter au panier" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');"/>
-				<!--<img src="gfx/ajout-panier.png" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');" />-->
 			</td>
 		</tr>
 <?		$i++;
