@@ -30,7 +30,7 @@ $entete['SNTBOJ'] = $annee;
 $entete['SNTLIS'] = $siecle;
 $entete['SNTLIA'] = $annee;
 $entete['SNTLIM'] = $mois;
-$entete['SNTLIJ'] = $annee;
+$entete['SNTLIJ'] = $jour;
 
 // reference
 $ref = $_POST['reference'] ;
