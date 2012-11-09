@@ -149,8 +149,8 @@ from AFAGESTCOM.ADETBOP1 DETAIL
 where
 DETAIL.NOCLI='$info_user[username]'
 and ETSBE=''
-and CONCAT(DTSAS,CONCAT(DTSAA,DTSAM)) >= '$date_before'
-and CONCAT(DTSAS,CONCAT(DTSAA,DTSAM)) <= '$date_today'
+and CONCAT(DTSAS,CONCAT(DTSAA,CONCAT(DTSAM,DTSAJ))) >= '$date_before'
+and CONCAT(DTSAS,CONCAT(DTSAA,CONCAT(DTSAM,DTSAJ))) <= '$date_today'
 and TRAIT='F' and PROFI='1'
 and DETAIL.DEPOT='AFA'
 and ENTETE.TYVTE='EMP'
