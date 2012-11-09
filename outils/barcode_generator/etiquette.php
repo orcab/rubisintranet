@@ -17,6 +17,8 @@ $themes	=					array(	'00'=>array('background'=>'ffff00', 'text'=>'000000'),				/
 									'70'=>array('background'=>'af3ee2', 'text'=>'FFFFFF'),				// violet
 									'80'=>array('background'=>'8b421b', 'text'=>'FFFFFF'),				// marron
 									'90'=>array('background'=>'006a06', 'text'=>'FFFFFF'),				// vert
+									'91'=>array('background'=>'b3b3b3', 'text'=>'000000'),				// gris
+									'92'=>array('background'=>'ff8080', 'text'=>'000000'),				// saumon
 									'default'=>array('background'=>'95D5FF', 'text'=>'000000')			// bleu par defaut
 							);
 
@@ -196,7 +198,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size ,	"$emplacement[niveau] $emplacement[emplacement]");	# hauteur + emplacement
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size*2 ,	"[$emplacement[cle_pose]]");						# clé
 
-		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30','40','50','60','70','80','90'))) // on veut que les fleche soit affichées
+		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30','40','50','60','70','80','90','91','92'))) // on veut que les fleche soit affichées
 			$pdf->Image("arrow_$emplacement[niveau]_".$themes[$theme]['text'].".png",
 						$origine['x'] + mm2pt(55),
 						$origine['y'] + mm2pt(48) );

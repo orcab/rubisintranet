@@ -95,7 +95,7 @@ EOT;
 
 				$html = '';
 				if ($_POST['what'] == 'date_liv') { // on previent des futures date de livraison
-					$html .= "<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur <u>$nom_four</u></b><br/>\n(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ)";
+					$html .= "<b>Voici les dates d'arrivées dans nos locaux des articles commandés chez le fournisseur <u>$nom_four</u></b><br/>\n(Attention, les dates annoncées par le fournisseur ne sont pas contractuelles et peuvent être soumises à un battement d'une semaine environ).<br/><b>De préférence renseigez vous auprès du pôle adhérent pour confirmer la réception du produit : pauline.chaplais@coopmcs.com</b>";
 				} elseif ($_POST['what'] == 'mise_a_dispo') { // on previent de la mise a dispo du matos
 					$html .= "<b>Les articles suivant du fournisseur <u>$nom_four</u> viennent d'être mis à disposition à la coopérative</b>";
 				}
