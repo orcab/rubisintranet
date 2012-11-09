@@ -135,11 +135,10 @@ elseif (	isset($_GET['what'])		&& $_GET['what'] == 'get_favori'
 
 //////////////////////// AFFICHE LE BEST OF //////////////////////////////////////////:
 elseif (	isset($_GET['what'])		&& $_GET['what'] == 'get_bestof') {
-	$mois_precedent		= date('Ym',mktime(0,0,0,date('m')-1,date('d'),date('Y')));
-	$siecle_precedent	= substr($mois_precedent,0,2);
-	$annee_precedent	= substr($mois_precedent,2,2);
-	$mois_precedent		= substr($mois_precedent,4,2);
-	
+	define('PERIOD_IN_MOUNTH',6);
+	$date_before		= date('Ymd',mktime(0,0,0,date('m')-PERIOD_IN_MOUNTH,date('d'),date('Y')));
+	$date_today			= date('Ymd');
+		
 	$sql = <<<EOT
 select  CODAR, DS1DB, DS2DB,
 --SUM(QTESA) as somme,
@@ -150,7 +149,8 @@ from AFAGESTCOM.ADETBOP1 DETAIL
 where
 DETAIL.NOCLI='$info_user[username]'
 and ETSBE=''
-and DTSAS='$siecle_precedent' and DTSAA='$annee_precedent' and DTSAM='$mois_precedent'
+and CONCAT(DTSAS,CONCAT(DTSAA,DTSAM)) >= '$date_before'
+and CONCAT(DTSAS,CONCAT(DTSAA,DTSAM)) <= '$date_today'
 and TRAIT='F' and PROFI='1'
 and DETAIL.DEPOT='AFA'
 and ENTETE.TYVTE='EMP'
