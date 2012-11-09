@@ -32,7 +32,7 @@ if ((isset($_POST['username']) && isset($_POST['password'])) || isset($_POST['ba
 		header('Location: interface.php'); // on redirige vers l'interface de commande
 
 	} else { // erreur dans l'identification
-		$message = "Impossible de vous identifier. Veuillez réessayer : '$_POST[barcode]'";
+		$message = "Impossible de vous identifier. Veuillez réessayer";
 	}
 }
 

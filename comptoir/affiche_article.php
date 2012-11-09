@@ -93,25 +93,25 @@ table#article td {
 }
 
 
-table#article td.designation pre {  margin:0; }
-table#article td.photo { text-align:center; }
+.designation pre {  margin:0; }
+.photo { text-align:center; }
 table#article td.qte { border-right:none; vertical-align:middle;}
 table#article td.panier { border-left:none; vertical-align:middle; }
-table#article td.prix_net { text-align:right; font-weight:bold; }
-table#article td.prix_public { text-align:right; }
-table#article td.stock {
+.prix_net { text-align:right; font-weight:bold; display:none; }
+.prix_public { text-align:right; }
+.stock {
 	background-position:center 2px;
 	background-repeat:no-repeat;
 	width:30px;
 	text-align:center;
 }
 
-table#article td.s0 { background-image:url('gfx/stock2-0.png'); }
-table#article td.s1 { background-image:url('gfx/stock2-1.png'); }
-table#article td.s2 { background-image:url('gfx/stock2-2.png'); }
-table#article td.s3 { background-image:url('gfx/stock2-3.png'); }
+.s0 { background-image:url('gfx/stock2-0.png'); }
+.s1 { background-image:url('gfx/stock2-1.png'); }
+.s2 { background-image:url('gfx/stock2-2.png'); }
+.s3 { background-image:url('gfx/stock2-3.png'); }
 
-table#article td.stock img { margin-top:20px; }
+.stock img { margin-top:20px; }
 
 td strong {
 	font-weight:bold;
@@ -370,7 +370,7 @@ $(document).ready(function() {
 		<th class="ref_fournisseur">Ref</th>
 		<th class="designation">Désignation</th>
 		<th class="prix_net no-sort">Px Adh</th>
-		<th class="prix_net no-sort">Px Pub</th>
+		<th class="prix_public no-sort">Px Pub</th>
 		<th class="stock_afa no-sort">Plescop</th>
 		<th class="stock_afl no-sort">Caudan</th>
 		<th colspan="2" class="no-sort">&nbsp;</th>
