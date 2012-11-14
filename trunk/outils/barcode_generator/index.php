@@ -32,7 +32,8 @@ input[name=jump] {
 </fieldset>
 
 <fieldset><legend>Format d'&eacute;tiquettes</legend>
-	<input type="radio" name="format_etiquette" value="L6009" id="L6009" checked="checked" /><label for="L6009">Avery L6009 45.7x21.2mm (48 etiq/page)</label><br/>
+	<input type="radio" name="format_etiquette" value="L6009" id="L6009" /><label for="L6009">Avery L6009 45.7x21.2mm (48 etiq/page)</label><br/>
+	<input type="radio" name="format_etiquette" value="L6011" id="L6011" /><label for="L6011">Avery L6011 63.5x29.6mm (27 etiq/page)</label><br/>
 	<input type="radio" name="format_etiquette" value="L7993" id="L7993" checked="checked" /><label for="L7993">Avery L7993 99.1x67.7mm ( 8 etiq/page)</label>
 	<dd><input type="checkbox" name="arrow" value="arrow" checked=""/>&nbsp;Avec les flêches</dd>
 	<br/><br/>
