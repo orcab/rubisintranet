@@ -33,14 +33,27 @@ if ($_POST['format_etiquette'] == 'L6009') {
 	$format_etiquette = array('x'=>mm2pt(45.4),'y'=>mm2pt(21.07)) ; // en mm
 	$bar_height = mm2pt(8);
 	$bar_width  = 1 ;
-	//$angle = 15 ;
 	$angle = 0 ;
 	$font_size = 11;
 	$page_origine = array('x'=>mm2pt(10.5),'y'=>mm2pt(21));
 	$max_etiquette_on_ligne = 4;
 	$max_ligne_on_page = 12 ;
-	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
-	
+
+
+} elseif ($_POST['format_etiquette'] == 'L6011') {
+	$_POST['orientation_page'] = 'P';
+	$_POST['format_page'] = 'A4';
+	$marge_x = mm2pt(2.5);
+	$marge_y = 0;
+	$format_etiquette = array('x'=>mm2pt(63.5),'y'=>mm2pt(29.6)) ; // en mm
+	$bar_height = mm2pt(8);
+	$bar_width  = 1 ;
+	$angle = 0 ;
+	$font_size = 11;
+	$page_origine = array('x'=>mm2pt(10.5),'y'=>mm2pt(21));
+	$max_etiquette_on_ligne = 3;
+	$max_ligne_on_page = 9 ;
+
 
 } elseif ($_POST['format_etiquette'] == 'L7993') {
 	$_POST['orientation_page'] = 'P';
@@ -55,8 +68,9 @@ if ($_POST['format_etiquette'] == 'L6009') {
 	$page_origine = array('x'=>mm2pt(6),'y'=>mm2pt(13));
 	$max_etiquette_on_ligne = 2;
 	$max_ligne_on_page = 4 ;
-	$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
 }
+
+$max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
 
 
 $pdf=new PDF($_POST['orientation_page'],'pt',$page_size[$_POST['format_page']]['P']);
@@ -131,12 +145,11 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 
 	//echo var_dump(htlmColor2fpdfColor($themes[$theme]['background']));
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////// FORMAT L6009 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	if ($_POST['format_etiquette'] == 'L6009') {
-	/*	Barcode::fpdf($pdf,'000000',
-						$origine['x'] + $format_etiquette['x'] / 2,
-						$origine['y'] + $bar_height / 2 + mm2pt(2.5),
-						$angle,  'code128', $emplacement['code_barre'], $bar_width - $i/20, $bar_height);
-	*/
 		// vérifie que le répertoire d'accueil des images existe
 		if (!is_dir('tmp')) mkpath('tmp');
 
@@ -171,6 +184,48 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 					$origine['y'] + $font_size + $bar_height + mm2pt(4.5),"$emplacement[allee] $emplacement[face] $emplacement[colonne] $emplacement[niveau] $emplacement[emplacement]   [$emplacement[cle_pose]]");
 	
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////// FORMAT L6011 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	} elseif ($_POST['format_etiquette'] == 'L6011') {
+		// vérifie que le répertoire d'accueil des images existe
+		if (!is_dir('tmp')) mkpath('tmp');
+
+		// génération d'une image
+		$image_width = 160;
+		$image_height= 40;
+	    $im   = imagecreatetruecolor($image_width, $image_height);
+		imagefilledrectangle($im, 0, 0, $image_width, $image_height ,ImageColorAllocate($im,0xff,0xff,0xff));   // fond blanc
+	    $data = Barcode::gd($im, ImageColorAllocate($im,0x00,0x00,0x00), $image_width / 2, $image_height / 2, $angle, 'code93', $emplacement['code_barre'] , 1, $image_height);
+		$filename = 'tmp/'.$emplacement['code_barre'].' (code93).png'; // génération d'une image sur le disque
+		imagepng($im,$filename);
+
+		$pdf->Image($filename,
+					$origine['x']  - mm2pt(4.5),
+					$origine['y'] - mm2pt(2),
+					$format_etiquette['x'] + mm2pt(2)
+		);
+
+		// rectangle coloré
+		$pdf->SetFillColor($bgcolor['red'],$bgcolor['green'],$bgcolor['blue']);
+		$pdf->RoundedRect(	$origine['x'] - mm2pt(2) ,
+							$origine['y'] + $bar_height + mm2pt(4),
+							$format_etiquette['x'] - mm2pt(3),
+							$font_size  + mm2pt(2) ,
+							4,'F');
+
+		$pdf->SetFillColor(255,255,255);
+		
+		// texte
+		$pdf->SetFont('Arial','B',$font_size);
+		$pdf->Text(	$origine['x'] + mm2pt(12),
+					$origine['y'] + $font_size + $bar_height + mm2pt(4.5),"$emplacement[allee] $emplacement[face] $emplacement[colonne] $emplacement[niveau] $emplacement[emplacement]   [$emplacement[cle_pose]]");
+	
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////// FORMAT L7993 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	} elseif  ($_POST['format_etiquette'] == 'L7993') {
 		$pdf->SetFillColor($bgcolor['red'],$bgcolor['green'],$bgcolor['blue']);
 		$pdf->RoundedRect(	$origine['x'] + mm2pt(1) ,
@@ -208,13 +263,11 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	$etiquette_position++;
 }
 
-
 $pdf->Output();
 
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function mm2pt($mm) {
 	return 2.85714285 * $mm ;
 }
