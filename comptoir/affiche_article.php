@@ -201,6 +201,10 @@ label.mobile > input[type="checkbox"] {
 	top:2px;
 }
 
+.stock_afl {
+	display:none;
+}
+
 </style>
 <style type="text/css">@import url(../js/boutton.css);</style>
 <script language="javascript" src="../js/jquery.js"></script>
@@ -430,7 +434,6 @@ EOT;
 	$nb_stock = 0 ;
 	while($row = mysql_fetch_array($res)) {
 			$stock =  ($row['stock_afa'] != '' && $row['stock_afa']>0) ? true : false;
-			//$stock =  ($row['stock_afa'] == '') ? false : true ;
 			if ($stock)
 				$nb_stock++;
 
@@ -493,7 +496,7 @@ EOT;
 				}
 			?>
 			</td>
-			<td class="stock <?
+			<td class="stock stock_afa <?
 				if		($row['stock_afa'] == '')	echo "s0";									// pas stocké
 				elseif  ($row['stock_afa'] <= 0)	echo "s1";									// en rupture
 				elseif  ($row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) echo "s2";	// en dessous du mini
@@ -503,7 +506,7 @@ EOT;
 				<img src="gfx/reappro.png"/>
 <?			} ?>
 </td>
-			<td class="stock <?
+			<td class="stock stock_afl <?
 				if		($row['stock_afl'] == '')	echo "s0";									// pas stocké
 				elseif  ($row['stock_afl'] <= 0)	echo "s1";									// en rupture
 				elseif  ($row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) echo "s2";	// en dessous du mini
