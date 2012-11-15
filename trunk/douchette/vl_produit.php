@@ -15,10 +15,12 @@ if (isset($_POST['what']) && $_POST['what']=='saisie_gencode' && isset($_POST['r
 	$gencode	= strtoupper(mysql_escape_string(trim($_POST['gencode'])));
 
 	$sql = <<<EOT
-select	ARTICLE.NOART,ARTICLE.DESI1,ARTICLE.DESI2,ARTICLE_FOURNISSEUR.NOFOU,ARTICLE_FOURNISSEUR.REFFO,ARTICLE_FOURNISSEUR.AFPCB
+select	ARTICLE.NOART,ARTICLE.DESI1,ARTICLE.DESI2,ARTICLE_FOURNISSEUR.NOFOU,ARTICLE_FOURNISSEUR.REFFO,ARTICLE_FOURNISSEUR.AFPCB,FICHE_STOCK.LOCAL
 from				${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 		left join	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 						on ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE.FOUR1=ARTICLE_FOURNISSEUR.NOFOU
+		left join	${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 FICHE_STOCK
+						on ARTICLE.NOART=FICHE_STOCK.NOART and FICHE_STOCK.DEPOT='$LOGINOR_DEPOT'
 where	   (ARTICLE.NOART='$reference')					-- saisie d'un code article MCS
 		or (ARTICLE_FOURNISSEUR.REFFO='$reference')		-- saisie d'une référence fournisseur
 		or (ARTICLE.GENCO='$reference')					-- saisie d'un code barre MCS
@@ -39,6 +41,18 @@ EOT;
 		$_SESSION['article'] = $resultats[0];
 		$_SESSION['reference'] = $_POST['reference'];
 
+		$OLD_CSV = file('old_vl_produit.csv') or die("Ne peux pas ouvrir l'ancienne base de donnée");
+		foreach($OLD_CSV as $ligne) {
+			$data = explode(';',$ligne);
+			if ($data[0] == $_SESSION['article']['NOART']) { // on a trouvé l'article deja renseigné
+				$_SESSION['article']['unite_vl_10']		= $data[5];
+				$_SESSION['article']['qte_vl_20']		= $data[6];
+				$_SESSION['article']['unite_vl_20']		= $data[7];
+				$_SESSION['article']['qte_max_vl_10']	= $data[9];
+				break;
+			}
+		}
+
 	} elseif (sizeof($resultats) <= 0) {
 		$_SESSION['article'] = array();
 		$_SESSION['reference'] = '';
@@ -51,11 +65,16 @@ EOT;
 	}
 
 
+// on reset et on revient à lécran de saisie de l'article
+} elseif (isset($_GET['what']) && $_GET['what']=='reset') {
+	$_SESSION['article'] = array();
+
+
 // tout est bon, on enregistre
 } elseif (isset($_POST['what']) && $_POST['what']=='enregistre') {
 
 	if (!file_exists(DATABASE)) // le fichier n'existe pas, on cree les entetes
-		$buffer = join(';',array('code_article','fournisseur','reference','designation1','designation2','unite_vl_10','qte_vl_20','unite_vl_20','code_taille_emplacement','qte_max_vl_10','code_famille_prepa','ip_terminal','ean13_flashe','date_saisie'))."\n";
+		$buffer = join(';',array('code_article','fournisseur','reference','designation1','designation2','localisation_reflex','etiquette_localisation_reflex_dead','localisation_rubis','unite_vl_10','qte_vl_20','unite_vl_20','code_taille_emplacement','qte_max_vl_10','code_famille_prepa','ip_terminal','ean13_flashe','date_saisie','emplacement_a_verifier'))."\n";
 
 	$buffer .= join(';',array(
 							$_SESSION['article']['NOART'],
@@ -63,6 +82,9 @@ EOT;
 							$_SESSION['article']['REFFO'],
 							$_SESSION['article']['DESI1'],
 							$_SESSION['article']['DESI2'],
+							$_POST['localisation_reflex'],
+							isset($_POST['etiquette_localisation_reflex_dead'])?'1':'',
+							$_POST['localisation_rubis'],
 							$_POST['unite_vl_10'],
 							$_POST['qte_vl_20'],
 							$_POST['unite_vl_20'],
@@ -71,13 +93,14 @@ EOT;
 							$_POST['code_famille_prepa'],
 							$_SERVER['REMOTE_ADDR'],
 							$_SESSION['reference'],
-							date('Y/m/d H:i')
+							date('Y/m/d H:i'),
+							isset($_POST['emplacement_a_verifier'])?'1':'',
 						))."\n";
 
 	// enregistre le tout dans un fichier CSV
-	$TEMP = fopen(DATABASE,'a') ;
-	fwrite($TEMP,$buffer);
-	fclose($TEMP);
+	$CSV = fopen(DATABASE,'a') ;
+	fwrite($CSV,$buffer);
+	fclose($CSV);
 
 	$message = "Article ".$_SESSION['article']['NOART']." enregistré";
 	
@@ -149,6 +172,11 @@ select {
 
 option { color:yellow; }
 
+input#valider {
+	color:black;
+	background-color:yellow;
+}
+
 </style>
 
 <script language="javascript">
@@ -156,21 +184,25 @@ option { color:yellow; }
 
 // au chargement de la page
 function init() {
-	if (document.getElementById('reference'))
+	if		(document.getElementById('reference'))
 		document.getElementById('reference').focus();
+
+	else if (document.getElementById('localisation_reflex'))
+		document.getElementById('localisation_reflex').focus();
 }
 
+
 function verif_form() {
-	if (document.mon_form.qte_vl_20.value == '')	{
+	if (document.mon_form.qte_vl_20.value == '') {
 		alert("Veuillez saisir une quantité en VL 20");
 
-	} else if (document.mon_form.code_taille_emplacement.value == '')	{
+	} else if (document.mon_form.code_taille_emplacement.value == '') {
 		alert("Veuillez saisir un code taille emplacement");
 
 	} else if (document.mon_form.qte_max_vl_10.value == '')	{
 		alert("Veuillez une quantité maximum en VL 10");
 
-	} else if (document.mon_form.code_famille_prepa.value == '')	{
+	} else if (document.mon_form.code_famille_prepa.value == '') {
 		alert("Veuillez saisir un code famille prepa");
 
 	// tout est bon, on envoi
@@ -178,6 +210,7 @@ function verif_form() {
 		document.mon_form.submit();
 	}
 }
+
 
 //-->
 </script>
@@ -191,7 +224,7 @@ function verif_form() {
 
 <h3 id="titre3"><?=$message?></h3>
 
-<? if (is_array($_SESSION['article']) && sizeof($_SESSION['article'])>0) { ///////////////// ON A PAS ENCORE SAISIE DE GENCODE //////////////////////////: ?>
+<? if (is_array($_SESSION['article']) && sizeof($_SESSION['article'])>0) { ///////////////// ON A PAS ENCORE SAISIE DE GENCODE ////////////////////////// ?>
 
 <input type="hidden" name="what" value="enregistre"/>
 
@@ -199,9 +232,11 @@ function verif_form() {
 	<div class="code"><?=$_SESSION['article']['NOART']?></div>
 	<div class="desi1"><?=$_SESSION['article']['DESI1']?></div>
 	<div class="desi2"><?=$_SESSION['article']['NOFOU']?> <?=$_SESSION['article']['REFFO']?></div>
-	
-<h1>VL de base</h1>
-Qte : 1
+
+Localisation Reflex : <input id="localisation_reflex" type="text" value="" name="localisation_reflex" size="10"/>&nbsp;&nbsp;E<input type="checkbox" name="etiquette_localisation_reflex_dead"/>&nbsp;&nbsp;F<input type="checkbox" name="emplacement_a_verifier"/><br/>
+Localisation Rubis : <input type="text" value="<?=$_SESSION['article']['LOCAL']?>" name="localisation_rubis" size="7"/><br/><br/>
+
+VL 10 / Qte : 1
 <select name="unite_vl_10">
 	<option value="BTE">BTE - Boite</option>
 	<option value="CAD">CAD - Cadre</option>
@@ -219,8 +254,15 @@ Qte : 1
 </select>
 <br/><br/>
 
-<h1>VL 20</h1>
-Qte : <input type="text" value="<?=round($_SESSION['article']['AFPCB']) ? round($_SESSION['article']['AFPCB']):''?>" name="qte_vl_20" size="2"/> dans 
+
+<?	// soit on recupere l'ancienne valeur rentrée, soit on va chercher dans Rubis
+	$qte_vl_20 = '';
+	if		(isset($_SESSION['article']['qte_vl_20']) && $_SESSION['article']['qte_vl_20']!='')
+		$qte_vl_20 = $_SESSION['article']['qte_vl_20'];
+	elseif	(round($_SESSION['article']['AFPCB']))
+		$qte_vl_20 = round($_SESSION['article']['AFPCB']);
+?>
+VL 20 / Qte : <input type="text" value="<?=$qte_vl_20?>" name="qte_vl_20" size="2"/> dans 
 <select name="unite_vl_20">
 	<option value="BTE">BTE - Boite</option>
 	<option value="CAD">CAD - Cadre</option>
@@ -239,11 +281,15 @@ Qte : <input type="text" value="<?=round($_SESSION['article']['AFPCB']) ? round(
 <br/><br/>
 
 <h1>Code taille emplacement <input type="text" value="<?=isset($_SESSION['code_taille_emplacement']) ? $_SESSION['code_taille_emplacement']:'' ?>" name="code_taille_emplacement" size="2"/></h1>
-<h1>Qte max en (VL 10) <input type="text" value="" name="qte_max_vl_10" size="2"/></h1>
+<h1>Qte max en (VL 10) <input type="text" name="qte_max_vl_10"  value="<?=isset($_SESSION['article']['qte_max_vl_10']) ? $_SESSION['article']['qte_max_vl_10']:''?>" size="2"/></h1>
 
-<input type="button" value="Valider" onclick="verif_form();"/>
+<br/>
+<center>
+	<input id="valider" type="button" value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Valider&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" onclick="verif_form();"/><br/><br/><br/>
+	<input id="annuler" type="button" value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Annuler&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" onclick="javascript:document.location.href='<?=basename($_SERVER['PHP_SELF'])?>?what=reset';"/>
+<center>
 
-<br/><br/><br/><br/>
+<br/>
 <h1>Code famille prépa <input type="text" value="<?=isset($_SESSION['code_famille_prepa']) ? $_SESSION['code_famille_prepa']:'' ?>" name="code_famille_prepa" size="2"/></h1>
 
 <? } else { /////////// ON A DEJA SAISIE UN GENCODE //////////////////////////////////////////////////////////////////////////////////////////////////// ?>

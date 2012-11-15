@@ -49,7 +49,19 @@ body,pre { font-family: verdana,helvetica; }
 a img { border:none; }
 img { vertical-align: middle; }
 
-#message { color:red ; }
+#message { 
+	color: red;
+    border: solid 2px red;
+    width: 50%;
+    text-align: center;
+    margin: 0 auto;
+    padding: 1em;
+    background: #FDD;
+    border-radius: 10px;
+    position: absolute;
+    top: 1em;
+    left:  20%;
+}
 
 #id-container, #barcode-container {
     border: solid 1px #6290B3;
