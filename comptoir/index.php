@@ -60,7 +60,10 @@ img { vertical-align: middle; }
     border-radius: 10px;
     position: absolute;
     top: 1em;
-    left:  20%;
+    left:20%;
+<?	if (!$message) { ?>
+		display:none;			
+<?	} ?>
 }
 
 #id-container, #barcode-container {
@@ -127,6 +130,10 @@ $(document).ready(function(){
 			barcode = '';
 		}
 	});
+
+
+	// fait disparaitre le message au bout de x seconde
+	$('#message').delay(3000).fadeOut(2000);
 
 
 });
