@@ -421,7 +421,7 @@ EOT;
 	$nb_stock = 0 ;
 	while($row = mysql_fetch_array($res)) {
 			$stocker	= $row['stock_afa'] != ''	? true : false;
-			$stock_a_0	= $row['stock_afa'] == 0		? true : false;
+			$stock_a_0	= $row['stock_afa'] <= 0		? true : false;
 			if ($stocker)
 				$nb_stock++;
 
