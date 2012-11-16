@@ -55,6 +55,11 @@ if (isset($_GET['reset_critere'])) {
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<style type="text/css">@import url(../js/boutton.css);</style>
+<script language="javascript" src="../js/jquery.js"></script>
+<script language="javascript" src="../js/jquery.tablesorter.min.js"></script>
+<style type="text/css">@import url(../js/tablesortable/style.css);</style>
+<style type="text/css">@import url(../js/tactile.css);</style>
 <style>
 body { margin:0px; }
 body,pre {
@@ -100,18 +105,9 @@ table#article td.panier { border-left:none; vertical-align:middle; }
 .prix_net { text-align:right; font-weight:bold; display:none; }
 .prix_public { text-align:right; }
 .stock {
-	background-position:center 2px;
-	background-repeat:no-repeat;
 	width:30px;
 	text-align:center;
 }
-
-.s0 { background-image:url('gfx/stock2-0.png'); }
-.s1 { background-image:url('gfx/stock2-1.png'); }
-.s2 { background-image:url('gfx/stock2-2.png'); }
-.s3 { background-image:url('gfx/stock2-3.png'); }
-
-.stock img { margin-top:20px; }
 
 td strong {
 	font-weight:bold;
@@ -133,10 +129,7 @@ div#overlay {
 	right:3px;
 }
 
-div#legend {
-	margin-left:1em;
-}
-
+div#legend { margin-left:1em; }
 a.similaire		{ text-decoration:none; color:grey;}
 a.similaire:hover	{ text-decoration:underline; }
 
@@ -152,12 +145,15 @@ div#photo {
 	z-index:99;
 }
 
-tr.odd { background-color:#EEE; }
-tr.even { background-color:white; }
+/* change le background si pas de stock */
+tr.stock_a_0 { background:url(gfx/no-stock.png) repeat-x center center; }
 
+/* cache les element de commande s'il n'y a pas de stock */
+tr.stock_a_0 .panier ,tr.stock_a_0 .qte  { visibility:hidden; }
 
+/* cache complement si AFL ou non stocké */
 tr.nonstock { display:none; }
-tr.stock { }
+.stock_afl { display:none; }
 
 /* test type jQuery mobile */
 label.mobile {
@@ -200,17 +196,7 @@ label.mobile > input[type="checkbox"] {
 	position:relative;
 	top:2px;
 }
-
-.stock_afl {
-	display:none;
-}
-
 </style>
-<style type="text/css">@import url(../js/boutton.css);</style>
-<script language="javascript" src="../js/jquery.js"></script>
-<script language="javascript" src="../js/jquery.tablesorter.min.js"></script>
-<style type="text/css">@import url(../js/tablesortable/style.css);</style>
-<style type="text/css">@import url(../js/tactile.css);</style>
 <script language="javascript">
 <!--
 
@@ -242,11 +228,13 @@ function ajout_panier(code_article,conditionnement) {
 	}
 }
 
+
+
 $(document).ready(function() {
 	
 	$('#article').tablesorter( {sortList: [[7,1]]} ); // sort sur le code article par défaut
-
 	
+
 	$('#article').bind('sortStart',function() {
 		$('#overlay').show();
 	}).bind('sortEnd',function() {
@@ -264,7 +252,6 @@ $(document).ready(function() {
 					})
 					.show();
 	});// fin mouseover
-
 
 
 	$('label.mobile > input[type=checkbox]').click(function(){
@@ -433,22 +420,27 @@ EOT;
 	$i=0;
 	$nb_stock = 0 ;
 	while($row = mysql_fetch_array($res)) {
-			$stock =  ($row['stock_afa'] != '' && $row['stock_afa']>0) ? true : false;
-			if ($stock)
+			$stocker	= $row['stock_afa'] != ''	? true : false;
+			$stock_a_0	= $row['stock_afa'] == 0		? true : false;
+			if ($stocker)
 				$nb_stock++;
 
 			$row['code_article'] = trim($row['code_article']);
 ?>
-		<tr id="ligne_<?=$row['code_article']?>" class="<?=($stock ? 'stock':'nonstock')?> <?=$i&1?'odd':'even'?>">
+		<tr id="ligne_<?=$row['code_article']?>" class="<?=$stocker?'stock':'nonstock'?> <?=$stock_a_0?'stock_a_0':''?>">
 			<!-- photo -->
 			<td class="photo">
 <?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
 					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/>
 <?				} ?>
 			</td>
+
 			<td class="code_article"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['code_article']) : $row['code_article']?></td>
+
 			<td class="fournisseur"><?=wordwrap($row['fournisseur'], 20, "<br />\n")?></td>
+
 			<td class="ref_fournisseur"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['ref_fournisseur']) : $row['ref_fournisseur']?></td>
+
 			<td class="designation">
 				<pre><?
 					// si l'article a moins de deux mois, on affiche un logo nouveau
@@ -474,6 +466,7 @@ EOT;
 				<!-- article similaire -->
 				<div style="text-align:right;"><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><img src="gfx/loupe.png" style="vertical-align:bottom;"/> Articles similiares</a></div>
 			</td>
+
 			<td class="prix_net" nowrap><?
 				if ($row['conditionnement'] > 1) {
 					printf('%d%s x %0.2f&euro;', $row['conditionnement'], $row['unite'], $row['prix_net'] );
@@ -483,6 +476,7 @@ EOT;
 				}
 			?>
 			</td>
+
 			<td class="prix_public" nowrap><?
 				if ($row['prix_public']!='0.00') {
 					if ($row['conditionnement'] > 1) {
@@ -496,30 +490,42 @@ EOT;
 				}
 			?>
 			</td>
-			<td class="stock stock_afa <?
-				if		($row['stock_afa'] == '')	echo "s0";									// pas stocké
-				elseif  ($row['stock_afa'] <= 0)	echo "s1";									// en rupture
-				elseif  ($row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) echo "s2";	// en dessous du mini
-				else								echo "s3";									// au dessus du mini
-			?>">
-<?			if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
-				<img src="gfx/reappro.png"/>
-<?			} ?>
-</td>
-			<td class="stock stock_afl <?
-				if		($row['stock_afl'] == '')	echo "s0";									// pas stocké
-				elseif  ($row['stock_afl'] <= 0)	echo "s1";									// en rupture
-				elseif  ($row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) echo "s2";	// en dessous du mini
-				else								echo "s3";									// au dessus du mini
-			?>">
-<?			if ($row['reappro_afl'] > 0) { // reappro de stock en cours ?>
-				<img src="gfx/reappro.png"/>
-<?			} ?>
+
+			<td class="stock stock_afa">
+				<? if		($row['stock_afa'] == '') { // pas stocké ?>
+						<img src="gfx/stock2-0.png"/>
+				<? } elseif  ($row['stock_afa'] <= 0) { // en rupture ?>
+						<img src="gfx/stock2-1.png"/>
+				<? } elseif  ($row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) { // en dessous du mini ?>
+						<img src="gfx/stock2-2.png"/>
+				<? } else { // au dessus du mini ?>
+						<img src="gfx/stock2-3.png"/>	
+				<? } ?>
+				<? if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
+					<br/><br/><img src="gfx/reappro.png"/>
+				<? } ?>
 			</td>
+
+			<td class="stock stock_afl">
+				<? if		($row['stock_afl'] == '') { // pas stocké ?>
+						<img src="gfx/stock2-0.png"/>
+				<? } elseif  ($row['stock_afl'] <= 0) { // en rupture ?>
+						<img src="gfx/stock2-1.png"/>
+				<? } elseif  ($row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) { // en dessous du mini ?>
+						<img src="gfx/stock2-2.png"/>
+				<? } else { // au dessus du mini ?>
+						<img src="gfx/stock2-3.png"/>	
+				<? } ?>
+				<? if ($row['reappro_afl'] > 0) { // reappro de stock en cours ?>
+					<br/><br/><img src="gfx/reappro.png"/>
+				<? } ?>
+			</td>
+
 			<td class="qte" nowrap="nowrap">
 				<input class="qte" type="text" name="qte_<?=$row['code_article']?>" value="" size="6" />
 				<?= $row['conditionnement'] > 1 ? $row['unite'] :'' ?>
 			</td>
+
 			<td class="panier">
 				<input type="button" value="Ajouter au panier" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');"/>
 			</td>
