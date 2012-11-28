@@ -205,6 +205,7 @@ $(document).ready(function(){
 					case '6' : img += 'switch-'		+	(result.ping?'ok':'bad')+'.png'; break;
 					case '7' : img += 'router-'		+	(result.ping?'ok':'bad')+'.png'; break;
 					case '8' : img += 'virtual-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '9' : img += 'label-printer-'+	(result.ping?'ok':'bad')+'.png'; break;
 				}
 				img += '"/>';
 				$('tr#'+result.ip.replace(/\./g,'_')+' td.ping').html(img);
@@ -277,6 +278,7 @@ $(document).ready(function(){
 			<select name="detail_utilisateur_printer">
 				<option value="0">Employé</option>
 				<option value="1">Imprimante</option>
+				<option value="9">Imrimante &eacute;tiquette</option>
 				<option value="2">Borne Wifi</option>
 				<option value="3">Douchette Wifi</option>
 				<option value="4">Serveur</option>
