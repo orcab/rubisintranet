@@ -112,7 +112,7 @@ EOT;
 ?>
 <html>
 <head>
-<title>Association de photo</title>
+<title>VL produit</title>
 <style>
 a img { border:none; }
 </style>
