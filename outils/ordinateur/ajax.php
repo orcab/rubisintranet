@@ -35,6 +35,33 @@ elseif (isset($_POST['what']) && $_POST['what'] == 'valider_detail_utilisateur' 
 }
 
 
+// test si l'ip répond au ping
+elseif (isset($_GET['what']) && $_GET['what'] == 'ping' &&
+		isset($_GET['ip']) && preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/',$_GET['ip'])) {
+
+	include_once('../../inc/ping/ping.php'); # import ping(ip)
+	error_reporting(E_ALL ^ E_WARNING);
+	set_time_limit(60);
+
+	$ping = ping($_GET['ip']);
+	$vnc = 0;
+	if ($ping && in_array($_GET['type'],array(0,4,8))) { // si PC allumé et peut supporté VNC
+		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		if (socket_connect($socket, $_GET['ip'], '5900') == TRUE) { // connexion réussi, VNC allumé
+			socket_close($socket);
+			$vnc = 1;
+		} else {
+			$vnc = -1;
+		}
+	}
+
+	echo json_encode(array(	'ip'	=> $_GET['ip'],
+							'vnc'	=> $vnc,
+							'ping'	=> $ping,
+							'type'	=> $_GET['type']
+						  )
+					);
+}
 
 
 // CAS PAR DEFAUT

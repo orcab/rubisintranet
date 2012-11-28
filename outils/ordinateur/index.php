@@ -1,7 +1,6 @@
 <?
 
 include('../../inc/config.php');
-include('../../inc/ping/ping.php'); # import ping(ip)
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
@@ -60,6 +59,7 @@ table#ordi {
 table#ordi td {
 	border:solid 1px grey;
 	padding:1px;
+	height:32px;
 }	
 </style>
 <style type="text/css">@import url(../../js/boutton.css);</style>
@@ -180,6 +180,46 @@ function valider_detail_utilisateur() {
 }
 <? } // PEUT_MODIFIER_UTILISATEUR ?>
 
+var machines_ip = new Array();
+
+// document chargé
+$(document).ready(function(){
+
+	// on lance les tests IP
+	//console.log(machines_ip);
+	for(var i=0; i<machines_ip.length ; i++) {
+		$('tr#'+machines_ip[i].ip.replace(/\./g,'_')+' td.ping').html('<img src="gfx/loading5.gif"/>');
+		$('tr#'+machines_ip[i].ip.replace(/\./g,'_')+' td.vnc').html('<img src="gfx/loading5.gif"/>');
+
+		$.getJSON('ajax.php?what=ping&ip='+machines_ip[i].ip+'&type='+machines_ip[i].type, function(result) {
+				console.log(result);//   type:"+machines_ip[result.ip].type);
+
+				var img = '<img src="gfx/';
+				switch (result.type) {
+					case '0' : img += 'computer-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '1' : img += 'printer-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '2' : img += 'borne-wifi-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '3' : img += 'douchette-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '4' : img += 'serveur-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '5' : img += 'pabx-'		+	(result.ping?'ok':'bad')+'.png'; break;
+					case '6' : img += 'switch-'		+	(result.ping?'ok':'bad')+'.png'; break;
+					case '7' : img += 'router-'		+	(result.ping?'ok':'bad')+'.png'; break;
+					case '8' : img += 'virtual-'	+	(result.ping?'ok':'bad')+'.png'; break;
+				}
+				img += '"/>';
+				$('tr#'+result.ip.replace(/\./g,'_')+' td.ping').html(img);
+
+				if		(result.vnc == -1)
+					$('tr#'+result.ip.replace(/\./g,'_')+' td.vnc').html('<img src="gfx/vnc-bad.png"/>');
+				else if (result.vnc == 1)
+					$('tr#'+result.ip.replace(/\./g,'_')+' td.vnc').html('<img src="gfx/vnc-ok.png"/>');
+				else
+					$('tr#'+result.ip.replace(/\./g,'_')+' td.vnc').html('');
+		});
+	}
+
+});
+
 </script>
 </head>
 <body>
@@ -206,32 +246,32 @@ function valider_detail_utilisateur() {
 		<th>Nom</th>
 		<td><input type="text" name="detail_utilisateur_nom" id="detail_utilisateur_nom" size="15"></td>
 	</tr>
-		<tr>
+	<tr>
 		<th>Email</th>
 		<td><input type="text" name="detail_utilisateur_email" id="detail_utilisateur_email" size="15"></td>
 	</tr>
-		<tr>
+	<tr>
 		<th>Login Loginor</th>
 		<td><input type="text" name="detail_utilisateur_loginor" id="detail_utilisateur_loginor" size="15"></td>
 	</tr>
-		<tr>
+	<tr>
 		<th>Code vendeur</th>
 		<td><input type="text" name="detail_utilisateur_code_vendeur" id="detail_utilisateur_code_vendeur" size="15"></td>
 	</tr>
-		<tr>
+	<tr>
 		<th>Tél</th>
 		<td><input type="text" name="detail_utilisateur_tel" id="detail_utilisateur_tel" size="15"></td>
 	</tr>
-		<tr>
+	<tr>
 		<th>IP</th>
 		<td><input type="text" name="detail_utilisateur_ip" id="detail_utilisateur_ip" size="15"></td>
 	</tr>
-		<tr>
+	<tr>
 		<th>Machine</th>
 		<td><input type="text" name="detail_utilisateur_machine" id="detail_utilisateur_machine" size="15"></td>
 	</tr>
 	</tr>
-		<tr>
+	<tr>
 		<th>Type</th>
 		<td>
 			<select name="detail_utilisateur_printer">
@@ -248,7 +288,7 @@ function valider_detail_utilisateur() {
 		</td>
 	</tr>
 	</tr>
-		<tr>
+	<tr>
 		<th style="vertical-align:top;">Droit</th>
 		<td style="text-align:right;">
 <?			foreach (get_defined_constants() as $constante => $valeur) {
@@ -265,7 +305,6 @@ function valider_detail_utilisateur() {
 		</td>
 		<td><input value="Annuler" class="button annuler" type="button" onclick="$('#detail-utilisateur').hide();"></td>
 	</tr>
-	
 </table>
 </div>
 
@@ -284,53 +323,25 @@ $res = mysql_query("SELECT id,prenom,CONCAT(prenom,' ',nom) AS utilisateur,email
 while($row = mysql_fetch_array($res)) {
 	if ($row['ip']) {
 ?>
-	<tr>
+	<tr id="<?=preg_replace('/\./','_',$row['ip'])?>">
 		<td>
-				<a href="javascript:detail_utilisateur(<?=$row['id']?>,'<?=$row['prenom']?>');"><?=$row['utilisateur']?></a>
-<?				if($row['printer'] == 1 || $row['printer'] == 2) { // imprimante ou borne wifi ?>
-					<a href="http://<?=$row['ip']?>" target="_blank">[LIEN]</a>
-<?				} ?>
+			<script type="text/javascript">
+			<!--
+				machines_ip.push({
+					'ip':'<?=$row['ip']?>',
+					'type':'<?=$row['printer']?>',
+				});
+			//-->
+			</script>
+			<a href="javascript:detail_utilisateur(<?=$row['id']?>,'<?=$row['prenom']?>');"><?=$row['utilisateur']?></a>
+<?			if($row['printer'] == 1 || $row['printer'] == 2) { // imprimante ou borne wifi ?>
+				<a href="http://<?=$row['ip']?>" target="_blank">[LIEN]</a>
+<?			} ?>
 		</td>
 		<td><?=$row['machine']?></td>
 		<td><?=$row['ip']?></td>
-		<td style="text-align:center;"><?
-
-	error_reporting(E_ALL ^ E_WARNING);
-	set_time_limit(60);
-
-	$etat = ping($row['ip']);
-
-	echo '<img src="gfx/';
-	switch ($row['printer']) {
-		case 0 : echo 'computer-'.($etat?'ok':'bad').'.png'; break;
-		case 1 : echo 'printer-'.($etat?'ok':'bad').'.png'; break;
-		case 2 : echo 'borne-wifi-'.($etat?'ok':'bad').'.png'; break;
-		case 3 : echo 'douchette-'.($etat?'ok':'bad').'.png'; break;
-		case 4 : echo 'serveur-'.($etat?'ok':'bad').'.png'; break;
-		case 5 : echo 'pabx-'.($etat?'ok':'bad').'.png'; break;
-		case 6 : echo 'switch-'.($etat?'ok':'bad').'.png'; break;
-		case 7 : echo 'router-'.($etat?'ok':'bad').'.png'; break;
-		case 8 : echo 'virtual-'.($etat?'ok':'bad').'.png'; break;
-	}
-	echo '">';
-?>
-	</td>
-	<td style="text-align:center;">
-<?
-	//if (FALSE) { // si PC allumé
-	if ($etat && in_array($row['printer'],array(0,4,8))) { // si PC allumé
-
-		$port = 5900 ;
-		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-		if (socket_connect($socket, $row['ip'], $port) == TRUE) { // connexion réussi, VNC allumé
-			socket_close($socket);
-			echo '<img src="gfx/vnc-ok.png">';
-		} else { // VNC éteint
-			echo '<img src="gfx/vnc-bad.png">';
-		}
-	}
-?>
-	</td>
+		<td style="text-align:center;" class="ping"></td>
+		<td style="text-align:center;" class="vnc"></td>
 	</tr>
 <? } //fin if IP
 } // fin while
