@@ -49,10 +49,15 @@ form {
     margin: auto;
     width: 50%;
 }
+
 input#add_button {
-    margin-top: 1em;
+	margin-top: 1em;
 }
 
+input.annuler,input.valider {
+	vertical-align: top;
+    margin-top: 1.5em;
+}
 
 </style>
 
@@ -101,7 +106,7 @@ function draw_phrase(id,mot_cle,phrase) {
 	}
 
 	// on ajoute les bouton de controle (enresgitrer et supprimer)
-	html += '&nbsp;&nbsp;&nbsp;<input type="button" class="valider button" value=""/>&nbsp;&nbsp;<input type="button" class="annuler button" value="" title="Supprimer"/></div>';
+	html += '&nbsp;&nbsp;<input type="button" class="annuler button" value="" title="Supprimer"/>&nbsp;<input type="button" class="valider button" value=""/></div>';
 
 	$('#phrase').append(html);
 }
@@ -115,7 +120,7 @@ $(document).ready(function(){
 	// binding
 	// bouton supprimer
 	$('body').delegate('input.annuler','click',function(){
-		if (confirm("Voulez vous vraiment supprimer ce type de produit ?")) {
+		if (confirm("Voulez vous vraiment supprimer cette phrase ?")) {
 			$this = $(this);
 			$this	.attr('disabled','disabled')
 					.css('background-image','url(gfx/loading4.gif)');
