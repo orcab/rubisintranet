@@ -282,6 +282,8 @@ $(document).ready(function(){
 				<option value="6">Switch</option>
 				<option value="7">Router</option>
 				<option value="8">VirtualBox</option>
+				<option value="10">Cellulaire</option>
+				<option value="11">Tablette</option>
 			</select>
 		</td>
 	</tr>
