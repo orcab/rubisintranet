@@ -48,4 +48,4 @@ update AFAGESTCOM.ASTOFIP1 set STGES='JMLB' where STGES='' and DEPOT='AFL' and N
 update AFAGESTCOM.ASTOFIP1 set STGES='GL'   where STGES='' and DEPOT='AFL' and NOART in (select NOART from AFAGESTCOM.AARTICP1 where ACTIV='00B' or ACTIV='00G' or ACTIV='00N' or ACTIV='00P')
 
 -- passe à suspendu les articles en achat interdit qui n'ont plus de stock et pas de commande en cours
-update AFAGESTCOM.AARTICP1 set ETARE='S' where NOART in (select S.NOART from AFAGESTCOM.ASTOFIP1 FS left join AFAGESTCOM.AARTICP1 A on A.NOART=FS.NOART left join AFAGESTCOM.ASTOCKP1 S on S.NOART=FS.NOART and S.DEPOT=FS.DEPOT where FS.STO11='O' and FS.DEPOT='AFA' and A.ETARE='' and S.QTATC='0' and S.QTAFO='0' and S.QTINV='0')
+--update AFAGESTCOM.AARTICP1 set ETARE='S' where NOART in (select S.NOART from AFAGESTCOM.ASTOFIP1 FS left join AFAGESTCOM.AARTICP1 A on A.NOART=FS.NOART left join AFAGESTCOM.ASTOCKP1 S on S.NOART=FS.NOART and S.DEPOT=FS.DEPOT where FS.STO11='O' and FS.DEPOT='AFA' and A.ETARE='' and S.QTATC='0' and S.QTAFO='0' and S.QTINV='0')

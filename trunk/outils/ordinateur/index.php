@@ -39,17 +39,11 @@ div#detail-utilisateur {
 }
 
 
-div#detail-utilisateur table {
-	font-size:0.6em;
-}
+div#detail-utilisateur table { font-size:0.6em; }
 
-div#detail-utilisateur table th {
-	text-align:left;
-}
+div#detail-utilisateur table th { text-align:left; }
 
-div#detail-utilisateur table td,div#detail-utilisateur table th {
-	vertical-align:bottom;
-}
+div#detail-utilisateur table td,div#detail-utilisateur table th { vertical-align:bottom; }
 
 table#ordi {
 	width:50%;
@@ -206,6 +200,8 @@ $(document).ready(function(){
 					case '7' : img += 'router-'		+	(result.ping?'ok':'bad')+'.png'; break;
 					case '8' : img += 'virtual-'	+	(result.ping?'ok':'bad')+'.png'; break;
 					case '9' : img += 'label-printer-'+	(result.ping?'ok':'bad')+'.png'; break;
+					case '10': img += 'cellular-'	+	(result.ping?'ok':'bad')+'.png'; break;
+					case '11': img += 'tablet-'		+	(result.ping?'ok':'bad')+'.png'; break;
 				}
 				img += '"/>';
 				$('tr#'+result.ip.replace(/\./g,'_')+' td.ping').html(img);
