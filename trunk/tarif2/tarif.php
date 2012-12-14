@@ -334,6 +334,12 @@ EOT;
 
 	// redux de font pour la référence
 	$font_size_max = min($pdf->redux_font_size($row['REFFO'],FONT_SIZE_REF,WIDTH_REF),$font_size_max); // on prend la plus petite des deux
+
+	if (!isset($_POST['prix'])) { // si on ne doit pas afficher les prix
+		$prix = '';
+		$ecotaxe ='';
+	}
+
 	
 	//debug("avant $row[NOART] GetY=".$pdf->GetY()."\n");
 	// on imprime la ligne

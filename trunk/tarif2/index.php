@@ -85,6 +85,7 @@ EOT;
 		</select><br/>
 		<div id="path">&nbsp;</div>
 		<label for="page_de_garde"	class="mobile mobile-block mobile-checked"	style="width:25em;"><input id="page_de_garde"	type="checkbox" name="page_de_garde" checked="checked"	/>Ajouter les pages de garde</label>
+		<label for="prix"	class="mobile mobile-block mobile-checked"	style="width:25em;"><input id="prix"	type="checkbox" name="prix" checked="checked"	/>Afficher les tarifs</label>
 		<label for="index_ref"		class="mobile mobile-block"					style="width:25em;"><input id="index_ref"		type="checkbox" name="index_ref"						/>Ajouter l'index des références fabriquant</label>
 		<label for="index_code"		class="mobile mobile-block"					style="width:25em;"><input id="index_code"		type="checkbox" name="index_code"						/>Ajouter l'index des codes <?=SOCIETE?></label>
 		<label for="sommaire"		class="mobile mobile-block"					style="width:25em;"><input id="sommaire"		type="checkbox" name="sommaire"							/>Ajouter le sommaire</label>
