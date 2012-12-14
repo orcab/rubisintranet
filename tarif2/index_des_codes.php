@@ -52,6 +52,12 @@ foreach($CODE_MCS as $ref=>$data) {
 			$pdf->SetFont('helvetica','',INDEX_FONT_SIZE); $font_redux =0;
 		}
 
+
+		if (!isset($_POST['prix'])) { // si on ne doit pas afficher les prix
+			$data[1]='';
+			$data[3]='';
+		}
+
 		////////////////// PRIX + ECOTAXE ////////////////
 		if ($data[3]) { // une écotaxe, donc on diminue la police
 			$font_redux = 0;
