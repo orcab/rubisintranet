@@ -150,7 +150,7 @@ while($row = odbc_fetch_array($detail_commande)) {
 					array('text' => str_replace('.000','',$row['CFQTE'])		,	'text-align' => 'C'), // quantité
 					array('text' => '' ), // case vide
 					array('text' => $row['LOCAL'].( $row['LOCA2'] ? "\n$row[LOCA2]":'' ).( $row['LOCA3'] ? "\n$row[LOCA3]":'' )	,
-							'text-align' => 'C', 'font-size' => 10) //localisation
+							'text-align' => 'C', 'font-size' => 7) //localisation
 					)
 				);
 
