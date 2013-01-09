@@ -91,7 +91,7 @@ EOT;
 		die("Fichier '$catalfou' non présent");
 	}
 
-	
+
 	$json = array();
 	$res = $sqlite->query($sql) or die("Impossible de lancer la requete de selection des articles : ".array_pop($sqlite->errorInfo()));
 	$row = $res->fetch(PDO::FETCH_ASSOC);
@@ -108,6 +108,7 @@ EOT;
 	$row['px_public'] += $row['ecotaxe']; // on rajoute l'ecotaxe
 	$row['px_avec_coef_ecotaxe'] = $row['px_avec_coef'] + $row['ecotaxe']; // on rajoute l'ecotaxe
 
+	header('Content-type: application/json');
 	echo json_encode($row); // on envoi la réponse au navigateur
 	
 } // fin RECHERCHE LE DETAIL D'UN ARTICLE VIA SON ID
