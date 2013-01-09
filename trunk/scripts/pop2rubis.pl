@@ -73,8 +73,6 @@ if (defined($authentification) && $authentification > 0) {
 								  };
 			#format info article : {'SEOLIG'=>'','SENART'=>'','SENROF'=>'','SENTYP'=>'','SENQTE'=>''} # info article
 
-			$data->{$messageId}->{'SNTCHA'} = $code_cab ? sprintf('%03d',$code_cab) : 'SANS'; # code chantier CAB ou 'SANS'
-
 			my @body = split /\n/, $email->body;
 			foreach (@body) {
 				chomp;
@@ -115,6 +113,11 @@ if (defined($authentification) && $authentification > 0) {
 						$ref = sprintf('%03d',$code_cab)."/$ref";
 					}
 					$data->{$messageId}->{'SNTRFC'} = substr($ref,0,20);
+
+
+				} elsif (/^\s*chantier\s*=(.*)/i) { # chantier de la commande
+					my $chantier = $1 || 'SANS';	# code chantier a 'SANS' par défaut
+					$data->{$messageId}->{'SNTCHA'} = $code_cab ? sprintf('%03d',$code_cab) : $chantier; # code chantier CAB ou 'SANS'
 
 
 				} elsif (/^\s*commentaire\s*=(.*)/i) { # commentaire sur la commande
@@ -170,6 +173,10 @@ foreach my $uniqid (keys %$data) {
 	foreach my $com ((@{$data->{$uniqid}->{'commentaires'}},@{$data->{$uniqid}->{'articles'}})) {
 		if ($data->{$uniqid}->{'SNOCLI'} eq 'benjamin') {
 			$data->{$uniqid}->{'SNOCLI'} = 'POULAI'; # patch pour le code client de benjamin
+		}
+
+		if (!exists $data->{$uniqid}->{'SNTCHA'}) { # code chantier par défaut a SANS
+			$data->{$uniqid}->{'SNTCHA'}='SANS';
 		}
 
 		print CSV join(';',

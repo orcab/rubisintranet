@@ -22,7 +22,7 @@ use constant {
 
 $|=1;								# pour ne pas flusher directement les sortie print
 
-my %skip	= qw/init 0 bon 0 devis 0 vendeurs 0 devis_expo 0 compress 0 upload 0 vaccum 0/;
+my %skip	= qw/init 0 bon 0 devis 0 vendeurs 0 chantiers 0 devis_expo 0 compress 0 upload 0 vaccum 0/;
 my %options = ();
 GetOptions (\%options, 'skip=s','all','help|?','version','dbname=s','from=s','to=s') or die ;
 
@@ -291,6 +291,10 @@ END_DEVIS: ;
 
 
 goto END_VENDEURS if $skip{'vendeurs'};
+print print_time()."Suppression des anciens vendeurs ...";
+$sqlite->do("DELETE FROM vendeurs");	die "$DBI::errstr\n" if $sqlite->err();
+print "OK\n";
+
 print print_time()."Select des vendeurs ...";
 my $sql = <<EOT ;
 select CODPR,LIBPR,DIAP2,DIAP1 from ${prefix_base_rubis}GESTCOM.ATABLEP1 where TYPPR='LIV'
@@ -303,11 +307,37 @@ while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
 	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur
 	#insertion des vendeurs
-	$sqlite->do("INSERT OR IGNORE INTO vendeurs (code,nom,groupe_principal,suspendu) VALUES ('$row{CODPR}','$row{LIBPR}','$row{DIAP2}','$row{DIAP1}')");
-	die "$DBI::errstr\n" if $sqlite->err();
+	$sqlite->do("INSERT OR IGNORE INTO vendeurs (code,nom,groupe_principal,suspendu) VALUES ('$row{CODPR}','$row{LIBPR}','$row{DIAP2}','$row{DIAP1}')");	die "$DBI::errstr\n" if $sqlite->err();
 }
 print "OK\n";
 END_VENDEURS: ;
+
+
+
+
+goto END_CHANTIERS if $skip{'chantiers'};
+print print_time()."Suppression des anciens chantiers ...";
+$sqlite->do("DELETE FROM chantiers");	die "$DBI::errstr\n" if $sqlite->err();
+print "OK\n";
+
+print print_time()."Select des chantiers ...";
+my $sql = <<EOT ;
+select CHCLI,CHCHA,CHAD1 from ${prefix_base_rubis}GESTCOM.AENTCHP1 where CHEET=''
+EOT
+$loginor->Sql($sql);
+print "OK\n";
+
+print print_time()."Insertion des chantiers dans la base SQLite ...";
+while($loginor->FetchRow()) {
+	my %row = $loginor->DataHash() ;
+	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur
+	#insertion des vendeurs
+	$sqlite->do("INSERT OR IGNORE INTO chantiers (code_client,code_chantier,nom_chantier) VALUES ('$row{CHCLI}','$row{CHCHA}','$row{CHAD1}')");	die "$DBI::errstr\n" if $sqlite->err();
+}
+print "OK\n";
+END_CHANTIERS: ;
+
+
 
 
 
@@ -315,10 +345,8 @@ DEVIS_EXPO: ;
 goto END_DEVIS_EXPO if $skip{'devis_expo'};
 # supprime les anciens devis expo
 print print_time()."Suppression des anciens devis expo ...";
-$sqlite->do("DELETE FROM devis_expo_detail");
-die "$DBI::errstr\n" if $sqlite->err();
-$sqlite->do("DELETE FROM devis_expo");
-die "$DBI::errstr\n" if $sqlite->err();
+$sqlite->do("DELETE FROM devis_expo_detail");	die "$DBI::errstr\n" if $sqlite->err();
+$sqlite->do("DELETE FROM devis_expo");			die "$DBI::errstr\n" if $sqlite->err();
 print "OK\n";
 
 print print_time()."Select des devis expo ...";
@@ -356,8 +384,7 @@ INSERT INTO devis_expo_detail (
 	'$row{stock}','$row{expo}','$row{option}'
 )
 EOT
-	$sqlite->do($sql);
-	die "$DBI::errstr\n" if $sqlite->err();
+	$sqlite->do($sql);	die "$DBI::errstr\n" if $sqlite->err();
 }
 print "OK\n";
 END_DEVIS_EXPO: ;
@@ -575,6 +602,19 @@ CREATE TABLE IF NOT EXISTS "vendeurs" (
   "nom" varchar(255) NOT NULL,
   "groupe_principal" varchar(10) DEFAULT NULL,
   "suspendu" bool NOT NULL DEFAULT 0
+)
+EOT
+$sqlite->do($sql);
+
+
+# Creation de la table CHANTIERS #####################################################################################""
+$sqlite->do('DROP TABLE IF EXISTS "chantiers"');
+$sql = <<EOT ;
+CREATE TABLE IF NOT EXISTS "chantiers" (
+  [code_client] char(6) NOT NULL, 
+  [code_chantier] char(6) NOT NULL, 
+  [nom_chantier] varchar(255) DEFAULT NULL, 
+  CONSTRAINT [] PRIMARY KEY ([code_client], [code_chantier])
 )
 EOT
 $sqlite->do($sql);
