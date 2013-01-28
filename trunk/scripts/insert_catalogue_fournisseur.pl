@@ -271,7 +271,7 @@ where
 	and	ACBEMM<>''			-- pas de fournisseur vide
 	and ACBRFF<>''			-- pas de référence vide
 --	and ACBEMM='LEDA' and ACBRFF='L11PL04119C'	-- pour les tests
-ORDER BY ACBSPR DESC,ACBAPR DESC,ACBMPR DESC,ACBJPR DESC   -- dans l'ordre des dates d'application pour avoir les plus recents en premier
+ORDER BY ACBIMP DESC,ACBSPR DESC,ACBAPR DESC,ACBMPR DESC,ACBJPR DESC   -- dans l'ordre des dates d'application pour avoir les plus recents en premier
 EOT
 $loginor->Sql($sql); # regarde les articles actifs
 print " ok\n";

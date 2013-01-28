@@ -72,7 +72,8 @@ SELECT	nom_fournisseur,reference,designation1,designation2,code_mcs,ecotaxe,acti
 		prix6,
 		(prix1 * $COEF_EXPO) as px_avec_coef,
 		prix1 as px_adh,
-		strftime('%d/%m/%Y',date_application) AS date_application_format
+		strftime('%d/%m/%Y',date_application) AS date_application_format,
+		prix_achat_brut,remise1,remise2,remise3,prix1,prix6,strftime('%d/%m/%Y',date_creation) as date_creation_format,strftime('%d/%m/%Y',date_maj) as date_modification_format,prix_achat_expo
 FROM	articles a
 		left join fournisseurs f     
           on a.code_fournisseur=f.code_fournisseur
