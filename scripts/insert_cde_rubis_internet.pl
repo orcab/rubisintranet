@@ -24,7 +24,7 @@ $|=1;								# pour ne pas flusher directement les sortie print
 
 my %skip	= qw/init 0 bon 0 devis 0 vendeurs 0 chantiers 0 devis_expo 0 compress 0 upload 0 vaccum 0/;
 my %options = ();
-GetOptions (\%options, 'skip=s','all','help|?','version','dbname=s','from=s','to=s') or die ;
+GetOptions (\%options, 'skip=s','all','help|?','version','dbname=s','from=s','to=s','bon=s','client=s') or die ;
 
 print_help()	if exists $options{'help'} ; # affiche le message avec les options dispo
 print_version() if exists $options{'version'} ; # affiche le message avec les options dispo
@@ -48,6 +48,12 @@ if (exists $options{'to'} && $options{'to'} !~ /^\d{4}-\d{2}-\d{2}$/) { #le form
 }
 if (exists $options{'from'} xor exists $options{'to'}) {
 	print "Usage --from ne peut pas etre utilise sans --to et vice versa"; exit;
+}
+if (exists $options{'bon'} && length($options{'bon'}) > 6) { #le format de num de bon n'est pas bon --> erreur
+	print "Usage --bon=xxxxxx ('".$options{'bon'}."' est trop long)"; exit;
+}
+if (exists $options{'client'} && length($options{'client'}) > 6) { #le format de num de client n'est pas client --> erreur
+	print "Usage --client=xxxxxx ('".$options{'client'}."' est trop long)"; exit;
 }
 
 
@@ -74,16 +80,23 @@ END_INIT: ;
 
 goto END_BON if $skip{'bon'};
 print print_time()."Select des lignes de bon ...";
-my $where_date_bon = '';
+my $where = '';
 if (!exists $options{'all'}) { # on n'indexe que le dernier mois
 	if (exists $options{'from'} && exists $options{'to'}) {
 		my $tmp = $options{'from'}; $tmp =~ s/-//g;
-		$where_date_bon  = " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) >= '$tmp' " ;
+		$where .= " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) >= '$tmp' " ;
 		$tmp = $options{'to'}; $tmp =~ s/-//g;
-		$where_date_bon .= " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) <= '$tmp' " ;
+		$where .= " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) <= '$tmp' " ;
 	} else {
-		$where_date_bon = " and CONCAT(DSEMS,CONCAT(DSEMA,CONCAT(DSEMM,DSEMJ))) >= '$thirty_days_ago_rubis' " ;
+		$where .= " and CONCAT(DSEMS,CONCAT(DSEMA,CONCAT(DSEMM,DSEMJ))) >= '$thirty_days_ago_rubis' " ;
 	}
+}
+
+if (exists $options{'bon'}) {
+	$where  .= " and ENTETE_BON.NOBON >= '$options{bon}' " ;
+}
+if (exists $options{'client'}) {
+	$where  .= " and ENTETE_BON.NOCLI >= '$options{client}' " ;
 }
 
 my $sql = <<EOT ;
@@ -119,7 +132,7 @@ from	${prefix_base_rubis}GESTCOM.ADETBOP1 DETAIL_BON
 where
 		ENTETE_BON.ETSEE = ''
 	and DETAIL_BON.ETSBE = ''
-		$where_date_bon
+		$where
 order by DETAIL_BON.NOBON asc, DETAIL_BON.NOCLI asc, DETAIL_BON.NOLIG asc
 EOT
 $loginor->Sql($sql); # regarde les bon du mois actif
@@ -210,16 +223,23 @@ END_BON: ;
 
 goto END_DEVIS if $skip{'devis'};
 print print_time()."Select des devis ...";
-my $where_date_devis = '';
+my $where = '';
 if (!exists $options{'all'}) { # on n'indexe que le dernier mois
 	if (exists $options{'from'} && exists $options{'to'}) {
 		my $tmp = $options{'from'}; $tmp =~ s/-//g;
-		$where_date_devis  = " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) >= '$tmp' " ;
+		$where  = " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) >= '$tmp' " ;
 		$tmp = $options{'to'}; $tmp =~ s/-//g;
-		$where_date_devis .= " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) <= '$tmp' " ;
+		$where .= " and CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) <= '$tmp' " ;
 	} else {
-		$where_date_devis = " and CONCAT(DSEMS,CONCAT(DSEMA,CONCAT(DSEMM,DSEMJ))) >= '$thirty_days_ago_rubis' " ;
+		$where = " and CONCAT(DSEMS,CONCAT(DSEMA,CONCAT(DSEMM,DSEMJ))) >= '$thirty_days_ago_rubis' " ;
 	}
+}
+
+if (exists $options{'bon'}) {
+	$where  .= " and ENTETE_BON.NOBON >= '$options{bon}' " ;
+}
+if (exists $options{'client'}) {
+	$where  .= " and ENTETE_BON.NOCLI >= '$options{client}' " ;
 }
 
 my $sql = <<EOT ;
@@ -249,7 +269,7 @@ from	${prefix_base_rubis}GESTCOM.ADETBVP1 DETAIL_BON
 where
 		ENTETE_BON.ETSEE = ''
 	and DETAIL_BON.ETSBE = ''
-		$where_date_devis
+		$where
 order by DETAIL_BON.NOBON asc, DETAIL_BON.NOCLI asc, DETAIL_BON.NOLIG asc
 EOT
 $loginor->Sql($sql);

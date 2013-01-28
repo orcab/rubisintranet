@@ -83,9 +83,14 @@ function insert_ligne(id) {
 															(data.ecotaxe>0 ? '<br/><span class="ecotaxe">Dont '+data.ecotaxe.replace('.',',')+"€ d'ecotaxe</span>" : '')+
 															(data.code_mcs  ? '<br/><span class="code_mcs">Code MCS : '+data.code_mcs+'</span>' : '')
 			);
+			tr.children('td[class^=px_achat_brut]')			.html(parseFloat(data.prix_achat_brut).toFixed(2)		+ '&euro;'); // prix expo
+			tr.children('td[class^=remise]')				.html(data.remise1	+ '+' + data.remise2 + '+' + data.remise3); // prix expo
+			tr.children('td[class^=px_adh]')				.html(parseFloat(data.px_adh).toFixed(2)				+ '&euro;'); // prix expo
 			tr.children('td[class^=px_avec_coef_ecotaxe]')	.html(parseFloat(data.px_avec_coef_ecotaxe).toFixed(2)	+ '&euro;'); // prix expo
-			tr.children('td[class^=px_public]')				.html(parseFloat(data.px_public).toFixed(2)				+ '&euro;'); // prix pub
-			tr.children('td[class^=modification]')			.html(data.date_application_format); // date application tarif
+			tr.children('td[class^=px_public]')				.html(data.prix6 ? parseFloat(data.prix6).toFixed(2) + '&euro;' : 'NC'); // prix pub
+			tr.children('td[class^=date_application]')		.html(data.date_application_format); // date application tarif
+			tr.children('td[class^=date_creation]')			.html(data.date_creation_format); // date application tarif
+			tr.children('td[class^=date_modification]')		.html(data.date_modification_format); // date application tarif
 
 			// on ajoute une class pour le prix le plus bas
 			if (data.px_avec_coef_ecotaxe < data.px_public && data.activite != '00D')
@@ -108,9 +113,14 @@ $pattern_ligne = <<<EOT
 	<td class="reference"><input type="text" name="a_reference[]" size="10" value="" class="ref" autocomplete="off" /></td>
 	<td class="fournisseur"></td>
 	<td class="designation"></td>
+	<td class="px_achat_brut"></td>
+	<td class="remise"></td>
+	<td class="px_adh"></td>
 	<td class="px_avec_coef_ecotaxe"></td>
 	<td class="px_public"></td>
-	<td class="modification"></td>
+	<td class="date_application"></td>
+	<td class="date_creation"></td>
+	<td class="date_modification"></td>
 </tr>
 EOT;
 ?>
@@ -175,7 +185,7 @@ $(document).ready(function(){
 <style>
 
 fieldset {
-	width:85%;
+	width:99%;
 	margin:auto;
 	margin-top:20px;
 	border:solid 1px #6290B3;
@@ -206,8 +216,7 @@ fieldset table {
 }
 
 fieldset table td, fieldset table th {
-	padding:0px;
-	padding-bottom:5px;
+	padding:0 3px 5px;
 	font-size:0.8em;
 }
 
@@ -217,14 +226,14 @@ table#lignes .reference, table#lignes .fournisseur, table#lignes .designation { 
 fieldset#detail table td { padding-top:4px; }
 
 table#lignes th.reference	{ width:110px; }
-table#lignes th.designation { width:400px; }
+table#lignes th.designation { width:200px; }
 table#lignes th.fournisseur { width:120px; }
 
 table#lignes .px_avec_coef_ecotaxe,table#lignes .px_public { text-align:right; }
 table#lignes .px_utilise { font-weight:bold; color:red; }
 
 table#lignes td.pub { color:grey; }
-table#lignes td.modification { text-align:center; }
+table#lignes td.modification,table#lignes td.date_application { text-align:center; }
 
 .code_mcs { font-style:italic; color:grey; }
 
@@ -246,9 +255,14 @@ table#lignes td.modification { text-align:center; }
 			<th class="reference">Réf</th>
 			<th class="fournisseur">Fournisseur</th>
 			<th class="designation">Désignation</th>
+			<th class="px_achat_brut">Px d'achat brut<sup>ht</sup></th>
+			<th class="remise">Remises<sup>%</sup></th>
+			<th class="px_adh">Px adh<sup>ht</sup></th>
 			<th class="px_avec_coef_ecotaxe">Px adh avec coef<sup>ht</sup></th>
 			<th class="px_public">Px Public<sup>ht</sup></th>
-			<th class="modification">Date tarif</th>
+			<th class="date_application">Date d'application</th>
+			<th class="date_creation">Date de créa</th>
+			<th class="date_modification">Date de modif</th>
 		</tr>
 		</thead>
 		<tbody>
