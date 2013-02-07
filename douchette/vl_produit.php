@@ -193,7 +193,9 @@ function init() {
 
 
 function verif_form() {
-	if (document.mon_form.qte_vl_20.value == '') {
+	document.mon_form.submit();
+
+	/*if (document.mon_form.qte_vl_20.value == '') {
 		alert("Veuillez saisir une quantité en VL 20");
 
 	} else if (document.mon_form.code_taille_emplacement.value == '') {
@@ -208,7 +210,7 @@ function verif_form() {
 	// tout est bon, on envoi
 	} else {
 		document.mon_form.submit();
-	}
+	}*/
 }
 
 
