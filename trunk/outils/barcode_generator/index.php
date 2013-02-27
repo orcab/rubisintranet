@@ -27,7 +27,7 @@ input[name=jump] {
 <body>
 <form method="post" action="etiquette.php">
 
-<fieldset style="float:right;"><legend>Liste des emplacements<br/>exemple : M23 I 005 00 D</legend>
+<fieldset style="float:right;"><legend>Liste des emplacements<br/>exemple : M23 I 005 00 D&nbsp;<br/>exemple : D12S P 010</legend>
 	<textarea name="emplacements" style="width:25em;height:20em;"></textarea>
 </fieldset>
 

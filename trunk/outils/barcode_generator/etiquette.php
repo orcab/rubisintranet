@@ -93,17 +93,28 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 
 	// mise au propre des données
 	// alle face	colonne niv	emp
-	// D01	P		001		20	A
+	// D01	I		001		20	A
+	// D01S	I		001
 	// on split sur les espace ou tabulation
 	// clé pose : 3 dernier car en dec du CRC
 	$tmp = preg_split('/\s+/',$textes[$i]);
-	if (sizeof($tmp) != 5) die("erreur '".$textes[$i]."' malformé") ; // on affiche une erreur car la ligne est malformée
+
+	$emplacement_sol = false;
+	if (sizeof($tmp)==3 && strlen($tmp[0]) == 4 && strtoupper(substr($tmp[0],-1))=='S') // emplacement sol
+		$emplacement_sol = true;
+
+	if (sizeof($tmp) != 5 && sizeof($tmp) != 3) die("erreur '".$textes[$i]."' malformé") ; // on affiche une erreur car la ligne est malformée
 
 	$emplacement['allee']		= $tmp[0];
 	$emplacement['face']		= $tmp[1];
 	$emplacement['colonne']		= $tmp[2];
-	$emplacement['niveau']		= $tmp[3];
-	$emplacement['emplacement']	= $tmp[4];
+	if (sizeof($tmp) == 5) {		// emplacement structure
+		$emplacement['niveau']		= $tmp[3];
+		$emplacement['emplacement']	= $tmp[4];
+	} elseif ($emplacement_sol) {	// emplacement sol
+		$emplacement['niveau']		= '';
+		$emplacement['emplacement']	= '';
+	}
 
 	if (strlen($emplacement['allee']) > 4)								die("erreur dans '".$textes[$i]."' allee '$emplacement[allee]' trop long") ;
 	if (strlen($emplacement['face']) > 1)								die("erreur dans '".$textes[$i]."' face '$emplacement[face]' trop long") ;
@@ -118,6 +129,10 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 
 	// choix du theme de couleur
 	$theme = $emplacement['niveau'];
+
+	if ($emplacement_sol) // on impose le theme pour les emplacement sol
+		$theme = 92;
+
 	if (!array_key_exists($theme,$themes))
 		$theme = 'default';
 
