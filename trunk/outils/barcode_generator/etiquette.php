@@ -19,6 +19,7 @@ $themes	=					array(	'00'=>array('background'=>'ffff00', 'text'=>'000000'),				/
 									'90'=>array('background'=>'006a06', 'text'=>'FFFFFF'),				// vert
 									'91'=>array('background'=>'b3b3b3', 'text'=>'000000'),				// gris
 									'92'=>array('background'=>'ff8080', 'text'=>'000000'),				// saumon
+									'sol'=>array('background'=>'ff8080', 'text'=>'000000'),				// saumon
 									'default'=>array('background'=>'95D5FF', 'text'=>'000000')			// bleu par defaut
 							);
 
@@ -68,6 +69,21 @@ if ($_POST['format_etiquette'] == 'L6009') {
 	$page_origine = array('x'=>mm2pt(6),'y'=>mm2pt(13));
 	$max_etiquette_on_ligne = 2;
 	$max_ligne_on_page = 4 ;
+
+
+} elseif ($_POST['format_etiquette'] == 'A4') {
+	$_POST['orientation_page'] = 'L';
+	$_POST['format_page'] = 'A4';
+	$marge_x = 0;
+	$marge_y = 0;
+	$format_etiquette = array('x'=>mm2pt(210),'y'=>mm2pt(297)) ; // en mm
+	$bar_height = mm2pt(130);
+	$bar_width  = 2 ;
+	$angle = 0 ;
+	$font_size = 130;
+	$page_origine = array('x'=>mm2pt(0),'y'=>mm2pt(0));
+	$max_etiquette_on_ligne = 1;
+	$max_ligne_on_page = 1;
 }
 
 $max_etiquette_on_page = $max_etiquette_on_ligne*$max_ligne_on_page ;
@@ -123,15 +139,18 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 	if (strlen($emplacement['niveau']) > 2)								die("erreur dans '".$textes[$i]."' niveau '$emplacement[niveau]' trop long") ;
 	if (strlen($emplacement['emplacement']) > 2)						die("erreur dans '".$textes[$i]."' emplacement '$emplacement[emplacement]' trop long") ;
 
-	$emplacement['code_barre']	= $emplacement['allee'].' '.$emplacement['face'].$emplacement['colonne'].$emplacement['niveau'].$emplacement['emplacement'];
+	if ($emplacement_sol)
+		$emplacement['code_barre']	= $emplacement['allee'].$emplacement['face'].$emplacement['colonne'];
+	else
+		$emplacement['code_barre']	= $emplacement['allee'].' '.$emplacement['face'].$emplacement['colonne'].$emplacement['niveau'].$emplacement['emplacement'];
 	$emplacement['crc']			= sprintf('%u',crc32($emplacement['code_barre']));
 	$emplacement['cle_pose']	= substr($emplacement['crc'],strlen($emplacement['crc'])-3,3);
 
 	// choix du theme de couleur
 	$theme = $emplacement['niveau'];
 
-	if ($emplacement_sol) // on impose le theme pour les emplacement sol
-		$theme = 92;
+	if ($emplacement_sol) // on impose le theme pour les emplacements sol
+		$theme = 'sol';
 
 	if (!array_key_exists($theme,$themes))
 		$theme = 'default';
@@ -166,7 +185,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	if ($_POST['format_etiquette'] == 'L6009') {
 		// vérifie que le répertoire d'accueil des images existe
-		if (!is_dir('tmp')) mkpath('tmp');
+		if (!is_dir('tmp')) mkdir('tmp');
 
 		// génération d'une image
 		$image_width = 160;
@@ -204,7 +223,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	} elseif ($_POST['format_etiquette'] == 'L6011') {
 		// vérifie que le répertoire d'accueil des images existe
-		if (!is_dir('tmp')) mkpath('tmp');
+		if (!is_dir('tmp')) mkdir('tmp');
 
 		// génération d'une image
 		$image_width = 160;
@@ -269,9 +288,56 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		$pdf->Text($origine['x'] + mm2pt(67),$origine['y'] + mm2pt(35) + $font_size*2 ,	"[$emplacement[cle_pose]]");						# clé
 
 		if (isset($_POST['arrow']) && $_POST['arrow'] && in_array($emplacement['niveau'],array('00','10','20','30','40','50','60','70','80','90','91','92'))) // on veut que les fleche soit affichées
-			$pdf->Image("arrow_$emplacement[niveau]_".$themes[$theme]['text'].".png",
+			$pdf->Image("gfx/arrow_$emplacement[niveau]_".$themes[$theme]['text'].".png",
 						$origine['x'] + mm2pt(55),
 						$origine['y'] + mm2pt(48) );
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////// FORMAT A4 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	} elseif ($_POST['format_etiquette'] == 'A4') {
+		// vérifie que le répertoire d'accueil des images existe
+		if (!is_dir('tmp')) mkdir('tmp');
+
+		// génération d'une image
+		$image_width = 480;
+		$image_height= 200;
+	    $im   = imagecreatetruecolor($image_width, $image_height);
+		imagefilledrectangle($im, 0, 0, $image_width, $image_height ,ImageColorAllocate($im,0xff,0xff,0xff));   // fond blanc
+	    $data = Barcode::gd($im, ImageColorAllocate($im,0x00,0x00,0x00), $image_width / 2, $image_height / 2, $angle, 'code93', $emplacement['code_barre'] , 3, $image_height);
+		$filename = 'tmp/'.$emplacement['code_barre'].' (code93).png'; // génération d'une image sur le disque
+		imagepng($im,$filename);
+
+		$pdf->Image($filename,
+					$origine['x'] + mm2pt(40),
+					$origine['y'] + mm2pt(60),
+					$format_etiquette['x']
+		);
+
+		// rectangle coloré
+		$pdf->SetFillColor($bgcolor['red'],$bgcolor['green'],$bgcolor['blue']);
+		$pdf->RoundedRect(	$origine['x'] + mm2pt(10) ,
+							$origine['y'] + mm2pt(10),
+							$format_etiquette['x'] + mm2pt(65),
+							$font_size + mm2pt(10),
+							30,'F');
+
+		$pdf->RoundedRect(	$origine['x'] + mm2pt(10) ,
+							$origine['y'] + $bar_height + mm2pt(15),
+							$format_etiquette['x'] + mm2pt(65),
+							$font_size + mm2pt(10),
+							30,'F');
+
+		$pdf->SetFillColor(255,255,255);
+		
+		// texte
+		$pdf->SetFont('Arial','B',$font_size);
+		$pdf->Text(	$origine['x'] + mm2pt(50),
+					$origine['y'] + $font_size + mm2pt(7),"$emplacement[allee] $emplacement[face] $emplacement[colonne]");
+		$pdf->Text(	$origine['x'] + mm2pt(30),
+					$origine['y'] + $font_size + $bar_height + mm2pt(10),"$emplacement[niveau] $emplacement[emplacement]   [$emplacement[cle_pose]]");
 	}
 
 	// on fait courrir les compteur
