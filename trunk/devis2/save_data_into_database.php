@@ -2,7 +2,9 @@
 
 function save_data_into_database($draft = FALSE) {
 
-global $id_devis,$artisan_nom,$date,$artisan_nom_escape,$POST_escaped,$total_devis,$total_devis_adh,$option ;
+global $id_devis,$artisan_nom,$date,$artisan_nom_escape,$artisan_nom,$POST_escaped,$total_devis,$total_devis_adh,$option ;
+
+$devis_format_texte = '';
 
 $table_sufixe = '';
 if ($draft) $table_sufixe = '_draft';
@@ -82,10 +84,9 @@ UPDATE devis${table_sufixe} SET
 WHERE id='$id_devis';
 EOT;
 
-//echo $sql ;
+	//echo $sql ;
 
 	mysql_query($sql) or die("Erreur dans la modification du devis : ".mysql_error());
-	//devis_log("update_devis",$id_devis,$sql);
 	
 
 } else {
@@ -112,9 +113,29 @@ EOT;
 
 	mysql_query($sql) or die("Erreur dans la creation du devis : ".mysql_error());
 	$id_devis = mysql_insert_id();
-	//devis_log("insert_devis",$id_devis,$sql);
 }
 
+
+// enregistre en history
+$devis_format_texte .= <<<EOT
+Représantant      : $_POST[artisan_representant]
+Artisan           : $artisan_nom ($code_artisan)
+Date              : $date
+N° de devis Rubis : $_POST[devis_num_devis_rubis]
+
+
+EOT;
+
+if ($_POST['client_nom'])			$devis_format_texte .= "Nom client        : $_POST[client_nom]\n";
+if ($_POST['client_adresse'])		$devis_format_texte .= "Adresse client    : $_POST[client_adresse]\n";
+if ($_POST['client_adresse2'])		$devis_format_texte .= "                  : $_POST[client_adresse2]\n";
+if (	$_POST['client_codepostal']
+	|| 	$_POST['client_ville'])		$devis_format_texte .= "                  : $_POST[client_codepostal] $_POST[client_ville]\n";
+if (	$_POST['client_telephone']
+	||	$_POST['client_telephone2'])$devis_format_texte .= "Tel client        : $_POST[client_telephone] / $_POST[client_telephone2]\n";
+if ($_POST['client_email'])			$devis_format_texte .= "Email client      : $_POST[client_email]\n";
+
+$devis_format_texte .= "\n";
 
 
 // ENREGISTREMENT DES LIGNES DEVIS DANS LA BASE
@@ -122,7 +143,6 @@ $total_devis		= 0 ;
 $total_devis_adh	= 0 ;
 $option				= 0 ;
 mysql_query("DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'") or die("Erreur dans la suppression des lignes du devis : ".mysql_error());
-//devis_log("delete_ligne",$id_devis,"DELETE FROM devis_ligne${table_sufixe} WHERE id_devis='$id_devis'");
 for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 
 	// designation 1
@@ -150,64 +170,55 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		}
 		
 		mysql_query($sql) or die("Erreur dans creation des lignes devis : ".mysql_error()."<br>\n$sql");
+
+		// enregistre en history
+		$devis_format_texte .= 	($_POST['a_hid_opt'][$i] ? 'Opt':'   ').
+								" Ref: ".strtoupper(stripslashes($_POST['a_reference'][$i])).
+								" / Four: ".strtoupper(stripslashes($_POST['a_fournisseur'][$i])).
+								" / Qte: ".$_POST['a_qte'][$i].
+								" / PU: ".$_POST['a_pu'][$i].
+								" / Tot: ".$_POST['a_qte'][$i]*$_POST['a_pu'][$i].'€'.
+								" / adh PU: ".$_POST['a_adh_pu'][$i].
+								" / adh Tot: ".$_POST['a_qte'][$i]*$_POST['a_adh_pu'][$i].'€'."\n";
+
+		preg_match('/^(.*?)<desi2>(.*?)<\/desi2>$/smi',$designation,$matches);
+		if (isset($matches[2])) {
+			$devis_format_texte .= "Designation client : ".trim(stripslashes($matches[1]))."\n";
+			$devis_format_texte .= "Designation adh    : ".trim(stripslashes($matches[2]))."\n";
+		} else {
+			$devis_format_texte .= "Designation client : ".trim(stripslashes($designation))."\n";
+		}
 		
 	} elseif(!$_POST['a_reference'][$i] && $_POST['a_designation'][$i]) { // cas d'un commentaire
 
-		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,designation) VALUES" ;
-		$sql .= "($id_devis,'".mysql_escape_string(stripslashes($designation))."')" ;
+		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,designation) VALUES ".
+				"($id_devis,'".mysql_escape_string(stripslashes($designation))."')" ;
 
 		mysql_query($sql) or die("Erreur dans creation des lignes devis (titre) : ".mysql_error());
-	}
-}
-//devis_log("insert_lignes",$id_devis);
 
-
-// ENREGISTREMENT DES MOFIDICATIONS ARTICLE DANS LA BASE (OU CREATION)
-/*
-for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
-	if ($_POST['a_hid_maj'][$i] && $_POST['a_designation'][$i]) { // ARTICLE MIS A JOUR --> A ENREGISTRER
-	
-		// au cas où l'on crée l'article de toute pièce, on renseigne son fourn, sa ref, sa desi, son prix public et son prix adh
-		$sql =	"INSERT IGNORE devis_article2 (fournisseur,reference,reference_simple,designation,px_coop,px_achat_coop,date_creation,qui,ip) VALUES (".
-					"'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))."',".
-					"'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))."',".
-					"'".strtoupper(mysql_escape_string(preg_replace('/[^A-Z0-9]/i','',$_POST['a_reference'][$i])))."',". // reference simple
-					"'".mysql_escape_string($_POST['a_designation'][$i])."',".
-					"'".mysql_escape_string(str_replace(',','.',$_POST['a_pu'][$i]))."',". // prix expo
-					"'".mysql_escape_string(str_replace(',','.',$_POST['a_adh_pu'][$i]) * (1-(MARGE_COOP/100)) )."',". // prix d'achat coop (calculé a partir du prix adh saisie)
-					"NOW(),". // date creation
-					"'$POST_escaped[artisan_representant]',". // qui 
-					"'$_SERVER[REMOTE_ADDR]'". // ip
-				")";
-		mysql_query($sql) or die("Erreur dans la mise à jour des articles : ".mysql_error()."<br/>\n$sql");
-		
-
-		if (mysql_affected_rows() == 0) { // au cas ou l'article existe deja, on modifie
-			$sql =	"UPDATE IGNORE devis_article2 SET ".
-						"designation='".mysql_escape_string($_POST['a_designation'][$i])."',".
-						"px_coop='".	mysql_escape_string(str_replace(',','.',$_POST['a_pu'][$i]))."',".
-						"px_achat_coop='".	mysql_escape_string(str_replace(',','.',$_POST['a_adh_pu'][$i]) * (1-(MARGE_COOP/100)) )."',".
-						"date_modification=NOW(),".
-						"qui='$POST_escaped[artisan_representant]',".
-						"ip='$_SERVER[REMOTE_ADDR]'".
-					" WHERE				fournisseur="	."'".strtoupper(mysql_escape_string($_POST['a_fournisseur'][$i]))	."'".
-								" AND	reference="		."'".strtoupper(mysql_escape_string($_POST['a_reference'][$i]))		."'" ;
-
-			mysql_query($sql) or die("Erreur dans la mise à jour des articles : ".mysql_error()."<br/>\n$sql");
-			//devis_log("replace_article",$id_devis,$sql);
+		// enregistre en history
+		preg_match('/^(.*?)<desi2>(.*?)<\/desi2>$/smi',$designation,$matches);
+		if (isset($matches[2])) {
+			$devis_format_texte .= "Commentaire client : ".trim(stripslashes($matches[1]))."\n";
+			$devis_format_texte .= "Commentaire adh    : ".trim(stripslashes($matches[2]))."\n";
 		} else {
-			//devis_log("create_article",$id_devis,$sql);
+			$devis_format_texte .= "Commentaire client : ".trim(stripslashes($designation))."\n";
 		}
-	}
-}
-*/
+			
 
+	}
+	$devis_format_texte .= "\n";
+}
 
 
 // si on est sur un enregistrement définitif, alors on supprime le brouillon
 if (!$draft) {
 	mysql_query("DELETE FROM devis_ligne_draft WHERE id_devis='$id_devis'") or die("Impossible de supprimer les lignes devis du brouillon");
 	mysql_query("DELETE FROM devis_draft WHERE id='$id_devis'") or die("Impossible de supprimer le devis brouillon");
+
+	// on enresgitre l'history
+	$sql = "INSERT INTO devis_history (`date`,user,id_devis,devis) VALUES (NOW(),'$_SERVER[REMOTE_ADDR]','$id_devis','".mysql_escape_string($devis_format_texte)."')";
+	mysql_query($sql) or die("Impossible d'enregistrer l'historique : \n".$sql."\n".mysql_error());
 }
 
 
