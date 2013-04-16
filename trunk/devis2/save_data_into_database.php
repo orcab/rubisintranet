@@ -205,7 +205,6 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 			$devis_format_texte .= "Commentaire client : ".trim(stripslashes($designation))."\n";
 		}
 			
-
 	}
 	$devis_format_texte .= "\n";
 }
@@ -216,9 +215,20 @@ if (!$draft) {
 	mysql_query("DELETE FROM devis_ligne_draft WHERE id_devis='$id_devis'") or die("Impossible de supprimer les lignes devis du brouillon");
 	mysql_query("DELETE FROM devis_draft WHERE id='$id_devis'") or die("Impossible de supprimer le devis brouillon");
 
-	// on enresgitre l'history
-	$sql = "INSERT INTO devis_history (`date`,user,id_devis,devis) VALUES (NOW(),'$_SERVER[REMOTE_ADDR]','$id_devis','".mysql_escape_string($devis_format_texte)."')";
-	mysql_query($sql) or die("Impossible d'enregistrer l'historique : \n".$sql."\n".mysql_error());
+	require_once '../inc/diff/lib/Diff.php';
+	$devis_format_texte = trim($devis_format_texte);
+	// on recupere le dernier enregistrement de l'historique
+	$res = mysql_query("SELECT devis FROM devis_history where id_devis='$id_devis' ORDER BY `date` DESC LIMIT 0,1") or die("Impossible de récupérer le dernier enregistrement");
+	$row = mysql_fetch_array($res);
+
+	// on recherche les diff entre la version précedente et maintenant
+	$diff = new Diff(explode("\n",$row['devis']), explode("\n",$devis_format_texte), array('ignoreWhitespace'=>true, 'ignoreCase'=>true, 'ignoreNewLines'=>true));
+	
+	// on enregistre dans history s'il existe des différences
+	if ($diff->getGroupedOpcodes()) {
+		$sql = "INSERT INTO devis_history (`date`,user,id_devis,devis) VALUES (NOW(),'$_SERVER[REMOTE_ADDR]','$id_devis','".mysql_escape_string($devis_format_texte)."')";
+		mysql_query($sql) or die("Impossible d'enregistrer l'historique : \n$sql\n".mysql_error());
+	}
 }
 
 
