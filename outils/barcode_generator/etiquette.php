@@ -134,7 +134,6 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 
 	if (strlen($emplacement['allee']) > 4)								die("erreur dans '".$textes[$i]."' allee '$emplacement[allee]' trop long") ;
 	if (strlen($emplacement['face']) > 1)								die("erreur dans '".$textes[$i]."' face '$emplacement[face]' trop long") ;
-	if (!($emplacement['face'] == 'I' || $emplacement['face'] == 'P'))	die("erreur dans '".$textes[$i]."' face '$emplacement[face]' non valide") ;
 	if (strlen($emplacement['colonne']) > 3)							die("erreur dans '".$textes[$i]."' colonne '$emplacement[colonne]' trop long") ;
 	if (strlen($emplacement['niveau']) > 2)								die("erreur dans '".$textes[$i]."' niveau '$emplacement[niveau]' trop long") ;
 	if (strlen($emplacement['emplacement']) > 2)						die("erreur dans '".$textes[$i]."' emplacement '$emplacement[emplacement]' trop long") ;
@@ -334,7 +333,7 @@ for($i=0 ; $i<sizeof($textes) ; $i++) {
 		
 		// texte
 		$pdf->SetFont('Arial','B',$font_size);
-		$pdf->Text(	$origine['x'] + mm2pt(50),
+		$pdf->Text(	$origine['x'] + mm2pt(30),
 					$origine['y'] + $font_size + mm2pt(7),"$emplacement[allee] $emplacement[face] $emplacement[colonne]");
 		$pdf->Text(	$origine['x'] + mm2pt(30),
 					$origine['y'] + $font_size + $bar_height + mm2pt(10),"$emplacement[niveau] $emplacement[emplacement]   [$emplacement[cle_pose]]");
