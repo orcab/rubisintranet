@@ -26,6 +26,7 @@ if (!isset($_SESSION['cde_adh_filtre_signe_montant']))	$_SESSION['cde_adh_filtre
 if (!isset($_SESSION['cde_adh_filtre_classement'])) $_SESSION['cde_adh_filtre_classement']	= 'NOBON DESC';
 if (!isset($_SESSION['cde_adh_filtre_article']))	$_SESSION['cde_adh_filtre_article']		= '';
 if (!isset($_SESSION['cde_adh_filtre_type_cde']))	$_SESSION['cde_adh_filtre_type_cde']	= '';
+if (!isset($_SESSION['cde_adh_filtre_camion']))		$_SESSION['cde_adh_filtre_camion']		= '';
 if (!isset($_SESSION['cde_adh_filtre_agence']))		$_SESSION['cde_adh_filtre_agence']	    = LOGINOR_AGENCE;
 
 if (isset($_POST['filtre_date_inf']))	$_SESSION['cde_adh_filtre_date_inf']	= $_POST['filtre_date_inf'];
@@ -40,6 +41,7 @@ if (isset($_POST['filtre_signe_montant']))	$_SESSION['cde_adh_filtre_signe_monta
 if (isset($_GET['filtre_classement']))	$_SESSION['cde_adh_filtre_classement']  = $_GET['filtre_classement'];
 if (isset($_POST['filtre_article']))	$_SESSION['cde_adh_filtre_article']		= $_POST['filtre_article'];
 if (isset($_POST['filtre_type_cde']))	$_SESSION['cde_adh_filtre_type_cde']	= $_POST['filtre_type_cde'];
+if (isset($_POST['filtre_camion']))	$_SESSION['cde_adh_filtre_camion']	= $_POST['filtre_camion'];
 if (isset($_POST['filtre_agence']))		$_SESSION['cde_adh_filtre_agence']	    = $_POST['filtre_agence'];
 
 
@@ -315,9 +317,23 @@ function send_return_mail(img,nobon,nomcli,email) {
 					<select name="filtre_signe_montant">
 						<option value=">="<?=$_SESSION['cde_adh_filtre_signe_montant']=='>=' ? ' selected':''?>>supérieur à</option>
 						<option value="<="<?=$_SESSION['cde_adh_filtre_signe_montant']=='<=' ? ' selected':''?>>inférieur à</option>
-					</select></td>
-				<td><input type="text" name="filtre_montant" value="<?=$_SESSION['cde_adh_filtre_montant'] ? $_SESSION['cde_adh_filtre_montant']:'0' ?>" size="3">&euro;</td>
-				<td>
+					</select>
+					<input type="text" name="filtre_montant" value="<?=$_SESSION['cde_adh_filtre_montant'] ? $_SESSION['cde_adh_filtre_montant']:'0' ?>" size="3">&euro;	
+				</td>
+				<td style="padding-left:1em;text-align:right;">
+					<!-- code camion -->
+					Prioritée :
+					<select name="filtre_camion">
+						<option value=""	 <?=$_SESSION['cde_adh_filtre_camion']==''		? ' selected':''?>>TOUTES</option>
+						<option value="vide" <?=$_SESSION['cde_adh_filtre_camion']=='vide'	? ' selected':''?>>Vide</option>
+						<option value="CPT"	 <?=$_SESSION['cde_adh_filtre_camion']=='CPT'	? ' selected':''?>>CPT</option>
+						<option value="DIS"	 <?=$_SESSION['cde_adh_filtre_camion']=='DIS'	? ' selected':''?>>DIS</option>
+						<option value="EXP"	 <?=$_SESSION['cde_adh_filtre_camion']=='EXP'	? ' selected':''?>>EXP</option>
+						<option value="LDP"	 <?=$_SESSION['cde_adh_filtre_camion']=='LDP'	? ' selected':''?>>LDP</option>
+						<option value="LSO"	 <?=$_SESSION['cde_adh_filtre_camion']=='LSO'	? ' selected':''?>>LSO</option>
+					</select>
+				</td>
+				<td style="padding-left:1em;text-align:right;">
 					<select name="filtre_type_cde">
 						<option value=""<?=$_SESSION['cde_adh_filtre_type_cde']==''							?' selected':''?>>Tous types de cde</option>
 						<option value="cde_en_cours"<?=$_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours'	?' selected':''?>>Cde en reliquats</option>
@@ -355,7 +371,7 @@ function send_return_mail(img,nobon,nomcli,email) {
 				<td style="text-align:right;">Référence <input type="text" name="filtre_reference" value="<?=$_SESSION['cde_adh_filtre_reference']?>" size="8"></td>
 				<td style="text-align:right;padding-left:1em;">N° Cde <input type="text" name="filtre_numero" value="<?=$_SESSION['cde_adh_filtre_numero']?>" size="8"></td>
 				<td style="padding-left:1em;">Code Article <input type="text" name="filtre_article" value="<?=$_SESSION['cde_adh_filtre_article']?>" size="8"></td>
-				<td><!-- type de vente -->
+				<td style="padding-left:1em;text-align:right;"><!-- type de vente -->
 					Type de vente :
 					<select name="filtre_type_vente">
 						<option value=""	<?=$_SESSION['cde_adh_filtre_type_vente']==''?' selected':''?>>TOUS</option>
@@ -373,6 +389,7 @@ function send_return_mail(img,nobon,nomcli,email) {
 		<th class="DATE">Date<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="DATE">Date Liv<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=DATELIV DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="TYVTE">Type<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=TYVTE ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=TYVTE DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
+		<th class="CDCAM">CAM<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CDCAM ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=CDCAM DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="LIVSB">Vendeur<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=LIVSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="NOMSB">Adhérent<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=NOMSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
 		<th class="RFCSB">Référence<br><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB ASC"><img src="/intranet/gfx/asc.png" class="hide_when_print"></a><a href="<?=$_SERVER['PHP_SELF']?>?filtre_classement=RFCSB DESC"><img src="/intranet/gfx/desc.png" class="hide_when_print"></a></th>
@@ -418,6 +435,12 @@ function send_return_mail(img,nobon,nomcli,email) {
 	if ($_SESSION['cde_adh_filtre_type_vente']) // si une agence de spécifié
 		$where[] = "CDE_ENTETE.TYVTE = '".mysql_escape_string($_SESSION['cde_adh_filtre_type_vente'])."'" ; // type de vente EMP ou LIV
 
+	if ($_SESSION['cde_adh_filtre_camion']) // si une agence de spécifié
+		if ($_SESSION['cde_adh_filtre_camion'] == 'vide')
+			$where[] = "CDE_ENTETE.CDCAM = ''" ; // code camion vide
+		else
+			$where[] = "CDE_ENTETE.CDCAM = '".mysql_escape_string($_SESSION['cde_adh_filtre_camion'])."'" ; // code camion imposé
+
 	// gere les recherche sur article et type de commande
 	if ($_SESSION['cde_adh_filtre_article'] || $_SESSION['cde_adh_filtre_type_cde']) {
 		$tables[] = "${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 CDE_DETAIL"; // on rajoute la table détail
@@ -453,7 +476,7 @@ function send_return_mail(img,nobon,nomcli,email) {
 	$tables = join(',',$tables);
 
 	$sql = <<<EOT
-select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,AGELI,TYVTE
+select DISTINCT(CDE_ENTETE.NOBON),CDE_ENTETE.NOCLI,DTBOM,DTBOJ,DTBOS,DTBOA,DLSSB,DLASB,DLMSB,DLJSB,LIVSB,NBLIG,MONTBT,NOMSB,RFCSB,AGELI,TYVTE,CDCAM
 from $tables
 $where
 order by $ordre
@@ -486,6 +509,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		?><?=$jour_commande?> <?=$date_formater?>
 		<?= ($today_Ymd > $row['DLSSB'].$row['DLASB'].$row['DLMSB'].$row['DLJSB'] && $_SESSION['cde_adh_filtre_type_cde']=='cde_en_cours') ? "<img src='../gfx/attention.png'/>":''?></td><!-- date livraison -->
 		<td class="TYVTE"><?=$row['TYVTE']?></td><!-- type de vente -->
+		<td class="CDCAM"><?=$row['CDCAM']?></td><!-- camion -->
 		<td class="LIVSB"><?=isset($vendeurs[$row['LIVSB']]) ? $vendeurs[$row['LIVSB']] : $row['LIVSB']?></td><!-- représentant -->
 		<td class="NOMSB" style="text-align:left;"><?=$row['NOMSB']?></td><!-- adhérent -->
 		<td class="RFCSB" style="text-align:left;"><?=$row['RFCSB']?></td><!-- réference -->
