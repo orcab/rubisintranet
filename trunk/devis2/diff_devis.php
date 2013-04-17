@@ -39,6 +39,9 @@ if (isset($_GET['id_new']) && $_GET['id_new']) {
 <script language="JavaScript" SRC="../js/jquery.js"></script>
 <script language="JavaScript" SRC="../js/mobile.style.js"></script>
 <style type="text/css">@import url(diff.css);</style>
+
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../js/fontawesome/css/icon-custom.css">
 </head>
 <body>
 
@@ -47,7 +50,7 @@ if (isset($_GET['id_new']) && $_GET['id_new']) {
 
 <div style="color:red;"><?=$message?></div>
 <br/>
-<a href="diff_liste.php?id=<?=$id_devis?>">Revenir aux versions</a>
+<a class="btn" href="diff_liste.php?id=<?=$id_devis?>"><i class="icon-arrow-left"></i> Revenir aux versions</a>
 <br/><br/>
 <div class="diffDeleted" style="width:10em;padding:2px;">Ligne supprimée</div>
 <div class="diffInserted" style="width:10em;padding:2px;">Ligne ajoutée</div>
@@ -129,7 +132,7 @@ if (isset($data[1])) {
 	$header .= "<th>";
 	$tmp = mysql_fetch_array($res);
 	if (mysql_num_rows($res))
-		$header .= "<a href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$tmp[id]&id_new=$id_old_devis'>&lt;&lt; Version précédente</a>";
+		$header .= "<a class='btn btn-small' href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$tmp[id]&id_new=$id_old_devis'><i class='icon-chevron-left'></i> Version précédente</a>";
 	else
 		$header .= "1ère version";
 	$header .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] ($row[taille] car)</th>";
@@ -143,7 +146,7 @@ if (isset($data[0])) {
 	$header .= "<th>r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] ($row[taille] car)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 	$tmp = mysql_fetch_array($res);
 	if (mysql_num_rows($res))
-		$header .= "<a href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$id_new_devis&id_new=$tmp[id]'>Version suivante &gt;&gt;</a>";
+		$header .= "<a class='btn btn-small' href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$id_new_devis&id_new=$tmp[id]'>Version suivante <i class='icon-chevron-right'></i></a>";
 	else
 		$header .= "Version actuel";
 

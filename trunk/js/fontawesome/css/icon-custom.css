@@ -1,0 +1,10 @@
+i[class^=icon] { color:#FE6601; cursor:pointer; }
+i.icon-circle-arrow-right { color:#FE6601; }
+i.icon-ok-sign { color:#70C765; }
+i.icon-remove-sign { color:red; }
+i.icon-truck { cursor:default; }
+i.icon-exclamation-sign { color:red; }
+i.icon-tag { color:FE6601; }
+a.btn > i[class^=icon] { color:inherit; }
+
+a { text-decoration:none; }

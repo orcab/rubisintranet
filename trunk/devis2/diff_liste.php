@@ -41,6 +41,7 @@ a img {
 }
 a {
     text-decoration: none;
+    font-weight: normal;
 }
 a:hover {
     text-decoration: underline;
@@ -66,7 +67,7 @@ $(document).ready(function(){
 
 
 	// affiche les différences des options selectionnées
-	$('input#analyse_diff').bind('click',function(){
+	$('#analyse_diff').bind('click',function(){
 		if ($('input:checked').length == 2) {
 			var id1 = $('input:checked').first().attr('id').replace(/^check_/,'');
 			var id2 = $('input:checked').last().attr('id').replace(/^check_/,'');
@@ -83,6 +84,10 @@ $(document).ready(function(){
 
 //-->
 </SCRIPT>
+
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../js/fontawesome/css/icon-custom.css">
+
 </head>
 <body>
 
@@ -92,7 +97,7 @@ $(document).ready(function(){
 <div style="color:red;"><?=$message?></div>
 
 <br/>
-<a href="historique_devis.php">Revenir à l'historique des devis</a>
+<a class="btn" href="historique_devis.php"><i class="icon-arrow-left"></i> Revenir à l'historique des devis</a>
 
 <form name="diff_devis" action="diff_devis.php" method="POST">
 <table id="diff">
@@ -101,8 +106,8 @@ $(document).ready(function(){
 		<th>Utilisateur</th>
 		<th>Date</th>
 		<th>Taille</th>
-		<th>Diff</th>
-		<th><input type="button" id="analyse_diff" value="Afficher les différences"/></th>
+		<th style="text-align:center;">Diff</th>
+		<th><a class="btn" id="analyse_diff" href="#"><i class="icon-exchange"></i> Afficher les différences</a></th>
 	</tr>
 </thead>
 <tbody>
@@ -123,7 +128,11 @@ while ($row = mysql_fetch_array($res)) { ?>
 			<? 	}
 			} ?>
 		</td>
-		<td><a href="diff_devis.php?id=<?=$id_devis?>&id_old=<?=$row['id']?>&id_new=<?=$id_new?>"><?= $i<=0 ? '':'diff' ?></a></td>
+		<td style="text-align:center;">
+<?			if ($i>0) { ?>
+				<a class="btn btn" href="diff_devis.php?id=<?=$id_devis?>&id_old=<?=$row['id']?>&id_new=<?=$id_new?>"><i class="icon-exchange"></i></a>
+<?			} ?>
+		</td>
 		<td><input type="checkbox"<?= $i<=1 ? ' checked="checked"':'' ?> id="check_<?=$row['id']?>"/> r<?=$row['id']?></td>
 	</tr>
 <? 
