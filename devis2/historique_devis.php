@@ -354,8 +354,7 @@ function telecharger_excel(sql) {
 </div>
 
 
-
-<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/page_add.png);margin-bottom:4px;" onclick="document.location.href='creation_devis.php';" value="Cr&eacute;er un nouveau devis">
+<input type="button" class="button divers hide_when_print" style="background-image:url(gfx/page_add.png);margin-bottom:4px;margin-top:6px;" onclick="document.location.href='creation_devis.php';" value="Cr&eacute;er un nouveau devis">
 
 <table id="historique-devis" style="width:100%;border:solid 1px black;">
 	<caption style="padding:3px;margin-bottom:15px;border:solid 2px black;font-weight:bold;font-size:1.2em;background:#DDD;color:black;">
@@ -442,7 +441,7 @@ function telecharger_excel(sql) {
 	</caption>
 
 	<tr>
-		<td id="col_visible" colspan="14" style="border:none;">&nbsp;
+		<td id="col_visible" colspan="15" style="border:none;">&nbsp;
 			<span id="show_col_NUMERO"			onclick="show_col('NUMERO');"		class="show_col">N&deg; <img src="gfx/eye.gif" /></span>
 			<span id="show_col_DATE"			onclick="show_col('DATE');"			class="show_col">Date <img src="gfx/eye.gif" /></span>
 			<span id="show_col_REPRESENTANT"	onclick="show_col('REPRESENTANT');" class="show_col">Représentant <img src="gfx/eye.gif" /></span>
@@ -473,6 +472,7 @@ function telecharger_excel(sql) {
 		<? } ?>
 		<th class="RELANCE">Relances <img src="gfx/eye.gif" onclick="hide_col('RELANCE');"/><br><a href="historique_devis.php?filtre_classement=NB_RELANCE ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_devis.php?filtre_classement=NB_RELANCE DESC"><img src="/intranet/gfx/desc.png"></a><br><input name="button_affiche_relance" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_relance();"></th>
 		<th class="hide_when_print">Edit</th>
+		<th class="hide_when_print">Diff</th>
 		<th class="hide_when_print">Supp</th>
 	</tr>
 <?	
@@ -534,7 +534,8 @@ SELECT	devis.id as id,
 		(SELECT count(id) FROM devis_relance WHERE devis_relance.id_devis=devis.id AND devis_relance.supprime=0) AS nb_relance,
 		(SELECT DATEDIFF(NOW(),`date`) FROM devis_relance WHERE devis_relance.id_devis=devis.id ORDER BY `date` DESC LIMIT 0,1) AS datediff_relance, -- si des relances
 		DATEDIFF(NOW(),`date`) AS datediff_devis,
-		(SELECT SUM(qte * puht) FROM devis_ligne WHERE devis_ligne.id_devis=devis.id) AS ptht
+		(SELECT SUM(qte * puht) FROM devis_ligne WHERE devis_ligne.id_devis=devis.id) AS ptht,
+		(SELECT COUNT(id) FROM devis_history WHERE devis_history.id_devis=devis.id) AS nb_history
 FROM  $tables
 $where
 $group_by
@@ -658,7 +659,12 @@ EOT;
 
 			<br><a href="javascript:relance_devis('<?=$row['id']?>','<?=$row['numero']?>');" style="border:none;color:black;" class="hide_when_print">Ajouter</a>
 		</td>
-		<td class="hide_when_print"><a href="creation_devis.php?id=<?=$row['id']?>" style="border:none;"><img src="/intranet/gfx/edit.gif" alt="Modification" title="Modification du devis"></a></td>
+		<td class="hide_when_print"><a href="creation_devis.php?id=<?=$row['id']?>" style="border:none;"><img src="../gfx/edit.gif" alt="Edition" title="Modification du devis"></a></td>
+		<td class="hide_when_print">
+			<? if ($row['nb_history']>=2) { ?>
+				<a href="diff_liste.php?id=<?=$row['id']?>" style="border:none;"><img src="gfx/icon_diff.png" alt="Historique des modifications" title="Historique du devis"></a>
+			<? } ?>
+		</td>
 		<td class="hide_when_print"><a href="javascript:confirm_delete('<?=$row['id']?>','<?=$row['numero']?>');" style="border:none;"><img src="gfx/delete.gif" alt="Suppression" title="Suppression du devis"></a>
 		</td>
 	</tr>
