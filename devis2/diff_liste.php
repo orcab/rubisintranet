@@ -110,11 +110,11 @@ $(document).ready(function(){
 $i=0;
 $id_new = '';
 $old_taille = 0;
-$res = mysql_query("SELECT id,user,DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) as taille FROM devis_history WHERE id_devis='$id_devis' ORDER BY `date` DESC") or die("Impossible de selectionné la liste des différences : ".mysql_error());
+$res = mysql_query("SELECT id,user,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) as taille FROM devis_history WHERE id_devis='$id_devis' ORDER BY `date` DESC") or die("Impossible de selectionné la liste des différences : ".mysql_error());
 while ($row = mysql_fetch_array($res)) { ?>
 	<tr>
 		<td><?=$row['user']?></td>
-		<td><?=$row['date_formater']?></td>
+		<td><?=$jours_mini[$row['date_jour']]?> <?=$row['date_formater']?></td>
 		<td>
 			<?=$row['taille']?>
 			<? if ($i>0) { // on affiche la différence de taille avec la version précédente
@@ -123,8 +123,8 @@ while ($row = mysql_fetch_array($res)) { ?>
 			<? 	}
 			} ?>
 		</td>
-		<td><a href="diff_devis.php?id=<?=$id_devis?>&id_old=<?=$row['id']?>&id_new=<?=$id_new?>"><?= $i<=0 ? 'actuel':'diff' ?></a></td>
-		<td><input type="checkbox"<?= $i<=1 ? ' checked="checked"':'' ?> id="check_<?=$row['id']?>"/> <?=$row['id']?></td>
+		<td><a href="diff_devis.php?id=<?=$id_devis?>&id_old=<?=$row['id']?>&id_new=<?=$id_new?>"><?= $i<=0 ? '':'diff' ?></a></td>
+		<td><input type="checkbox"<?= $i<=1 ? ' checked="checked"':'' ?> id="check_<?=$row['id']?>"/> r<?=$row['id']?></td>
 	</tr>
 <? 
 	$old_taille = $row['taille'];

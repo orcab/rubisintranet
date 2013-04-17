@@ -54,7 +54,7 @@ if (isset($_GET['id_new']) && $_GET['id_new']) {
 <br/><br/>
 <?
 
-$res = mysql_query("SELECT id,devis,DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) as taille FROM devis_history where id='$id_old_devis' or id='$id_new_devis' ORDER BY `date` DESC LIMIT 0,2") or die("Impossible de récupérer les deux enregistrements");
+$res = mysql_query("SELECT id,devis,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) AS taille,`date` FROM devis_history WHERE id='$id_old_devis' OR id='$id_new_devis' ORDER BY `date` DESC LIMIT 0,2") or die("Impossible de récupérer les deux enregistrements");
 $devis_old = '';
 $devis_new = '';
 while($row = mysql_fetch_array($res)) {
@@ -66,6 +66,14 @@ while($row = mysql_fetch_array($res)) {
 ?>
 
 <style>
+a {
+	text-decoration:none;
+}
+
+th a {
+	font-weight:normal;
+}
+
 table.diff {
 	border-collapse: collapse;
 	border:solid 1px grey;
@@ -113,11 +121,35 @@ while($row = mysql_fetch_array($res)) {
 	
 }
 
-$data = array_reverse($data);
 $header  = "<tr>";
-foreach ($data as $row) {
-	$header .= "<th>Version $row[id] du $row[date_formater] ($row[taille] car)</th>";
+if (isset($data[1])) {
+	$row = $data[1];
+	$res = mysql_query("SELECT id FROM devis_history WHERE id_devis='$id_devis' AND `date`<'$row[date]' ORDER BY `date` DESC LIMIT 0,1") or die("Impossible de récupérer la version précédente : ".mysql_error());
+	
+	$header .= "<th>";
+	$tmp = mysql_fetch_array($res);
+	if (mysql_num_rows($res))
+		$header .= "<a href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$tmp[id]&id_new=$id_old_devis'>&lt;&lt; Version précédente</a>";
+	else
+		$header .= "1ère version";
+	$header .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] ($row[taille] car)</th>";
 }
+
+if (isset($data[0])) {
+	$row = $data[0];
+	$res = mysql_query("SELECT id FROM devis_history WHERE id_devis='$id_devis' AND `date`>'$row[date]' ORDER BY `date` ASC LIMIT 0,1") or die("Impossible de récupérer la version précédente : ".mysql_error());
+	
+
+	$header .= "<th>r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] ($row[taille] car)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	$tmp = mysql_fetch_array($res);
+	if (mysql_num_rows($res))
+		$header .= "<a href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$id_new_devis&id_new=$tmp[id]'>Version suivante &gt;&gt;</a>";
+	else
+		$header .= "Version actuel";
+
+	$header .= "</th>";
+}
+
 $header .= "<tr>";
 
 $html = preg_replace('/<table class="diff">\s*<tr>/', '<table class="diff"><tr>'.$header, $html);
