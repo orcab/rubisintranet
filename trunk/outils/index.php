@@ -35,7 +35,7 @@ img:hover {
 
 </head>
 <body style="margin:0px;padding:0px;">
-<div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">Intranet <?=SOCIETE?> &gt;&gt; OUTILS</div>
+<div style="width:100%;background-color:#DDD;margin-bottom:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;"><a href="../index.php">Intranet <?=SOCIETE?></a> &gt;&gt; OUTILS</div>
 
 <center>
 <table style="width:70%;text-align:center;border:solid 1px #AAA;">
@@ -77,7 +77,9 @@ img:hover {
 </tr>
 <tr>
 	<td><a href="feuille_temps/index.php"><img src="feuille_temps/gfx/icon.jpg"><br>Feuille de temps</a></td>
-	<td><a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a></td>
+	<td><a href="cde_client_cde_fournisseur/index.php"><img src="cde_client_cde_fournisseur/gfx/assoc.png"><br>Relier cde adhérents et cde fournisseurs</a>
+		<!--<a href="diff_facture_fournisseur/index.php"><img src="diff_facture_fournisseur/gfx/diff_facture_fournisseur.png"><br>Différence facturation fournisseur</a>-->
+	</td>
 	<td>
 <?		if ($droit & PEUT_EDITER_ARTICLE_EN_MASSE) { ?>
 			<a href="edition_article_en_masse/index.php"><img src="edition_article_en_masse/gfx/edition_article_en_masse.png"><br>Edition d'article en masse</a>
@@ -87,18 +89,11 @@ img:hover {
 
 <tr>
 	<td></td>
-	<td><a href="cde_client_cde_fournisseur/index.php"><img src="cde_client_cde_fournisseur/gfx/assoc.png"><br>Relier cde adhérents et cde fournisseurs</a></td>
+	<td><a href="reflex/index.php"><img src="reflex/gfx/reflex.png"><br/>Reflex</a></td>
 	<td></td>
 </tr>
 
 </table>
 </center>
-
-
-
-<div style="width:100%;background-color:#DDD;margin-top:10px;height:30px;padding-left:50px;font-weight:bold;padding-top:10px;">
-	<a href="wiki/">[Wiki]</b></a>&nbsp;&nbsp;&nbsp;&nbsp;
-</div>
-
 </body>
 </html>

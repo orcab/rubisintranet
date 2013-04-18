@@ -163,7 +163,7 @@ EOT;
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
 					//$mail->AddTo('gwenael.croizer@coopmcs.com', 'Gwenael Croizer') or die("Erreur d'ajour de destinataire");
-					$mail->From('elisabeth.binio@coopmcs.com','Elisabeth Binio');
+					$mail->From('accueil@coopmcs.com','Accueil');
 
 					$mail->Html($html);
 					//echo $row['nom']."\n<br>".$html."<br><br><br>";
@@ -261,7 +261,7 @@ EOT;
 					$mail->Relay(SMTP_SERVEUR);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-					$mail->From('elisabeth.binio@coopmcs.com','Elisabeth Binio');
+					$mail->From('accueil@coopmcs.com','Accueil');
 
 					$mail->Html($html);
 					//echo $row['nom']."\n<br>".$html."<br><br><br>";
@@ -540,35 +540,7 @@ function init_focus() {
 </tr>
 <?  } ?>
 </form>
-
 </table>
-
-<!--
-<table id="record">
-<caption>Enregistrer les dates de livraison dans Rubis</caption>
-<form name="association3" method="POST" action="index.php" onsubmit="return record_date_liv_in_rubis();">
-<tr>
-	<td style="width:10%;vertical-align:top;" nowrap="nowrap">
-		N° cde fournisseur :<br/>
-		Date de livraison :
-	</td>
-	<td style="width:10%;vertical-align:top;" nowrap="nowrap">
-		<input type="hidden" name="what" value="" />
-		<input name="cde_fournisseur" value="" size="8" onkeyup="change_de_input(this);" /><br/>
-		<input name="date_liv" value="" size="8" /><br/>
-		<span style="color:grey;font-size:0.7em;">
-			(25/04/2010)</br>
-			(25042010)</br>
-			(250410)
-		</span>
-	</td>
-	<td style="text-align:left;vertical-align:top;">
-		<input type="submit" class="button valider" value="Enregistrer les dates de livraison dans Rubis" />
-	</td>
-</tr>
-</form>
-</table>
--->
 <?= $message ? $message:'' ?>
 </body>
 </html>
