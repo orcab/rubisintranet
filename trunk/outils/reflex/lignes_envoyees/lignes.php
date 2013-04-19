@@ -2,6 +2,10 @@
 
 include('../../../inc/config.php');
 
+$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+$droit = recuperer_droit();
+
 if (!isset($_POST['type_cde']) || !$_POST['type_cde'])
 	die("Erreur type de commande non précisé");
 
@@ -148,7 +152,11 @@ function update_etat_reflex() {
 	<tfooter>
 	<tr>
 		<td colspan="7"></td>
-		<td><a class="btn btn-success" onclick="update_etat_reflex();" title="Mettre à jour l'état Reflex dans Rubis"><i class="icon-ok"></i> Valider</a></td>
+		<td>
+			<? if ($droit & PEUT_ENVOYER_LIGNE_A_REFLEX) { ?>
+				<a class="btn btn-success" onclick="update_etat_reflex();" title="Mettre à jour l'état Reflex dans Rubis"><i class="icon-ok"></i> Valider</a>
+			<? } ?>
+		</td>
 		<td colspan="2"></td>
 	</tr>
 	<tfooter>
