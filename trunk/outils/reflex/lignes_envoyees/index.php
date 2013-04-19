@@ -1,33 +1,36 @@
 <?
-
 include('../../../inc/config.php');
 
+$message ='';
 
-// CHERCHE LES CDE FOURNISSEURS ASSOCIE AUX CDE ADHERENTS
-/*if (isset($_POST['what']) && $_POST['what'] == 'associe_cde_adherent_cde_fournisseur' &&
-	isset($_POST['cde_adherent']) && $_POST['cde_adherent']) {
+// on met a jour les état envoyée a reflex dans Rubis
+if (	isset($_POST['action']) && $_POST['action'] == 'update_etat_reflex'
+	&&	isset($_POST['type_cde']) && $_POST['type_cde']
+	&&	isset($_POST['num_cde']) && $_POST['num_cde']
+	) {
+	foreach($_POST as $key => $val) {
+		if (preg_match('/^ligne_(.+)$/i',$key,$matches)) {
+			list($num_tier,$ligne) = explode('_',$matches[1]);
 
-	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
-	$res = odbc_exec($loginor,"select DISTINCT(NBOFO) from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NOBON='".strtoupper(mysql_escape_string($_POST['cde_adherent']))."'")  or die("Impossible de lancer la requete de recherche des cde fournisseurs");
-	$cde_fournisseur = array();
-	while($row = odbc_fetch_array($res)) {
-		$cde_fournisseur[] = $row['NBOFO'] ;
+			if (	($val && !array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST))	// on vient de cocher la case
+				||	(!$val && array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST))	// on vient de décocher la case
+			) {
+				$sql = '';
+				if 		($_POST['type_cde'] == 'client') {
+					$sql = "update AFAGESTCOM.ADETBOP1 set DET06='".(array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST)?'I':'')."' where NOBON='".mysql_escape_string($_POST['num_cde'])."' and NOCLI='".mysql_escape_string($num_tier)."' and NOLIG='".mysql_escape_string($ligne)."'";
+				} elseif($_POST['type_cde'] == 'fournisseur') {
+					$sql = "update AFAGESTCOM.ACFDETP1 set CFD31='".(array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST)?'ENV':'')."' where CFBON='".mysql_escape_string($_POST['num_cde'])."' and NOFOU='".mysql_escape_string($num_tier)."' and CFLIG='".mysql_escape_string($ligne)."'";
+				}
+
+				$rubis  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Rubis via ODBC ($LOGINOR_DSN)");
+				$res = odbc_exec($rubis,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
+				//$message .="$sql<br>";
+
+			}
+		}
 	}
+	$message .= "Le bon $_POST[type_cde] $_POST[num_cde] a été mis à jour";
 }
-
-
-// CHERCHE LES CDE ADHERENTS ASSOCIE AUX CDE FOURNISSEURS
-if (isset($_POST['what']) && $_POST['what'] == 'associe_cde_fournisseur_cde_adherent' &&
-	isset($_POST['cde_fournisseur']) && $_POST['cde_fournisseur']) {
-
-	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
-	$res = odbc_exec($loginor,"select DISTINCT(NOBON) from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NBOFO='".strtoupper(mysql_escape_string($_POST['cde_fournisseur']))."'")  or die("Impossible de lancer la requete de recherche des cde fournisseurs");
-	$cde_fournisseur = array();
-	while($row = odbc_fetch_array($res)) {
-		$cde_adherent[] = $row['NOBON'] ;
-	}
-}
-*/
 
 ?>
 <html>
@@ -43,6 +46,13 @@ body {
 h1 {
     font-size: 1.2em;
 }
+
+.message {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+}
+
 
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
@@ -83,6 +93,8 @@ function verif_form(){
 </head>
 <body>
 
+<div class="message"><?=$message?></div>
+
 <a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 
 <form name="cde" method="POST" action="lignes.php">
@@ -95,7 +107,7 @@ function verif_form(){
 		<option value="fournisseur">Fournisseur</option>
 		<option value="client">Client</option>
 	</select>
-	<a class="btn btn-success" href="#" onclick="verif_form();"><i class="icon-ok"></i> Voir les lignes</a>
+	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les lignes</a>
 </div>
 </form>
 </body>

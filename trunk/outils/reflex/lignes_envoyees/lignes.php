@@ -2,40 +2,17 @@
 
 include('../../../inc/config.php');
 
-if (!isset($_POST['type_cde']) || !$_POST['type_cde']) {
+if (!isset($_POST['type_cde']) || !$_POST['type_cde'])
 	die("Erreur type de commande non précisé");
-}
 
-// CHERCHE LES CDE FOURNISSEURS ASSOCIE AUX CDE ADHERENTS
-/*if (isset($_POST['what']) && $_POST['what'] == 'associe_cde_adherent_cde_fournisseur' &&
-	isset($_POST['cde_adherent']) && $_POST['cde_adherent']) {
+if (!isset($_POST['num_cde']) || !$_POST['num_cde'])
+	die("Erreur numéro de commande non précisé");
 
-	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
-	$res = odbc_exec($loginor,"select DISTINCT(NBOFO) from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NOBON='".strtoupper(mysql_escape_string($_POST['cde_adherent']))."'")  or die("Impossible de lancer la requete de recherche des cde fournisseurs");
-	$cde_fournisseur = array();
-	while($row = odbc_fetch_array($res)) {
-		$cde_fournisseur[] = $row['NBOFO'] ;
-	}
-}
-
-
-// CHERCHE LES CDE ADHERENTS ASSOCIE AUX CDE FOURNISSEURS
-if (isset($_POST['what']) && $_POST['what'] == 'associe_cde_fournisseur_cde_adherent' &&
-	isset($_POST['cde_fournisseur']) && $_POST['cde_fournisseur']) {
-
-	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
-	$res = odbc_exec($loginor,"select DISTINCT(NOBON) from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NBOFO='".strtoupper(mysql_escape_string($_POST['cde_fournisseur']))."'")  or die("Impossible de lancer la requete de recherche des cde fournisseurs");
-	$cde_fournisseur = array();
-	while($row = odbc_fetch_array($res)) {
-		$cde_adherent[] = $row['NOBON'] ;
-	}
-}
-*/
-
+$num_cde = strtoupper($_POST['num_cde']);
 ?>
 <html>
 <head>
-<title>Lignes envoyées à Reflex du bon <?=$_POST['num_cde']?></title>
+<title>Lignes envoyées à Reflex du bon <?=$num_cde?></title>
 
 <style>
 
@@ -47,17 +24,28 @@ h1 {
     font-size: 1.2em;
 }
 #lignes {
-    border: solid 1px black;
+    border: 1px solid black;
     border-collapse: collapse;
+    margin-top: 1em;
 }
 #lignes th, #lignes td {
-    border: solid 1px #CCC;
+    border: 1px solid #CCCCCC;
     font-size: 0.9em;
     text-align: center;
 }
 tr.annule {
-    color: #ccc;
+    color: #CCCCCC;
     text-decoration: line-through;
+}
+caption {
+    background-color: #DDD;
+}
+
+.envoyee {
+    color: green;
+}
+.non_envoyee {
+    color: red;
 }
 
 </style>
@@ -68,8 +56,24 @@ tr.annule {
 <script language="javascript">
 <!--
 
+function tout_selectionner() {
+	$('input[type=checkbox][name^=etat_reflex_]').each(function(){
+		$(this).attr('checked','checked');
+	});
+}
 
+function inverser_selection() {
+	$('input[type=checkbox][name^=etat_reflex_]').each(function(){
+		if ($(this).attr('checked') == 'checked')
+			$(this).removeAttr('checked');
+		else
+			$(this).attr('checked','checked');
+	});
+}
 
+function update_etat_reflex() {
+	document.lignes.submit();
+}
 //-->
 </script>
 
@@ -78,9 +82,14 @@ tr.annule {
 
 <a class="btn" href="index.php"><i class="icon-arrow-left"></i> Revenir au choix de bon</a>
 
-<form name="ligne" method="POST" action="index.php">
+<form name="lignes" method="POST" action="index.php">
+<input type="hidden" name="action" value="update_etat_reflex"/>
+<input type="hidden" name="type_cde" value="<?=$_POST['type_cde']?>"/>
+<input type="hidden" name="num_cde" value="<?=$num_cde?>"/>
+
 <table id="lignes" style="width:100%;">
-	<caption>Lignes de commande <strong><?=$_POST['type_cde']?></strong> du bon <strong><?=strtoupper($_POST['num_cde'])?></strong></caption>
+	<caption>Lignes de commande <strong><?=$_POST['type_cde']?></strong> du bon <strong><?=$num_cde?></strong></caption>
+	<theader>
 	<tr>
 		<th class="num_tier">N° tier</th>
 		<th class="num_ligne">N° ligne</th>
@@ -89,23 +98,31 @@ tr.annule {
 		<th class="r_f"><?= $_POST['type_cde']=='client'?'R/F':'RECEP ?' ?></th>
 		<th class="type">Type</th>
 		<th class="etat_rubis">Etat rubis</th>
-		<th class="etat_reflex">Etat Reflex</th>
+		<th class="etat_reflex">
+			Etat Reflex<br/>
+			<a class="btn btn-small" onclick="tout_selectionner();" title="Tout sélectionner"><i class="icon-check"></i></a>
+			<a class="btn btn-small" onclick="inverser_selection();" title="Inverser la sélection"><i class="icon-refresh"></i></a>
+		</th>
 		<th class="designation">Designation</th>
 		<th class="qte">Qte</th>
 	</tr>
+	</theader>
+	<tbody>
 <?	
 	$sql = '';
 	if 		($_POST['type_cde'] == 'client') {
-		$sql = "select NOCLI as NUM_TIER,USSBE as LAST_USER,(CONCAT(DSBMJ,CONCAT('/',CONCAT(DSBMM,CONCAT('/',CONCAT(DSBMS,DSBMA)))))) as LAST_MODIFICATION_DATE,NOLIG as NUM_LIGNE,ETSBE as ETAT_RUBIS,DET06 as ETAT_REFLEX,CODAR as CODE_ARTICLE,TRAIT as R_F,TYCDD as TYPE,DS1DB as DESIGNATION1,DS2DB as DESIGNATION2,QTESA as QTE from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NOBON='".strtoupper(mysql_escape_string($_POST['num_cde']))."' and PROFI='1'";
+		$sql = "select NOCLI as NUM_TIER,USSBE as LAST_USER,(CONCAT(DSBMJ,CONCAT('/',CONCAT(DSBMM,CONCAT('/',CONCAT(DSBMS,DSBMA)))))) as LAST_MODIFICATION_DATE,NOLIG as NUM_LIGNE,ETSBE as ETAT_RUBIS,DET06 as ETAT_REFLEX,CODAR as CODE_ARTICLE,TRAIT as R_F,TYCDD as TYPE,DS1DB as DESIGNATION1,DS2DB as DESIGNATION2,QTESA as QTE from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 where NOBON='".mysql_escape_string($num_cde)."' and PROFI='1'";
 	} elseif($_POST['type_cde'] == 'fournisseur') {
-		$sql = "select NOFOU as NUM_TIER,CFLIG as NUM_LIGNE,CFDID as LAST_USER,(CONCAT(CFDMJ,CONCAT('/',CONCAT(CFDMM,CONCAT('/',CONCAT(CFDMS,CFDMA)))))) as LAST_MODIFICATION_DATE, CFDET as ETAT_RUBIS,CFD31 as ETAT_REFLEX,CFART as CODE_ARTICLE,CDDE1 as R_F,CFDPA as TYPE,CFDE1 as DESIGNATION1,CFDE2 as DESIGNATION2,CFQTE as QTE from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 where CFBON='".strtoupper(mysql_escape_string($_POST['num_cde']))."' and CFPRF='1'";
+		$sql = "select NOFOU as NUM_TIER,CFLIG as NUM_LIGNE,CFDID as LAST_USER,(CONCAT(CFDMJ,CONCAT('/',CONCAT(CFDMM,CONCAT('/',CONCAT(CFDMS,CFDMA)))))) as LAST_MODIFICATION_DATE, CFDET as ETAT_RUBIS,CFD31 as ETAT_REFLEX,CFART as CODE_ARTICLE,CDDE1 as R_F,CFDPA as TYPE,CFDE1 as DESIGNATION1,CFDE2 as DESIGNATION2,CFQTE as QTE from ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 where CFBON='".mysql_escape_string($num_cde)."' and CFPRF='1'";
 	}
 
 
-	$rubis  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+	$rubis  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Rubis via ODBC ($LOGINOR_DSN)");
 	$res = odbc_exec($rubis,$sql)  or die("Impossible de lancer la requete de recherche des lignes : <br/>$sql");
-	while($row = odbc_fetch_array($res)) { ?>
-		<tr class="<?=trim($row['ETAT_RUBIS']) ? ' annule':''?>">
+	while($row = odbc_fetch_array($res)) {
+		$etat_rubis = trim($row['ETAT_RUBIS']) ? true:false;
+?>
+		<tr class="<?=$etat_rubis ? ' annule':''?>">
 			<td class="num_tier"><?=$row['NUM_TIER']?></td>
 			<td class="num_ligne"><?=$row['NUM_LIGNE']?></td>
 			<td class="code_article"><?=$row['CODE_ARTICLE']?></td>
@@ -113,11 +130,28 @@ tr.annule {
 			<td class="r_f"><?=$row['R_F']?></td>
 			<td class="type"><?=$row['TYPE']?></td>
 			<td class="etat_rubis"><?=$row['ETAT_RUBIS']?></td>
-			<td class="etat_reflex"><?=trim($row['ETAT_REFLEX']) ? 'Envoyée':''?></td>
+			<? $etat_reflex = trim($row['ETAT_REFLEX']) ? true:false; ?>
+			<td class="etat_reflex <?= $etat_reflex ? 'envoyee':'non_envoyee' ?>" style="text-align: right;padding-right:1em;">
+			<?	if ($etat_reflex) 
+					echo 'Envoyée';
+					
+				if (!$etat_rubis) { // ligne non annulée  ?>
+					<input type="checkbox" 	name="etat_reflex_<?=trim($row['NUM_TIER'])?>_<?=trim($row['NUM_LIGNE'])?>" <?=$etat_reflex ? 'checked="checked"':''?>/>
+					<input type="hidden" 	name="ligne_<?=trim($row['NUM_TIER'])?>_<?=trim($row['NUM_LIGNE'])?>" value="<?=$etat_reflex?>"/>
+			<?	} ?>
+			</td>
 			<td class="designation" style="text-align:left;"><?=$row['DESIGNATION1']?><br/><?=$row['DESIGNATION2']?></td>
 			<td class="qte"><?=$row['QTE']?></td>
-		</tr>	
+		</tr>
 <?	} ?>
+	</tbody>
+	<tfooter>
+	<tr>
+		<td colspan="7"></td>
+		<td><a class="btn btn-success" onclick="update_etat_reflex();" title="Mettre à jour l'état Reflex dans Rubis"><i class="icon-ok"></i> Valider</a></td>
+		<td colspan="2"></td>
+	</tr>
+	<tfooter>
 </table>
 </form>
 </body>
