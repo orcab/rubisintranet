@@ -130,14 +130,14 @@ function update_etat_reflex() {
 	$res = odbc_exec($rubis,$sql)  or die("Impossible de lancer la requete de recherche des lignes : <br/>$sql");
 	while($row = odbc_fetch_array($res)) {
 		$etat_rubis 	= trim($row['ETAT_RUBIS']) 	? true:false;
-		$rubis_livree	= trim($row['R_F'])=='F' 	? true:false;
+		$rubis_livree	= trim($row['R_F'])=='F'||trim($row['R_F'])=='OUI' 	? true:false;
 ?>
 		<tr class="<?=$etat_rubis ? ' annule':''?> <?=$rubis_livree ? ' rubis_livre':'rubis_non_livre'?>">
 			<td class="num_tier"><?=$row['NUM_TIER']?></td>
 			<td class="num_ligne"><?=$row['NUM_LIGNE']?></td>
 			<td class="code_article"><?=$row['CODE_ARTICLE']?></td>
 			<td class="last_action"><?=$row['LAST_USER']?><br/><?=$row['LAST_MODIFICATION_DATE']?></td>
-			<td class="r_f <?= $rubis_livree ? 'rubis_livre':'rubis_non_livre' ?>"><?=$rubis_livree ? 'Livré':'Reliquat' ?></td>
+			<td class="r_f <?= $rubis_livree ? 'rubis_livre':'rubis_non_livre' ?>"><?=$rubis_livree ? ($_POST['type_cde']=='client'?'Livrée':'Receptionnée'):'Reliquat' ?></td>
 			<td class="type"><?=$row['TYPE']?></td>
 			<td class="etat_rubis"><?=$row['ETAT_RUBIS']?></td>
 			<? $etat_reflex = trim($row['ETAT_REFLEX']) ? true:false; ?>
