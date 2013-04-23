@@ -105,7 +105,9 @@ function update_etat_reflex() {
 		$sql = <<<EOT
 select
 	DETAIL.NOCLI as NUM_TIER,
-	DETAIL.USSBE as LAST_USER,	(CONCAT(DSBMJ,CONCAT('/',CONCAT(DSBMM,CONCAT('/',CONCAT(DSBMS,DSBMA)))))) as LAST_MODIFICATION_DATE,
+	DETAIL.USSBE as LAST_USER,
+	(CONCAT(DSBCJ,CONCAT('/',CONCAT(DSBCM,CONCAT('/',CONCAT(DSBCS,DSBCA)))))) as DATE_CREATION_DETAIL,
+	(CONCAT(DSBMJ,CONCAT('/',CONCAT(DSBMM,CONCAT('/',CONCAT(DSBMS,DSBMA)))))) as DATE_MODIFICATION_DETAIL,
 	DETAIL.NOLIG as NUM_LIGNE,
 	DETAIL.ETSBE as ETAT_RUBIS,
 	DETAIL.DET06 as ETAT_REFLEX,
@@ -116,6 +118,7 @@ select
 	DETAIL.PREDI as LIGNE_EDITE,
 	ENTETE.CDCAM as MOTIF,
 	ENTETE.LIVSB as SUIVI_PAR,
+	(CONCAT(DSECJ,CONCAT('/',CONCAT(DSECM,CONCAT('/',CONCAT(DSECS,DSECA)))))) as DATE_CREATION_ENTETE,
 	(CONCAT(DLJSB,CONCAT('/',CONCAT(DLMSB,CONCAT('/',CONCAT(DLSSB,DLASB)))))) as DATE_LIVRAISON_ENTETE
 from 
 				${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 as DETAIL
@@ -131,7 +134,9 @@ EOT;
 select
 	DETAIL.NOFOU as NUM_TIER,
 	DETAIL.CFLIG as NUM_LIGNE,
-	DETAIL.CFDID as LAST_USER, (CONCAT(CFDMJ,CONCAT('/',CONCAT(CFDMM,CONCAT('/',CONCAT(CFDMS,CFDMA)))))) as LAST_MODIFICATION_DATE,
+	DETAIL.CFDID as LAST_USER,
+	(CONCAT(CFDCJ,CONCAT('/',CONCAT(CFDCM,CONCAT('/',CONCAT(CFDCS,CFDCA)))))) as DATE_CREATION_DETAIL,
+	(CONCAT(CFDMJ,CONCAT('/',CONCAT(CFDMM,CONCAT('/',CONCAT(CFDMS,CFDMA)))))) as DATE_MODIFICATION_DETAIL,
 	DETAIL.CFDET as ETAT_RUBIS,
 	DETAIL.CFD31 as ETAT_REFLEX,
 	DETAIL.CFART as CODE_ARTICLE,
@@ -141,6 +146,7 @@ select
 	DETAIL.CFQTE as QTE,
 	DETAIL.CDDE2 as LIGNE_EDITE,
 	ENTETE.CFSER as SUIVI_PAR,
+	(CONCAT(CFECJ,CONCAT('/',CONCAT(CFECM,CONCAT('/',CONCAT(CFECS,CFECA)))))) as DATE_CREATION_ENTETE,
 	(CONCAT(CFELJ,CONCAT('/',CONCAT(CFELM,CONCAT('/',CONCAT(CFELS,CFELA)))))) as DATE_LIVRAISON_ENTETE
 from
 				${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 as DETAIL
@@ -160,10 +166,11 @@ EOT;
 
 <table id="lignes" style="width:100%;">
 	<caption>
-		Lignes de commande <strong><?=$_POST['type_cde']?></strong> du bon <strong><?=$num_cde?></strong>
+		Lignes de commande <strong><?=$_POST['type_cde']?></strong> du bon <strong><?=$num_cde?></strong><br/>
 		<? if ($_POST['type_cde'] == 'client') { ?>
 			&nbsp;&nbsp;&nbsp;Motif : <?=$row['MOTIF']?>
 		<? } ?>
+		&nbsp;&nbsp;&nbsp;Date créa : <?=$row['DATE_CREATION_ENTETE']?>
 		&nbsp;&nbsp;&nbsp;Date liv : <?=$row['DATE_LIVRAISON_ENTETE']?>
 		&nbsp;&nbsp;&nbsp;Suivi par : <?=$row['SUIVI_PAR']?>
 	</caption>
@@ -172,6 +179,7 @@ EOT;
 		<th class="num_tier">N° tier</th>
 		<th class="num_ligne">N° ligne</th>
 		<th class="code_article">Code</th>
+		<th class="date_creation">Création</th>
 		<th class="last_action">Dernière action</th>
 		<th class="ligne_editee"><?= $_POST['type_cde']=='client'?'BP<br/>édité':'Ligne<br/>éditée ?' ?></th>
 		<th class="r_f"><?= $_POST['type_cde']=='client'?'R/F':'RECEP ?' ?></th>
@@ -197,7 +205,8 @@ EOT;
 			<td class="num_tier"><?=$row['NUM_TIER']?></td>
 			<td class="num_ligne"><?=$row['NUM_LIGNE']?></td>
 			<td class="code_article"><?=$row['CODE_ARTICLE']?></td>
-			<td class="last_action"><?=$row['LAST_USER']?><br/><?=$row['LAST_MODIFICATION_DATE']?></td>
+			<td class="date_creation"><?=$row['DATE_CREATION_DETAIL']?></td>
+			<td class="last_action"><?=$row['LAST_USER']?><br/><?=$row['DATE_MODIFICATION_DETAIL']?></td>
 			<td class="ligne_editee">
 			<? if ($_POST['type_cde']=='client') { ?>
 				<?=$row['LIGNE_EDITE']=='O'?'OUI':'NON'?>
@@ -228,7 +237,7 @@ EOT;
 	</tbody>
 	<tfooter>
 	<tr>
-		<td colspan="8"></td>
+		<td colspan="9"></td>
 		<td>
 			<? if ($droit & PEUT_ENVOYER_LIGNE_A_REFLEX) { ?>
 				<a class="btn btn-success" onclick="update_etat_reflex();" title="Mettre à jour l'état Reflex dans Rubis"><i class="icon-ok"></i> Valider</a>
