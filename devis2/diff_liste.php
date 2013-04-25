@@ -122,10 +122,21 @@ $(document).ready(function(){
 $i=0;
 $id_new = '';
 $old_taille = 0;
-$res = mysql_query("SELECT id,user,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) as taille FROM devis_history WHERE id_devis='$id_devis' ORDER BY `date` DESC") or die("Impossible de selectionné la liste des différences : ".mysql_error());
+$sql = <<<EOT
+SELECT
+	devis_history.id,devis_history.user as ip_user,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) as taille,
+	prenom as user_name
+FROM
+				devis_history
+	left join 	employe
+		on employe.ip = devis_history.user
+WHERE
+	id_devis='$id_devis' ORDER BY `date` DESC
+EOT;
+$res = mysql_query($sql) or die("Impossible de selectionné la liste des différences : ".mysql_error());
 while ($row = mysql_fetch_array($res)) { ?>
 	<tr>
-		<td><?=e('prenom',getUserFromIp($row['user']))?></td>
+		<td><?=$row['user_name']?></td>
 		<td><?=$jours_mini[$row['date_jour']]?> <?=$row['date_formater']?></td>
 		<td>
 			<?=$row['taille']?>
