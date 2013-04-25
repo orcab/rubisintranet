@@ -236,7 +236,10 @@ function pas_identifie() {
 	exit;
 }
 
-
+function getUserFromIp($ip) {
+	$res = mysql_query("SELECT prenom,nom FROM employe WHERE ip='".mysql_escape_string($ip)."' LIMIT 0,1");
+	return mysql_fetch_array($res);
+}
 
 function convertLatin1ToHtml($str) {
     $html_entities = array (

@@ -112,6 +112,11 @@ table.diff td {
 .diffUnmodified {
 	background-color:#FFC;
 }
+caption {
+    background-color: #DDD;
+    font-size: 1.1em;
+    padding: 2px;
+}
 </style>
 
 <?
@@ -127,7 +132,8 @@ while($row = mysql_fetch_array($res)) {
 	
 }
 
-$header  = "<tr>";
+$header	 = "<caption>Devis n° $id_devis</caption>\n";
+$header .= "<tr>";
 if (isset($data[1])) {
 	$row = $data[1];
 	$res = mysql_query("SELECT id FROM devis_history WHERE id_devis='$id_devis' AND `date`<'$row[date]' ORDER BY `date` DESC LIMIT 0,1") or die("Impossible de récupérer la version précédente : ".mysql_error());
