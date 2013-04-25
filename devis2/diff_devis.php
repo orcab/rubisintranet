@@ -56,8 +56,19 @@ if (isset($_GET['id_new']) && $_GET['id_new']) {
 <div class="diffInserted" style="width:10em;padding:2px;">Ligne ajoutée</div>
 <br/><br/>
 <?
+$sql = <<<EOT
+SELECT
+	devis_history.id,devis,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) AS taille,`date`, LEFT(devis,2) as COMPRESS,
+	devis_history.user as ip_user, prenom as user_name
 
-$res = mysql_query("SELECT id,devis,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) AS taille,`date`, LEFT(devis,2) as COMPRESS FROM devis_history WHERE id='$id_old_devis' OR id='$id_new_devis' ORDER BY `date` DESC LIMIT 0,2") or die("Impossible de récupérer les deux enregistrements");
+FROM
+				devis_history
+	left join 	employe
+		on employe.ip = devis_history.user
+WHERE
+	devis_history.id='$id_old_devis' OR devis_history.id='$id_new_devis' ORDER BY `date` DESC LIMIT 0,2
+EOT;
+$res = mysql_query($sql) or die("Impossible de récupérer les deux enregistrements");
 $devis_old = '';
 $devis_new = '';
 while($row = mysql_fetch_array($res)) {
@@ -117,6 +128,9 @@ caption {
     font-size: 1.1em;
     padding: 2px;
 }
+th {
+    font-size: 0.8em;
+}
 </style>
 
 <?
@@ -144,7 +158,7 @@ if (isset($data[1])) {
 		$header .= "<a class='btn btn-small' href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$tmp[id]&id_new=$id_old_devis'><i class='icon-chevron-left'></i> Version précédente</a>";
 	else
 		$header .= "1ère version";
-	$header .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] ($row[taille] car)</th>";
+	$header .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] par $row[user_name] ($row[taille] car)</th>";
 }
 
 if (isset($data[0])) {
@@ -152,7 +166,7 @@ if (isset($data[0])) {
 	$res = mysql_query("SELECT id FROM devis_history WHERE id_devis='$id_devis' AND `date`>'$row[date]' ORDER BY `date` ASC LIMIT 0,1") or die("Impossible de récupérer la version précédente : ".mysql_error());
 	
 
-	$header .= "<th>r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] ($row[taille] car)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	$header .= "<th>r$row[id] du ".$jours_mini[$row['date_jour']]." $row[date_formater] par $row[user_name] ($row[taille] car)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 	$tmp = mysql_fetch_array($res);
 	if (mysql_num_rows($res))
 		$header .= "<a class='btn btn-small' href='$_SERVER[PHP_SELF]?id=$id_devis&id_old=$id_new_devis&id_new=$tmp[id]'>Version suivante <i class='icon-chevron-right'></i></a>";
