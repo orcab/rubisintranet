@@ -48,6 +48,12 @@ a:hover {
 }
 .add-car { color:green; }
 .minus-car { color:red; }
+
+caption {
+    background-color: #DDD;
+    font-size: 1.1em;
+    padding: 2px;
+}
 </style>
 <style type="text/css">@import url(../js/boutton.css);</style>
 <script language="JavaScript" SRC="../js/jquery.js"></script>
@@ -101,6 +107,7 @@ $(document).ready(function(){
 
 <form name="diff_devis" action="diff_devis.php" method="POST">
 <table id="diff">
+<caption>Historique du devis n°<?=$id_devis?></caption>
 <thead>
 	<tr>
 		<th>Utilisateur</th>
@@ -118,7 +125,7 @@ $old_taille = 0;
 $res = mysql_query("SELECT id,user,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) as taille FROM devis_history WHERE id_devis='$id_devis' ORDER BY `date` DESC") or die("Impossible de selectionné la liste des différences : ".mysql_error());
 while ($row = mysql_fetch_array($res)) { ?>
 	<tr>
-		<td><?=$row['user']?></td>
+		<td><?=e('prenom',getUserFromIp($row['user']))?></td>
 		<td><?=$jours_mini[$row['date_jour']]?> <?=$row['date_formater']?></td>
 		<td>
 			<?=$row['taille']?>
