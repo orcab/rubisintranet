@@ -57,10 +57,13 @@ if (isset($_GET['id_new']) && $_GET['id_new']) {
 <br/><br/>
 <?
 
-$res = mysql_query("SELECT id,devis,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) AS taille,`date` FROM devis_history WHERE id='$id_old_devis' OR id='$id_new_devis' ORDER BY `date` DESC LIMIT 0,2") or die("Impossible de récupérer les deux enregistrements");
+$res = mysql_query("SELECT id,devis,DATE_FORMAT(`date`,'%w') AS date_jour, DATE_FORMAT(`date`,'%d/%m/%Y %H:%i') AS date_formater,LENGTH(devis) AS taille,`date`, LEFT(devis,2) as COMPRESS FROM devis_history WHERE id='$id_old_devis' OR id='$id_new_devis' ORDER BY `date` DESC LIMIT 0,2") or die("Impossible de récupérer les deux enregistrements");
 $devis_old = '';
 $devis_new = '';
 while($row = mysql_fetch_array($res)) {
+	if ($row['COMPRESS'] == 'xœ') // compression GZIP
+		$row['devis'] = gzuncompress($row['devis']);
+
 	if (!$devis_new)
 		$devis_new = $row['devis'];
 	else

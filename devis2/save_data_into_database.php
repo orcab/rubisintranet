@@ -218,15 +218,18 @@ if (!$draft) {
 	require_once '../inc/diff/lib/Diff.php';
 	$devis_format_texte = trim($devis_format_texte);
 	// on recupere le dernier enregistrement de l'historique
-	$res = mysql_query("SELECT devis FROM devis_history where id_devis='$id_devis' ORDER BY `date` DESC LIMIT 0,1") or die("Impossible de récupérer le dernier enregistrement");
+	$res = mysql_query("SELECT devis,LEFT(devis,2) as COMPRESS FROM devis_history where id_devis='$id_devis' ORDER BY `date` DESC LIMIT 0,1") or die("Impossible de récupérer le dernier enregistrement");
 	$row = mysql_fetch_array($res);
+	if ($row['COMPRESS'] == 'xœ') // compression GZIP
+		$row['devis'] = gzuncompress($row['devis']);
 
 	// on recherche les diff entre la version précedente et maintenant
 	$diff = new Diff(explode("\n",$row['devis']), explode("\n",$devis_format_texte), array('ignoreWhitespace'=>true, 'ignoreCase'=>true, 'ignoreNewLines'=>true));
 	
 	// on enregistre dans history s'il existe des différences
 	if ($diff->getGroupedOpcodes()) {
-		$sql = "INSERT INTO devis_history (`date`,user,id_devis,devis) VALUES (NOW(),'$_SERVER[REMOTE_ADDR]','$id_devis','".mysql_escape_string($devis_format_texte)."')";
+		//$sql = "INSERT INTO devis_history (`date`,user,id_devis,devis) VALUES (NOW(),'$_SERVER[REMOTE_ADDR]','$id_devis','".mysql_escape_string($devis_format_texte)."')";
+		$sql = "INSERT INTO devis_history (`date`,user,id_devis,devis) VALUES (NOW(),'$_SERVER[REMOTE_ADDR]','$id_devis','".mysql_escape_string(gzcompress($devis_format_texte))."')";
 		mysql_query($sql) or die("Impossible d'enregistrer l'historique : \n$sql\n".mysql_error());
 	}
 }
