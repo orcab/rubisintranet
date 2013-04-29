@@ -12,8 +12,6 @@ function nettoi_caractere_interdit($str) {
 }
 
 
-
-
 // VALIDE LES ARTICLE IMPORTE AUTOMATIQUEMENT EN ATTENTE DE VALIDATION
 if (isset($_GET['action']) && $_GET['action']=='valide_article_en_attente') {
 	require_once '../inc/xpm2/smtp.php';
@@ -36,7 +34,7 @@ EOT;
 
 
 
-// EXPORT LA LISTE DES ARTICLE NON CREE AU FORAMT AFAART
+// EXPORT LA LISTE DES ARTICLE NON CREE AU FORMAT AFAART
 elseif (isset($_GET['action']) && $_GET['action']=='export2rubis') {
 
 	$code_tva = array(
@@ -148,6 +146,10 @@ L'article <b>$row_article[titre]</b> a été créer. Son code est <b>$row_article[c
 EOT;
 			$mail->Html($html);
 			$sent = $mail->Send("Article cree : $row_article[titre]");
+
+			// on doit généré la creation dans Reflex
+			chdir('c:/easyphp/www/intranet/scripts/Interfaces Rubis-Reflex') or die("Impossible de changer de répertoire de travail");
+			system('perl export-article-to-reflex.pl --article='.$row_article['code_article']);
 		}
 }
 
@@ -231,11 +233,13 @@ function valide_article_en_attente() {
 <input type="hidden" name="id_article_creer" value=""/>
 <input type="hidden" name="code_article_creer" value=""/>
 
+<!--
 <input type="button" value="Télécharger au format AFAART.CSV" class="button valider excel" onclick="export2rubis();" style="margin-top:10px;margin-bottom:10px;"/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="button" value="Valider les articles AFAART" class="button valider" style="color:#ff9900;" onclick="valide_article_en_attente();" style="margin-top:10px;margin-bottom:10px;"/>
+-->
 
-<table style="width:100%;" cellspacing="0">
+<table style="width:100%;margin-top:1em;" cellspacing="0">
 <tr>
 	<th class="label" nowrap>Demande de</th>
 	<th class="label" nowrap>Code <?=SOCIETE?></th>
