@@ -40,9 +40,9 @@ img:hover {
 <center>
 <table style="width:70%;text-align:center;border:solid 1px #AAA;">
 <tr>
-	<td style="width:50%;padding-bottom:20px;"></td>
-	<td><a href="lignes_envoyees/index.php"><img src="lignes_envoyees/gfx/lignes_envoyees.png"><br/>Lignes envoyées à Reflex</a></td>
-	<td style="width:50%;padding-bottom:20px;"></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="lignes_envoyees/index.php"><img src="lignes_envoyees/gfx/lignes_envoyees.png"><br/>Lignes envoyées à Reflex</a></td>
+	<td></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="envoi_article/index.php"><img src="envoi_article/gfx/envoi_article.png" style="width:90px;"><br/>Forcer la descente d'article dans Reflex</a></td>
 </tr>
 </table>
 </center>
