@@ -55,11 +55,20 @@ if (isset($_GET['reset_critere'])) {
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="css/bootstrap.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="css/font-awesome-ie7.min.css">
+<![endif]-->
+<link rel="stylesheet" href="css/icon-custom.css">
+
 <style type="text/css">@import url(../js/boutton.css);</style>
 <script language="javascript" src="../js/jquery.js"></script>
 <script language="javascript" src="../js/jquery.tablesorter.min.js"></script>
 <style type="text/css">@import url(../js/tablesortable/style.css);</style>
-<style type="text/css">@import url(../js/tactile.css);</style>
+<!--<style type="text/css">@import url(../js/tactile.css);</style>-->
 <style>
 body { margin:0px; }
 body,pre {
@@ -130,8 +139,10 @@ div#overlay {
 }
 
 div#legend { margin-left:1em; }
-a.similaire		{ text-decoration:none; color:grey;}
-a.similaire:hover	{ text-decoration:underline; }
+a.similaire			{ text-decoration:none; color:grey;}
+a.similaire:hover	{ color:black; }
+a.home				{ text-decoration:none; color:white; font-weight:bold;}
+a.home:hover		{ color:yellow; }
 
 img.photo { width:50px; }
 
@@ -254,6 +265,12 @@ $(document).ready(function() {
 	});// fin mouseover
 
 
+	// on clique sur ajout panier
+	$('.ajout_panier').click(function(){
+		ajout_panier($(this));
+	});
+
+
 	$('label.mobile > input[type=checkbox]').click(function(){
 		if(this.checked)
 			$(this).parents('label').addClass('mobile-checked');
@@ -332,7 +349,7 @@ $(document).ready(function() {
 <?		}  ?>
 		</div>
 		<div style="width:30%;text-align:right;float:left;">
-			<a href="affiche_article.php?reset_critere=1" style="color:white;">Page d'accueil</a>
+			<a href="affiche_article.php?reset_critere=1" class="home"><i class="icon-home"></i> Page d'accueil</a>
 		</div>
 </td>
 
@@ -347,7 +364,7 @@ $(document).ready(function() {
 <img src="gfx/stock2-1.png" /> En rupture&nbsp;&nbsp;&nbsp;
 <img src="gfx/stock2-2.png" /> Stock limité&nbsp;&nbsp;&nbsp;
 <img src="gfx/stock2-3.png" /> Stock suffisant&nbsp;&nbsp;&nbsp;
-<img src="gfx/reappro.png" style="vertical-align:top;"/> Réappro en cours
+<i class="icon-truck icon-large"></i> Réappro en cours
 
 <label for="show_produit_stock" class="mobile mobile-block" style="width:20em;"><input id="show_produit_stock" type="checkbox">Afficher les produits sans stock</label>
 </div>
@@ -445,10 +462,12 @@ EOT;
 				<pre><?
 					// si l'article a moins de deux mois, on affiche un logo nouveau
 					if ($row['days_since_creation'] < 60) { // article de mions de deux mois ?>
-<img src="gfx/new.png" style="vertical-align:middle;" title="Article de moins de 2 mois crée le <?=join('/',array_reverse(explode('-',$row['date_creation'])))?>"/> <?
+<!--<img src="gfx/new.png" style="vertical-align:middle;" title="Article de moins de 2 mois crée le <?=join('/',array_reverse(explode('-',$row['date_creation'])))?>"/>-->
+<i class="icon-tag icon-large"></i>
+<?
 					}
 
-	if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
+					if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
 						$designation = $row['designation'];
 						foreach ($phrase as $mot) {
 							if ($mot) $designation = preg_replace("/(".$mot.")/i","<strong>$1</strong>",$designation);
@@ -464,7 +483,7 @@ EOT;
 <?				} ?>
 
 				<!-- article similaire -->
-				<div style="text-align:right;"><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><img src="gfx/loupe.png" style="vertical-align:bottom;"/> Articles similiares</a></div>
+				<div style="text-align:right;"><a class="btn btn-small" href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>"><i class="icon-list"></i> Articles similiares</a></div>
 			</td>
 
 			<td class="prix_net" nowrap><?
@@ -527,7 +546,9 @@ EOT;
 			</td>
 
 			<td class="panier">
-				<input type="button" value="Ajouter au panier" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');"/>
+				<a class="btn btn-success icon-2x ajout_panier"><i class="icon-download-alt" title="Ajouter au panier"></i></a>
+				<img src="gfx/loading4.gif"		class="loading"			style="display:none;"/><!-- loading caché à la base -->
+				<!--<input type="button" value="Ajouter au panier" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');"/>-->
 			</td>
 		</tr>
 <?		$i++;
@@ -567,7 +588,7 @@ EOT;
 </style>
 <div id="footer">
 	Utilisateur connecté : <?=$info_user['name']?>&nbsp;
-	<input id="deconnexion" type="button" value="Déconnexion" class="button annuler" style="background-image:url(gfx/delete_32.png);padding-left:40px;" />
+	<a id="deconnexion" class="btn btn-danger" href="#"><i class="icon-signout icon-large"></i> Déconnexion</a>
 </div>
 
 </body>

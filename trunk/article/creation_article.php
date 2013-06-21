@@ -33,15 +33,16 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 
 	$html = <<<EOT
 <table>
-<tr><td>De la part de</td><td>$_POST[from]</td></tr>
+<tr><td>De la part de</td><td>$_POST[from]<br/><br/></td></tr>
+
 <tr><td>Designation 1</td><td>$designation</td></tr>
 <tr><td>Designation 2</td><td>$designation2</td></tr>
 <tr><td>Designation 3</td><td>$designation3</td></tr>
 <tr><td>Fournisseur</td><td>$_POST[fournisseur]</td></tr>
 <tr><td>Code fournisseur</td><td>$_POST[code_fournisseur]</td></tr>
 <tr><td>Ref Fournisseur</td><td>$ref_fournisseur</td></tr>
-<tr><td>Gencode</td><td>$_POST[gencode]</td></tr>
-<tr><td>Apparait sur le tarif</td><td>$_POST[on_tarif]</td></tr>
+<tr><td>Gencode</td><td>$_POST[gencode]<br/><br/></td></tr>
+
 <tr><td>Px d'achat/public</td><td>$px_achat</td></tr>
 <tr><td>Px d'achat à venir</td><td>$px_achat_venir</td></tr>
 <tr><td>Date prix à venir</td><td>$_POST[date_achat_venir]</td></tr>
@@ -50,19 +51,31 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Remise3</td><td>$_POST[remise3]</td></tr>
 <tr><td>Coef</td><td>$coef</td></tr>
 <tr><td>Px de vente</td><td>$px_vente</td></tr>
-<tr><td>Eco Taxe</td><td>$eco_taxe</td></tr>
-<tr><td>Servi sur stock</td><td>$_POST[stock]</td></tr>
-<tr><td>Stock mini</td><td>$_POST[stock_mini]</td></tr>
-<tr><td>Stock alerte</td><td>$_POST[stock_alerte]</td></tr>
-<tr><td>Stock maxi</td><td>$_POST[stock_maxi]</td></tr>
-<tr><td>Conditionnement</td><td>$_POST[conditionnement]</td></tr>
+<tr><td>Eco Taxe</td><td>$eco_taxe<br/><br/></td></tr>
+
+<tr><td>Unité de vente/achat</td><td>$_POST[unite_vente]</td></tr>
+<tr><td>Stocké au dépôt</td><td>$_POST[stock]</td></tr>
 <tr><td>Divisible</td><td>$_POST[divisible]</td></tr>
-<tr><td>Unité</td><td>$_POST[unite]</td></tr>
+EOT;
+
+	if ($_POST['divisible']=='non') { 	// vl10
+		$html .= $_POST['conditionnement_vl10']			? "<tr><td>Contionnement : $_POST[conditionnement_vl10]</td></tr>":'';
+		$html .= $_POST['unite_conditionnement_vl10']	? "<tr><td>Unité contionnement : $_POST[unite_conditionnement_vl10]</td></tr>":'';
+	} else {							// vl20
+		$html .= $_POST['conditionnement_vl20']			? "<tr><td>Contionnement : $_POST[conditionnement_vl20]</td></tr>":'';
+		$html .= $_POST['unite_conditionnement_vl20']	? "<tr><td>Unité contionnement : $_POST[unite_conditionnement_vl20]</td></tr>":'';
+	}
+
+	$html .= <<<EOT
+<tr><td>Sur conditionnement</td><td>$_POST[sur_conditionnement]</td></tr>
+<tr><td>Unité sur conditionnement</td><td>$_POST[unite_sur_conditionnement]<br/><br/></td></tr>
+
 <tr><td>Activite</td><td>$_POST[activite]</td></tr>
 <tr><td>Famille</td><td>$_POST[famille]</td></tr>
 <tr><td>Sous famille</td><td>$_POST[sousfamille]</td></tr>
 <tr><td>Chapitre</td><td>$_POST[chapitre]</td></tr>
-<tr><td>Sous chapitre</td><td>$_POST[souschapitre]</td></tr>
+<tr><td>Sous chapitre</td><td>$_POST[souschapitre]<br/><br/></td></tr>
+
 <tr><td>Commentaire</td><td>$_POST[commentaire]</td></tr>
 EOT;
 
@@ -78,7 +91,7 @@ EOT;
 	$description .= $_POST['code_fournisseur']	? "Code fournisseur : $_POST[code_fournisseur]\n":'';
 	$description .= $ref_fournisseur			? "Reference : $ref_fournisseur\n":'';
 	$description .= $_POST['gencode']			? "Gencode : $_POST[gencode]\n":'';
-	$description .= $_POST['on_tarif']			? "Sur Tarif ? : $_POST[on_tarif]\n":'';
+		
 	$description .= $px_achat					? "Px d'achat/public : $px_achat\n":'';
 	$description .= $_POST['remise1']			? "Remise1 : $_POST[remise1]\n":'';
 	$description .= $_POST['remise2']			? "Remise2 : $_POST[remise2]\n":'';
@@ -88,13 +101,22 @@ EOT;
 	$description .= $eco_taxe					? "Eco Taxe : $eco_taxe\n":'';
 	$description .= $px_achat_venir				? "Px d'achat a venir : $px_achat_venir\n":'';
 	$description .= $_POST['date_achat_venir']	? "Date prix à venir : $_POST[date_achat_venir]\n":'';
-	$description .= $_POST['stock']				? "Servi sur stock : $_POST[stock]\n":'';
-	$description .= $_POST['stock_mini']		? "Stock mini : $_POST[stock_mini]\n":'';
-	$description .= $_POST['stock_maxi']		? "Stock maxi : $_POST[stock_maxi]\n":'';
-	$description .= $_POST['stock_alerte']		? "Stock alerte : $_POST[stock_alerte]\n":'';
-	$description .= $_POST['conditionnement']	? "Conditionnement : $_POST[conditionnement]\n":'';
+
+	$description .= $_POST['unite_vente']		? "Unité de vente : $_POST[unite_vente]\n":'';
+	$description .= $_POST['stock']				? "Stocké au dépôt : $_POST[stock]\n":'';
 	$description .= $_POST['divisible']			? "Divisible : $_POST[divisible]\n":'';
-	$description .= $_POST['unite']				? "Unité : $_POST[unite]\n":'';
+
+	if ($_POST['divisible']=='non') { 	// vl10
+		$description .= $_POST['conditionnement_vl10']			? "Contionnement : $_POST[conditionnement_vl10]\n":'';
+		$description .= $_POST['unite_conditionnement_vl10']	? "Unité contionnement : $_POST[unite_conditionnement_vl10]\n":'';
+	} else {							// vl20
+		$description .= $_POST['conditionnement_vl20']			? "Contionnement : $_POST[conditionnement_vl20]\n":'';
+		$description .= $_POST['unite_conditionnement_vl20']	? "Unité contionnement : $_POST[unite_conditionnement_vl20]\n":'';
+	}
+
+	$description .= $_POST['sur_conditionnement']		? "Sur conditionnement : $_POST[sur_conditionnement]\n":'999';
+	$description .= $_POST['unite_sur_conditionnement']	? "Unité sur conditionnement : $_POST[unite_sur_conditionnement]\n":'PAL';
+
 	$description .= $_POST['activite']			? "Activite : $_POST[activite]\n":'';
 	$description .= $_POST['famille']			? "Famille : $_POST[famille]\n":'';
 	$description .= $_POST['sousfamille']		? "Sous famille : $_POST[sousfamille]\n":'';
@@ -111,6 +133,7 @@ EOT;
 <html>
 <head>
 <title>Demande de création d'article</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 <link rel="shortcut icon" type="image/x-icon" href="/intranet/gfx/creation_article.ico" />
 <style>
 a		{ text-decoration:none; }
@@ -145,6 +168,12 @@ select#completion_fourn {
 option.type-produit-global { color:grey; }
 #completion div { cursor:pointer; }
 #completion b { color:blue; }
+
+.prix 		{	background-color: #CFC;	}
+.descriptif {	background-color: #FCC;	}
+.famille 	{	background-color: #FFC;	}
+.stock 		{	background-color: #CCF; }
+.libelle_unite_vl10 {font-size:0.8em;}
 
 </style>
 
@@ -182,11 +211,11 @@ function envoi_formulaire() {
 	else if      (!document.creation_article.ref_fournisseur.value) {
 		alert("Veuillez saisir une REFERENCE FOURNISSEUR"); erreur = 1;
 	}
-	else if      (document.creation_article.stock[0].checked && !document.creation_article.gencode.value) { // article stocké --> il faut un gencod
-		alert("Veuillez saisir un GENCODE (même 0 si vous ne l'avez pas du tout)"); erreur = 1;
-	}
 	else if      (document.creation_article.eco_taxe.value.length <= 0) {
 		alert("Veuillez saisir une ECO TAXE (0 si aucune éco taxe sur le produit)"); erreur = 1;
+	}
+	else if ($('input:radio[name=divisible]:checked').val()=='non' && $('#conditionnement_vl10').val()=='') {
+			alert("Veuillez rentrer une valeur de conditionnement"); erreur = 1;
 	}
 	else if      (document.creation_article.marge.value.length <= 0 && document.creation_article.px_vente.value.length <= 0) {
 		alert("Veuillez saisir soit une marge (ou choisir le type de produit) ou un prix de vente"); erreur = 1;
@@ -414,7 +443,7 @@ $(document).ready(function(){
 
 <table>
 <tr>
-<td style="width:65%;vertical-align:top;">
+<td style="width:80%;vertical-align:top;">
 
 <form method="post" action="creation_article.php" name="creation_article">
 <input type="hidden" name="action" value="creation_article"/>
@@ -438,35 +467,37 @@ $(document).ready(function(){
 	<? } ?>
 </select></td></tr>
 
-<tr><th class="label">Designation :</th><td class="valeur"><input type="text" name="designation" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
-<tr><th class="label">Designation 2 :</th><td class="valeur"><input type="text" name="designation2" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
-<tr><th class="label">Designation 3 :</th><td class="valeur"><input type="text" name="designation3" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
-<tr><th class="label">Fournisseur :</th><td class="valeur"><input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"> <span id="code_fournisseur"></span><br/>
+<tr><th class="label descriptif">Designation :</th><td class="valeur"><input type="text" name="designation" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
+<tr><th class="label descriptif">Designation 2 :</th><td class="valeur"><input type="text" name="designation2" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
+<tr><th class="label descriptif">Designation 3 :</th><td class="valeur"><input type="text" name="designation3" value="" size="58" maxlength="40" onblur="majusculize(this.name);"></td></tr>
+<tr><th class="label descriptif">Fournisseur :</th><td class="valeur"><input type="text" name="fournisseur" value="" onkeyup="complette_fourn(event);" autocomplete="off" onblur="majusculize(this.name);"> <span id="code_fournisseur"></span><br/>
 <select id="completion_fourn" name="completion_fourn" size="1" onclick="complette_fourn_click();"></select>
 </td></tr>
-<tr><th class="label">Ref Fournisseur :</th><td class="valeur"><input type="text" name="ref_fournisseur" value="" onblur="majusculize(this.name);check_ref_fournisseur();"></td></tr>
-<tr><th class="label">Gencode :</th><td class="valeur"><input type="text" name="gencode" value="" size="13" maxlength="13" onblur="majusculize(this.name);"></td></tr>
-<tr><th class="label">Apparait sur tarif :</th><td class="valeur">Oui<input type="radio" name="on_tarif" value="oui">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="on_tarif" value="non" checked><br><br></td></tr>
-<tr><th class="label">Px d'achat/public</th>
+<tr><th class="label descriptif">Ref Fournisseur :</th><td class="valeur"><input type="text" name="ref_fournisseur" value="" onblur="majusculize(this.name);check_ref_fournisseur();"></td></tr>
+<tr><th class="label descriptif">Gencode :</th><td class="valeur"><input type="text" name="gencode" value="" size="13" maxlength="13" onblur="majusculize(this.name);"></td></tr>
+<!--<tr><th class="label">Apparait sur tarif :</th><td class="valeur">Oui<input type="radio" name="on_tarif" value="oui">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="on_tarif" value="non" checked><br><br></td></tr>-->
+
+<tr><th class="label prix">Px d'achat/public</th>
 	<td class="valeur"><input type="text" name="px_achat" value="">&nbsp;&nbsp;&nbsp;&nbsp;
 	Eco Taxe <input type="text" name="eco_taxe" value="" size="3">
 	</td>
 </tr>
+
 <tr>
-	<th class="label">Px d'achat à venir</th>
+	<th class="label prix">Px d'achat à venir</th>
 	<td class="valeur">
 		<input type="text" name="px_achat_venir" value=""/>&nbsp;&nbsp;&nbsp;&nbsp;
 		Date <input type="text" name="date_achat_venir" value="" size="8"/>
 	</td>
 </tr>
 <tr>
-	<th class="label">Remises (3 max) :</th>
+	<th class="label prix">Remises (3 max) :</th>
 	<td class="valeur">
 		<input type="text" name="remise1" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise2" value="" size="2" maxlength="5"/>%&nbsp;<input type="text" name="remise3" value="" size="2" maxlength="5"/>%
 	</td>
 </tr>
 <tr>
-	<th class="label">Type de produit
+	<th class="label prix">Type de produit
 <?		if ($droit & PEUT_MODIFIER_TYPE_PRODUIT) { ?>
 		<br/><a href="modification_type_produit.php" style="font-size:0.8em;">Edition des types <img src="gfx/ext_arrow.png" style="vertical-align:bottom;"/></a>
 <?		} ?>
@@ -478,53 +509,130 @@ $(document).ready(function(){
 	</td>
 </tr>
 
-<tr><th class="label">Stock :</th><td class="valeur">Oui<input type="radio" name="stock" value="oui" onclick="$('#stock_mini_maxi').show('fast');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="stock" value="non" onclick="$('#stock_mini_maxi').hide('fast');" checked>
+
+<tr>
+	<th class="label stock">Unité de vente/achat :</th>
+	<td class="valeur">
+		<select name="unite_vente" onchange="$('.libelle_unite_vl10').text($(this).val());">
+			<option value="Boite (BTE)">Boite</option>
+			<option value="Cent (CEN)">Cent</option>
+			<option value="Colis (COL)">Colis</option>
+			<option value="Heures (HEU)">Heures</option>
+			<option value="Kilo (KG)">Kilo</option>
+			<option value="Litre (L)">Litre</option>
+			<option value="Mille (MIL)">Mille</option>
+			<option value="Mètre linéaire (ML)">Mètre linéaire</option>
+			<option value="Mètre carée (M2)">Mètre carée</option>
+			<option value="Mètre cube (M3)">Mètre cube</option>
+			<option value="Pièce (PCE)">Pièce</option>
+			<option value="Plaque (PLA)">Plaque</option>
+			<option value="Sac (SAC)">Sac</option>
+			<option value="Tonne (TON)">Tonne</option>
+			<option value="Unité (UN)" selected>Unité</option>
+		</select>
+	</td>
+</tr>
+
+
+<tr>
+	<th class="label stock">Stockage</th>
+	<td class="valeur">
+		<!--<label for="vendu_par_lot_oui">Oui</label><input type="radio" name="stock" value="oui" id="vendu_par_lot_oui" onclick="$('#conditionnement').show('fast');">&nbsp;&nbsp;&nbsp;<label for="vendu_par_lot_non">Non</label><input type="radio" name="stock" value="non" id="vendu_par_lot_non" onclick="$('#conditionnement').hide('fast');" checked>-->
+		
+		<div>Stocké au dépôt ?
+			<label for="stock_oui">Oui</label><input type="radio" name="stock" value="oui" id="stock_oui"/>&nbsp;&nbsp;&nbsp;
+			<label for="stock_non">Non</label><input type="radio" name="stock" value="non" checked="checked" id="stock_non"/>
+		</div>
+
+		<div>Divisible ? 
+			<label for="divisible_oui">Oui</label><input type="radio" name="divisible" value="oui" id="divisible_oui" onclick="$('#block_divisible_oui').show('fast');$('#block_divisible_non').hide('fast');"/>&nbsp;&nbsp;&nbsp;
+			<label for="divisible_non">Non</label><input type="radio" name="divisible" value="non" checked="checked" id="divisible_non"  onclick="$('#block_divisible_non').show('fast');$('#block_divisible_oui').hide('fast');"/>
+		</div>
+
+		<div id="block_divisible_non">
+			<div>Vendu en
+				<select name="unite_conditionnement_vl10">
+					<option value="BAR">Barre (BAR)</option>
+					<option value="BTE" selected="selected">Boite (BTE)</option>
+					<option value="COU">Couronne (COU)</option>
+					<option value="M2">M² (M2)</option>
+					<option value="ML">Mètre (ML)</option>
+					<option value="PQT">Paquet (PQT)</option>
+					<option value="RLX">Rouleaux (RLX)</option>
+					<option value="SAC">Sac (SAC)</option>
+					<option value="TOU">Touret (TOU)</option>
+				</select>
+				de : <input type="text" name="conditionnement_vl10" id="conditionnement_vl10" value="" size="5" placeholder="nb unité"/>
+				<span class="libelle_unite_vl10">Unité (UN)</span>
+			</div>
+		</div>
+
+
+		<div id="block_divisible_oui" style="display:none;">
+			<div>Conditionné en
+				<select name="unite_conditionnement_vl20">
+					<option value="" selected="selected">Ne sais pas</option>
+					<option value="BA2">Barre (BA2)</option>
+					<option value="BT2">Boite (BT2)</option>
+					<option value="CA2">Carton (CA2)</option>
+					<option value="CO2">Couronne (CO2)</option>
+					<option value="M22">M² (M22)</option>
+					<option value="ML2">Mètre (ML2)</option>
+					<option value="PQ2">Paquet (PQ2)</option>
+					<option value="RL2">Rouleaux (RL2)</option>
+					<option value="SA2">Sac (SA2)</option>
+					<option value="TO2">Touret (TO2)</option>
+				</select>
+				de : <input type="text" name="conditionnement_vl20" value="" size="5" placeholder="nb unité"/>
+				<span class="libelle_unite_vl10">Unité (UN)</span>
+			</div>
+		</div>
+
+
+		<div>Sur conditionné en 
+			<select name="unite_sur_conditionnement">
+				<option value="PAL" selected="selected">Palette (PAL)</option>
+				<option value="CA3">Gros carton (CA3)</option>
+				<option value="BAC">Ba bleu (BAC)</option>
+				<option value="CAD">Cadre (CAD)</option>
+				<option value="TOR">Touret (TOR)</option>
+			</select>
+			de : <input type="text" name="sur_conditionnement" value="" size="5" value="999"/>
+			<span class="libelle_unite_vl10">Unité (UN)</span>
+		</div>
+	</td>
+</tr>
+
+
+<!--<tr><th class="label stock">Stock :</th><td class="valeur">Oui<input type="radio" name="stock" value="oui" onclick="$('#stock_mini_maxi').show('fast');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="stock" value="non" onclick="$('#stock_mini_maxi').hide('fast');" checked>
 <div id="stock_mini_maxi" style="display:none;">
 Stock mini : <input type="text" name="stock_mini" value="" size="5"><br>
 Stock maxi : <input type="text" name="stock_maxi" value="" size="5"><br>
 Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
 </div>
 </td></tr>
-<tr><th class="label">Conditionnement :</th><td class="valeur"><input type="text" name="conditionnement" value="1" size="5"></td></tr>
-<tr><th class="label">Divisible :</th><td class="valeur">Oui<input type="radio" name="divisible" value="oui">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="divisible" value="non" checked></td></tr>
-<tr><th class="label">Unité de vente :</th><td class="valeur">
-	<select name="unite">
-		<option value="Boite (BTE)">Boite</option>
-		<option value="Cent (CEN)">Cent</option>
-		<option value="Colis (COL)">Colis</option>
-		<option value="Heures (HEU)">Heures</option>
-		<option value="Kilo (KG)">Kilo</option>
-		<option value="Litre (L)">Litre</option>
-		<option value="Mille (MIL)">Mille</option>
-		<option value="Mètre linéaire (ML)">Mètre linéaire</option>
-		<option value="Mètre carée (M2)">Mètre carée</option>
-		<option value="Mètre cube (M3)">Mètre cube</option>
-		<option value="Pièce (PCE)">Pièce</option>
-		<option value="Plaque (PLA)">Plaque</option>
-		<option value="Sac (SAC)">Sac</option>
-		<option value="Tonne (TON)">Tonne</option>
-		<option value="Unité (UN)" selected>Unité</option>
-	</select>
-<br><br></td></tr>
+<tr><th class="label stock">Conditionnement :</th><td class="valeur"><input type="text" name="conditionnement" value="1" size="5"></td></tr>
+-->
+
 
 <tr>
-	<th class="label">Activité :</th>
+	<th class="label famille">Activité :</th>
 	<td class="valeur"><input type="text" name="activite" value="" size="3" maxlength="3" onkeyup="compte_car(this);" onfocus="affiche_aide('activite');" onblur="majusculize(this.name);"></td>
 </tr>
 <tr>
-	<th class="label">Famille :</th>
+	<th class="label famille">Famille :</th>
 	<td class="valeur"><input type="text" name="famille" value="" size="3" maxlength="3" onkeyup="compte_car(this);" onfocus="affiche_aide('famille');" onblur="majusculize(this.name);"></td>
 </tr>
 <tr>
-	<th class="label">Sous famille :</th>
+	<th class="label famille">Sous famille :</th>
 	<td class="valeur"><input type="text" name="sousfamille" value="" size="3" maxlength="3" onkeyup="compte_car(this);" onfocus="affiche_aide('sousfamille');" onblur="majusculize(this.name);"></td>
 </tr>
 <tr>
-	<th class="label">Chapître :</th>
+	<th class="label famille">Chapître :</th>
 	<td class="valeur"><input type="text" name="chapitre" value="" size="3" maxlength="3" onkeyup="compte_car(this);" onfocus="affiche_aide('chapitre');" onblur="majusculize(this.name);"></td>
 </tr>
 <tr>
-	<th class="label">Sous chapître :</th>
+	<th class="label famille">Sous chapître :</th>
 	<td class="valeur"><input type="text" name="souschapitre" value="" size="3" maxlength="3" onfocus="affiche_aide('souschapitre');" onblur="majusculize(this.name);"></td>
 </tr>
 <tr>
