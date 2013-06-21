@@ -64,7 +64,7 @@ h1 {
 
 function verif_form(){
 	var form = document.cde;
-	var value_type_cde = form.type_cde[form.type_cde.selectedIndex].value;
+	//var value_type_cde = form.type_cde[form.type_cde.selectedIndex].value;
 	var erreur = false;
 
 	if (!form.num_cde.value) {
@@ -76,9 +76,8 @@ function verif_form(){
 		erreur = true;
 	}
 
-	
-
-	if (!value_type_cde) {
+	if (	!document.getElementById('fournisseur').checked
+		&& 	!document.getElementById('client').checked) {
 		alert("Veuillez préciser un type de commande");
 		erreur = true;
 	}
@@ -102,11 +101,8 @@ function verif_form(){
 	<h1>Voir les lignes qui ont été envoyés à Reflex</h1>
 	N° de cde Rubis
 	<input type="text" name="num_cde" value="" placeholder="N° de cde" size="10" maxlength="6"/>
-	<select name="type_cde">
-		<option value="">Type de commande</option>
-		<option value="fournisseur">Fournisseur</option>
-		<option value="client">Client</option>
-	</select>
+	<label for="fournisseur" style="margin-right:1em;">	<input type="radio" name="type_cde" value="fournisseur" id="fournisseur"/>Fournisseur</label>
+	<label for="client" style="margin-right:1em;">		<input type="radio" name="type_cde" value="client" id="client"/>Client</label>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les lignes</a>
 </div>
 </form>

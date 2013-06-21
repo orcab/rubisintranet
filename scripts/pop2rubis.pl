@@ -32,7 +32,7 @@ print "ok\n";
 # début du script
 POP3_FETCH:
 print print_time()."POP3 connection ... ";
-my $pop3 = Net::POP3->new($cfg->val('pop3','host'), ResvPort=>$cfg->val('pop3','port') , Timeout => 30) or die "Impossible de se connecter au serveur POP3";
+my $pop3 = Net::POP3->new($cfg->val('pop3','host'), ResvPort=>$cfg->val('pop3','port') , Timeout => 3) or die "Impossible de se connecter au serveur POP3";
 print "ok\n";
 
 my @message_to_delete;
@@ -48,10 +48,11 @@ if (defined($authentification) && $authentification > 0) {
 		#print $email->header('To')."\n";
 		my ($messageId) = ($email->header('Message-Id') =~ m/^<(.+?)\@/i);
 		$messageId = substr($messageId, 0 , 15);
-		my $subject   = $cfg->val('pop3','valid_subject');
+		my $valid_subject   = $cfg->val('pop3','valid_subject');
+		my $valid_to   		= $cfg->val('pop3','valid_to');
 
 		# procedure de la validation que l'email est bien une commande
-		if ($email->header('To') eq $cfg->val('pop3','valid_to') && $email->header('Subject') =~ m/^$subject/i) { # ok l'email est valide, on l'examine
+		if ($email->header('To') =~ m/$valid_to/i  && $email->header('Subject') =~ m/^$valid_subject/i) { # ok l'email est valide, on l'examine
 			my ($code_client) = ($email->header('Subject') =~ m/\((.+?)\)$/i);
 			my $code_cab = '';
 			if ($code_client =~ /^CAB(\d+)$/i) {
@@ -66,14 +67,18 @@ if (defined($authentification) && $authentification > 0) {
 									'SNTBOS'=>'', 'SNTBOA'=>'', 'SNTBOM'=>'', 'SNTBOJ'=>'', # date du bon
 									'SNTLIS'=>'', 'SNTLIA'=>'', 'SNTLIM'=>'', 'SNTLIJ'=>'', # date de livraison
 									'SNTRFC'=>'',											# reference
+									'SNTNOM'=>'','SNTCA1'=>'','SNTCA2'=>'','SNTCRU'=>'','SNTCVI'=>'','SNTCCP'=>'','SNTCBD'=>'', # adr de livraison
 									#'SNTRFS'=>'', 'SNTRFA'=>'', 'SNTRFM'=>'', 'SNTRFJ'=>'',# date de la cde client
 									#'SNTNAL'=>'', 'SNTAL1'=>'','SNTAL2'=>'','SNTRUL'=>'','SNTVIL'=>'','SNTBDL'=>'','SNTBDL'=>'', # adresse de livraison
+									'SNTAL1' => '',
+									'SNTCAM'=>'', # code camion
 									'articles' => [],
 									'commentaires' => []
 								  };
 			#format info article : {'SEOLIG'=>'','SENART'=>'','SENROF'=>'','SENTYP'=>'','SENQTE'=>''} # info article
 
 			my @body = split /\n/, $email->body;
+		
 			foreach (@body) {
 				chomp;
 				if		(/^\s*date\s*=(\d{2})\/(\d{2})\/(\d{2})(\d{2})/i) { # date
@@ -84,20 +89,23 @@ if (defined($authentification) && $authentification > 0) {
 
 
 				} elsif (/^\s*livraison sur\s*=(.*)/i) { # livraison sur (chantier ou depot)
-					push @{$data->{$messageId}->{'commentaires'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>'',  'SENROF'=>'R',  'SENTYP'=>'COM',  'SENQTE'=>'', 'SENCSA'=>"Livraison sur $1"} ;
-					$ligne += 2;
-
+					$data->{$messageId}->{'SNTCAM'} = $1 eq 'livraison' ? 'LDP':'DIS';
+		
 
 				} elsif (/^\s*adresse\s*de livraison\s*=(.*)/i) { # adresse de livraison
 					my $adr_liv = $1;
-					$adr_liv =~ s/< *br *\/? *>//ig; # supprime les <br> dans le texte
-					$Text::Wrap::columns	= 55;
-					$Text::Wrap::separator	= "\x0D" ;
-					foreach my $tmp (split(/\x0D/,  wrap('','',$adr_liv)  )) { # pour chaque ligne de commentaire
-						$tmp =~ s/\\//g;
-						push @{$data->{$messageId}->{'commentaires'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>'',  'SENTYP'=>'COM',  'SENQTE'=>'', 'SENCSA'=> substr($tmp,0,60)} ;
-						$ligne += 2;
-					}
+					#''SNTCA1'=>'','SNTCA2'=>'','SNTCRU'=>'','SNTCVI'=>'','SNTCCP'=>'','SNTCBD'=>'', # adr de livraison
+					my @adresses = split(/\\n/,$adr_liv);
+					$data->{$messageId}->{'SNTCA1'} = $adresses[0] if exists $adresses[0];
+					$data->{$messageId}->{'SNTCA2'} = $adresses[1] if exists $adresses[1];
+					$data->{$messageId}->{'SNTCRU'} = $adresses[2] if exists $adresses[2];
+					$data->{$messageId}->{'SNTCVI'} = $adresses[3] if exists $adresses[3];
+					$data->{$messageId}->{'SNTCCP'} = $adresses[4] if exists $adresses[4];
+					$data->{$messageId}->{'SNTCBD'} = $adresses[5] if exists $adresses[5];
+
+
+				} elsif (/^\s*nom\s*=(.*)/i) { # nom du client
+					$data->{$messageId}->{'SNTNOM'} = $1;
 
 
 				} elsif (/^\s*date de livraison\s*=(\d{2})\/(\d{2})\/(\d{2})(\d{2})/i) { # date de livraison
@@ -133,7 +141,7 @@ if (defined($authentification) && $authentification > 0) {
 					}
 
 
-				} elsif (/^\s*article_(.+?)\s*=(.*)/i) { # article avec sa qte
+				} elsif (/^\s*article_(.+?)\s*=([\d\.\,]*)/i) { # article avec sa qte
 					my ($code,$qte) = ($1,$2);
 					$qte =~ s/\./,/g; # pour les chiffre flotant, transforme les "." en ",".
 					push @{$data->{$messageId}->{'articles'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>$code,  'SENTYP'=>'',  'SENQTE'=>$qte, 'SENCSA'=>''} ;
@@ -145,10 +153,11 @@ if (defined($authentification) && $authentification > 0) {
 			push @message_to_delete, $msgnum;
 
 		} else {
-			print print_time()."Malformed email found ($msgnum). Deleting ... ";
+			print print_time()."Malformed email found ($msgnum). To:'".$email->header('To')."', Subject:'".$email->header('Subject')."'. Deleting ... ";
 			$pop3->delete($msgnum);
 			print "ok\n";
 		}
+
 	}
 } elsif ($authentification == '0E0') {
 	print "ok, but no message\n";
@@ -168,7 +177,8 @@ print print_time()."Generating CSV file ... ";
 open(CSV,'>>'.$cfg->val('file','path_temporary_file')) or die "Ne peux pas creer le fichier CSV temporaire '".$cfg->val('file','path_temporary_file')."' ($!)";
 # print header
 print CSV join(';',qw/SNOCLI SNOBON SNTROF SNTCHA SNTBOS SNTBOA SNTBOM SNTBOJ SNTLIS SNTLIA SNTLIM SNTLIJ
-						SNTRFC SNTRFS SNTRFA SNTRFM SNTRFJ SNTVTE SNTTTR SNTPRO SNTGAL SEOLIG SENART SENROF SENTYP SENQTE SENCSA/)."\n";
+						SNTRFC SNTRFS SNTRFA SNTRFM SNTRFJ SNTVTE SENTCD SNTTTR SNTPRO SNTGAL SEOLIG SENART SENROF
+						SENTYP SENQTE SENCSA SNTCAM SNTNOM SNTCA1 SNTCA2 SNTCRU SNTCVI SNTCCP SNTCBD/)."\n";
 foreach my $uniqid (keys %$data) {
 	foreach my $com ((@{$data->{$uniqid}->{'commentaires'}},@{$data->{$uniqid}->{'articles'}})) {
 		if ($data->{$uniqid}->{'SNOCLI'} eq 'benjamin') {
@@ -180,39 +190,47 @@ foreach my $uniqid (keys %$data) {
 		}
 
 		print CSV join(';',
-					$data->{$uniqid}->{'SNOCLI'}, # n° client
-					$uniqid,					  # numero unique
-					'R',                          # R
-					$data->{$uniqid}->{'SNTCHA'}, # code chantier
-					$data->{$uniqid}->{'SNTBOS'}, # date bon
-					$data->{$uniqid}->{'SNTBOA'},
-					$data->{$uniqid}->{'SNTBOM'},
-					$data->{$uniqid}->{'SNTBOJ'},
-					$data->{$uniqid}->{'SNTLIS'}, # date de liv
-					$data->{$uniqid}->{'SNTLIA'},
-					$data->{$uniqid}->{'SNTLIM'},
-					$data->{$uniqid}->{'SNTLIJ'},
-					$data->{$uniqid}->{'SNTRFC'}, # reference
-					$data->{$uniqid}->{'SNTBOS'}, # date cde client
-					$data->{$uniqid}->{'SNTBOA'},
-					$data->{$uniqid}->{'SNTBOM'},
-					$data->{$uniqid}->{'SNTBOJ'},
-					'LIV',
-					'NON',
-					'CDC',
+					$data->{$uniqid}->{'SNOCLI'}, 	# n° client
+					$uniqid,					  	# numero unique
+					'R',                          	# ligne en reliquat
+					$data->{$uniqid}->{'SNTCHA'}, 	# code chantier
+					$data->{$uniqid}->{'SNTBOS'}, 	# date bon SS
+					$data->{$uniqid}->{'SNTBOA'}, 	# date bon AA
+					$data->{$uniqid}->{'SNTBOM'}, 	# date bon MM
+					$data->{$uniqid}->{'SNTBOJ'}, 	# date bon JJ
+					$data->{$uniqid}->{'SNTLIS'}, 	# date de liv SS
+					$data->{$uniqid}->{'SNTLIA'}, 	# date de liv AA
+					$data->{$uniqid}->{'SNTLIM'}, 	# date de liv MM
+					$data->{$uniqid}->{'SNTLIJ'}, 	# date de liv JJ
+					$data->{$uniqid}->{'SNTRFC'}, 	# reference
+					$data->{$uniqid}->{'SNTBOS'}, 	# date cde client SS
+					$data->{$uniqid}->{'SNTBOA'}, 	# date cde client AA
+					$data->{$uniqid}->{'SNTBOM'}, 	# date cde client MM
+					$data->{$uniqid}->{'SNTBOJ'}, 	# date cde client JJ
+					'LIV', 							#type de vente
+					($data->{$uniqid}->{'SNTCAM'} eq 'DIS' ? 'STO':''), # on ne cree pas de cde fournisseur dans le cas d'une DIS
+					'NON', 							# livraison partiel
+					'CDC', 							# provenance STRACC
 					'O',
-					$com->{'SEOLIG'},
-					$com->{'SENART'},
-					'R',
+					$com->{'SEOLIG'},				# n° de ligne
+					$com->{'SENART'},				#code article
+					'R',				
 					$com->{'SENTYP'},
-					$com->{'SENQTE'},
-					$com->{'SENCSA'}
+					$com->{'SENQTE'},				# quantité
+					$com->{'SENCSA'},				# commentaire
+					$data->{$uniqid}->{'SNTCAM'}, 	# code camion
+					$data->{$uniqid}->{'SNTNOM'}, 	# nom client
+					$data->{$uniqid}->{'SNTCA1'}, 	# ligne adr1
+					$data->{$uniqid}->{'SNTCA2'}, 	# ligne adr2
+					$data->{$uniqid}->{'SNTCRU'}, 	# ligne adr3
+					$data->{$uniqid}->{'SNTCVI'}, 	# ligne adr4
+					$data->{$uniqid}->{'SNTCCP'}, 	# ligne adr5
+					$data->{$uniqid}->{'SNTCBD'}  	# ligne adr6
 			  )."\n";
 	}	
 }
 close CSV;
 print "ok\n";
-
 END:
 
 # copie du fichier temporaire a l'emplacement finale sur le disque partagé

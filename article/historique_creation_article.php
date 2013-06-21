@@ -148,8 +148,10 @@ EOT;
 			$sent = $mail->Send("Article cree : $row_article[titre]");
 
 			// on doit généré la creation dans Reflex
+			$previous_directory = getcwd();
 			chdir('c:/easyphp/www/intranet/scripts/Interfaces Rubis-Reflex') or die("Impossible de changer de répertoire de travail");
-			system('perl export-article-to-reflex.pl --article='.$row_article['code_article']);
+			exec('perl export-article-to-reflex.pl --article='.$row_article['code_article']); // envoi la demande de creation a reflex
+			chdir($previous_directory) or die("Impossible de revenir au répertoire de travail");
 		}
 }
 
