@@ -16,8 +16,7 @@ $num_cde = strtoupper($_POST['num_cde']);
 ?>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/> 
-	<title>Lignes envoyées à Reflex du bon <?=$num_cde?></title>
+<title>Lignes envoyées à Reflex du bon <?=$num_cde?></title>
 
 <style>
 
