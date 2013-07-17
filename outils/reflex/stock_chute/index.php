@@ -95,7 +95,7 @@ function verif_form(){
 	<h1>Voir les stock des produits</h1>
 	Code article
 	<input type="text" id="code_article" name="code_article" value="" placeholder="code article" size="10" maxlength="15"/>
-	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les chutes</a>
+	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les stocks</a>
 </div>
 </form>
 
@@ -113,6 +113,7 @@ ARMDAR as REF_FOURNISSEUR,
 GEQGEI as QTE_REFLEX,
 (select VLCTVL from ${REFLEX_BASE}.HLARVLP where VLCART=GEI.GECART and VLCVLA=10) as UNITE,
 (EMC1EM + ' '+ EMC2EM + ' '+ EMC3EM + ' ' + EMC4EM + ' ' + EMC5EM) as EMPLACEMENT,
+SUNSUP as NUMERO_SUPPORT,
 VL.VLCFPR as FAMILLE_PREPARATION
 	from		${REFLEX_BASE}.HLGEINP GEI
 	left join	${REFLEX_BASE}.HLSUPPP SUPPORT
@@ -142,14 +143,18 @@ EOT;
 				</caption>
 				<thead>
 				<tr>
-					<th>Qte</th><th>Unité</th><th>Emplacement</th><th>Famille de prépa</th>
+					<th>Qte</th><th>Unité</th><th>Emplacement</th><th>Support</th><th>Famille de prépa</th>
 				</tr>
 				</thead>
 				<tbody>
 <?		} ?>
 		
 				<tr>
-					<td><?=$row['QTE_REFLEX']?></td><td><?=$row['UNITE']?></td><td><?=$row['EMPLACEMENT']?></td><td><?=$row['FAMILLE_PREPARATION']?></td>
+					<td><?=$row['QTE_REFLEX']?></td>
+					<td><?=$row['UNITE']?></td>
+					<td><?=$row['EMPLACEMENT']?></td>
+					<td><?=$row['NUMERO_SUPPORT']?></td>
+					<td><?=$row['FAMILLE_PREPARATION']?></td>
 				</tr>
 <?		$i++;
 	} 
