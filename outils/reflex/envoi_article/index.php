@@ -63,10 +63,9 @@ function verif_form(){
 
 </head>
 <body>
+<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 
 <div class="message"><?=$message?></div>
-
-<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 
 <form name="article" method="POST" action="<?=$_SERVER['PHP_SELF']?>">
 <input type="hidden" name="action" value="envoi_article"/>

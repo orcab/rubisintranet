@@ -17,9 +17,9 @@ if (	isset($_POST['action']) && $_POST['action'] == 'update_etat_reflex'
 			) {
 				$sql = '';
 				if 		($_POST['type_cde'] == 'client') {
-					$sql = "update AFAGESTCOM.ADETBOP1 set DET06='".(array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST)?'I':'')."' where NOBON='".mysql_escape_string($_POST['num_cde'])."' and NOCLI='".mysql_escape_string($num_tier)."' and NOLIG='".mysql_escape_string($ligne)."'";
+					$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 set DET06='".(array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST)?'I':'')."' where NOBON='".mysql_escape_string($_POST['num_cde'])."' and NOCLI='".mysql_escape_string($num_tier)."' and NOLIG='".mysql_escape_string($ligne)."'";
 				} elseif($_POST['type_cde'] == 'fournisseur') {
-					$sql = "update AFAGESTCOM.ACFDETP1 set CFD31='".(array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST)?'ENV':'')."' where CFBON='".mysql_escape_string($_POST['num_cde'])."' and NOFOU='".mysql_escape_string($num_tier)."' and CFLIG='".mysql_escape_string($ligne)."'";
+					$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.ACFDETP1 set CFD31='".(array_key_exists("etat_reflex_${num_tier}_${ligne}",$_POST)?'ENV':'')."' where CFBON='".mysql_escape_string($_POST['num_cde'])."' and NOFOU='".mysql_escape_string($num_tier)."' and CFLIG='".mysql_escape_string($ligne)."'";
 				}
 
 				$rubis  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Rubis via ODBC ($LOGINOR_DSN)");
@@ -91,10 +91,9 @@ function verif_form(){
 
 </head>
 <body>
+<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 
 <div class="message"><?=$message?></div>
-
-<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 
 <form name="cde" method="POST" action="lignes.php">
 <div style="margin:auto;border:solid 1px grey;padding:20px;width:50%;">
