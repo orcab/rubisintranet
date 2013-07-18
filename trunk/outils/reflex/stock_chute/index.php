@@ -54,6 +54,24 @@ caption {
 	background-color:#CFC;
 }
 
+.qualite-afz {
+	background-color:#FAA
+}
+
+.qualite-afz .qualite {
+	color:#F00;
+}
+
+.support .significient {
+	font-size:1.2em;
+}
+
+#legende {
+    margin: auto;
+    margin-top: 2em;
+    font-size: 0.7em;
+    width: 55%;
+}
 
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
@@ -107,14 +125,19 @@ if (	isset($_POST['action']) && $_POST['action'] == 'stock_chute'
 	) {	
 		$sql = <<<EOT
 select
-GECART as CODE_ARTICLE,
-ARLART as DESIGNATION1,
-ARMDAR as REF_FOURNISSEUR,
-GEQGEI as QTE_REFLEX,
-(select VLCTVL from ${REFLEX_BASE}.HLARVLP where VLCART=GEI.GECART and VLCVLA=10) as UNITE,
+GEI.GECART as CODE_ARTICLE,
+ARTICLE.ARLART as DESIGNATION1,
+ARTICLE.ARMDAR as REF_FOURNISSEUR,
+GEI.GEQGEI as QTE_REFLEX,
+(select VLCTVL from ${REFLEX_BASE}.HLARVLP where VLCART=GEI.GECART and VLCVLA=10) as CODE_UNITE,
+(select TVLTVL from ${REFLEX_BASE}.HLARVLP,${REFLEX_BASE}.HLTYVLP where VLCART=GEI.GECART and VLCVLA=10 and VLCTVL=TVCTVL) as LIBELLE_UNITE,
 (EMC1EM + ' '+ EMC2EM + ' '+ EMC3EM + ' ' + EMC4EM + ' ' + EMC5EM) as EMPLACEMENT,
-SUNSUP as NUMERO_SUPPORT,
-VL.VLCFPR as FAMILLE_PREPARATION
+SUPPORT.SUNSUP as NUMERO_SUPPORT,
+VL.VLCFPR as FAMILLE_PREPARATION,
+QUALITE.QACQAL as CODE_QUALITE,
+QUALITE.QALQAL as LIBELLE_QUALITE,
+ETAT_SUPPORT.ESL3ES as CODE_ETAT_SUPPORT,
+ETAT_SUPPORT.ESLESU as LIBELLE_ETAT_SUPPORT
 	from		${REFLEX_BASE}.HLGEINP GEI
 	left join	${REFLEX_BASE}.HLSUPPP SUPPORT
 		on GEI.GENSUP=SUPPORT.SUNSUP
@@ -124,6 +147,10 @@ VL.VLCFPR as FAMILLE_PREPARATION
 		on GEI.GECART=VL.VLCART
 	left join  	${REFLEX_BASE}.HLARTIP ARTICLE
 		on GEI.GECART=ARTICLE.ARCART
+	left join  	${REFLEX_BASE}.HLETSUP ETAT_SUPPORT
+		on SUPPORT.SUCESU=ETAT_SUPPORT.ESCESU
+	left join  	${REFLEX_BASE}.HLQUALP QUALITE
+		on GEI.GECQAL=QUALITE.QACQAL
 where
 		GEI.GECTST='200'		-- obligatoire pour le stock réel
 	and GEI.GECART='$_POST[code_article]'			-- code article
@@ -138,23 +165,24 @@ EOT;
 			<table id="lignes">
 				<caption>
 					Stock pour l'article <strong><?=$row['CODE_ARTICLE']?></strong><br/>
-					<?=$row['DESIGNATION1']?><br/>
-					<?=$row['REF_FOURNISSEUR']?>
+					<?=$row['DESIGNATION1']?> / <?=$row['REF_FOURNISSEUR']?><br/>
+					Famille de prépa : <?=$row['FAMILLE_PREPARATION']?>
 				</caption>
 				<thead>
 				<tr>
-					<th>Qte</th><th>Unité</th><th>Emplacement</th><th>Support</th><th>Famille de prépa</th>
+					<th>Qte</th><th>Unité*</th><th>Emplacement</th><th>Etat*</th><th>Support</th><th>Qualité*</th>
 				</tr>
 				</thead>
 				<tbody>
 <?		} ?>
 		
-				<tr>
-					<td><?=$row['QTE_REFLEX']?></td>
-					<td><?=$row['UNITE']?></td>
-					<td><?=$row['EMPLACEMENT']?></td>
-					<td><?=$row['NUMERO_SUPPORT']?></td>
-					<td><?=$row['FAMILLE_PREPARATION']?></td>
+				<tr class="qualite-<?=$row['CODE_QUALITE']?>">
+					<td class="qte"><?=$row['QTE_REFLEX']?></td>
+					<td class="unite" title="<?=htmlentities($row['LIBELLE_UNITE'])?>"><?=$row['CODE_UNITE']?></td>
+					<td class="emplacement"><?=$row['EMPLACEMENT']?></td>
+					<td class="etat" title="<?=htmlentities($row['LIBELLE_ETAT_SUPPORT'])?>"><?=$row['CODE_ETAT_SUPPORT']?></td>
+					<td class="support"><?=substr($row['NUMERO_SUPPORT'],0,11)?><span class="significient"><?=substr($row['NUMERO_SUPPORT'],11,strlen($row['NUMERO_SUPPORT'])-11)?></span></td>
+					<td class="qualite" title="<?=htmlentities($row['LIBELLE_QUALITE'])?>"><?=$row['CODE_QUALITE']?></td>
 				</tr>
 <?		$i++;
 	} 
@@ -163,6 +191,7 @@ EOT;
 				</tobdy>
 			</table>
 
+			<div id="legende">* = En laissant la souris sur la valeur vous obtenez la signification du code</div>
 <? } ?>
 
 </body>
