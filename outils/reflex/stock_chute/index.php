@@ -20,6 +20,12 @@ h1 {
     text-align: center;
 }
 
+#recherche {
+	margin:auto;
+	border:solid 1px grey;
+	padding:20px;
+	width:50%;
+}
 
 #lignes {
     border: 1px solid black;
@@ -40,18 +46,6 @@ tr.annule {
 caption {
     background-color: #DDD;
     padding: 2px;
-}
-
-.reflex_envoyee {
-    color: green;
-}
-.reflex_non_envoyee,.rubis_non_livre {
-    color: red;
-}
-
-.rubis_livre {
-	color:green;
-	background-color:#CFC;
 }
 
 .qualite-afz {
@@ -109,7 +103,7 @@ function verif_form(){
 
 <form name="cde" method="POST" action="<?=$_SERVER['PHP_SELF']?>">
 <input type="hidden" name="action" value="stock_chute" />
-<div style="margin:auto;border:solid 1px grey;padding:20px;width:50%;">
+<div id="recherche">
 	<h1>Voir les stock des produits</h1>
 	Code article
 	<input type="text" id="code_article" name="code_article" value="" placeholder="code article" size="10" maxlength="15"/>
@@ -131,13 +125,14 @@ ARTICLE.ARMDAR as REF_FOURNISSEUR,
 GEI.GEQGEI as QTE_REFLEX,
 (select VLCTVL from ${REFLEX_BASE}.HLARVLP where VLCART=GEI.GECART and VLCVLA=10) as CODE_UNITE,
 (select TVLTVL from ${REFLEX_BASE}.HLARVLP,${REFLEX_BASE}.HLTYVLP where VLCART=GEI.GECART and VLCVLA=10 and VLCTVL=TVCTVL) as LIBELLE_UNITE,
-(EMC1EM + ' '+ EMC2EM + ' '+ EMC3EM + ' ' + EMC4EM + ' ' + EMC5EM) as EMPLACEMENT,
+(EMC1EM + ' ' + EMC2EM + ' '+ EMC3EM + ' ' + EMC4EM + ' ' + EMC5EM) as EMPLACEMENT,
 SUPPORT.SUNSUP as NUMERO_SUPPORT,
 VL.VLCFPR as FAMILLE_PREPARATION,
 QUALITE.QACQAL as CODE_QUALITE,
 QUALITE.QALQAL as LIBELLE_QUALITE,
 ETAT_SUPPORT.ESL3ES as CODE_ETAT_SUPPORT,
-ETAT_SUPPORT.ESLESU as LIBELLE_ETAT_SUPPORT
+ETAT_SUPPORT.ESLESU as LIBELLE_ETAT_SUPPORT,
+(CAST(GEJREG as VARCHAR(2))+ '/' + CAST(GEMREG as VARCHAR(2)) + '/' + CAST(GESREG as VARCHAR(2)) + CAST(GEAREG as VARCHAR(2))) as DATE_RECEPTION
 	from		${REFLEX_BASE}.HLGEINP GEI
 	left join	${REFLEX_BASE}.HLSUPPP SUPPORT
 		on GEI.GENSUP=SUPPORT.SUNSUP
@@ -156,6 +151,7 @@ where
 	and GEI.GECART='$_POST[code_article]'			-- code article
 	and VL.VLCVLA=30			-- VL 10
 --	and VL.VLCFPR='DEC'			-- produit de la famille découpe
+order by CODE_QUALITE ASC, EMPLACEMENT ASC
 EOT;
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
@@ -170,7 +166,7 @@ EOT;
 				</caption>
 				<thead>
 				<tr>
-					<th>Qte</th><th>Unité*</th><th>Emplacement</th><th>Etat*</th><th>Support</th><th>Qualité*</th>
+					<th>Qte</th><th>Unité*</th><th>Emplacement</th><th>Etat*</th><th>Support</th><th>Qualité*</th><th>Date recep</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -183,6 +179,7 @@ EOT;
 					<td class="etat" title="<?=htmlentities($row['LIBELLE_ETAT_SUPPORT'])?>"><?=$row['CODE_ETAT_SUPPORT']?></td>
 					<td class="support"><?=substr($row['NUMERO_SUPPORT'],0,11)?><span class="significient"><?=substr($row['NUMERO_SUPPORT'],11,strlen($row['NUMERO_SUPPORT'])-11)?></span></td>
 					<td class="qualite" title="<?=htmlentities($row['LIBELLE_QUALITE'])?>"><?=$row['CODE_QUALITE']?></td>
+					<td class="date_reception"><?=$row['DATE_RECEPTION']?></td>
 				</tr>
 <?		$i++;
 	} 
