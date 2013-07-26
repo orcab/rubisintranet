@@ -45,6 +45,11 @@ img:hover {
 	<td style="width:33%;padding-bottom:20px;"><a href="stock_chute/index.php"><img src="stock_chute/gfx/stock_chute.png" style="width:90px;"><br/>Stock des produits</a></td>
 	<td style="width:33%;padding-bottom:20px;"><a href="envoi_article/index.php"><img src="envoi_article/gfx/envoi_article.png" style="width:90px;"><br/>Forcer la descente d'article dans Reflex</a></td>
 </tr>
+<tr>
+	<td style="width:33%;padding-bottom:20px;"></td>
+	<td style="width:33%;padding-bottom:20px;"><a href="prepa_progress/index.php"><img src="prepa_progress/gfx/prepa_progress.png" style="width:90px;"><br/>Avancement des prepa</a></td>
+	<td style="width:33%;padding-bottom:20px;"></td>
+</tr>
 </table>
 </center>
 </body>
