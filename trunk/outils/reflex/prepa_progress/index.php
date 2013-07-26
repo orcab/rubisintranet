@@ -78,6 +78,7 @@ caption {
 #preparations td {
     border: solid 1px grey;
     padding: 5px;
+	white-space:nowrap;
 }
 .avancement {
     text-align: left;
