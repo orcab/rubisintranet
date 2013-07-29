@@ -71,16 +71,23 @@ caption {
 #preparations {
     border-collapse: collapse;
     border: solid 1px black;
-    width: 70%;
+    width: 100%;
     margin: auto;
     margin-top:1em;
 }
+
+th {
+	text-align:center;
+	white-space: nowrap;
+}
+
 #preparations td {
     border: solid 1px grey;
     padding: 5px;
 	white-space:nowrap;
 }
-.avancement {
+
+td.avancement {
     text-align: left;
 }
 
@@ -163,15 +170,18 @@ select
 	P1TVLP as LIGNE_VALIDEE,
 	PEHVPP as HEURE_VALIDATION,
 	PEHCRE as HEURE_CREATION,
-	DSLDES as LIBELLE_DESTINATAIRE
+	DSLDES as LIBELLE_DESTINATAIRE,
+	OERODP as REFERENCE_OPD
 from
 				${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 	left join 	${REFLEX_BASE}.HLPRPLP PREPA_DETAIL
 		on PREPA_ENTETE.PENANN=PREPA_DETAIL.P1NANP and PREPA_ENTETE.PENPRE=PREPA_DETAIL.P1NPRE
+	left join ${REFLEX_BASE}.HLODPEP ODP_ENTETE
+		on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 	left join ${REFLEX_BASE}.HLDESTP DESTINATAIRE
 		on PREPA_ENTETE.PECDES=DESTINATAIRE.DSCDES
 where
-		PREPA_ENTETE.PECCPL='CPT'
+		ODP_ENTETE.OECMOP='CPT'
 	and PREPA_ENTETE.PESCRE='$date[siecle]' and PREPA_ENTETE.PEACRE='$date[annee]' and PREPA_ENTETE.PEMCRE='$date[mois]' and PREPA_ENTETE.PEJCRE='$date[jour]'
 order by HEURE_CREATION DESC
 EOT;
@@ -206,22 +216,20 @@ EOT;
 ?>
 			<tr class="<?= $delay['hours']>=1 ? 'more-than-one-hour':''?>">
 				<td class="num_artisan"><?=$old_row['LIBELLE_DESTINATAIRE']?></td>
-				<td class="num_commande"><?=$old_row['PENANN']?>-<?=$old_row['PENPRE']?></td>
+				<td class="num_commande">
+					<?=$old_row['PENANN']?>-<?=$old_row['PENPRE']?>
+					/
+					<?	$reference_odp = split('/|-',$old_row['REFERENCE_OPD']);
+						echo $reference_odp[1];
+				?></td>
 				<td class="avancement" style="background: linear-gradient(to right,#5F5 0%,#CFC <?=$pourcentage_avancement?>%, #FAA <?=$pourcentage_avancement?>%, #F55 100%);">Lignes <?=str_pad($total_mission_validee,2,' ',STR_PAD_LEFT);?>/<?=str_pad($total_mission,2,' ',STR_PAD_LEFT);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?=str_pad($pourcentage_avancement,3,' ',STR_PAD_LEFT);?>%</td>
 				<td class="manquant <?=$manquant ? 'has_manquant':''?>"><?=$manquant?></td>
 				<td class="heure_debut"><?=reflex_hour_to_hhmmss($old_row['HEURE_CREATION'])?></td>
 				<td class="heure_fin"><?=reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION'])?></td>
 				<td class="realise">
 					<?	if ($old_row['HEURE_VALIDATION']) {
-							//echo $date->diff(new DateTime('2000-01-20 '.reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION'])),true)->format('%hh %mm %ss %U');
-							$delay = dateDiff($date_valid->format('U') , (int)$date_crea->format('U'));
-							echo 	($delay['days'] ? $delay['days'].'J ':'').
-									($delay['hours'] ? $delay['hours'].'h ':'').
-									($delay['minutes'] ? $delay['minutes'].'m ':'').
-									($delay['seconds'] ? $delay['seconds'].'s ':'')
-								;
-						}
-					?>
+							echo getHumanReadableDelay($date_valid->format('U') , (int)$date_crea->format('U'));
+						} ?>
 				</td>
 			</tr>
 <?				
@@ -268,12 +276,21 @@ function dateDiff($date1, $date2) {
 		$delay[] = $difference;
 	}
 
-	return 	array(
-					'days' 		=> $delay[0],
+	return 	array(	'days' 		=> $delay[0],
 					'hours' 	=> $delay[1],
 					'minutes' 	=> $delay[2],
 					'seconds' 	=> $delay[3],
 			);
+}
+
+
+function getHumanReadableDelay($second1,$second2) {
+	$delay = dateDiff($second1,$second2);
+	return 	($delay['days'] ? $delay['days'].'d ':'').
+			($delay['hours'] ? $delay['hours'].'h ':'').
+			($delay['minutes'] ? $delay['minutes'].'m ':'').
+			($delay['seconds'] ? $delay['seconds'].'s ':'')
+		;
 }
 
 ?>
