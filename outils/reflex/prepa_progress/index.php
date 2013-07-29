@@ -11,6 +11,10 @@ body {
 	font-size: 0.8em;
 }
 
+td {
+	font-size:0.8em;
+}
+
 h1 {
     font-size: 1.2em;
 }
