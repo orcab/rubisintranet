@@ -118,7 +118,8 @@ td.manquant {
 }
 
 .prepa-encours {
-	background: linear-gradient(to right,#F7CA42 0%,#FFD460 100%);
+	/*background: linear-gradient(to right,#F7CA42 0%,#FFD460 100%);*/
+	background: linear-gradient(to right,#F7CA42 0%,#FFF571 100%);
 }
 
 .prepa-fini {
@@ -181,7 +182,9 @@ function verif_form(){
 
 		$sql = <<<EOT
 select
-	*,
+--	*,
+	PENANN as PREPA_ANNEE,
+	PENPRE as PREPA_NUMERO,
 	P1QAPR as QTE_A_PREPARER,P1QPRE as QTE_PREPARER,
 	P1TVLP as LIGNE_VALIDEE,
 	PEHVPP as HEURE_VALIDATION,
@@ -213,7 +216,7 @@ EOT;
 	$total_mission = $total_mission_validee = $pourcentage_avancement = 0;
 	while($row = odbc_fetch_array($res)) {
 		
-		if ($old_prepa != "$row[PENANN].$row[PENPRE]" && $old_prepa != '') { // si on change de num de prepa --> on reset les compteur et on cree une nouvelle ligne 
+		if ($old_prepa != "$row[PREPA_ANNEE].$row[PREPA_NUMERO]" && $old_prepa != '') { // si on change de num de prepa --> on reset les compteur et on cree une nouvelle ligne 
 			$pourcentage_avancement = (int)($total_mission_validee * 100 / $total_mission);
 			if ($old_row['HEURE_VALIDATION'])
 				$pourcentage_avancement = 100;
@@ -233,7 +236,7 @@ EOT;
 			<tr class="<?	echo $delay['hours']>=1 ? ' more-than-one-hour':''; // plus d'une heure depuis la validation ?>">
 				<td class="num_artisan"><?=$old_row['LIBELLE_DESTINATAIRE']?></td>
 				<td class="num_commande">
-					<?=$old_row['PENANN']?>-<?=$old_row['PENPRE']?>
+					<?=$old_row['PREPA_ANNEE']?>-<?=$old_row['PREPA_NUMERO']?>
 					/
 					<?	$reference_odp = split('/|-',$old_row['REFERENCE_OPD']);
 						echo $reference_odp[1];
@@ -263,7 +266,7 @@ EOT;
 			$total_mission_validee++;
 
 		$total_mission++;
-		$old_prepa = "$row[PENANN].$row[PENPRE]";
+		$old_prepa = "$row[PREPA_ANNEE].$row[PREPA_NUMERO]";
 		$old_row = $row;
 	} 
 	odbc_close($reflex);
@@ -315,5 +318,4 @@ function getHumanReadableDelay($second1,$second2) {
 			($delay['seconds'] ? $delay['seconds'].'s ':'')
 		;
 }
-
 ?>
