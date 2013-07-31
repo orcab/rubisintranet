@@ -113,6 +113,18 @@ td.manquant {
 	display:none;
 }
 
+.prepa-non-demarrer {
+	background: linear-gradient(to right,#FAA 0%, #F55 100%);
+}
+
+.prepa-encours {
+	background: linear-gradient(to right,#F7CA42 0%,#FFD460 100%);
+}
+
+.prepa-fini {
+	background: linear-gradient(to right,#5F5 0%,#CFC 100%);
+}
+
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
 <link rel="stylesheet" href="../../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../../js/fontawesome/css/icon-custom.css">
@@ -218,7 +230,7 @@ EOT;
 				$delay = dateDiff($now->format('U') , (int)$date_valid->format('U'));
 			}
 ?>
-			<tr class="<?= $delay['hours']>=1 ? 'more-than-one-hour':''?>">
+			<tr class="<?	echo $delay['hours']>=1 ? ' more-than-one-hour':''; // plus d'une heure depuis la validation ?>">
 				<td class="num_artisan"><?=$old_row['LIBELLE_DESTINATAIRE']?></td>
 				<td class="num_commande">
 					<?=$old_row['PENANN']?>-<?=$old_row['PENPRE']?>
@@ -228,7 +240,14 @@ EOT;
 				?></td>
 				<td class="avancement" style="background: linear-gradient(to right,#5F5 0%,#CFC <?=$pourcentage_avancement?>%, #FAA <?=$pourcentage_avancement?>%, #F55 100%);">Lignes <?=str_pad($total_mission_validee,2,' ',STR_PAD_LEFT);?>/<?=str_pad($total_mission,2,' ',STR_PAD_LEFT);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?=str_pad($pourcentage_avancement,3,' ',STR_PAD_LEFT);?>%</td>
 				<td class="manquant <?=$manquant ? 'has_manquant':''?>"><?=$manquant?></td>
-				<td class="heure_debut"><?=reflex_hour_to_hhmmss($old_row['HEURE_CREATION'])?></td>
+				<td class="heure_debut <?
+						if ($total_mission_validee <= 0)
+							echo ' prepa-non-demarrer';
+						elseif ($total_mission_validee > 0 && $total_mission_validee < $total_mission)
+							echo ' prepa-encours';
+						elseif ($total_mission_validee >= $total_mission && $old_row['HEURE_VALIDATION'])
+							echo ' prepa-fini';
+					?>"><?=reflex_hour_to_hhmmss($old_row['HEURE_CREATION'])?></td>
 				<td class="heure_fin"><?=reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION'])?></td>
 				<td class="realise">
 					<?	if ($old_row['HEURE_VALIDATION']) {
