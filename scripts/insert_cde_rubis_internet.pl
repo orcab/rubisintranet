@@ -342,7 +342,12 @@ print "OK\n";
 
 print print_time()."Select des chantiers ...";
 my $sql = <<EOT ;
-select CHCLI,CHCHA,CHAD1 from ${prefix_base_rubis}GESTCOM.AENTCHP1 where CHEET=''
+select 
+		CHCLI,CHCHA,CHAD1
+from 	${prefix_base_rubis}GESTCOM.AENTCHP1
+where 	CHEET=''	-- actif
+	and CHCOG=''	-- pas de condition tarifaire général
+	and CHCOS=''	-- pas de contition tarifaire spécial
 EOT
 $loginor->Sql($sql);
 print "OK\n";
