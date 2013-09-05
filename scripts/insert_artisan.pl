@@ -24,7 +24,7 @@ my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_
 my $loginor2 = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 
 print print_time()."Select des artisans ...";
-$loginor->Sql("select ETCLE,NOCLI,NOMCL,COMC1,AD1CL,AD2CL,RUECL,COFIN,CPCLF,BURCL,TELCL,TELCC,TLCCL,TLXCL,DICN1,DICN2,RENDI,CLI15 from ${prefix_base_rubis}GESTCOM.ACLIENP1 where CATCL='1' and NOMCL<>'ADHERENT'"); # regarde les artisans actif
+$loginor->Sql("select ETCLE,NOCLI,NOMCL,COMC1,AD1CL,AD2CL,RUECL,COFIN,CPCLF,BURCL,TELCL,TELCC,TLCCL,TLXCL,DICN1,DICN2,RENDI,CLI15,CATCL from ${prefix_base_rubis}GESTCOM.ACLIENP1 where NOMCL<>'ADHERENT' and (CATCL='1' or CATCL='8')"); # regarde les artisans actif
 print "OK\n";
 
 # connexion a mysql
@@ -62,7 +62,7 @@ while($loginor->FetchRow()) {
 		$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.ACLIENP1 set CLI15=".$mysql->quote($ean13)." where NOCLI=".$mysql->quote($row{'NOCLI'}));
 	}
 
-	$mysql->query("INSERT INTO artisan (numero,nom,suspendu,email,tel1,tel2,tel3,tel4,adr1,adr2,adr3,cp,ville,activite,geo_coords,password,ean13) VALUES (".
+	$mysql->query("INSERT INTO artisan (numero,nom,suspendu,email,tel1,tel2,tel3,tel4,adr1,adr2,adr3,cp,ville,activite,geo_coords,password,ean13,categorie) VALUES (".
 					$mysql->quote($row{'NOCLI'}).",".
 					$mysql->quote($row{'NOMCL'}).",".
 					($row{'ETCLE'} eq 'S' ? 1 : 0).",".					# artisan suspendu
@@ -79,7 +79,8 @@ while($loginor->FetchRow()) {
 					$mysql->quote($activite).",".
 					$mysql->quote($row{'COFIN'}).",".
 					$mysql->quote($row{'RENDI'}).",".
-					$mysql->quote($ean13).
+					$mysql->quote($ean13).",".
+					$mysql->quote($row{'CATCL'}).
 					")")
 		or warn "Ne peux pas inserer le client ".$row{'NOMCL'};
 
@@ -159,8 +160,10 @@ CREATE TABLE IF NOT EXISTS `artisan` (
   `geo_coords` varchar(22) default NULL,
   `password` varchar(8) default NULL,
   `ean13` varchar(13) default NULL,
+  `categorie` tinyint(4) NOT NULL default '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `nom` (`nom`),
   UNIQUE KEY `numero` (`numero`),
-  INDEX `ean13` (`ean13`)
+  INDEX `ean13` (`ean13`),
+  INDEX `categorie` (`categorie`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 ;
