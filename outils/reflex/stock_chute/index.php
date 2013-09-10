@@ -156,6 +156,7 @@ EOT;
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
 	$i=0;
+	$qte = 0;
 	while($row = odbc_fetch_array($res)) {
 		if ($i<=0) { // entete du tableau ?>
 			<table id="lignes">
@@ -181,16 +182,23 @@ EOT;
 					<td class="qualite" title="<?=htmlentities($row['LIBELLE_QUALITE'])?>"><?=$row['CODE_QUALITE']?></td>
 					<td class="date_reception"><?=$row['DATE_RECEPTION']?></td>
 				</tr>
-<?		$i++;
+<?		
+		$qte += $row['QTE_REFLEX'];
+		$i++;
 	} 
 	odbc_close($reflex);
 ?>
 				</tobdy>
+				<tfoot>
+					<tr>
+						<td><?=$qte ? $qte:'' ?></td><td colspan="6" style="border:none;"></td>
+					</tr>
+				</tfoot>
 			</table>
 
 			<div class="legende">* = En laissant la souris sur la valeur vous obtenez la signification du code</div>
 
-<?	if ($i==0) { // pas de stock ?>
+<?	if ($qte==0) { // pas de stock ?>
 		<div class="legende">Il n'y a pas de stock pour le produit <?=$_POST['code_article']?></div>
 <?	}
 } ?>
