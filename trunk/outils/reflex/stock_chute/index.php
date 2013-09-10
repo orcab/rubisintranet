@@ -60,7 +60,7 @@ caption {
 	font-size:1.2em;
 }
 
-#legende {
+.legende {
     margin: auto;
     margin-top: 2em;
     font-size: 0.7em;
@@ -188,8 +188,11 @@ EOT;
 				</tobdy>
 			</table>
 
-			<div id="legende">* = En laissant la souris sur la valeur vous obtenez la signification du code</div>
-<? } ?>
+			<div class="legende">* = En laissant la souris sur la valeur vous obtenez la signification du code</div>
 
+<?	if ($i==0) { // pas de stock ?>
+		<div class="legende">Il n'y a pas de stock pour le produit <?=$_POST['code_article']?></div>
+<?	}
+} ?>
 </body>
 </html>
