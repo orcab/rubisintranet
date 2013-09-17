@@ -140,20 +140,45 @@ div.cal-location {
 				}
 
 				$sql = <<<EOT
-SELECT `start`,`end`,summary,description,location
-FROM events
+SELECT 	`start`,`end`,summary,description,location,frequency
+FROM 	events
 WHERE
-     (`start`>=date('now') AND `start`<=date('now','+1 year'))
-     OR
-     (`end`>=date('now') AND `end`<=date('now','+1 year'))
+		(`start`>=date('now') AND `start`<=date('now','+1 year'))
+	OR
+		(`end`>=date('now') AND `end`<=date('now','+1 year'))
+	OR
+		frequency='YEARLY'
 ORDER BY
-      `start` ASC
+		`start` ASC
 EOT;
 				$res = $sqlite->query($sql) or die("Impossible de lancer la requete de selection des events de la semaine suivantes : ".array_pop($sqlite->errorInfo()));
 
+				$rows = array(); // pour enregistrer les résultats
+
+				// on passe une premiere fois sur le tableau pour changer les dates des events périodiques
+				while ($row2 = $res->fetch(PDO::FETCH_ASSOC)) {
+					if ($row2['frequency'] == 'YEARLY') { // on repete l'evenement tous les ans peut import le debut et la fin de l'event
+						$this_year = date('Y');
+						$row2['start'] 	= preg_replace('/^\d{4}-/',$this_year.'-',$row2['start']);
+						$row2['end'] 	= preg_replace('/^\d{4}-/',$this_year.'-',$row2['end']);
+					}
+					array_push($rows,$row2); // on stock les infos pour un 2eme passage
+				}
+
+
+				// sort by date start function
+				function sortByEventStartingDate($a, $b) {
+				    if ($a['start'] == $b['start'])	return 0;
+				    
+				    return ($a['start']  < $b['start'] ) ? -1 : 1;
+				}
+				uasort($rows, 'sortByEventStartingDate');
+
+
 				// on affiche les evenements classés
 				$i=0;
-				while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+				foreach ($rows as $row) {
+
 					// hack pour les evenement sur une journée (ou plusieurs). la date de fin doit etre diminuer de 1
 					if (preg_match('/ 00:00:00$/',$row['start']) &&
 						preg_match('/(\d{4})-(\d{2})-(\d{2}) 00:00:00$/',$row['end'],$matches)) {
