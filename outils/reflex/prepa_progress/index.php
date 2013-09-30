@@ -1,8 +1,8 @@
+
 <? include('../../../inc/config.php'); ?>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-<META http-equiv="refresh" content="10">
 <title>Stock des produits</title>
 
 <style>
@@ -136,21 +136,14 @@ td.manquant {
 
 $(document).ready(function(){
 	$('#code_article').focus();
+
+	setTimeout( "reload()", 10000 );
 });
 
 
-function verif_form(){
-	var form = document.cde;
-	//var value_type_cde = form.type_cde[form.type_cde.selectedIndex].value;
-	var erreur = false;
-
-	if (!form.code_article.value) {
-		alert("Veuillez préciser un n° de commande");
-		erreur = true;
-	}
-
-	if (!erreur)
-		form.submit();
+function reload() {
+	console.log("reload");
+	document.choix_prepa.submit();
 }
 
 //-->
@@ -160,13 +153,24 @@ function verif_form(){
 <body>
 <!--<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>-->
 
+<form name="choix_prepa" method="GET" action="<?=$_SERVER['PHP_SELF']?>">
+	<fieldset><legend>Type de prépa</legend>
+		CPT <input type="checkbox" name="CPT" <?= isset($_GET['CPT']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
+		DIS <input type="checkbox" name="DIS" <?= isset($_GET['DIS']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
+		EXP <input type="checkbox" name="EXP" <?= isset($_GET['EXP']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
+		LDP <input type="checkbox" name="LDP" <?= isset($_GET['LDP']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
+		LSO <input type="checkbox" name="LSO" <?= isset($_GET['LSO']) ?'checked="checked"':'' ?>/>
+	</fieldset>
+</form>
+
 <table id="preparations">
 	<thead>
 		<tr>
 			<th class="num_artisan">Artisan</th>
+			<th class="type">Type</th>
 			<th class="num_commande">Commande</th>
 			<th class="avancement">Avancement</th>
-			<th class="manquant">Manq.</th>
+			<!--<th class="manquant">Manq.</th>-->
 			<th class="heure_debut">Commencé à</th>
 			<th class="heure_fin">Fini à</th>
 			<th class="realise">Fait en</th>
@@ -180,6 +184,30 @@ function verif_form(){
 	$date['mois'] 	= substr($date_yyymmdd,5,2);
 	$date['jour'] 	= substr($date_yyymmdd,8,2);
 
+/*	$where_type_prepa = array();
+	if (isset($_GET['type'])) { // un type de prepa est spécifié, on choisit ce type
+		foreach (explode(',',$_GET['type']) as $type) {
+			$where_type_prepa[] = " ODP_ENTETE.OECMOP='".trim(strtoupper(mysql_escape_string($type)))."' ";
+		}
+	}
+*/
+	$where_type_prepa = array();
+	if (isset($_GET['CPT']))
+		$where_type_prepa[] = " ODP_ENTETE.OECMOP='CPT' ";
+	if (isset($_GET['DIS']))
+		$where_type_prepa[] = " ODP_ENTETE.OECMOP='DIS' ";
+	if (isset($_GET['EXP']))
+		$where_type_prepa[] = " ODP_ENTETE.OECMOP='EXP' ";
+	if (isset($_GET['LDP']))
+		$where_type_prepa[] = " ODP_ENTETE.OECMOP='LDP' ";
+	if (isset($_GET['LSO']))
+		$where_type_prepa[] = " ODP_ENTETE.OECMOP='LSO' ";
+
+	if (sizeof($where_type_prepa)) // si au moins un type de prepa
+		$where_type_prepa = ' and ('.join(' OR ',$where_type_prepa).')';
+	else 
+		$where_type_prepa = '';
+
 		$sql = <<<EOT
 select
 --	*,
@@ -190,7 +218,8 @@ select
 	PEHVPP as HEURE_VALIDATION,
 	PEHCRE as HEURE_CREATION,
 	DSLDES as LIBELLE_DESTINATAIRE,
-	OERODP as REFERENCE_OPD
+	OERODP as REFERENCE_OPD,
+	ODP_ENTETE.OECMOP as TYPE
 from
 				${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 	left join 	${REFLEX_BASE}.HLPRPLP PREPA_DETAIL
@@ -200,15 +229,15 @@ from
 	left join ${REFLEX_BASE}.HLDESTP DESTINATAIRE
 		on PREPA_ENTETE.PECDES=DESTINATAIRE.DSCDES
 where
-		ODP_ENTETE.OECMOP='CPT'
-	and PREPA_ENTETE.PESCRE='$date[siecle]' and PREPA_ENTETE.PEACRE='$date[annee]' and PREPA_ENTETE.PEMCRE='$date[mois]' and PREPA_ENTETE.PEJCRE='$date[jour]'
+		PREPA_ENTETE.PESCRE='$date[siecle]' and PREPA_ENTETE.PEACRE='$date[annee]' and PREPA_ENTETE.PEMCRE='$date[mois]' and PREPA_ENTETE.PEJCRE='$date[jour]'
+		$where_type_prepa
 order by HEURE_CREATION DESC
 EOT;
 
 //echo "<pre>$sql</pre><br/>\n";
 
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
-	$res = odbc_exec($reflex,$sql)  or die("Impossible de rechercher les prepa CPT du jour : <br/>$sql");
+	$res = odbc_exec($reflex,$sql)  or die("Impossible de rechercher les prepa du jour : <br/>$sql");
 
 
 	$old_prepa = '';
@@ -235,6 +264,7 @@ EOT;
 ?>
 			<tr class="<?	echo $delay['hours']>=1 ? ' more-than-one-hour':''; // plus d'une heure depuis la validation ?>">
 				<td class="num_artisan"><?=$old_row['LIBELLE_DESTINATAIRE']?></td>
+				<td class="type"><?=$old_row['TYPE']?></td>
 				<td class="num_commande">
 					<?=$old_row['PREPA_ANNEE']?>-<?=$old_row['PREPA_NUMERO']?>
 					/
@@ -242,7 +272,7 @@ EOT;
 						echo $reference_odp[1];
 				?></td>
 				<td class="avancement" style="background: linear-gradient(to right,#5F5 0%,#CFC <?=$pourcentage_avancement?>%, #FAA <?=$pourcentage_avancement?>%, #F55 100%);">Lignes <?=str_pad($total_mission_validee,2,' ',STR_PAD_LEFT);?>/<?=str_pad($total_mission,2,' ',STR_PAD_LEFT);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?=str_pad($pourcentage_avancement,3,' ',STR_PAD_LEFT);?>%</td>
-				<td class="manquant <?=$manquant ? 'has_manquant':''?>"><?=$manquant?></td>
+				<!--<td class="manquant <?=$manquant ? 'has_manquant':''?>"><?=$manquant?></td>-->
 				<td class="heure_debut <?
 						if ($total_mission_validee <= 0)
 							echo ' prepa-non-demarrer';

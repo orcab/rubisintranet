@@ -47,7 +47,10 @@ img:hover {
 </tr>
 <tr>
 	<td style="width:33%;padding-bottom:20px;"></td>
-	<td style="width:33%;padding-bottom:20px;"><a href="prepa_progress/index.php"><img src="prepa_progress/gfx/prepa_progress.png" style="width:90px;"><br/>Avancement des prepa</a></td>
+	<td style="width:33%;padding-bottom:20px;"><img src="prepa_progress/gfx/prepa_progress.png" style="width:90px;"><br/>
+		<a href="prepa_progress/index.php?CPT=on">Avancement des prepa CPT</a><br/>
+		<a href="prepa_progress/index.php?DIS=on&LDP=on&EXP=on&LSO=on">Avancement des prepa DIS,LDP,EXP,LSO</a>
+	</td>
 	<td style="width:33%;padding-bottom:20px;"></td>
 </tr>
 </table>
