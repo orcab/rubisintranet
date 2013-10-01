@@ -134,21 +134,27 @@ td.manquant {
 <script language="javascript">
 <!--
 
+var timeout = 21;
+
 $(document).ready(function(){
 	$('#code_article').focus();
-
-	setTimeout( "reload()", 20000 );
+	refresh();
 });
 
+function refresh() {
+	timeout--;
+	$('#timeout').text(timeout);
+	setTimeout( "refresh()", 1000 );
 
-function reload() {
-	console.log("reload");
-	document.choix_prepa.submit();
+	if (timeout<1)
+		reload();
 }
 
+function reload() {
+	document.choix_prepa.submit();
+}
 //-->
 </script>
-
 </head>
 <body>
 
@@ -158,8 +164,10 @@ function reload() {
 		DIS <input type="checkbox" name="DIS" <?= isset($_GET['DIS']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
 		EXP <input type="checkbox" name="EXP" <?= isset($_GET['EXP']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
 		LDP <input type="checkbox" name="LDP" <?= isset($_GET['LDP']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
-		LSO <input type="checkbox" name="LSO" <?= isset($_GET['LSO']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		LSO <input type="checkbox" name="LSO" <?= isset($_GET['LSO']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
 
+		<a class="btn btn-success" onclick="reload();" id="rafraichir"><i class="icon-ok"></i> Rafraichir <span id="timeout"></span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 	</fieldset>
 </form>
@@ -192,13 +200,6 @@ function reload() {
 	$next_open_day['mois'] 	= substr($next_open_day_yyymmdd,5,2);
 	$next_open_day['jour'] 	= substr($next_open_day_yyymmdd,8,2);
 
-/*	$where_type_prepa = array();
-	if (isset($_GET['type'])) { // un type de prepa est spécifié, on choisit ce type
-		foreach (explode(',',$_GET['type']) as $type) {
-			$where_type_prepa[] = " ODP_ENTETE.OECMOP='".trim(strtoupper(mysql_escape_string($type)))."' ";
-		}
-	}
-*/
 	$where_type_prepa = array();
 	if (isset($_GET['CPT']))
 		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='CPT' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
@@ -297,7 +298,7 @@ EOT;
 				<td class="heure_fin"><?=reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION'])?></td>
 				<td class="realise">
 					<?	if ($old_row['HEURE_VALIDATION']) {
-							echo getHumanReadableDelay($date_valid->format('U') , (int)$date_crea->format('U'));
+							echo get_human_readable_delay($date_valid->format('U') , (int)$date_crea->format('U'));
 						} ?>
 				</td>
 			</tr>
@@ -353,7 +354,7 @@ function dateDiff($date1, $date2) {
 }
 
 
-function getHumanReadableDelay($second1,$second2) {
+function get_human_readable_delay($second1,$second2) {
 	$delay = dateDiff($second1,$second2);
 	return 	($delay['days'] ? $delay['days'].'d ':'').
 			($delay['hours'] ? $delay['hours'].'h ':'').
@@ -365,7 +366,6 @@ function getHumanReadableDelay($second1,$second2) {
 function get_next_open_day($format) {
 	$add_day = 0;
 
-	//$today = date();
 	$today_week_day = date('w');
 	if ($today_week_day <= 4) // du dimanche au jeudi, on ajoute un jour
 		$add_day = 1;
@@ -373,10 +373,6 @@ function get_next_open_day($format) {
 		$add_day = 3;
 	elseif ($today_week_day == 6) // le samedi on ajoute 2 jours
 		$add_day = 2;
-
-	//$next_open_day = date($format, mktime(
-	//								date('h',$cd),date('i',$cd), date('s',$cd), date('m',$cd),date('d',$cd)+$add_day, date('Y',$cd))
-	//				);
 
 	return date($format,strtotime("+$add_day day"));
 }
