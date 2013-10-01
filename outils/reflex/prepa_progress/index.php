@@ -137,7 +137,7 @@ td.manquant {
 $(document).ready(function(){
 	$('#code_article').focus();
 
-	setTimeout( "reload()", 10000 );
+	setTimeout( "reload()", 20000 );
 });
 
 
@@ -151,7 +151,6 @@ function reload() {
 
 </head>
 <body>
-<!--<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>-->
 
 <form name="choix_prepa" method="GET" action="<?=$_SERVER['PHP_SELF']?>">
 	<fieldset><legend>Type de prépa</legend>
@@ -159,7 +158,9 @@ function reload() {
 		DIS <input type="checkbox" name="DIS" <?= isset($_GET['DIS']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
 		EXP <input type="checkbox" name="EXP" <?= isset($_GET['EXP']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
 		LDP <input type="checkbox" name="LDP" <?= isset($_GET['LDP']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;
-		LSO <input type="checkbox" name="LSO" <?= isset($_GET['LSO']) ?'checked="checked"':'' ?>/>
+		LSO <input type="checkbox" name="LSO" <?= isset($_GET['LSO']) ?'checked="checked"':'' ?>/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+		<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 	</fieldset>
 </form>
 
@@ -168,9 +169,9 @@ function reload() {
 		<tr>
 			<th class="num_artisan">Artisan</th>
 			<th class="type">Type</th>
+			<th class="preparable">%</th>
 			<th class="num_commande">Commande</th>
 			<th class="avancement">Avancement</th>
-			<!--<th class="manquant">Manq.</th>-->
 			<th class="heure_debut">Commencé à</th>
 			<th class="heure_fin">Fini à</th>
 			<th class="realise">Fait en</th>
@@ -178,11 +179,18 @@ function reload() {
 	</thead>
 	<tbody>
 <?
-	$date_yyymmdd 	= date('Y-m-d');
-	$date['siecle'] = substr($date_yyymmdd,0,2);
-	$date['annee'] 	= substr($date_yyymmdd,2,2);
-	$date['mois'] 	= substr($date_yyymmdd,5,2);
-	$date['jour'] 	= substr($date_yyymmdd,8,2);
+	$today_yyymmdd 	= date('Y-m-d');
+	$today['siecle']= substr($today_yyymmdd,0,2);
+	$today['annee'] = substr($today_yyymmdd,2,2);
+	$today['mois'] 	= substr($today_yyymmdd,5,2);
+	$today['jour'] 	= substr($today_yyymmdd,8,2);
+
+	$next_open_day_yyymmdd 	= get_next_open_day('Y-m-d');
+
+	$next_open_day['siecle']= substr($next_open_day_yyymmdd,0,2);
+	$next_open_day['annee'] = substr($next_open_day_yyymmdd,2,2);
+	$next_open_day['mois'] 	= substr($next_open_day_yyymmdd,5,2);
+	$next_open_day['jour'] 	= substr($next_open_day_yyymmdd,8,2);
 
 /*	$where_type_prepa = array();
 	if (isset($_GET['type'])) { // un type de prepa est spécifié, on choisit ce type
@@ -193,18 +201,18 @@ function reload() {
 */
 	$where_type_prepa = array();
 	if (isset($_GET['CPT']))
-		$where_type_prepa[] = " ODP_ENTETE.OECMOP='CPT' ";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='CPT' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
 	if (isset($_GET['DIS']))
-		$where_type_prepa[] = " ODP_ENTETE.OECMOP='DIS' ";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='DIS' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
 	if (isset($_GET['EXP']))
-		$where_type_prepa[] = " ODP_ENTETE.OECMOP='EXP' ";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='EXP' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
 	if (isset($_GET['LDP']))
-		$where_type_prepa[] = " ODP_ENTETE.OECMOP='LDP' ";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='LDP' and PREPA_ENTETE.PESSCA='$next_open_day[siecle]' and PREPA_ENTETE.PEANCA='$next_open_day[annee]' and PREPA_ENTETE.PEMOCA='$next_open_day[mois]' and PREPA_ENTETE.PEJOCA='$next_open_day[jour]')\n";
 	if (isset($_GET['LSO']))
-		$where_type_prepa[] = " ODP_ENTETE.OECMOP='LSO' ";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='LSO' and PREPA_ENTETE.PESSCA='$next_open_day[siecle]' and PREPA_ENTETE.PEANCA='$next_open_day[annee]' and PREPA_ENTETE.PEMOCA='$next_open_day[mois]' and PREPA_ENTETE.PEJOCA='$next_open_day[jour]')\n";
 
 	if (sizeof($where_type_prepa)) // si au moins un type de prepa
-		$where_type_prepa = ' and ('.join(' OR ',$where_type_prepa).')';
+		$where_type_prepa = join(' OR ',$where_type_prepa);
 	else 
 		$where_type_prepa = '';
 
@@ -213,13 +221,16 @@ select
 --	*,
 	PENANN as PREPA_ANNEE,
 	PENPRE as PREPA_NUMERO,
-	P1QAPR as QTE_A_PREPARER,P1QPRE as QTE_PREPARER,
 	P1TVLP as LIGNE_VALIDEE,
 	PEHVPP as HEURE_VALIDATION,
 	PEHCRE as HEURE_CREATION,
 	DSLDES as LIBELLE_DESTINATAIRE,
 	OERODP as REFERENCE_OPD,
-	ODP_ENTETE.OECMOP as TYPE
+	ODP_ENTETE.OECMOP as TYPE,
+	PESCRE as CREATION_SIECLE, PEACRE as CREATION_ANNEE, PEMCRE as CREATION_MOIS, PEJCRE as CREATION_JOUR,
+	(select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as PEUT_PREPARER,
+	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as A_PREPARER
+--	(select SUM(P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as MANQUE
 from
 				${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 	left join 	${REFLEX_BASE}.HLPRPLP PREPA_DETAIL
@@ -229,9 +240,10 @@ from
 	left join ${REFLEX_BASE}.HLDESTP DESTINATAIRE
 		on PREPA_ENTETE.PECDES=DESTINATAIRE.DSCDES
 where
-		PREPA_ENTETE.PESCRE='$date[siecle]' and PREPA_ENTETE.PEACRE='$date[annee]' and PREPA_ENTETE.PEMCRE='$date[mois]' and PREPA_ENTETE.PEJCRE='$date[jour]'
-		$where_type_prepa
-order by HEURE_CREATION DESC
+		($where_type_prepa)
+		and (select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE)>0
+group by PENANN,PENPRE,P1TVLP,PEHVPP,PEHCRE,DSLDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
+order by PESCRE DESC, PEACRE DESC, PEMCRE DESC, PEJCRE DESC, HEURE_CREATION DESC
 EOT;
 
 //echo "<pre>$sql</pre><br/>\n";
@@ -244,20 +256,18 @@ EOT;
 	$old_row = array();
 	$total_mission = $total_mission_validee = $pourcentage_avancement = 0;
 	while($row = odbc_fetch_array($res)) {
+
+		//var_dump($row);
 		
 		if ($old_prepa != "$row[PREPA_ANNEE].$row[PREPA_NUMERO]" && $old_prepa != '') { // si on change de num de prepa --> on reset les compteur et on cree une nouvelle ligne 
 			$pourcentage_avancement = (int)($total_mission_validee * 100 / $total_mission);
 			if ($old_row['HEURE_VALIDATION'])
 				$pourcentage_avancement = 100;
 
-			$manquant = '';
-			if ($old_row['HEURE_VALIDATION'])
-				$manquant = $total_mission - $total_mission_validee > 0 ? $total_mission - $total_mission_validee : '';
-
 			$delay = array();
 			if ($old_row['HEURE_VALIDATION']) {
-				$date_crea 	= new DateTime($date_yyymmdd.' '.reflex_hour_to_hhmmss($old_row['HEURE_CREATION']));
-				$date_valid = new DateTime($date_yyymmdd.' '.reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION']));
+				$date_crea 	= new DateTime($today_yyymmdd.' '.reflex_hour_to_hhmmss($old_row['HEURE_CREATION']));
+				$date_valid = new DateTime($today_yyymmdd.' '.reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION']));
 				$now = new DateTime('now');
 				$delay = dateDiff($now->format('U') , (int)$date_valid->format('U'));
 			}
@@ -265,6 +275,7 @@ EOT;
 			<tr class="<?	echo $delay['hours']>=1 ? ' more-than-one-hour':''; // plus d'une heure depuis la validation ?>">
 				<td class="num_artisan"><?=$old_row['LIBELLE_DESTINATAIRE']?></td>
 				<td class="type"><?=$old_row['TYPE']?></td>
+				<td class="type"><?=(int)($old_row['PEUT_PREPARER'] * 100 / $old_row['A_PREPARER'])?>%</td>
 				<td class="num_commande">
 					<?=$old_row['PREPA_ANNEE']?>-<?=$old_row['PREPA_NUMERO']?>
 					/
@@ -272,7 +283,6 @@ EOT;
 						echo $reference_odp[1];
 				?></td>
 				<td class="avancement" style="background: linear-gradient(to right,#5F5 0%,#CFC <?=$pourcentage_avancement?>%, #FAA <?=$pourcentage_avancement?>%, #F55 100%);">Lignes <?=str_pad($total_mission_validee,2,' ',STR_PAD_LEFT);?>/<?=str_pad($total_mission,2,' ',STR_PAD_LEFT);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?=str_pad($pourcentage_avancement,3,' ',STR_PAD_LEFT);?>%</td>
-				<!--<td class="manquant <?=$manquant ? 'has_manquant':''?>"><?=$manquant?></td>-->
 				<td class="heure_debut <?
 						if ($total_mission_validee <= 0)
 							echo ' prepa-non-demarrer';
@@ -280,7 +290,10 @@ EOT;
 							echo ' prepa-encours';
 						elseif ($total_mission_validee >= $total_mission && $old_row['HEURE_VALIDATION'])
 							echo ' prepa-fini';
-					?>"><?=reflex_hour_to_hhmmss($old_row['HEURE_CREATION'])?></td>
+					?>">
+					<?=reflex_hour_to_hhmmss($old_row['HEURE_CREATION'])?>
+					(<?=$old_row['CREATION_JOUR']?>/<?=$old_row['CREATION_MOIS']?>/<?=$old_row['CREATION_SIECLE'].$old_row['CREATION_ANNEE']?>)
+				</td>
 				<td class="heure_fin"><?=reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION'])?></td>
 				<td class="realise">
 					<?	if ($old_row['HEURE_VALIDATION']) {
@@ -347,5 +360,24 @@ function getHumanReadableDelay($second1,$second2) {
 			($delay['minutes'] ? $delay['minutes'].'m ':'').
 			($delay['seconds'] ? $delay['seconds'].'s ':'')
 		;
+}
+
+function get_next_open_day($format) {
+	$add_day = 0;
+
+	//$today = date();
+	$today_week_day = date('w');
+	if ($today_week_day <= 4) // du dimanche au jeudi, on ajoute un jour
+		$add_day = 1;
+	elseif ($today_week_day == 5) // le vendredi on ajoute 3 jours
+		$add_day = 3;
+	elseif ($today_week_day == 6) // le samedi on ajoute 2 jours
+		$add_day = 2;
+
+	//$next_open_day = date($format, mktime(
+	//								date('h',$cd),date('i',$cd), date('s',$cd), date('m',$cd),date('d',$cd)+$add_day, date('Y',$cd))
+	//				);
+
+	return date($format,strtotime("+$add_day day"));
 }
 ?>
