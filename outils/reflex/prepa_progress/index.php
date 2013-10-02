@@ -222,13 +222,15 @@ select
 --	*,
 	PENANN as PREPA_ANNEE,
 	PENPRE as PREPA_NUMERO,
-	P1TVLP as LIGNE_VALIDEE,
+--	P1TVLP as LIGNE_VALIDEE,
 	PEHVPP as HEURE_VALIDATION,
 	PEHCRE as HEURE_CREATION,
 	DSLDES as LIBELLE_DESTINATAIRE,
 	OERODP as REFERENCE_OPD,
 	ODP_ENTETE.OECMOP as TYPE,
 	PESCRE as CREATION_SIECLE, PEACRE as CREATION_ANNEE, PEMCRE as CREATION_MOIS, PEJCRE as CREATION_JOUR,
+	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE and P1TVLP='1') as LIGNES_PREPAREES,
+	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as LIGNES_A_PREPARER,
 	(select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as PEUT_PREPARER,
 	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as A_PREPARER
 --	(select SUM(P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as MANQUE
@@ -243,76 +245,59 @@ from
 where
 		($where_type_prepa)
 		and (select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE)>0
-group by PENANN,PENPRE,P1TVLP,PEHVPP,PEHCRE,DSLDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
+group by PENANN,PENPRE,PEHVPP,PEHCRE,DSLDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
 order by PESCRE DESC, PEACRE DESC, PEMCRE DESC, PEJCRE DESC, HEURE_CREATION DESC
 EOT;
 
-//echo "<pre>$sql</pre><br/>\n";
+echo "<pre>$sql</pre><br/>\n";
 
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$res = odbc_exec($reflex,$sql)  or die("Impossible de rechercher les prepa du jour : <br/>$sql");
 
-
-	$old_prepa = '';
-	$old_row = array();
-	$total_mission = $total_mission_validee = $pourcentage_avancement = 0;
 	while($row = odbc_fetch_array($res)) {
 
-		//var_dump($row);
-		
-		if ($old_prepa != "$row[PREPA_ANNEE].$row[PREPA_NUMERO]" && $old_prepa != '') { // si on change de num de prepa --> on reset les compteur et on cree une nouvelle ligne 
-			$pourcentage_avancement = (int)($total_mission_validee * 100 / $total_mission);
-			if ($old_row['HEURE_VALIDATION'])
+			$pourcentage_avancement = (int)($row['LIGNES_PREPAREES'] * 100 / $row['LIGNES_A_PREPARER']);
+			if ($row['HEURE_VALIDATION'])
 				$pourcentage_avancement = 100;
 
 			$delay = array();
-			if ($old_row['HEURE_VALIDATION']) {
-				$date_crea 	= new DateTime($today_yyymmdd.' '.reflex_hour_to_hhmmss($old_row['HEURE_CREATION']));
-				$date_valid = new DateTime($today_yyymmdd.' '.reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION']));
+			if ($row['HEURE_VALIDATION']) {
+				$date_crea 	= new DateTime($today_yyymmdd.' '.reflex_hour_to_hhmmss($row['HEURE_CREATION']));
+				$date_valid = new DateTime($today_yyymmdd.' '.reflex_hour_to_hhmmss($row['HEURE_VALIDATION']));
 				$now = new DateTime('now');
 				$delay = dateDiff($now->format('U') , (int)$date_valid->format('U'));
 			}
 ?>
 			<tr class="<?	echo $delay['hours']>=1 ? ' more-than-one-hour':''; // plus d'une heure depuis la validation ?>">
-				<td class="num_artisan"><?=$old_row['LIBELLE_DESTINATAIRE']?></td>
-				<td class="type"><?=$old_row['TYPE']?></td>
-				<td class="type"><?=(int)($old_row['PEUT_PREPARER'] * 100 / $old_row['A_PREPARER'])?>%</td>
+				<td class="num_artisan"><?=$row['LIBELLE_DESTINATAIRE']?></td>
+				<td class="type"><?=$row['TYPE']?></td>
+				<td class="type"><?=(int)($row['PEUT_PREPARER'] * 100 / $row['A_PREPARER'])?>%</td>
 				<td class="num_commande">
-					<?=$old_row['PREPA_ANNEE']?>-<?=$old_row['PREPA_NUMERO']?>
+					<?=$row['PREPA_ANNEE']?>-<?=$row['PREPA_NUMERO']?>
 					/
-					<?	$reference_odp = split('/|-',$old_row['REFERENCE_OPD']);
+					<?	$reference_odp = split('/|-',$row['REFERENCE_OPD']);
 						echo $reference_odp[1];
 				?></td>
-				<td class="avancement" style="background: linear-gradient(to right,#5F5 0%,#CFC <?=$pourcentage_avancement?>%, #FAA <?=$pourcentage_avancement?>%, #F55 100%);">Lignes <?=str_pad($total_mission_validee,2,' ',STR_PAD_LEFT);?>/<?=str_pad($total_mission,2,' ',STR_PAD_LEFT);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?=str_pad($pourcentage_avancement,3,' ',STR_PAD_LEFT);?>%</td>
+				<td class="avancement" style="background: linear-gradient(to right,#5F5 0%,#CFC <?=$pourcentage_avancement?>%, #FAA <?=$pourcentage_avancement?>%, #F55 100%);">Lignes <?=str_pad($row['LIGNES_PREPAREES'],2,' ',STR_PAD_LEFT);?>/<?=str_pad($row['LIGNES_A_PREPARER'],2,' ',STR_PAD_LEFT);?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?=str_pad($pourcentage_avancement,3,' ',STR_PAD_LEFT);?>%</td>
 				<td class="heure_debut <?
-						if ($total_mission_validee <= 0)
+						if ($row['LIGNES_PREPAREES'] <= 0)
 							echo ' prepa-non-demarrer';
-						elseif ($total_mission_validee > 0 && $total_mission_validee < $total_mission)
+						elseif ($row['LIGNES_PREPAREES'] > 0 && $row['LIGNES_PREPAREES'] < $row['LIGNES_A_PREPARER'])
 							echo ' prepa-encours';
-						elseif ($total_mission_validee >= $total_mission && $old_row['HEURE_VALIDATION'])
+						elseif ($row['LIGNES_PREPAREES'] >= $row['LIGNES_A_PREPARER'] && $row['HEURE_VALIDATION'])
 							echo ' prepa-fini';
 					?>">
-					<?=reflex_hour_to_hhmmss($old_row['HEURE_CREATION'])?>
-					(<?=$old_row['CREATION_JOUR']?>/<?=$old_row['CREATION_MOIS']?>/<?=$old_row['CREATION_SIECLE'].$old_row['CREATION_ANNEE']?>)
+					<?=reflex_hour_to_hhmmss($row['HEURE_CREATION'])?>
+					(<?=$row['CREATION_JOUR']?>/<?=$row['CREATION_MOIS']?>/<?=$row['CREATION_SIECLE'].$row['CREATION_ANNEE']?>)
 				</td>
-				<td class="heure_fin"><?=reflex_hour_to_hhmmss($old_row['HEURE_VALIDATION'])?></td>
+				<td class="heure_fin"><?=reflex_hour_to_hhmmss($row['HEURE_VALIDATION'])?></td>
 				<td class="realise">
-					<?	if ($old_row['HEURE_VALIDATION']) {
+					<?	if ($row['HEURE_VALIDATION']) {
 							echo get_human_readable_delay($date_valid->format('U') , (int)$date_crea->format('U'));
 						} ?>
 				</td>
 			</tr>
-<?				
-			$total_mission = $total_mission_validee = $pourcentage_avancement = 0;
-		}
-
-		if ($row['LIGNE_VALIDEE'])
-			$total_mission_validee++;
-
-		$total_mission++;
-		$old_prepa = "$row[PREPA_ANNEE].$row[PREPA_NUMERO]";
-		$old_row = $row;
-	} 
+<?	} 
 	odbc_close($reflex);
 ?>
 	</tbody>	
