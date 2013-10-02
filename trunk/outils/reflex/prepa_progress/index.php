@@ -202,11 +202,11 @@ function reload() {
 
 	$where_type_prepa = array();
 	if (isset($_GET['CPT']))
-		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='CPT' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='CPT' and PREPA_ENTETE.PESSCA='$today[siecle]' and PREPA_ENTETE.PEANCA='$today[annee]' and PREPA_ENTETE.PEMOCA='$today[mois]' and PREPA_ENTETE.PEJOCA='$today[jour]')\n";
 	if (isset($_GET['DIS']))
-		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='DIS' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='DIS' and PREPA_ENTETE.PESSCA='$today[siecle]' and PREPA_ENTETE.PEANCA='$today[annee]' and PREPA_ENTETE.PEMOCA='$today[mois]' and PREPA_ENTETE.PEJOCA='$today[jour]')\n";
 	if (isset($_GET['EXP']))
-		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='EXP' and PREPA_ENTETE.PESCRE='$today[siecle]' and PREPA_ENTETE.PEACRE='$today[annee]' and PREPA_ENTETE.PEMCRE='$today[mois]' and PREPA_ENTETE.PEJCRE='$today[jour]')\n";
+		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='EXP' and PREPA_ENTETE.PESSCA='$today[siecle]' and PREPA_ENTETE.PEANCA='$today[annee]' and PREPA_ENTETE.PEMOCA='$today[mois]' and PREPA_ENTETE.PEJOCA='$today[jour]')\n";
 	if (isset($_GET['LDP']))
 		$where_type_prepa[] = " (ODP_ENTETE.OECMOP='LDP' and PREPA_ENTETE.PESSCA='$next_open_day[siecle]' and PREPA_ENTETE.PEANCA='$next_open_day[annee]' and PREPA_ENTETE.PEMOCA='$next_open_day[mois]' and PREPA_ENTETE.PEJOCA='$next_open_day[jour]')\n";
 	if (isset($_GET['LSO']))
