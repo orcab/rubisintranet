@@ -51,7 +51,7 @@ img:hover {
 		<a href="prepa_progress/index.php?CPT=on">Avancement des prepa CPT</a><br/>
 		<a href="prepa_progress/index.php?DIS=on&LDP=on&EXP=on&LSO=on">Avancement des prepa DIS,LDP,EXP,LSO</a>
 	</td>
-	<td style="width:33%;padding-bottom:20px;"></td>
+	<td style="width:33%;padding-bottom:20px;"><a href="taux_service/index.php"><img src="taux_service/gfx/taux_de_service.png" style="width:90px;"><br/>Taux de service</a></td>
 </tr>
 </table>
 </center>
