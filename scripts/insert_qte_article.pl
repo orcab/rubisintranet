@@ -34,7 +34,7 @@ print print_time()."Select des quantites ...";
 my $sql = <<EOT;
 select
 	STOCK.NOART as CODE_ARTICLE,
-	STOCK.QCSTO as QTE_CDE_CLIENT_STOCK,
+	STOCK.QTATC as QTE_CDE_CLIENT_STOCK,
 	STOCK.QTINV as QTE_REEL,
 	STOCK.QFSTO as QTE_CDE_FOURN,
 	FICHE_STOCK.STSER SERVI,

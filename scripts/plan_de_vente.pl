@@ -35,26 +35,36 @@ $mysql->query(join('',<DATA>)); # construction de la table si elle n'existe pas
 $mysql->query("TRUNCATE TABLE pdvente;");
 print " ok\n";
 
-#my ($code_activite,$libelle_activite,$code_famille,$libelle_famille,$code_sousfamille,$libelle_sousfamille,$code_chapitre,$libelle_chapitre,$code_souschapitre,$libelle_souschapitre);
+
+# $libelle_complet{chemin} = "libelle_activité,libelle_famille,...";
+my %libelle_complet = ();
+
 print print_time()."Insertion du plan de vente dans la base ... ";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
 	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
 
 	if		($row{'AFCNI'} eq 'ACT') { # activité
-		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau)                                                           VALUES ('$row{AFCAC}','$row{ACFLI}','$row{AFCAC}',                                                1);");
+		$libelle_complet{"$row{AFCAC}"} = "$row{ACFLI}";
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,libelle_complet)                                                           VALUES ('$row{AFCAC}','$row{ACFLI}','$row{AFCAC}',1,'".$libelle_complet{"$row{AFCAC}"}."');");
 	}
-	elsif	($row{'AFCNI'} eq 'FAM') { # famille 
-		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere)                                             VALUES ('$row{AFCFA}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}',                                    2,'$row{AFCAC}');");
+	elsif	($row{'AFCNI'} eq 'FAM') { # famille
+		$libelle_complet{"$row{AFCAC}.$row{AFCFA}"} = $libelle_complet{"$row{AFCAC}"}.">$row{ACFLI}";
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,libelle_complet,activite_pere)                                             VALUES ('$row{AFCFA}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}',2,'".$libelle_complet{"$row{AFCAC}.$row{AFCFA}"}."','$row{AFCAC}');");
 	}
-	elsif	($row{'AFCNI'} eq 'SFA') { # sous famille 
-		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere)                                VALUES ('$row{AFCSF}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}',                        3,'$row{AFCAC}','$row{AFCFA}');");
+
+	elsif	($row{'AFCNI'} eq 'SFA') { # sous famille
+		$libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}"} = $libelle_complet{"$row{AFCAC}.$row{AFCFA}"}.">$row{ACFLI}";
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,libelle_complet,activite_pere,famille_pere)                                VALUES ('$row{AFCSF}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}',3,'".$libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}"}."','$row{AFCAC}','$row{AFCFA}');");
 	}
-	elsif	($row{'AFCNI'} eq 'CHA') { # chapitre 
-		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere,sousfamille_pere)               VALUES ('$row{AFCCH}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}',            4,'$row{AFCAC}','$row{AFCFA}','$row{AFCSF}');");
+
+	elsif	($row{'AFCNI'} eq 'CHA') { # chapitre
+		$libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}"} = $libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}"}.">$row{ACFLI}";
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,libelle_complet,activite_pere,famille_pere,sousfamille_pere)               VALUES ('$row{AFCCH}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}',4,'".$libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}"}."','$row{AFCAC}','$row{AFCFA}','$row{AFCSF}');");
 	}
-	elsif	($row{'AFCNI'} eq 'SCH') { # sous chapitre 
-		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,activite_pere,famille_pere,sousfamille_pere,chapitre_pere) VALUES ('$row{AFCSC}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}.$row{AFCSC}',5,'$row{AFCAC}','$row{AFCFA}','$row{AFCSF}','$row{AFCCH}');");
+	elsif	($row{'AFCNI'} eq 'SCH') { # sous chapitre
+		$libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}.$row{AFCSC}"} = $libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}"}.">$row{ACFLI}";
+		$mysql->query("INSERT INTO pdvente (code,libelle,chemin,niveau,libelle_complet,activite_pere,famille_pere,sousfamille_pere,chapitre_pere) VALUES ('$row{AFCSC}','$row{ACFLI}','$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}.$row{AFCSC}',5,'".$libelle_complet{"$row{AFCAC}.$row{AFCFA}.$row{AFCSF}.$row{AFCCH}.$row{AFCSC}"}."','$row{AFCAC}','$row{AFCFA}','$row{AFCSF}','$row{AFCCH}');");
 	}
 }
 close F;
@@ -64,7 +74,7 @@ print "ok\n";
 END:
 print print_time()."END\n\n";
 
-
+#####################################################################################################################################################
 
 sub trim {
 	my $t = shift;
@@ -96,6 +106,8 @@ CREATE TABLE IF NOT EXISTS `pdvente` (
   `chapitre_pere` varchar(3) default NULL,
   `chemin` varchar(19) default NULL,
   `niveau` int(3) NOT NULL,
+  `libelle_complet` text NOT NULL,
   PRIMARY KEY  (`id`),
-  UNIQUE KEY `chemin` (`chemin`)
+  UNIQUE KEY `chemin` (`chemin`),
+  KEY `libelle` (`libelle`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;

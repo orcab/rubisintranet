@@ -5,7 +5,7 @@
 # il depose ensuite ce fichier sur le disque partagé pour une intégration dans Rubis
 
 use Data::Dumper;
-use POSIX qw(strftime);
+use POSIX qw(strftime ceil);
 use Net::POP3;
 use Config::IniFiles;
 use Email::Simple;
@@ -13,6 +13,10 @@ use File::Copy;
 use File::Basename;
 use Text::Wrap;
 use Getopt::Long;
+use Win32::ODBC;
+require 'Phpconst2perlconst.pm';
+use Phpconst2perlconst ;
+
 my $debug; GetOptions ('debug' => \$debug);  # flag
 $|=1;
 print print_time()."START\n";
@@ -21,6 +25,13 @@ print print_time()."START\n";
 my $cfg  = new Config::IniFiles( -file => 'pop2rubis.ini' , -nocase=>1 ) or die "Impossible de charger le fichier de config 'pop2rubis.ini'";
 my $data = {} ;
 
+
+# conection à la base Loginor
+my $cfg2 = new Phpconst2perlconst(-file => '../inc/config.php');
+my $prefix_base_rubis = $cfg2->{LOGINOR_PREFIX_BASE};
+print print_time()."Connecting to ODBC '".$cfg2->{LOGINOR_DSN}."' ... ";
+my $loginor = new Win32::ODBC('DSN='.$cfg2->{LOGINOR_DSN}.';UID='.$cfg2->{LOGINOR_USER}.';PWD='.$cfg2->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
+print "ok\n";
 
 # on tente d'aller sur le disqie partagé --> erreur
 print print_time()."Testing access to disk ... ";
@@ -136,15 +147,16 @@ if (defined($authentification) && $authentification > 0) {
 					$Text::Wrap::separator	= "\x0D" ;
 					foreach my $tmp (split(/\x0D/,  wrap('','',$com)  )) { # pour chaque ligne de commentaire
 						$tmp =~ s/\\//g;
-						push @{$data->{$messageId}->{'commentaires'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>'',  'SENTYP'=>'COM',  'SENQTE'=>'', 'SENCSA'=> substr($tmp,0,60)} ;
+						push @{$data->{$messageId}->{'commentaires'}}, {'SEOLIG'=>sprintf('%03d',$ligne), 'SENART'=>'', 'SENTYP'=>'COM', 'SENQTE'=>'', 'SENCSA'=> substr($tmp,0,60)} ;
 						$ligne += 2;
 					}
 
 
-				} elsif (/^\s*article_(.+?)\s*=([\d\.\,]*)/i) { # article avec sa qte
-					my ($code,$qte) = ($1,$2);
-					$qte =~ s/\./,/g; # pour les chiffre flotant, transforme les "." en ",".
-					push @{$data->{$messageId}->{'articles'}} , {'SEOLIG'=>sprintf('%03d',$ligne),  'SENART'=>$code,  'SENTYP'=>'',  'SENQTE'=>$qte, 'SENCSA'=>''} ;
+				} elsif (/^\s*article_(.+?)\s*=([\d\.\,]*)=([\d\.\,]*)/i) { # article avec sa qte et sa remise
+					my ($code,$qte,$remise) = ($1,$2,$3);
+					$qte 	=~ s/\./,/g; # pour les chiffre flotant, transforme les "." en ",".
+					$remise =~ s/\./,/g; # pour les chiffre flotant, transforme les "." en ",".
+					push @{$data->{$messageId}->{'articles'}}, {'SEOLIG'=>sprintf('%03d',$ligne), 'SENART'=>$code, 'SENTYP'=>'', 'SENQTE'=>$qte, 'SENCSA'=>'', 'SENRP1'=>$remise} ;
 					$ligne += 2;
 				}
 			}
@@ -178,15 +190,25 @@ open(CSV,'>>'.$cfg->val('file','path_temporary_file')) or die "Ne peux pas creer
 # print header
 print CSV join(';',qw/SNOCLI SNOBON SNTROF SNTCHA SNTBOS SNTBOA SNTBOM SNTBOJ SNTLIS SNTLIA SNTLIM SNTLIJ
 						SNTRFC SNTRFS SNTRFA SNTRFM SNTRFJ SNTVTE SENTCD SNTTTR SNTPRO SNTGAL SEOLIG SENART SENROF
-						SENTYP SENQTE SENCSA SNTCAM SNTNOM SNTCA1 SNTCA2 SNTCRU SNTCVI SNTCCP SNTCBD/)."\n";
+						SENTYP SENNBR SENQTE SENCSA SNTCAM SNTNOM SNTCA1 SNTCA2 SNTCRU SNTCVI SNTCCP SNTCBD SENRP1/)."\n";
+
 foreach my $uniqid (keys %$data) {
 	foreach my $com ((@{$data->{$uniqid}->{'commentaires'}},@{$data->{$uniqid}->{'articles'}})) {
-		if ($data->{$uniqid}->{'SNOCLI'} eq 'benjamin') {
+		if ($data->{$uniqid}->{'SNOCLI'} eq 'benjamin' || $data->{$uniqid}->{'SNOCLI'} eq 'benjamin2') {
 			$data->{$uniqid}->{'SNOCLI'} = 'POULAI'; # patch pour le code client de benjamin
 		}
 
 		if (!exists $data->{$uniqid}->{'SNTCHA'}) { # code chantier par défaut a SANS
 			$data->{$uniqid}->{'SNTCHA'}='SANS';
+		}
+
+		my $nombre = '';
+		$loginor->Sql("select CONDI as CONDITIONNEMENT, CDCON as CONDITIONNEMENT_DIVISBLE from ${prefix_base_rubis}GESTCOM.AARTICP1 where NOART='".$com->{'SENART'}."'"); # regarde le conditionnement de l'article
+		while($loginor->FetchRow()) {
+			my %row = $loginor->DataHash() ;
+			if ($row{'CONDITIONNEMENT_DIVISBLE'} eq 'NON' && $row{'CONDITIONNEMENT'} && $row{'CONDITIONNEMENT'}>1) { # si un condi non divible est renseigné, on doit le commandé par nombre
+				$nombre = ceil($com->{'SENQTE'} / $row{'CONDITIONNEMENT'});
+			}
 		}
 
 		print CSV join(';',
@@ -207,16 +229,18 @@ foreach my $uniqid (keys %$data) {
 					$data->{$uniqid}->{'SNTBOA'}, 	# date cde client AA
 					$data->{$uniqid}->{'SNTBOM'}, 	# date cde client MM
 					$data->{$uniqid}->{'SNTBOJ'}, 	# date cde client JJ
-					'LIV', 							#type de vente
-					($data->{$uniqid}->{'SNTCAM'} eq 'DIS' ? 'STO':''), # on ne cree pas de cde fournisseur dans le cas d'une DIS
+					'LIV', 							# type de vente
+					#($data->{$uniqid}->{'SNTCAM'} eq 'DIS' ? 'STO':''), # on ne cree pas de cde fournisseur dans le cas d'une DIS
+					'', # on cree une code fournisseur si il n'y a pas de dispo
 					'NON', 							# livraison partiel
 					'CDC', 							# provenance STRACC
 					'O',
 					$com->{'SEOLIG'},				# n° de ligne
-					$com->{'SENART'},				#code article
+					$com->{'SENART'},				# code article
 					'R',				
 					$com->{'SENTYP'},
-					$com->{'SENQTE'},				# quantité
+					$nombre,						# nombre (pour les article a conditionnement)
+					$nombre ? '':$com->{'SENQTE'},	# quantité si le nombre n'est pas deja renseigné
 					$com->{'SENCSA'},				# commentaire
 					$data->{$uniqid}->{'SNTCAM'}, 	# code camion
 					$data->{$uniqid}->{'SNTNOM'}, 	# nom client
@@ -225,12 +249,14 @@ foreach my $uniqid (keys %$data) {
 					$data->{$uniqid}->{'SNTCRU'}, 	# ligne adr3
 					$data->{$uniqid}->{'SNTCVI'}, 	# ligne adr4
 					$data->{$uniqid}->{'SNTCCP'}, 	# ligne adr5
-					$data->{$uniqid}->{'SNTCBD'}  	# ligne adr6
+					$data->{$uniqid}->{'SNTCBD'},  	# ligne adr6
+					$data->{$uniqid}->{'SENRP1'}	# remise web
 			  )."\n";
 	}	
 }
 close CSV;
 print "ok\n";
+$loginor->Close(); #close la connection a Rubis
 END:
 
 # copie du fichier temporaire a l'emplacement finale sur le disque partagé
