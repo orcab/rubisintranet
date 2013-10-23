@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-<title>Stock des produits</title>
+<title>Avancement des prépas</title>
 
 <style>
 body {
