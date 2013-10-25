@@ -115,6 +115,7 @@ FROM	artisan
 WHERE	
 		email<>''
 	and email IS NOT NULL
+	and suspendu=0
 ORDER	BY nom ASC
 EOT;
 
