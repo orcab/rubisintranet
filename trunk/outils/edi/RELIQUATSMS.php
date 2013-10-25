@@ -18,6 +18,7 @@ where
 	and	ETSEE<>'ANN'
 	and CDE_DETAIL.PROFI='1'
 	and CDE_DETAIL.TRAIT='R'
+	and CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) >= '$now'
 	and CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) <= '$now'
 	and CDE_ENTETE.NOCLI='$row[numero_artisan]'
 	and ARDIV='NON'
@@ -48,21 +49,22 @@ $agence = $AGENCES[$row_entete['AGENC']][0];
 		$text .= <<<EOT
 Bon $row_entete[NOBON] du $row_entete[DTBOJ]/$row_entete[DTBOM]/$row_entete[DTBOS]$row_entete[DTBOA]
 Ref $row_entete[RFCSB]
+
 EOT;
 	}
 
 	$designation = $row_entete['DS1DB'] ;
-	if ($row_entete['DS2DB'])	$designation .= " $row_entete[DS2DB]";
 	$type_cde = $row_entete['TYCDE']=='SPE' ? 'S':'';
 	$qte = str_replace('.000','',$row_entete['QTESA']);
 	$pu			= sprintf('%0.2f',$row_entete['PRINE']);
 	$total		+= $qte * $pu ; //sprintf('%0.2f',$row_entete['MONTBT']);
 
 	$text .= <<<EOT
-$row_entete[CODAR]
+$row_entete[CODAR] / QTE : $qte
 $row_entete[NOMFO]  $row_entete[REFFO]
 $designation
-QTE : $qte
+
+
 EOT;
 	$old_nobon = $row_entete['NOBON'];
 	$nb_bon++;

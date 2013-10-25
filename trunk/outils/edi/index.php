@@ -143,6 +143,7 @@ while($row = mysql_fetch_array($res)) {
 				<select name="select_<?=$row['numero']?>_<?=$type_doc?>" onchange="save_frequence(this);change_color(this);">
 					<option style="background:white;" value=""<?=$row[$type_doc]==''?' selected':''?>>Pas d'envoi</option>
 					<option style="background:yellow;" value="1,2,3,4,5"<?=$row[$type_doc]=='1,2,3,4,5'?' selected':''?>>Quotidien</option>
+<? 			if ($type_doc != 'RELIQUATSMS') { ?>
 					<optgroup style="background-color:#44F;" label="Hebdomadaire">
 						<option style="background:#CCF;" value="1"<?=$row[$type_doc]=='1'?' selected':''?>>Lundi</option>
 						<option style="background:#AAF;" value="2"<?=$row[$type_doc]=='2'?' selected':''?>>Mardi</option>
@@ -159,6 +160,7 @@ while($row = mysql_fetch_array($res)) {
 						<option style="background:#4F4;" value="2,5"<?=$row[$type_doc]=='2,5'?' selected':''?>>Mar,Ven</option>
 						<option style="background:#2F2;" value="3,5"<?=$row[$type_doc]=='3,5'?' selected':''?>>Mer,Ven</option>
 					</optgroup>
+<?			} ?>
 				</select>
 			</td>
 <?		} ?>
