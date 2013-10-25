@@ -88,7 +88,10 @@ img:hover {
 </tr>
 
 <tr>
-	<td></td>
+	<td>
+<?		if ($droit & PEUT_ENVOYER_DES_SMS) { ?>
+			<a href="sms/index.php"><img src="sms/gfx/sms.png"><br/>Envoi d'SMS</a></td>
+<? } ?>
 	<td><a href="reflex/index.php"><img src="reflex/gfx/reflex.png"><br/>Reflex</a></td>
 	<td></td>
 </tr>
