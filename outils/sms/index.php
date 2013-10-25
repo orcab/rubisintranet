@@ -281,10 +281,10 @@ while ($row = mysql_fetch_array($res)) {
     </select>
 
     <ul id="btselmulti"> 
-        <li id="addall"><img src="gfx/arrow-right-double.png" alt="select all" title="select all"/></li> 
-        <li id="addsel"><img src="gfx/arrow-right.png" alt="select one" title="select one"/></li> 
-        <li id="quitsel"><img src="gfx/arrow-left.png" alt="unselect one" title="unselect one"/></li> 
-        <li id="quitall"><img src="gfx/arrow-left-double.png" alt="unselect all" title="unselect all"/></li> 
+        <li id="addall"><a class="btn btn-info" style="width:20px;"><i class="icon-double-angle-right" title="select all"></i></a><br/><br/></li>
+        <li id="addsel"><a class="btn btn-info" style="width:20px;"><i class="icon-angle-right" title="select one"></i></a><br/><br/></li> 
+        <li id="quitsel"><a class="btn btn-info" style="width:20px;"><i class="icon-angle-left" title="unselect one"></i></a><br/><br/></li> 
+        <li id="quitall"><a class="btn btn-info" style="width:20px;"><i class="icon-double-angle-left" title="unselect all"></i></a><br/><br/><br/><br/></li> 
     </ul> 
 
     <select id="selplaylist" name="selplaylist" size="20" multiple="multiple"></select>
