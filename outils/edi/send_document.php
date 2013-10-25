@@ -145,18 +145,17 @@ EOT;
 			// interface SMS
 			if ($type_doc == 'RELIQUATSMS') {
 				$phone_number = getCellularPhoneNumberFromArtisan($row['numero_artisan']);
-				echo $text;
-				//if (sendSMS($phone_number,$text))
-				/*if (sendSMS('0620389002',$text))
+				//echo $text;
+				if (sendSMS($phone_number,$text))
+				//if (sendSMS('0620389002',$text))
 					echo now()." [SEND] $row[nom] : $type_doc\n";
 				else
 					echo now()." [NOT SEND] $row[nom] : $type_doc\n";
-				*/
-
+				
 
 			// interface MAIL
 			} else {
-				/*
+				
 				require_once '../../inc/xpm2/smtp.php';
 				$mail = new SMTP;
 				$mail->Delivery('relay');
@@ -170,7 +169,7 @@ EOT;
 					echo now()." [SEND] $row[nom] : $type_doc\n";
 				else
 					echo now()." [NOT SEND] $row[nom] : $type_doc (".trim($mail->result).")\n";
-				*/
+				
 			}
 		}
 	} // foreach type de document
