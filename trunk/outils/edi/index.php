@@ -109,7 +109,7 @@ function save_frequence(obj) {
 	<caption></caption>
 <?
 $sql = <<<EOT
-SELECT	nom,numero,email,AR,BL,RELIQUAT,AVOIR
+SELECT	nom,numero,email,AR,BL,RELIQUAT,RELIQUATSMS,AVOIR
 FROM	artisan
 			left join send_document on artisan.numero = send_document.numero_artisan
 WHERE	
@@ -129,6 +129,7 @@ while($row = mysql_fetch_array($res)) {
 			<th>AR</th>
 			<th>BL</th>
 			<th>RELIQUAT</th>
+			<th>RELIQUAT SMS</th>
 			<th>AVOIR</th>
 		</tr>
 <?	} ?>
@@ -136,7 +137,7 @@ while($row = mysql_fetch_array($res)) {
 		<td><?=$row['nom']?></td>
 		<td><?=$row['email']?></td>
 	
-<?		foreach (array('AR','BL','RELIQUAT','AVOIR') as $type_doc) { ?>
+<?		foreach (array('AR','BL','RELIQUAT','RELIQUATSMS','AVOIR') as $type_doc) { ?>
 			<td>
 				<select name="select_<?=$row['numero']?>_<?=$type_doc?>" onchange="save_frequence(this);change_color(this);">
 					<option style="background:white;" value=""<?=$row[$type_doc]==''?' selected':''?>>Pas d'envoi</option>

@@ -289,4 +289,32 @@ function convertLatin1ToHtml($str) {
     return $str;
 }
 
+
+function getCellularPhoneNumberFromArtisan($numero_artisan) {
+	global $mysql,$database;
+	$res = mysql_query("SELECT * FROM artisan where categorie='1' and suspendu=0 and numero='".mysql_escape_string($numero_artisan)."' ORDER BY nom ASC") or die("ne peux pas retrouver les infos de l'artisan ".mysql_error());
+	$row = mysql_fetch_array($res) ;
+	$phone_number = '';
+
+	for($i=1 ; $i<=4 ; $i++) // pour les 4 numero de tel
+		if (preg_match('/^\s*0\s*[67]/',$row['tel'.$i])) { // on regarde celui qui commence par 06 ou 07
+			$phone_number = preg_replace('/[^0-9]/','',$row['tel'.$i]); // supprime tout ce qui n'est pas un chiffre
+			break;
+		}
+
+	return $phone_number;
+}
+
+
+function sendSMS($phone_number,$text) {
+	if ($text && $phone_number) {
+		$reponse = join('',file(SMS_GATEWAY."phone=$phone_number&text=".rawurlencode($text)));
+		if (preg_match('/Mesage\s+SENT\s*!/i',$reponse))
+			return true;
+		else
+			return false;
+	} else {
+			return false;
+	}
+}
 ?>

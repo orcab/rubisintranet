@@ -1,7 +1,6 @@
 <?php
 
 // script qui permet l'envoi d'EDI aux adhérents qui se lance tous les soirs
-
 include('../../inc/config.php');
 
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
@@ -26,14 +25,15 @@ $where_artisan  = isset($arguments['artisan']) ? " AND artisan.numero='$argument
 
 // recupère la liste des adhérents ayant un email et leur préférence d'envoi renseignées
 $sql = <<<EOT
-SELECT	nom,numero_artisan,email,AR,BL,RELIQUAT,AVOIR
+SELECT	nom,numero_artisan,email,AR,BL,RELIQUAT,RELIQUATSMS,AVOIR
 FROM	artisan,send_document
 WHERE	artisan.numero = send_document.numero_artisan
 	AND email<>'' AND email IS NOT NULL
-	AND (		(AR <>'0'		AND AR<>'')
-			OR	(BL<>'0'		AND BL<>'')
-			OR	(RELIQUAT<>'0'	AND RELIQUAT<>'')
-			OR	(AVOIR<>'0'		AND AVOIR<>'')
+	AND (		(AR <>'0'			AND AR<>'')
+			OR	(BL<>'0'			AND BL<>'')
+			OR	(RELIQUAT<>'0'		AND RELIQUAT<>'')
+			OR	(RELIQUATSMS<>'0'	AND RELIQUATSMS<>'')
+			OR	(AVOIR<>'0'			AND AVOIR<>'')
 		)
 	$where_artisan
 ORDER	BY nom ASC
@@ -43,7 +43,8 @@ $res = mysql_query($sql) or die ("Ne peux pas récupérer la liste des artisans : 
 while($row = mysql_fetch_array($res)) { // pour chaque artisan
 
 	// pour chaque type de document
-	foreach (array('AR','BL','RELIQUAT','AVOIR') as $type_doc) {
+	foreach (array('AR','BL','RELIQUAT','RELIQUATSMS','AVOIR') as $type_doc) {
+		$text = '';
 		$html = <<<EOT
 <style>
 body,td,caption,th {
@@ -127,6 +128,10 @@ EOT;
 			require('RELIQUAT.php');
 			$titre = "MCS : Liste des reliquats au $date_jour";
 
+		} elseif ($type_doc == 'RELIQUATSMS' && in_array($day_number,$jour_envoi)) { // si l'on doit envoyer le reliquat ce jour là
+			require('RELIQUATSMS.php');
+			$titre = "MCS : Liste des reliquats au $date_jour";
+
 		} elseif ($type_doc == 'AVOIR' && in_array($day_number,$jour_envoi)) { // si l'on doit envoyer l'avoir ce jour là
 			require('AVOIR.php');
 			$titre = "MCS : Liste des Avoirs au $date_affichable";
@@ -136,20 +141,37 @@ EOT;
 
 		// TOUT EST PRET, ON ENVOI LE MAIL
 		if ($titre && $nb_bon) { // quelque chose à envoyer
-		//if (0) {
-			require_once '../../inc/xpm2/smtp.php';
-			$mail = new SMTP;
-			$mail->Delivery('relay');
-			$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
-			//$mail->AddTo('ryo@wanadoo.fr', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
-			$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
-			$mail->From('no-reply@coopmcs.com');
 
-			$mail->Html($html);
-			if ($sent = $mail->Send($titre))
-				echo now()." [SEND] $row[nom] : $type_doc\n";
-			else
-				echo now()." [NOT SEND] $row[nom] : $type_doc (".trim($mail->result).")\n";
+			// interface SMS
+			if ($type_doc == 'RELIQUATSMS') {
+				$phone_number = getCellularPhoneNumberFromArtisan($row['numero_artisan']);
+				echo $text;
+				//if (sendSMS($phone_number,$text))
+				/*if (sendSMS('0620389002',$text))
+					echo now()." [SEND] $row[nom] : $type_doc\n";
+				else
+					echo now()." [NOT SEND] $row[nom] : $type_doc\n";
+				*/
+
+
+			// interface MAIL
+			} else {
+				/*
+				require_once '../../inc/xpm2/smtp.php';
+				$mail = new SMTP;
+				$mail->Delivery('relay');
+				$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+				//$mail->AddTo('ryo@wanadoo.fr', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
+				$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
+				$mail->From('no-reply@coopmcs.com');
+
+				$mail->Html($html);
+				if ($sent = $mail->Send($titre))
+					echo now()." [SEND] $row[nom] : $type_doc\n";
+				else
+					echo now()." [NOT SEND] $row[nom] : $type_doc (".trim($mail->result).")\n";
+				*/
+			}
 		}
 	} // foreach type de document
 } // fin while artisan
