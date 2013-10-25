@@ -2,6 +2,7 @@
 
 define('PLOMBIER',		1<<0);
 define('ELECTRICIEN',	1<<1);
+define('TAILLE_MAXIMUM_MESSAGE',250);
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 
@@ -140,7 +141,7 @@ $(document).ready(function(){
 	$('#message').bind('keyup',function(){
     	var nb_car = $(this).val().length;
 		$('#nb_car').text(nb_car + " utilisé");
-		if (nb_car > 160) {
+		if (nb_car > <?=TAILLE_MAXIMUM_MESSAGE?>) {
 			$('#nb_car').addClass('attention');
 		} else {
 			$('#nb_car').removeClass('attention');
@@ -212,7 +213,7 @@ function verif_form() {
 
 	$('#message').val(removeDiacritics($('#message').val()));
 
-	if (nb_car > 160) {
+	if (nb_car > <?=TAILLE_MAXIMUM_MESSAGE?>) {
 		alert("Votre message est trop long ("+nb_car+" car)");
 		erreur = true;
 	}
@@ -245,8 +246,7 @@ function verif_form() {
 	
 	$phone_numbers = explode(',',$_POST['phone_number']);
 	foreach($phone_numbers as $phone_number) {
-		$reponse = join('',file(SMS_GATEWAY."phone=$phone_number&text=".rawurlencode($_POST['message'])));
-		if (preg_match('/Mesage\s+SENT\s*!/i',$reponse))
+		if (sendSMS($phone_number,$_POST['message'])) // envoi du SMS
 			echo "<div class='info'>Message envoyé à $phone_number</div>";
 		else
 			echo "<div class='info erreur'>Erreur dans l'envoi du message à $phone_number</div>";
@@ -262,8 +262,10 @@ function verif_form() {
 
 <div id="combo">
     <select id="chooseplaylist" name="chooseplaylist" size="20" multiple="multiple">
-    	<!--<option value="artisan-poulai-3">Poulain Benjamin - 0620389002</option>-->
-<?
+<?    	if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // que en test ?>
+    		<option value="artisan-poulai-3">Poulain Benjamin - 0620389002</option>
+<?		}
+
 $res = mysql_query("SELECT * FROM artisan where categorie='1' and suspendu=0 and numero<>'056039' ORDER BY nom ASC") or die("ne peux pas retrouver les infos de l'artisan ".mysql_error());
 while ($row = mysql_fetch_array($res)) {
 	$phone_number = '';
@@ -294,7 +296,7 @@ while ($row = mysql_fetch_array($res)) {
     <a class="btn btn-info" onclick="ajouter_group(<?=ELECTRICIEN?>);"><i class="icon-arrow-right"></i> Ajouter les electriciens</a>
 </div>
 
-<h2>Message (160 car maximum)</h2>
+<h2>Message (<?=TAILLE_MAXIMUM_MESSAGE?> car maximum)</h2>
 <textarea name="message" id="message" cols="50" rows="5"></textarea>
 <div id="nb_car"></div>
 <br/><br/>
