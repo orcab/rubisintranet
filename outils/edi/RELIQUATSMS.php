@@ -29,7 +29,7 @@ $loginor		= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossib
 $detail_commande= odbc_exec($loginor,$sql_detail) ;
 
 // entête de mail
-$html .= "RELIQUATS MCS\n";
+$text .= "RELIQUATS MCS\n";
 
 $old_nobon = '' ;
 $total = 0 ;
@@ -45,7 +45,7 @@ while($row_entete = odbc_fetch_array($detail_commande)) {
 
 $agence = $AGENCES[$row_entete['AGENC']][0];
 
-		$html .= <<<EOT
+		$text .= <<<EOT
 Bon $row_entete[NOBON] du $row_entete[DTBOJ]/$row_entete[DTBOM]/$row_entete[DTBOS]$row_entete[DTBOA]
 Ref $row_entete[RFCSB]
 EOT;
@@ -58,7 +58,7 @@ EOT;
 	$pu			= sprintf('%0.2f',$row_entete['PRINE']);
 	$total		+= $qte * $pu ; //sprintf('%0.2f',$row_entete['MONTBT']);
 
-	$html .= <<<EOT
+	$text .= <<<EOT
 $row_entete[CODAR]
 $row_entete[NOMFO]  $row_entete[REFFO]
 $designation
