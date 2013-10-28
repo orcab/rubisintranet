@@ -198,6 +198,7 @@ EOT;
 	<thead>
 	<tr>
 		<th>Date chargement</th>
+		<th>Jour</th>
 		<th>Nb cde</th>
 		<th>Type</th>
 		<th>Commandé</th>
@@ -263,8 +264,8 @@ EOT;
 				</tobdy>
 				<tfoot>
 					<tr class="start-of-total">
-						<td rowspan="2">Total période</td>
-						<td rowspan="2"><?=$total_cde?></td>
+						<td colspan="2">Total période</td>
+						<td rowspan="1"><?=$total_cde?></td>
 						<td>Lignes</td>
 						<td><?=$total_ligne?></td>
 						<td><?=$total_ligne_doable?></td>
@@ -272,14 +273,14 @@ EOT;
 						<td><?=$total_ligne_done?></td>
 						<td><?=(int)(100*$total_ligne_done / $total_ligne)?></td>
 					</tr>
-					<tr class="end-of-total">
+					<!--<tr class="end-of-total">
 						<td>Qte</td>
 						<td><?=$total_qte?></td>
 						<td><?=$total_qte_doable?></td>
 						<td><?=(int)(100*$total_qte_doable / $total_qte)?></td>
 						<td><?=$total_qte_done?></td>
 						<td><?=(int)(100*$total_qte_done / $total_qte)?></td>
-					</tr>
+					</tr>-->
 				</tfoot>
 			</table>
 <? } ?>
@@ -291,11 +292,12 @@ EOT;
 <?
 
 function afficheInfo() {
-	global $nb_cde,$old_day,$total_ligne_day,$done_ligne_day,$doable_ligne_day,$total_qte_day,$done_qte_day,$doable_qte_day;
+	global $nb_cde,$old_day,$total_ligne_day,$done_ligne_day,$doable_ligne_day,$total_qte_day,$done_qte_day,$doable_qte_day,$jours_mini;
 ?>
 	<tr class="start-of-day">
-		<td rowspan="2"><?=$old_day?></td>
-		<td rowspan="2"><?=$nb_cde?></td>
+		<td rowspan="1"><?=$old_day?></td>
+		<td rowspan="1"><?=$jours_mini[date('w',strtotime($old_day))]?></td>
+		<td rowspan="1"><?=$nb_cde?></td>
 		<td>Lignes</td>
 		<td><?=$total_ligne_day?></td>
 		<td><?=$doable_ligne_day?></td>
@@ -303,12 +305,12 @@ function afficheInfo() {
 		<td><?=$done_ligne_day?></td>
 		<td><?=(int)(100*$done_ligne_day / $total_ligne_day)?></td>
 	</tr>
-	<tr class="end-of-day">
+	<!--<tr class="end-of-day">
 		<td>Qte</td>
 		<td><?=$total_qte_day?></td>
 		<td><?=$doable_qte_day?></td>
 		<td><?=(int)(100*$doable_qte_day / $total_qte_day)?></td>
 		<td><?=$done_qte_day?></td>
 		<td><?=(int)(100*$done_qte_day / $total_qte_day)?></td>
-	</tr>
+	</tr>-->
 <? } ?>
