@@ -1,5 +1,7 @@
 <? include('../../inc/config.php');
 
+ob_end_flush(); // pour l'affichage au fur et a mesure
+
 define('PLOMBIER',		1<<0);
 define('ELECTRICIEN',	1<<1);
 define('TAILLE_MAXIMUM_MESSAGE',250);
@@ -250,6 +252,8 @@ function verif_form() {
 			echo "<div class='info'>Message envoyé à $phone_number</div>";
 		else
 			echo "<div class='info erreur'>Erreur dans l'envoi du message à $phone_number</div>";
+
+		flush(); // envoi l'affichage de l'avancement des envois de SMS
 	}
 
 	// historise l'envoi du sms
