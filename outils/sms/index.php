@@ -253,7 +253,7 @@ function verif_form() {
 	}
 
 	// historise l'envoi du sms
-	mysql_query("INSERT INTO sms_historique (expediteur,message,destinataire) VALUES ('".mysql_escape_string($_SERVER['REMOTE_ADDR'])."','".mysql_escape_string($_POST['message'])."','".mysql_escape_string($_POST['phone_number'])."')") or die("ne peux sauvegarder l'envoi dans l'historique ".mysql_error());
+	mysql_query("INSERT INTO sms_historique (`date`,expediteur,message,destinataire) VALUES (NOW(),'".mysql_escape_string($_SERVER['REMOTE_ADDR'])."','".mysql_escape_string($_POST['message'])."','".mysql_escape_string($_POST['phone_number'])."')") or die("ne peux sauvegarder l'envoi dans l'historique ".mysql_error());
 } ?>
 
 
