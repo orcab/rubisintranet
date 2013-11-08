@@ -302,6 +302,41 @@ EOT;
 ?>
 	</tbody>	
 </table>
+
+
+<!--
+<div style="font-family: Arial;background-color: transparent;border: 1px solid #e7e7e7;width: 255px;height: 270px;-moz-box-shadow: 0 0 2px 1px #e7e7e7;-webkit-box-shadow: 0 0 2px 1px #e7e7e7;box-shadow: 0 0 2px 1px #e7e7e7;overflow: hidden; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px;margin:auto;margin-top:1em;"><div style="width: 255px;height: 320px;"><div style="margin:7px 10px;"><div style="color: #222222;font-family: Arial;font-size: 12px;font-weight: bold;margin: 0px 0px 7px 0px;line-height: 14px;">Prévisions météorologiques<br/><span style="font-weight:normal;">Plescop</span></div><iframe id="widget-frame" src="http://www.meteovista.fr/Go/ExternalWidgetsNew/ThreeDaysCity?gid=4265526&sizeType=1&temperatureScale=Celsius&defaultSettings=False" width="235" height="216" frameborder="0" scrolling="no" style="border: none;" allowtransparency="true"></iframe></div></div></div>
+-->
+
+<h2>Météo à 14 jours</h2>
+<?
+
+// recuperation de la page meteo
+$html_global = join('',file('http://france.meteoconsult.fr/meteo/plescop/france/prevision_meteo_plescop_france_ville__33052_0.php?vue=simple#ancre_chemin_fer'));
+
+// on extrait le cadre qui nous interesse
+preg_match('/(<div id="menu_quatorze_jours_ville".*?>.+?)<div class="clear" style="height:0px;">/is', $html_global,$regs);
+$html_meteo = $regs[1];
+
+// remove publicité pour abonnement et autre fioriture
+$html_meteo = preg_replace('/<div style="position:absolute; left:181px; top:0;">.+?<\/div>/is','', $html_meteo);
+$html_meteo = preg_replace('/width:9[96]0px/is','', $html_meteo);
+$html_meteo = preg_replace('/position:relative/is','', $html_meteo);
+$html_meteo = preg_replace('/border-right:0px/is','', $html_meteo);
+
+// affiche le cadre
+echo $html_meteo;
+?>
+
+<style type="text/css">
+#menu_quatorze_jours_ville li {
+	border: 1px solid grey;
+    display: block;
+    float: left;
+    margin: 2px;
+}
+</style>
+
 </body>
 </html>
 <?
