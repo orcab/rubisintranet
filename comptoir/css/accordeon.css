@@ -23,6 +23,7 @@
     border-radius: 3px;
     color: #1C94C4;
     height: 2em;
+    font-size:1.5em;
     line-height: 2em;
     margin: 0 0 5px;
     padding-left: 12px;
@@ -36,19 +37,19 @@ div.lvl-1 {
 }
 div.lvl-2 {
     color: #0C3868;
-    margin-left: 10px;
+    margin-left: 20px;
 }
 div.lvl-3 {
     color: #104A88;
-    margin-left: 20px;
+    margin-left: 40px;
 }
 div.lvl-4 {
     color: #145DAC;
-    margin-left: 30px;
+    margin-left: 60px;
 }
 div.lvl-5 {
     color: #1976D9;
-    margin-left: 40px;
+    margin-left: 80px;
 }
 div.lvl-2, div.lvl-3, div.lvl-4, div.lvl-5 {
     display: none;
