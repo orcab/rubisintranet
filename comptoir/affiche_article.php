@@ -546,7 +546,7 @@ EOT;
 			</td>
 
 			<td class="qte" nowrap="nowrap">
-				<input class="qte" type="text" name="qte_<?=$row['code_article']?>" value="" size="6" placeholder="qte"/>
+				<input class="qte" type="text" name="qte_<?=$row['code_article']?>" value="" size="6" placeholder=""/>
 				<?= $row['conditionnement'] > 1 ? $row['unite'] :'' ?>
 			</td>
 

@@ -7,8 +7,11 @@ $info_user = $_SESSION['info_user'];
 $code_user = $info_user['username'];
 $nom_user = $info_user['name'];
 
+// connexion à la base MYSQL
+$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter à MySQL");
+$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base MySQL");
 
-# conection à la base Loginor
+// connexion à la base Loginor
 $loginor  	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 
 
@@ -79,6 +82,7 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 	}
 	unset($row);
 	
+	$remise = remiseArticle($_SESSION['panier'][$i],$code_user);
 
 	$buffer .= join(';',array(
 				$entete['SNOCLI'], # n° client
@@ -118,7 +122,7 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 				'',
 				'',
 				'',
-				''		# remise eventuelle
+				$remise		# remise eventuelle
 			) // fin array
 		)."\r\n";	 // fin join
 }
@@ -135,8 +139,8 @@ if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // serveur de test
 	$user = LOGINOR_USER;
 	$pass = LOGINOR_PASS;
 	system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
-	//$csv_filename = "$letter:/WEB/CPT.CSV";
-	$csv_filename = "$letter:/TEST.CSV";
+	$csv_filename = "$letter:/WEB/CPT.CSV";
+	//$csv_filename = "$letter:/TEST.CSV";
 }
 
 $CSV = fopen($csv_filename,'a') or die("Ne peux pas ouvrir le fichier CSV '$csv_filename'"); // ouvre en mode ajout (append)
