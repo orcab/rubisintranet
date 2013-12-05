@@ -99,8 +99,8 @@ class PDF extends FPDF
 		$this->SetTextColor(0,0,0);
 		$this->MultiCell(0,4,"Pour la validation de cette commande, merci de retourner impérativement par fax ou courrier un accusé de réception en précisant vos prix et détails de livraison\nRéception marchandise : lundi -> jeudi 8h à 11h45, 13h30 à 15h\n         Vendredi 8h à 11h45",0,'C');
 		$this->SetFont('helvetica','B',14);
-		//$this->MultiCell(0,4,"MCS sera fermé pour inventaire les 30 et 31 mars 2009",0,'C');
-		//$this->Ln(1);
+		$this->MultiCell(0,4,"MCS sera fermée pour inventaire du 26/12/2013 au 02/01/2014",0,'C');
+		$this->Ln(1);
 
 		//Entete des articles
 		$this->SetFont('helvetica','B',10);
