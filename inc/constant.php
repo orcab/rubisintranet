@@ -35,6 +35,8 @@ define('MAX_TIME_ANOMALIE_DELETION', 3600 * 24 ); // 24h
 define('TTC1',19.6);
 define('TTC2',7);
 
+// remise accordé pour le sefl service (web ou ecran tacile)
+define('REMISE_WEB',1); // remise de 1%
 
 // coef et marge pratiqué en salle expo
 define('MARGE_COOP',22);				$MARGE_COOP=MARGE_COOP;
@@ -52,7 +54,8 @@ define('PRIX',5);
 define('ACTIVITE',6);
 define('CONDITIONNEMENT',7);
 define('UNITE',8);
-
+define('STOCK_AFA',9);
+define('STOCK_AFL',10);
 
 // jour de la semaine en FR
 $jours_mini = array('Dim','Lun','Mar','Mer','Jeu','Ven','Sam');
@@ -305,7 +308,7 @@ function getCellularPhoneNumberFromArtisan($numero_artisan) {
 	return $phone_number;
 }
 
-
+// envoi un sms via la passerrelle
 function sendSMS($phone_number,$text) {
 	if ($text && $phone_number) {
 		$reponse = join('',file(SMS_GATEWAY."phone=$phone_number&text=".rawurlencode($text)));
@@ -317,4 +320,41 @@ function sendSMS($phone_number,$text) {
 			return false;
 	}
 }
+
+
+// détermine si un article est remisé ou non en fonction de son depot de retrait
+function remiseArticle($ligne_article_panier,$code_user) {
+	$remise = 0;
+
+	if (isset($_POST['type_livraison']) && $_POST['type_livraison'] == 'caudan') {
+		if ($ligne_article_panier[STOCK_AFL] != '')
+			$remise = REMISE_WEB ; // si retrait sur caudan et produit stocké sur Caudan --> remise
+	} else {
+		if ($ligne_article_panier[STOCK_AFA] != '')
+			$remise = REMISE_WEB ; // si retrait ou livraison sur plescop et produit stocké sur plescop --> remise
+	}
+
+	if (getCategorieUser($code_user) != 1) { // si le client n'est pas assujeti au remise
+		$remise = 0;
+	}
+
+	return $remise;
+}
+
+// recupere la catégorie RUBIS d'un utilisateur
+function getCategorieUser($username) {
+	global $joomla_config ;
+
+	if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // test local
+		return 1; // categ aristan
+	}
+
+	$db_prefix = $joomla_config->dbprefix;
+	$mysql    = mysql_connect($joomla_config->host, $joomla_config->user, $joomla_config->password) or die("Impossible de se connecter");
+	$database = mysql_select_db($joomla_config->db) or die("Impossible de se choisir la base");
+
+	$res = mysql_query("select categorie from artisan where numero='".mysql_escape_string($username)."'") or die("Ne peux pas trouver les infos user ".mysql_error());
+	return e('categorie',mysql_fetch_array($res));
+}
+
 ?>
