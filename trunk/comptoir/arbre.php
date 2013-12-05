@@ -12,8 +12,18 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<style type="text/css">@import url(../js/boutton.css);</style>
-<style type="text/css">@import url(../js/tactile.css);</style>
+
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="../js/fontawesome/css/bootstrap.css">
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome-ie7.min.css">
+<![endif]-->
+<link rel="stylesheet" href="../js/fontawesome/css/icon-custom.css">
+
+<!--<style type="text/css">@import url(../js/boutton.css);</style>
+<style type="text/css">@import url(../js/tactile.css);</style>-->
+
 <style>
 body {
 	background-color: white;
@@ -109,13 +119,9 @@ div#panier-favori ol {
 
 div#panier-favori ol li { margin-bottom:10px; }
 
-span.ref_fournisseur {
-	font-weight:bold;
-}
+span.ref_fournisseur { font-weight:bold; }
 
-span.designation {
-	font-style:italic;
-}
+span.designation { font-style:italic; }
 
 div#panier-favori ol a {
 	display:block;
@@ -125,12 +131,6 @@ div#panier-favori ol a {
 input#deconnexion {
 	margin-top:1em;
 	margin-bottom:1em;
-}
-
-input.affiche_article {
-	background-image:url(gfx/arrow_right_blue_32.png);
-	background-position: center center;
-	width:50px;
 }
 
 input.supprime-article {
@@ -143,6 +143,21 @@ input.supprime-article {
 #domRoot > div { height:32px; }
 #domRoot .menu { font-size:1.1em;margin-left:5px; }
 
+
+a.btn {
+	display:block;
+	width:50%;
+	margin:auto;
+	margin-top:5px;
+}
+
+a.btn:last-child { margin-bottom:5px; }
+
+div#panier { border-bottom:dotted 1px #0C3A6D; }
+
+td.ajout {
+	width:75px;
+}
 
 </style>
 
@@ -236,7 +251,7 @@ $(document).ready(function() {
 	});
 
 
-	$('body').delegate('input.affiche_article','click',function(){
+	$('body').delegate('a.affiche_article','click',function(){
 			parent.basefrm.document.location.href='affiche_article.php?search_text=' + $(this).attr('title') ;
 	});
 
@@ -258,22 +273,42 @@ $(document).ready(function() {
 //-->
 </script>
 
+<style>
+#search_text {
+	margin-left:5px;
+	margin-right:10px;
+	display:inline;
+	width:10em;
+	height: 2em;
+	font-size: 1.2em;
+}
+</style>
+
 </head>
 
 <body>
 <form name="rechercher" method="POST" action="affiche_article.php" style="margin-bottom:5px;" target="basefrm" onsubmit="return verif_champs();">
-<input type="text" name="search_text_box" size="14" style="margin-left:5px;"/> <input type="submit" class="button valider" style="background-image:url(gfx/find.png);" value="Rechercher"/>
-<input type="hidden" name="search_text" value=""/>
-<br>
-<span style="margin-left:5px;">(code, référence, désignation)</span>
+<input type="text" name="search_text" id="search_text"/>
+<a class="btn" href="#" onclick="document.rechercher.submit();" style="width:100px;display:inline;white-space:nowrap;">
+<i class="icon-search"></i> Rechercher</a>
+<div style="font-size:0.7em;margin-left:5px;margin-top:5px;">(code, référence, désignation)</div>
 </form>
+
+<!--<div id="cadre-panier">
+	<h1>Votre panier</h1>
+	<div id="panier"></div>
+	<h1><a href="validation_panier.php" target="_top">Valider le panier <img src="gfx/down-arrow-32.png" style="vertical-align:bottom;"/></a></h1>
+</div>-->
 
 <div id="cadre-panier">
 	<h1>Votre panier</h1>
 	<div id="panier"></div>
-	<h1><a href="validation_panier.php" target="_top">Valider le panier <img src="gfx/down-arrow-32.png" style="vertical-align:bottom;"/></a></h1>
-	<!--<h1 style="border-top:dotted 1px white;"><span style="cursor:pointer;" onclick="save_panier_as_favori();">Enregistrer en favoris <img src="gfx/arrow_white_orange.gif" align="absbottom"/></span></h1>-->
+	<div id="bouton-action">
+		<a class="btn btn-success" href="validation_panier.php" target="_top"><i class="icon-circle-arrow-right icon-large"></i> Valider le panier</a>
+		<a class="btn btn-danger" href="#" onclick="vider_panier();"><i class="icon-trash icon-large"></i> Vider le panier</a>
+	</div>
 </div>
+
 
   <!------------------------------------------------------------->
   <!-- IMPORTANT NOTICE:                                       -->
@@ -285,14 +320,28 @@ $(document).ready(function() {
   <!-- to remove the link, see the online FAQ for instructions -->
   <!-- on how to obtain a version without the link.            -->
   <!------------------------------------------------------------->
-  <div style="position:absolute;top:0;left:0;"><table border="0"><tr><td><font size="-2"><a href="http://www.treemenu.net/" target="_blank"></a></font></td></tr></table></div>
+<!--  <div style="position:absolute;top:0;left:0;"><table border="0"><tr><td><font size="-2"><a href="http://www.treemenu.net/" target="_blank"></a></font></td></tr></table></div> -->
 
   <!-- Build the browser's objects and display default view  -->
   <!-- of the tree.                                          -->
+ <!--
   <script>initializeDocument()</script>
   <noscript>
    A tree for site navigation will open here if you enable JavaScript in your browser.
   </noscript>
+
+-->
+
+<!-- GESTION DE L'ARBORESCENCE DES ARTICLES -->
+<link rel="stylesheet" href="css/accordeon.css">
+<script language="javascript" src="accordeon.js"></script>
+<div class="accordion">
+<?
+$res = mysql_query("SELECT * from pdvente ORDER BY chemin ASC") or die("Ne peux pas récupérer les infos de la table pdvente : ".mysql_error());
+while($row = mysql_fetch_array($res)) { ?>
+	<div class="lvl-<?=$row['niveau']?>" data="<?=$row['chemin']?>"><?=$row['libelle']?></div>
+<? } ?>
+</div>
 
 <div id="cadre-bestof">
 	<h1>Vos 10 achats courant</h1>

@@ -10,6 +10,15 @@ $nom_user = $info_user['name'];
 ?><html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="../js/fontawesome/css/bootstrap.css">
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome-ie7.min.css">
+<![endif]-->
+<link rel="stylesheet" href="../js/fontawesome/css/icon-custom.css">
+
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/tactile.css);</style>
 <style>
@@ -136,6 +145,11 @@ input.delete {
 	width:50px;
 }
 
+.centered {
+	text-align:center;
+	margin-bottom:10px;
+}
+
 </style>
 
 <!--[if IE]>
@@ -256,8 +270,8 @@ $(document).ready(function() {
 					<td class="qte" nowrap>
 						<input type="text" class="qte" name="qte_<?=$i?>" size="2" value="<?=$_SESSION['panier'][$i][QTE]?>" />
 						<?= $_SESSION['panier'][$i][CONDITIONNEMENT] > 1 ? $_SESSION['panier'][$i][UNITE] :'' ?>
-						<input type="button" class="accept button" onclick="modif_panier(<?=$i?>,'<?=$_SESSION['panier'][$i][CONDITIONNEMENT]?>');"/>
-						<input type="button" class="delete button" onclick="delete_panier(<?=$i?>);"/>
+						<a class="btn btn-success" onclick="modif_panier(<?=$i?>,'<?=$_SESSION['panier'][$i][CONDITIONNEMENT]?>');"><i class="icon-ok icon-2x"></i></a>
+						<a class="btn btn-danger" onclick="delete_panier(<?=$i?>);"><i class="icon-remove icon-2x"></i></a>
 					</td>
 					<td><?=$_SESSION['panier'][$i][FOURNISSEUR]?></td>
 					<td style="font-weight:bold;"><?=$_SESSION['panier'][$i][REF_FOURNISSEUR]?></td>
@@ -275,20 +289,21 @@ $(document).ready(function() {
 			</tr>
 		</table>
 	</div>
-	<h1><a href="interface.php">Continuer a remplir le panier <img src="gfx/down-arrow-32.png" style="vertical-align:bottom;"/></a></h1>
+	<div class="centered">
+		<a class="btn" href="interface.php" target="_top"><i class="icon-circle-arrow-left icon-large"></i> Continuer a remplir le panier</a>
+	</div>
 </div>
 
 <div id="ou">OU</div>
 
 <div id="cadre-reference">
-	<h1>Finaliser votre commande :</h1>
-	<br/>
-	<center>
+	<h1 style="margin-bottom:10px;">Finaliser votre commande :</h1>
+	<div class="centered">
 		<span style="font-size:1.3em;font-weight:bold;">Indiquer une référence client :</span> <input type="text" id="reference" name="reference" value="" size="35" maxlength="20"/><br/><br/>
-		<input class="button valider" type="submit" style="background-image:url(gfx/validate_32.png);padding-left:40px;font-size:1.5em;" value="Validation définitive"/>
-		<br/><br/>
-	</center>
+		<a class="btn btn-success" href="javascript:document.panier.submit();"><i class="icon-circle-arrow-right icon-large"></i> Validation définitive</a>
+	</div>
 </div>
+
 	</form>
 	</body>
 </html>

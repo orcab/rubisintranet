@@ -1,32 +1,33 @@
-<?php
-
+<?php
 session_start();
 if (!isset($_SESSION['info_user']['username'])) pas_identifie();
+include('../inc/config.php');
 
-include('../inc/config.php');
-
-$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
-$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
-?>
-
-// Configures whether the names of the nodes are links (or whether only the icons are links).
-USETEXTLINKS = 1;
-
-// Configures whether the tree is fully open upon loading of the page, or whether only the root node is visible.
-STARTALLOPEN = 0;
-
-// Specify if the images are in a subdirectory;
-ICONPATH = '../js/treeview/images/';
-
-// DECLARATION DE LA RACINE
-foldersTree = gFld("<i>ROOT</i>", "")
-  foldersTree.treeID = "Frameset";
-
-// ne rien changer au dessus d'ici
-
+$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+?>
+
+// Configures whether the names of the nodes are links (or whether only the icons are links).
+
+USETEXTLINKS = 1;
+
+// Configures whether the tree is fully open upon loading of the page, or whether only the root node is visible.
+
+STARTALLOPEN = 0;
+
+// Specify if the images are in a subdirectory;
+
+ICONPATH = '../js/treeview/images/';
+
+// DECLARATION DE LA RACINE
+
+foldersTree = gFld("<i>ROOT</i>", "");
+foldersTree.treeID = "Frameset";
+
+// ne rien changer au dessus d'ici
+
 <?
 $hide_family = array('00Q'=>true,'00R'=>true,'100'=>true,'101'=>true,'102'=>true,'103'=>true,'104'=>true,'105'=>true,'106'=>true,'00P.P98'=>true,'00P.P97'=>true,'00N.N97'=>true,'00N.N98'=>true,'00N.N99'=>true,'00H.H96'=>true,'00H.H97'=>true,'00D.D98'=>true,'00A.A97'=>true,'00T'=>true,'T'=>true,'99M'=>true,'00W'=>true,'00S'=>true,'00U'=>true,'100.100'=>true,'104.104'=>true,'00A.A96'=>true,'00A.A98'=>true,'00A.A99'=>true,'00E.E97'=>true,'00Q.Q00'=>true,'00R.R03'=>true,'00T.T00'=>true,'00W.W01'=>true);
-
 
 // stock toutes les familles
 $pdv = array();
@@ -64,11 +65,10 @@ while($row = mysql_fetch_array($res)) {
 //$res = mysql_query("SELECT * from pdvente ORDER BY chemin ASC") or die("Ne peux pas récupérer les infos de la table pdvente : ".mysql_error());
 
 foreach($pdv as $row) {
-		if (isset($nb_article_cumul_by_categ[$row['chemin']]) && $nb_article_cumul_by_categ[$row['chemin']]>=0 && !array_key_exists($row['chemin'],$hide_family)) {
-			$libelle = "<div class=\\\"menu \\\"><b>$row[libelle]</b> ";
-			$libelle .= isset($nb_article_cumul_by_categ[$row['chemin']])	? '('.$nb_article_cumul_by_categ[$row['chemin']].')'	:'' ;
-			$libelle .= "</div>";
-?>
-			aux<?=$row['niveau']?> = insFld(<?= $row['niveau'] == 1 ? 'foldersTree' : 'aux'.($row['niveau'] - 1) ?>, gFld("<?=$libelle?>","affiche_article.php?chemin=<?=$row['chemin']?>"));
-<?		}
+	if (isset($nb_article_cumul_by_categ[$row['chemin']]) && $nb_article_cumul_by_categ[$row['chemin']]>=0 && !array_key_exists($row['chemin'],$hide_family)) {
+		$libelle = "<div class='menu'><b>$row[libelle]</b> ";
+		$libelle .= isset($nb_article_cumul_by_categ[$row['chemin']]) ? '('.$nb_article_cumul_by_categ[$row['chemin']].')' : '' ;
+		$libelle .= "</div>";
+?>aux<?=$row['niveau']?>=insFld(<?= $row['niveau'] == 1 ? 'foldersTree' : 'aux'.($row['niveau'] - 1) ?>,gFld("<?=$libelle?>","affiche_article.php?chemin=<?=$row['chemin']?>"));<?
+	}
 } ?>

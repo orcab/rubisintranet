@@ -19,8 +19,10 @@ if (isset($_GET['what'])			&& $_GET['what'] == 'ajout_panier' &&
 		// on va chercher toute les infos de l'article
 		$code_article_escape = mysql_escape_string(trim($code_article));
 		$sql = <<<EOT
-SELECT	designation,fournisseur,ref_fournisseur,prix_net,activite,conditionnement,unite
-FROM	article
+SELECT	designation,fournisseur,ref_fournisseur,prix_net,activite,conditionnement,unite,
+		(SELECT qte	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
+		(SELECT qte	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as stock_afl
+FROM	article A
 WHERE	code_article='$code_article_escape'
 EOT;
 		$row = mysql_fetch_array(mysql_query($sql)) ;
@@ -35,10 +37,10 @@ EOT;
 			}
 
 			if (!$update) // article non présent, on le rajoute
-				array_push($_SESSION['panier'],array(	$code_article,$qte,$row['designation'],$row['fournisseur'],$row['ref_fournisseur'],$row['prix_net'],$row['activite'],$row['conditionnement'],$row['unite']));
+				array_push($_SESSION['panier'],array(	$code_article,$qte,$row['designation'],$row['fournisseur'],$row['ref_fournisseur'],$row['prix_net'],$row['activite'],$row['conditionnement'],$row['unite'],$row['stock_afa'],$row['stock_afl']));
 
 		} else { // panier vide --> creation du tout premier article
-			$_SESSION['panier'] = array(array($code_article,$qte,$row['designation'],$row['fournisseur'],$row['ref_fournisseur'],$row['prix_net'],$row['activite'],$row['conditionnement'],$row['unite']));
+			$_SESSION['panier'] = array(array($code_article,$qte,$row['designation'],$row['fournisseur'],$row['ref_fournisseur'],$row['prix_net'],$row['activite'],$row['conditionnement'],$row['unite'],$row['stock_afa'],$row['stock_afl']));
 		}
 
 	} // fin for $code_articles
@@ -141,19 +143,18 @@ elseif (	isset($_GET['what'])		&& $_GET['what'] == 'get_bestof') {
 		
 	$sql = <<<EOT
 select  CODAR, DS1DB, DS2DB,
---SUM(QTESA) as somme,
-COUNT(ENTETE.NOBON) as nb
+		--SUM(QTESA) as somme,
+		COUNT(ENTETE.NOBON) as nb
 from AFAGESTCOM.ADETBOP1 DETAIL
- left join AFAGESTCOM.AENTBOP1 ENTETE
-  on DETAIL.NOBON = ENTETE.NOBON and DETAIL.NOCLI=ENTETE.NOCLI
+	left join AFAGESTCOM.AENTBOP1 ENTETE
+  		on DETAIL.NOBON = ENTETE.NOBON and DETAIL.NOCLI=ENTETE.NOCLI
 where
-DETAIL.NOCLI='$info_user[username]'
-and ETSBE=''
-and CONCAT(DTSAS,CONCAT(DTSAA,CONCAT(DTSAM,DTSAJ))) >= '$date_before'
-and CONCAT(DTSAS,CONCAT(DTSAA,CONCAT(DTSAM,DTSAJ))) <= '$date_today'
-and TRAIT='F' and PROFI='1'
-and DETAIL.DEPOT='AFA'
-and ENTETE.TYVTE='EMP'
+		DETAIL.NOCLI='$info_user[username]'
+	and ETSBE=''
+	and CONCAT(DTSAS,CONCAT(DTSAA,CONCAT(DTSAM,DTSAJ))) >= '$date_before'
+	and CONCAT(DTSAS,CONCAT(DTSAA,CONCAT(DTSAM,DTSAJ))) <= '$date_today'
+	and TRAIT='F' and PROFI='1'
+	and DETAIL.DEPOT='AFA'
 group by CODAR,DS1DB, DS2DB
 order by nb DESC
 FETCH FIRST 10 ROWS ONLY
@@ -166,8 +167,9 @@ EOT;
 	while($row = odbc_fetch_array($res)) {
 		$row = array_map('trim',$row);
 		$html .= '<tr><td class="code_article"><a href="affiche_article.php?search_text='.urlencode($row['CODAR']).'" target="basefrm">'.$row['CODAR'].'</a></td>' .
-				'<td class="designation"><a href="affiche_article.php?search_text='.urlencode($row['CODAR']).'" target="basefrm">'.convertLatin1ToHtml($row['DS1DB']).'<br/>'.convertLatin1ToHtml($row['DS2DB']).'</a></td>'.
-				'<td><input type="button" class="affiche_article button" title="'.urlencode($row['CODAR']).'"/></td></tr>';
+				 '<td class="designation"><a href="affiche_article.php?search_text='.urlencode($row['CODAR']).'" target="basefrm">'.convertLatin1ToHtml($row['DS1DB']).'<br/>'.convertLatin1ToHtml($row['DS2DB']).'</a></td>'.
+				 //'<td><input type="button" class="affiche_article button" title="'.urlencode($row['CODAR']).'"/></td></tr>';
+				 '<td class="ajout"><a class="btn btn-large" class="affiche_article" title="'.urlencode($row['CODAR']).'" href="affiche_article.php?search_text='.urlencode($row['CODAR']).'" target="basefrm"><i class="icon-angle-right icon-large"></i></a></td></tr>';
 	}
 	echo $html;
 }
@@ -188,9 +190,9 @@ function html_panier() {
 		$html = '<table>';
 		for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 			$html .= '<tr><td class="code_article">'.$_SESSION['panier'][$i][CODE_ARTICLE].'</td>'.
-					'<td  class="designation">'.convertLatin1ToHtml($_SESSION['panier'][$i][DESIGNATION]).'</td>'.
-					'<td class="qte">x'.$_SESSION['panier'][$i][QTE].'</td>'.
-					'<td><input type="button" class="supprime-article button" onclick="delete_panier('.$i.');"/></td></tr>';
+					 '<td class="designation">'.convertLatin1ToHtml($_SESSION['panier'][$i][DESIGNATION]).'</td>'.
+					 '<td class="qte">x'.$_SESSION['panier'][$i][QTE].'</td>'.
+					 '<td><a class="btn btn-danger" onclick="delete_panier('.$i.');"><i class="icon-remove icon-2x"></i></a></td></tr>';
 		}
 		$html .= "</table>" ;
 
