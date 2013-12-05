@@ -217,6 +217,26 @@ function remplace_panier(tab_article) { // format : code:qte[, code:qte ...]
 	});
 }
 
+
+function vider_panier() {
+	if (confirm("Voulez vous vraiment supprimer votre panier ?")) {
+		$('#panier').html('<img src="gfx/loading4.gif"/>');
+		$.ajax({ // on supprime tout le panier
+				url: 'ajax.php',
+				type: 'GET',
+				data: 'what=delete_panier_all',
+				success: function(result) { 
+					$.ajax({ //  On va chercher le panier actuel
+						url: 'ajax.php',
+						type: 'GET',
+						data: 'what=get_panier',
+						success: function(result){ $('#panier').html(result); }	
+					});
+				}
+		});
+	}
+}
+
 function delete_cde(id_panier) {
 	if (confirm("Voulez vous vraiment supprimer cette commande de vos favoris ?")) {
 		$.ajax({ // on supprime tout le panier
