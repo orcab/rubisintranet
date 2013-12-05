@@ -1,0 +1,55 @@
+
+.accordion div.active {
+    background-color: #FEF9E2;
+    border-color: #FBCB09;
+    color: #C77405;
+}
+.accordion div:hover {
+    background-color: #FFFFFF;
+    border-color: #FBD850;
+    color: #EB8F00;
+}
+.accordion {
+    cursor: pointer;
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-left: 3px;
+}
+.accordion div {
+    background-color: #F6F6F6;
+    background-position: 2px center;
+    background-repeat: no-repeat;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    color: #1C94C4;
+    height: 2em;
+    line-height: 2em;
+    margin: 0 0 5px;
+    padding-left: 12px;
+    white-space: nowrap;
+}
+div.lvl-1 {
+    background-color: #0C3A6D;
+    color: #FFFFFF;
+    margin-left: 0;
+    margin-top: 0;
+}
+div.lvl-2 {
+    color: #0C3868;
+    margin-left: 10px;
+}
+div.lvl-3 {
+    color: #104A88;
+    margin-left: 20px;
+}
+div.lvl-4 {
+    color: #145DAC;
+    margin-left: 30px;
+}
+div.lvl-5 {
+    color: #1976D9;
+    margin-left: 40px;
+}
+div.lvl-2, div.lvl-3, div.lvl-4, div.lvl-5 {
+    display: none;
+}
