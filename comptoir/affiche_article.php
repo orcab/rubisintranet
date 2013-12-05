@@ -57,12 +57,12 @@ if (isset($_GET['reset_critere'])) {
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 
 <!-- GESTION DES ICONS EN POLICE -->
-<link rel="stylesheet" href="css/bootstrap.css">
-<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="../js/fontawesome/css/bootstrap.css">
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome.min.css">
 <!--[if IE 7]>
-<link rel="stylesheet" href="css/font-awesome-ie7.min.css">
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome-ie7.min.css">
 <![endif]-->
-<link rel="stylesheet" href="css/icon-custom.css">
+<link rel="stylesheet" href="../js/fontawesome/css/icon-custom.css">
 
 <style type="text/css">@import url(../js/boutton.css);</style>
 <script language="javascript" src="../js/jquery.js"></script>
@@ -124,7 +124,15 @@ td strong {
 }
 
 strong.condi { color:black; }
-input.qte { text-align:right; }
+input.qte {
+	text-align: right;
+    font-size: 2.5em;
+    width: 1.5em;
+}
+
+td.qte,td.panier {
+    width: 70px;
+}
 
 div#overlay {
 	display:none;
@@ -245,7 +253,6 @@ $(document).ready(function() {
 	
 	$('#article').tablesorter( {sortList: [[7,1]]} ); // sort sur le code article par défaut
 	
-
 	$('#article').bind('sortStart',function() {
 		$('#overlay').show();
 	}).bind('sortEnd',function() {
@@ -266,9 +273,9 @@ $(document).ready(function() {
 
 
 	// on clique sur ajout panier
-	$('.ajout_panier').click(function(){
-		ajout_panier($(this));
-	});
+//	$('.ajout_panier').click(function(){
+//		ajout_panier($(this));
+//	});
 
 
 	$('label.mobile > input[type=checkbox]').click(function(){
@@ -381,7 +388,7 @@ $(document).ready(function() {
 		<th class="prix_public no-sort">Px Pub</th>
 		<th class="stock_afa no-sort">Plescop</th>
 		<th class="stock_afl no-sort">Caudan</th>
-		<th colspan="2" class="no-sort">&nbsp;</th>
+		<th colspan="2" class="qte no-sort">&nbsp;</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -462,9 +469,7 @@ EOT;
 				<pre><?
 					// si l'article a moins de deux mois, on affiche un logo nouveau
 					if ($row['days_since_creation'] < 60) { // article de mions de deux mois ?>
-<!--<img src="gfx/new.png" style="vertical-align:middle;" title="Article de moins de 2 mois crée le <?=join('/',array_reverse(explode('-',$row['date_creation'])))?>"/>-->
-<i class="icon-tag icon-large"></i>
-<?
+<i class="icon-tag icon-large" style="vertical-align:middle;" title="Article de moins de 2 mois crée le <?=join('/',array_reverse(explode('-',$row['date_creation'])))?>"></i> <?
 					}
 
 					if (isset($_SESSION['search_text'])) { // si un mot clé de recherché
@@ -541,12 +546,12 @@ EOT;
 			</td>
 
 			<td class="qte" nowrap="nowrap">
-				<input class="qte" type="text" name="qte_<?=$row['code_article']?>" value="" size="6" />
+				<input class="qte" type="text" name="qte_<?=$row['code_article']?>" value="" size="6" placeholder="qte"/>
 				<?= $row['conditionnement'] > 1 ? $row['unite'] :'' ?>
 			</td>
 
 			<td class="panier">
-				<a class="btn btn-success icon-2x ajout_panier"><i class="icon-download-alt" title="Ajouter au panier"></i></a>
+				<a class="btn btn-success icon-2x ajout_panier" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');"><i class="icon-download-alt" title="Ajouter au panier"></i></a>
 				<img src="gfx/loading4.gif"		class="loading"			style="display:none;"/><!-- loading caché à la base -->
 				<!--<input type="button" value="Ajouter au panier" onclick="ajout_panier('<?=$row['code_article']?>','<?=$row['conditionnement']?>');"/>-->
 			</td>

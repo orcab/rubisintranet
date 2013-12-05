@@ -7,6 +7,11 @@ $info_user = $_SESSION['info_user'];
 $code_user = $info_user['username'];
 $nom_user = $info_user['name'];
 
+
+# conection à la base Loginor
+$loginor  	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+
+
 // pour les clients CAB
 $code_cab = '';
 if (preg_match('/^CAB(\d+)$/i',$code_user,$matches)) {
@@ -43,7 +48,7 @@ $entete['SNTRFC'] = substr($ref,0,20);
 $entete['SNTCHA'] = $code_cab ? sprintf('%03d',$code_cab) : 'SANS'; # code chantier CAB ou 'SANS'
 
 // header
-$buffer = "SNOCLI;SNOBON;SNTROF;SNTCHA;SNTBOS;SNTBOA;SNTBOM;SNTBOJ;SNTLIS;SNTLIA;SNTLIM;SNTLIJ;SNTRFC;SNTRFS;SNTRFA;SNTRFM;SNTRFJ;SNTVTE;SNTTTR;SNTPRO;SNTGAL;SEOLIG;SENART;SENROF;SENTYP;SENQTE;SENCSA\r\n";
+$buffer = "SNOCLI;SNOBON;SNTROF;SNTCHA;SNTBOS;SNTBOA;SNTBOM;SNTBOJ;SNTLIS;SNTLIA;SNTLIM;SNTLIJ;SNTRFC;SNTRFS;SNTRFA;SNTRFM;SNTRFJ;SNTVTE;SENTCD;SNTTTR;SNTPRO;SNTGAL;SEOLIG;SENART;SENROF;SENTYP;SENNBR;SENQTE;SENCSA;SNTCAM;SNTNOM;SNTCA1;SNTCA2;SNTCRU;SNTCVI;SNTCCP;SNTCBD;SENRP1\r\n";
 
 // detail des articles
 $ligne = 1;
@@ -61,6 +66,19 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 
 	if ($entete['SNOCLI'] == 'benjamin')
 		$entete['SNOCLI'] = 'POULAI'; // patch pour le code client de benjamin
+
+
+	# vérifie si le produit est commandable par nombre de conditionnment ou par unité
+	$nombre = '';
+	$sql = "select CONDI as CONDITIONNEMENT, CDCON as CONDITIONNEMENT_DIVISBLE from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 where NOART='".$detail['SENART']."'";
+	$res = odbc_exec($loginor,$sql) or die("Impossible de lancer la requete : $sql");
+	while($row = odbc_fetch_array($res)) {
+		if ($row['CONDITIONNEMENT_DIVISBLE'] == 'NON' && $row['CONDITIONNEMENT'] && $row['CONDITIONNEMENT']>1) { # si un condi non divible est renseigné, on doit le commandé par nombre
+			$nombre = ceil($detail['SENQTE'] / $row['CONDITIONNEMENT']);
+		}
+	}
+	unset($row);
+	
 
 	$buffer .= join(';',array(
 				$entete['SNOCLI'], # n° client
@@ -80,62 +98,48 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 				$entete['SNTBOA'],
 				$entete['SNTBOM'],
 				$entete['SNTBOJ'],
-				'EMP',
+				'LIV',
+				'',
 				'NON',
-				'CPT',
+				'CDC',
 				'O',
 				$detail['SEOLIG'],
 				$detail['SENART'],
 				'R',
 				$detail['SENTYP'],
+				$nombre,
 				$detail['SENQTE'],
-				$detail['SENCSA']
+				$detail['SENCSA'],
+				'CPT',
+				$nom_user,
+				'Comptoir MCS',
+				'',
+				'',
+				'',
+				'',
+				'',
+				''		# remise eventuelle
 			) // fin array
 		)."\r\n";	 // fin join
 }
 
-// rajout d'un commentaire pour préciser que l'artisan est au comptoir
-$buffer .=  join(';',array(
-				$entete['SNOCLI'], # n° client
-				$date,			   # numero unique
-				'R',               # R
-				$entete['SNTCHA'], # code chantier
-				$entete['SNTBOS'], # date bon
-				$entete['SNTBOA'],
-				$entete['SNTBOM'],
-				$entete['SNTBOJ'],
-				$entete['SNTLIS'], # date de liv
-				$entete['SNTLIA'],
-				$entete['SNTLIM'],
-				$entete['SNTLIJ'],
-				$entete['SNTRFC'], # reference
-				$entete['SNTBOS'], # date cde client
-				$entete['SNTBOA'],
-				$entete['SNTBOM'],
-				$entete['SNTBOJ'],
-				'EMP',
-				'NON',
-				'CPT',
-				'O',
-				$ligne + 2,
-				'',
-				'R',
-				'COM',
-				'',
-				'Artisan au comptoir'
-			) // fin array
-		)."\r\n";	 // fin join
-
 
 // copie du buffer dans le fichier CSV
-$letter= 'T';
-$location = '\\\\10.211.200.1\\QDLS\\AFA';
-$user = LOGINOR_USER;
-$pass = LOGINOR_PASS;
-system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
-$csv_filename = "$letter:/WEB/CPT.CSV";
+if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // serveur de test
+	$csv_filename = 'WEB/CPT.CSV';
 
-$CSV = fopen($csv_filename,'a') or die("Ne peux pas ouvrir le fichier CSV '$csv_filename'");
+} else {	// serveur de prod
+
+	$letter= 'T';
+	$location = '\\\\10.211.200.1\\QDLS\\AFA';
+	$user = LOGINOR_USER;
+	$pass = LOGINOR_PASS;
+	system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
+	//$csv_filename = "$letter:/WEB/CPT.CSV";
+	$csv_filename = "$letter:/TEST.CSV";
+}
+
+$CSV = fopen($csv_filename,'a') or die("Ne peux pas ouvrir le fichier CSV '$csv_filename'"); // ouvre en mode ajout (append)
 fwrite($CSV,$buffer) or die("Ne peux pas ecrire les données dans le fichier CSV '$csv_filename'");
 fclose($CSV);
 
@@ -143,6 +147,13 @@ fclose($CSV);
 
 ?><html>
 <head>
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="../js/fontawesome/css/bootstrap.css">
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome.min.css">
+<!--[if IE 7]>
+<link rel="stylesheet" href="../js/fontawesome/css/font-awesome-ie7.min.css">
+<![endif]-->
+<link rel="stylesheet" href="../js/fontawesome/css/icon-custom.css">
 <style type="text/css">@import url(../js/boutton.css);</style>
 <style type="text/css">@import url(../js/tactile.css);</style>
 <script language="javascript" src="../js/jquery.js"></script>
@@ -201,6 +212,10 @@ div#cadre-panier h1 {
 	margin:0px;
 }
 
+.remise {
+	text-align:center;
+}
+
 </style>
 
 <script type="text/javascript">
@@ -246,6 +261,7 @@ $(document).ready(function() {
 		<th>Fournisseur</th>
 		<th>Réf</th>
 		<th>PU. HT</th>
+		<th class="remise">Remise</th>
 		<th>Total HT</th>
 	</tr>
 <?
@@ -259,24 +275,33 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) { ?>
 		<td><?=$_SESSION['panier'][$i][FOURNISSEUR]?></td>
 		<td><font color='#529214'><b><?=$_SESSION['panier'][$i][REF_FOURNISSEUR]?></b></font></td>
 		<td class="prix"><?=$_SESSION['panier'][$i][PRIX]?> &euro;</td>
-		<td class="prix"><?=$_SESSION['panier'][$i][QTE] * $_SESSION['panier'][$i][PRIX]?> &euro;</td>
+<?
+			$remise = remiseArticle($_SESSION['panier'][$i],$code_user);
+			$total_ligne_sans_remise = $_SESSION['panier'][$i][QTE] * $_SESSION['panier'][$i][PRIX];
+			$total_ligne_avec_remise = $total_ligne_sans_remise - $remise/100*$total_ligne_sans_remise;
+?>
+		<td class="remise"><?=($remise ? $remise.'%':'&nbsp;')?></td>
+		<td class="prix"><?=sprintf('%.02f',$total_ligne_avec_remise)?> &euro;</td>
 	</tr>	
-<?		$total += $_SESSION['panier'][$i][QTE] * $_SESSION['panier'][$i][PRIX];
+<?		$total += $total_ligne_avec_remise;
 }
 ?>
 <tr>
-	<td colspan="5">&nbsp;</td>
+	<td colspan="6">&nbsp;</td>
 	<td class="prix">Total HT</td>
-	<td class="prix"><?=$total?> &euro;</td>
+	<td class="prix"><?=sprintf('%0.2f',$total)?> &euro;</td>
 </tr>
 </table>
 
 <div class="hide_when_print" style="text-align:center;">
 	Votre commande a été envoyé aux services de <?=SOCIETE?> et sera traitée dans les plus brefs délais.<br/><br/>
-	<input id="autre_commande" type="button" value="Passer une autre commande" class="button" style="background-image:url(gfx/arrow_right_green_32.png);padding-left:40px;" />
-	<input id="print_page" type="button" value="Imprimer cette page" class="button" style="background-image:url(gfx/printer-ok.png);padding-left:40px;" />
-	<input id="deconnexion" type="button" value="Déconnexion" class="button annuler" style="background-image:url(gfx/delete_32.png);padding-left:40px;" />
-	<br/><br/>
+
+	<div class="hide_when_print" style="text-align:center;margin-top:1em; margin-bottom:10px;">
+		<a class="btn" href="javascript:window.print();"><i class="icon-print icon-2x"></i> Imprimer cette page</a>&nbsp;&nbsp;&nbsp;
+		<a class="btn" href="interface.php?autre_commande=1"><i class="icon-shopping-cart icon-2x"></i> Faire une autre commande</a>&nbsp;&nbsp;&nbsp;
+		<a class="btn btn-danger" href="index.php?deconnexion=1"><i class="icon-signout icon-2x"></i> Deconnexion</a>
+	</div>
+
 </div>
 </div>
 </body>
