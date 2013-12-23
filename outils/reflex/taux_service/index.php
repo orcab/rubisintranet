@@ -31,9 +31,9 @@ h1 {
 #lignes {
     border: 1px solid black;
     border-collapse: collapse;
-    margin-top: 1em;
-    width:55%;
+    width:80%;
     margin:auto;
+    margin-top: 1em;
 }
 #lignes th, #lignes td {
     border: 1px solid #999;
@@ -71,9 +71,33 @@ caption {
 tr.end-of-day {
     border-bottom: solid 2px #777;
 }
+
 tfoot {
     background-color: #CCC;
     border: solid 2px #555;
+}
+
+.pourcent-good {
+	background-color:#33cc66;
+}
+
+.pourcent-medium {
+	background-color:#ff950e;
+}
+
+.pourcent-bad {
+	background-color:#ff0000;
+}
+
+#color-legend {
+	width:15%;
+	margin:auto;
+	margin-top:1em;
+}
+
+#color-legend > div {
+	height:2em;
+	margin:auto;
 }
 
 </style>
@@ -86,8 +110,11 @@ tfoot {
 <script language="javascript">
 <!--
 
+var pourcent_good 	= <?= isset($_POST['pourcent-good']) 	? $_POST['pourcent-good']	:'95' ?>;
+var pourcent_medium = <?= isset($_POST['pourcent-medium']) 	? $_POST['pourcent-medium']	:'90' ?>;
+
 $(document).ready(function(){
-	 $( '#date_from' ).datepicker({
+	$( '#date_from' ).datepicker({
 	 	dateFormat:'dd/mm/yy',
 		changeMonth: true, changeYear:true,
 		onClose: function( selectedDate ) {
@@ -95,14 +122,44 @@ $(document).ready(function(){
 		}
 	});
 
-	 $( '#date_to' ).datepicker({
+	$( '#date_to' ).datepicker({
 	 	dateFormat:'dd/mm/yy',
 		changeMonth: true, changeYear:true,
 		onClose: function( selectedDate ) {
 				$( '#date_from' ).datepicker( 'option', 'maxDate', selectedDate );
 		}
 	});
+
+
+	$('#pourcent-good').val(pourcent_good);
+	$('#pourcent-medium').val(pourcent_medium);
+	$('#pourcent-bad').text(pourcent_medium);
+	update_color();		
+
+	$('#pourcent-good').keyup(function(){
+		pourcent_good = $(this).val();
+		update_color();
+	});
+
+	$('#pourcent-medium').keyup(function(){
+		pourcent_medium = $(this).val();
+		$('#pourcent-bad').text(pourcent_medium);
+		update_color();
+	});
+
 });
+
+
+function update_color() {
+	$('.pourcent').each(function(){
+	 	
+	 	var pourcent = parseInt($(this).text());
+	 	if 		(pourcent >= pourcent_good) 	$(this).removeClass('pourcent-bad pourcent-medium').addClass('pourcent-good');
+	 	else if (pourcent >= pourcent_medium) 	$(this).removeClass('pourcent-bad pourcent-good').addClass('pourcent-medium');
+	 	else 									$(this).removeClass('pourcent-medium pourcent-good').addClass('pourcent-bad');
+	 });
+}
+
 
 function verif_form(){
 	var form = document.cde;
@@ -135,12 +192,14 @@ function verif_form(){
 	Du chargement du <input type="text" id="date_from" name="date_from" value="<?= isset($_POST['date_from']) ? $_POST['date_from']:''?>" size="10" maxlength="10"/>
 	au chargement du <input type="text" id="date_to" name="date_to" value="<?= isset($_POST['date_to']) ? $_POST['date_to']:''?>" size="10" maxlength="10"/>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les taux de service</a><br/>
-	<input type="checkbox" name="reservation" id="reservation" <?= isset($_POST['reservation']) ? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les réservations</label>
+	<input type="checkbox" name="reservation" 	id="reservation" 	<?= isset($_POST['reservation']) ? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les réservations</label><br/>
+	<input type="checkbox" name="cession" 		id="cession" 		<?= isset($_POST['cession']) ? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label>
 </div>
-</form>
 
 
 <?
+//var_dump($_POST);
+
 // on met a jour les état envoyée a reflex dans Rubis
 if (	isset($_POST['action']) && $_POST['action'] == 'taux_service'
 	&&	isset($_POST['date_from']) && $_POST['date_from'] && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $_POST['date_from'])
@@ -153,6 +212,11 @@ $date_from = array('jour'=>$regs[1],'mois'=>$regs[2],'siecle'=>$regs[3],'annee'=
 preg_match('/^(\d{2})\/(\d{2})\/(\d{2})(\d{2})$/', $_POST['date_to'],$regs);
 $date_to = array('jour'=>$regs[1],'mois'=>$regs[2],'siecle'=>$regs[3],'annee'=>$regs[4]);
 
+// on inclu les cessions si la case n'est pas cochée
+$cession = " and OECDES not like 'CES%' ";
+if(isset($_POST['cession']))
+	$cession = '';
+ 
 // on rajoute les produit résvervé dans les calculs
 $reservation = " and P1RRSO='' ";
 if(isset($_POST['reservation']))
@@ -180,12 +244,13 @@ from
 where
 		RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
 	and RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+	$cession
 
 group by OESCHG ,OEACHG , OEMCHG, OEJCHG, OENODP, OERODD, OERODP
 order by OESCHG ASC ,OEACHG ASC, OEMCHG ASC, OEJCHG ASC,OENODP  ASC
 EOT;
 
-//echo $sql;
+//echo "<pre>$sql</pre>";
 
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
@@ -200,12 +265,13 @@ EOT;
 		<th>Date chargement</th>
 		<th>Jour</th>
 		<th>Nb cde</th>
-		<th>Type</th>
-		<th>Commandé</th>
-		<th>Préparable</th>
-		<th>% préparable</th>
-		<th>Préparé</th>
-		<th>% préparé</th>
+		<th>Lignes / cde</th>
+		<th>Lignes commandées</th>
+		<th>Lignes préparables</th>
+		<th>% préparable / commandé</th>
+		<th>Lignes préparées</th>
+		<th>% préparé / préparable</th>
+		<th>% préparé / commandé</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -266,26 +332,28 @@ EOT;
 					<tr class="start-of-total">
 						<td colspan="2">Total période</td>
 						<td rowspan="1"><?=$total_cde?></td>
-						<td>Lignes</td>
+						<td><?=sprintf('%0.2f',$total_ligne / $total_cde)?></td>
 						<td><?=$total_ligne?></td>
 						<td><?=$total_ligne_doable?></td>
-						<td><?=(int)(100*$total_ligne_doable / $total_ligne)?></td>
+						<td class="pourcent"><?=(int)(100*$total_ligne_doable / $total_ligne)?></td>
 						<td><?=$total_ligne_done?></td>
-						<td><?=(int)(100*$total_ligne_done / $total_ligne)?></td>
+						<td class="pourcent"><?=(int)(100*$total_ligne_done / $total_ligne_doable)?></td>
+						<td class="pourcent"><?=(int)(100*$total_ligne_done / $total_ligne)?></td>
 					</tr>
-					<!--<tr class="end-of-total">
-						<td>Qte</td>
-						<td><?=$total_qte?></td>
-						<td><?=$total_qte_doable?></td>
-						<td><?=(int)(100*$total_qte_doable / $total_qte)?></td>
-						<td><?=$total_qte_done?></td>
-						<td><?=(int)(100*$total_qte_done / $total_qte)?></td>
-					</tr>-->
+					
 				</tfoot>
 			</table>
 <? } ?>
 
-<!--<pre><?=$sql?></pre>-->
+
+<div id="color-legend">
+	<div class="pourcent-good">Supérieur à 		<input type="text" name="pourcent-good" 	id="pourcent-good" 	 value="" size="2"/>%</div>
+	<div class="pourcent-medium">Supérieur à 	<input type="text" name="pourcent-medium" 	id="pourcent-medium" value="" size="2"/>%</div>
+	<div class="pourcent-bad">Inférieur à <span id="pourcent-bad"></span> %</div>
+</div>
+
+</form>
+
 </body>
 </html>
 
@@ -298,19 +366,12 @@ function afficheInfo() {
 		<td rowspan="1"><?=$old_day?></td>
 		<td rowspan="1"><?=$jours_mini[date('w',strtotime($old_day))]?></td>
 		<td rowspan="1"><?=$nb_cde?></td>
-		<td>Lignes</td>
+		<td><?=sprintf('%0.2f',$total_ligne_day / $nb_cde)?></td>
 		<td><?=$total_ligne_day?></td>
 		<td><?=$doable_ligne_day?></td>
-		<td><?=(int)(100*$doable_ligne_day / $total_ligne_day)?></td>
+		<td class="pourcent"><?=(int)(100*$doable_ligne_day / $total_ligne_day)?></td>
 		<td><?=$done_ligne_day?></td>
-		<td><?=(int)(100*$done_ligne_day / $total_ligne_day)?></td>
+		<td class="pourcent"><?=(int)(100* $done_ligne_day / $doable_ligne_day)?></td>
+		<td class="pourcent"><?=(int)(100*$done_ligne_day / $total_ligne_day)?></td>
 	</tr>
-	<!--<tr class="end-of-day">
-		<td>Qte</td>
-		<td><?=$total_qte_day?></td>
-		<td><?=$doable_qte_day?></td>
-		<td><?=(int)(100*$doable_qte_day / $total_qte_day)?></td>
-		<td><?=$done_qte_day?></td>
-		<td><?=(int)(100*$done_qte_day / $total_qte_day)?></td>
-	</tr>-->
 <? } ?>

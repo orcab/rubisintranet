@@ -637,7 +637,8 @@ EOT;
 select	ECHEANCE.LIECH as LIBELLE_ECHEANCE,
 		CLIENT.RENDI as MDP_SITE_WEB,
 		CLIENT.PROFE as DATE_ADHESION,
-		CLIENT.CLSIR as SIRET
+		CLIENT.CLSIR as SIRET,
+		CLIENT.CONTA as DIRIGEANT
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AECHEAP1 ECHEANCE
 				on CLIENT.NUECH=ECHEANCE.NUECH
@@ -676,6 +677,7 @@ EOT;
 				if ($row['cp'])		echo $row['cp']." ";
 				if ($row['ville'])	echo $row['ville'];
 			?></td></tr>
+			<tr><td>Dirigeant(s) :</td><td><?=trim($row_rubis['DIRIGEANT'])?></td></tr>
 			<tr><td style="white-space:nowrap;">Activité :</td><td>
 			<?	if ($row['activite'] & PLOMBIER) { ?>
 					<img src="gfx/plombier-mini.png" alt="Plombier/Chauffagiste" title="Plombier/Chauffagiste"/>
