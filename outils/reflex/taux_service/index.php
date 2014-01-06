@@ -192,8 +192,9 @@ function verif_form(){
 	Du chargement du <input type="text" id="date_from" name="date_from" value="<?= isset($_POST['date_from']) ? $_POST['date_from']:''?>" size="10" maxlength="10"/>
 	au chargement du <input type="text" id="date_to" name="date_to" value="<?= isset($_POST['date_to']) ? $_POST['date_to']:''?>" size="10" maxlength="10"/>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les taux de service</a><br/>
-	<input type="checkbox" name="reservation" 	id="reservation" 	<?= isset($_POST['reservation']) ? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les réservations</label><br/>
-	<input type="checkbox" name="cession" 		id="cession" 		<?= isset($_POST['cession']) ? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label>
+	<input type="checkbox" name="reservation" 	id="reservation" 	<?= isset($_POST['reservation'])? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les réservations</label><br/>
+	<input type="checkbox" name="cession" 		id="cession" 		<?= isset($_POST['cession']) 	? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
+	<input type="checkbox" name="all_client" 	id="all_client" 	<?= isset($_POST['all_client']) ? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label>
 </div>
 
 
@@ -212,29 +213,34 @@ $date_from = array('jour'=>$regs[1],'mois'=>$regs[2],'siecle'=>$regs[3],'annee'=
 preg_match('/^(\d{2})\/(\d{2})\/(\d{2})(\d{2})$/', $_POST['date_to'],$regs);
 $date_to = array('jour'=>$regs[1],'mois'=>$regs[2],'siecle'=>$regs[3],'annee'=>$regs[4]);
 
+// on inclu les autre type de clients (coop, employes, perso...)
+$all_client = " and OECDES like '056%' ";
+if(isset($_POST['all_client']))
+	$all_client = '';
+
 // on inclu les cessions si la case n'est pas cochée
 $cession = " and OECDES not like 'CES%' ";
 if(isset($_POST['cession']))
 	$cession = '';
  
-// on rajoute les produit résvervé dans les calculs
+// on rajoute les produit réservé dans les calculs
 $reservation = " and P1RRSO='' ";
 if(isset($_POST['reservation']))
 	$reservation = '';
 
 $sql = <<<EOT
 select
-	OENODP as NUM_ODP,
+	OENANN as ANN_ODP, OENODP as NUM_ODP,
 	OERODP as REF_DONNEUR_ORDRE,
 	OERODD as REF_COMMANDE, 
 	(RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0' +CONVERT(VARCHAR,OEACHG ),2)+'-'+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+'-'+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2)) as DATE_CHARGEMENT,
 	
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENODP=P1NODP                   $reservation) 	as LIGNES_COMMANDEES,
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENODP=P1NODP and P1NNSL=0      $reservation) 	as LIGNES_PREPARABLES,
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENODP=P1NODP and P1QAPR=P1QPRE $reservation)	as LIGNES_PREPAREES,
-	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where OENODP=P1NODP                   $reservation) 	as QTE_COMMANDER,
-	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where OENODP=P1NODP and P1NNSL=0      $reservation) 	as QTE_PREPARABLE,
-	(select SUM(P1QPRE) from RFXPRODDTA.reflex.HLPRPLP where OENODP=P1NODP                   $reservation) 	as QTE_PREPAREE
+	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as LIGNES_COMMANDEES,
+	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as LIGNES_PREPARABLES,
+	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP and P1QAPR=P1QPRE $reservation)	as LIGNES_PREPAREES,
+	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_COMMANDER,
+	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as QTE_PREPARABLE,
+	(select SUM(P1QPRE) from RFXPRODDTA.reflex.HLPRPLP where OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_PREPAREE
 
 from
 	${REFLEX_BASE}.HLODPEP ODP_ENTETE
@@ -245,8 +251,9 @@ where
 		RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
 	and RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
 	$cession
+	$all_client
 
-group by OESCHG ,OEACHG , OEMCHG, OEJCHG, OENODP, OERODD, OERODP
+group by OESCHG ,OEACHG , OEMCHG, OEJCHG, OENANN, OENODP, OERODD, OERODP
 order by OESCHG ASC ,OEACHG ASC, OEMCHG ASC, OEJCHG ASC,OENODP  ASC
 EOT;
 

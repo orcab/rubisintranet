@@ -139,7 +139,7 @@ if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // serveur de test
 	$user = LOGINOR_USER;
 	$pass = LOGINOR_PASS;
 	system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
-	$csv_filename = "$letter:/WEB/CPT.CSV";
+	$csv_filename = "$letter:/WEB/CDC.CSV";
 	//$csv_filename = "$letter:/TEST.CSV";
 }
 

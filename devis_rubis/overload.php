@@ -121,7 +121,7 @@ class PDF extends FPDF
 		
 		// qrcode du fichier
 		$json = array('t'=>'devis_rubis','b'=>$row_entete['NOBON'],'c'=>$row_entete['NOCLI'],'d'=>time(),'p'=>$this->PageNo());
-		$qrcode = new QRcode(json_encode($json), 'H'); // error level : L, M, Q, H
+		$qrcode = new QRcode(json_encode($json), 'L'); // error level : L, M, Q, H
 		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
 		$qrcode->displayFPDF($this, RIGHT_MARGIN -7, PAGE_HEIGHT-22, 20);
 
@@ -132,7 +132,7 @@ class PDF extends FPDF
 
 		$this->SetFont('helvetica','BI',8);
 		$this->SetX(LEFT_MARGIN + 15);
-		$this->MultiCell(PAGE_WIDTH - 35,3,"Ce devis est valable jusqu'au $row_entete[VALFJ]/$row_entete[VALFM]/$row_entete[VALFS]$row_entete[VALFA]. Certains produits peuvent être soumis à l'éco-contribution. Les dimensions seront à vérifier par votre installateur. Les prix indiqués sur ce devis sont indicatifs et révisables suivant les fluctuations économiques. Les nuances des marchandises exposées ne peuvent être qu'indicatives.",0,'C');
+		$this->MultiCell(PAGE_WIDTH - 35,3,"Ce devis est valable jusqu'au $row_entete[VALFJ]/$row_entete[VALFM]/$row_entete[VALFS]$row_entete[VALFA] pour la totalité du devis en une seule commande. Certains produits peuvent être soumis à l'éco-contribution. Les dimensions seront à vérifier par votre installateur. Les prix indiqués sur ce devis sont indicatifs et révisables suivant les fluctuations économiques. Les nuances des marchandises exposées ne peuvent être qu'indicatives.",0,'C');
 		
 		// rectangle arrondi en page a gauche avec n° de page
 		$this->SetFont('helvetica','',9);
