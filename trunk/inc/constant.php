@@ -32,8 +32,8 @@ define('POLE_AUTRE'			,1 << 6);
 define('MAX_TIME_ANOMALIE_DELETION', 3600 * 24 ); // 24h
 
 // taux de TVA
-define('TTC1',19.6);
-define('TTC2',7);
+define('TTC1',20);
+define('TTC2',10);
 
 // remise accordé pour le sefl service (web ou ecran tacile)
 define('REMISE_WEB',1); // remise de 1%
@@ -343,16 +343,16 @@ function remiseArticle($ligne_article_panier,$code_user) {
 
 // recupere la catégorie RUBIS d'un utilisateur
 function getCategorieUser($username) {
-	global $joomla_config ;
+	global $mysql,$database;
 
 	if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // test local
 		return 1; // categ aristan
 	}
 
-	$db_prefix = $joomla_config->dbprefix;
+/*	$db_prefix = $joomla_config->dbprefix;
 	$mysql    = mysql_connect($joomla_config->host, $joomla_config->user, $joomla_config->password) or die("Impossible de se connecter");
 	$database = mysql_select_db($joomla_config->db) or die("Impossible de se choisir la base");
-
+*/
 	$res = mysql_query("select categorie from artisan where numero='".mysql_escape_string($username)."'") or die("Ne peux pas trouver les infos user ".mysql_error());
 	return e('categorie',mysql_fetch_array($res));
 }
