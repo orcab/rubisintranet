@@ -118,7 +118,6 @@ td.manquant {
 }
 
 .prepa-encours {
-	/*background: linear-gradient(to right,#F7CA42 0%,#FFD460 100%);*/
 	background: linear-gradient(to right,#F7CA42 0%,#FFF571 100%);
 }
 
@@ -134,7 +133,7 @@ td.manquant {
 <script language="javascript">
 <!--
 
-var timeout = 21;
+var timeout = 31;
 
 $(document).ready(function(){
 	$('#code_article').focus();
@@ -187,6 +186,18 @@ function reload() {
 	</thead>
 	<tbody>
 <?
+	$reflex = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
+
+	# recuperation de la liste des destinataire
+	$destinataires = array();
+	$sql = <<<EOT
+select DSCDES as CODE_DESTINATAIRE,DSLDES as LIBELLE_DESTINATAIRE from ${REFLEX_BASE}.HLDESTP DESTINATAIRE
+EOT;
+	$res 	= odbc_exec($reflex,$sql) or die("Impossible de rechercher les prepa du jour : <br/>$sql");
+	while($row = odbc_fetch_array($res)) {
+		$destinataires[$row['CODE_DESTINATAIRE']] = $row['LIBELLE_DESTINATAIRE'];
+	}
+
 	$today_yyymmdd 	= date('Y-m-d');
 	$today['siecle']= substr($today_yyymmdd,0,2);
 	$today['annee'] = substr($today_yyymmdd,2,2);
@@ -225,37 +236,38 @@ select
 --	P1TVLP as LIGNE_VALIDEE,
 	PEHVPP as HEURE_VALIDATION,
 	PEHCRE as HEURE_CREATION,
-	DSLDES as LIBELLE_DESTINATAIRE,
+	PECDES as CODE_DESTINATAIRE,
+--	DSLDES as LIBELLE_DESTINATAIRE,
 	OERODP as REFERENCE_OPD,
 	ODP_ENTETE.OECMOP as TYPE,
 	PESCRE as CREATION_SIECLE, PEACRE as CREATION_ANNEE, PEMCRE as CREATION_MOIS, PEJCRE as CREATION_JOUR,
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE and P1TVLP='1') as LIGNES_PREPAREES,
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as LIGNES_A_PREPARER,
-	(select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as PEUT_PREPARER,
-	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as A_PREPARER
---	(select SUM(P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE) as MANQUE
+	(select COUNT(*) 				from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE and P1TVLP='1') 	as LIGNES_PREPAREES,
+	(select COUNT(*) 				from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as LIGNES_A_PREPARER,
+	(select SUM(P1QAPR - P1NQAM) 	from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as PEUT_PREPARER,
+	(select SUM(P1QAPR) 			from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as A_PREPARER
+--	(select SUM(P1NQAM) 			from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as MANQUE
 from
 				${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 	left join 	${REFLEX_BASE}.HLPRPLP PREPA_DETAIL
 		on PREPA_ENTETE.PENANN=PREPA_DETAIL.P1NANP and PREPA_ENTETE.PENPRE=PREPA_DETAIL.P1NPRE
 	left join ${REFLEX_BASE}.HLODPEP ODP_ENTETE
 		on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
-	left join ${REFLEX_BASE}.HLDESTP DESTINATAIRE
-		on PREPA_ENTETE.PECDES=DESTINATAIRE.DSCDES
+--	left join ${REFLEX_BASE}.HLDESTP DESTINATAIRE
+--		on PREPA_ENTETE.PECDES=DESTINATAIRE.DSCDES
 where
 		($where_type_prepa)
 		and (select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE)>0
-group by PENANN,PENPRE,PEHVPP,PEHCRE,DSLDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
+group by PENANN,PENPRE,PEHVPP,PEHCRE,PECDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
 order by PESCRE DESC, PEACRE DESC, PEMCRE DESC, PEJCRE DESC, HEURE_CREATION DESC
 EOT;
 
-//echo "<pre>$sql</pre><br/>\n";
+#echo "Coupé temporairement pour un test de performance. Benjamin";
+#echo "<pre>$sql</pre><br/>\n";
+#exit;
 
-	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
-	$res = odbc_exec($reflex,$sql)  or die("Impossible de rechercher les prepa du jour : <br/>$sql");
-
+	$res 	= odbc_exec($reflex,$sql) or die("Impossible de rechercher les prepa du jour : <br/>$sql");
 	while($row = odbc_fetch_array($res)) {
-
+			$row['LIBELLE_DESTINATAIRE'] = $destinataires[$row['CODE_DESTINATAIRE']];
 			$pourcentage_avancement = (int)($row['LIGNES_PREPAREES'] * 100 / $row['LIGNES_A_PREPARER']);
 			if ($row['HEURE_VALIDATION'])
 				$pourcentage_avancement = 100;
@@ -304,13 +316,8 @@ EOT;
 </table>
 
 
-<!--
-<div style="font-family: Arial;background-color: transparent;border: 1px solid #e7e7e7;width: 255px;height: 270px;-moz-box-shadow: 0 0 2px 1px #e7e7e7;-webkit-box-shadow: 0 0 2px 1px #e7e7e7;box-shadow: 0 0 2px 1px #e7e7e7;overflow: hidden; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px;margin:auto;margin-top:1em;"><div style="width: 255px;height: 320px;"><div style="margin:7px 10px;"><div style="color: #222222;font-family: Arial;font-size: 12px;font-weight: bold;margin: 0px 0px 7px 0px;line-height: 14px;">Prévisions météorologiques<br/><span style="font-weight:normal;">Plescop</span></div><iframe id="widget-frame" src="http://www.meteovista.fr/Go/ExternalWidgetsNew/ThreeDaysCity?gid=4265526&sizeType=1&temperatureScale=Celsius&defaultSettings=False" width="235" height="216" frameborder="0" scrolling="no" style="border: none;" allowtransparency="true"></iframe></div></div></div>
--->
-
 <h2>Météo à 14 jours</h2>
 <?
-
 // recuperation de la page meteo
 $html_global = join('',file('http://france.meteoconsult.fr/meteo/plescop/france/prevision_meteo_plescop_france_ville__33052_0.php?vue=simple#ancre_chemin_fer'));
 
