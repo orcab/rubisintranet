@@ -194,23 +194,31 @@ print CSV join(';',qw/SNOCLI SNOBON SNTROF SNTCHA SNTBOS SNTBOA SNTBOM SNTBOJ SN
 
 foreach my $uniqid (keys %$data) {
 	foreach my $com ((@{$data->{$uniqid}->{'commentaires'}},@{$data->{$uniqid}->{'articles'}})) {
+
+		# transforme mon code web en vrai code rubis
 		if ($data->{$uniqid}->{'SNOCLI'} eq 'benjamin' || $data->{$uniqid}->{'SNOCLI'} eq 'benjamin2') {
 			$data->{$uniqid}->{'SNOCLI'} = 'POULAI'; # patch pour le code client de benjamin
 		}
 
+		# code chantier par defaut
 		if (!exists $data->{$uniqid}->{'SNTCHA'}) { # code chantier par défaut a SANS
 			$data->{$uniqid}->{'SNTCHA'}='SANS';
 		}
 
+		# vérifie si le produit est commandable par nombre de conditionnment ou par unité
 		my $nombre = '';
-		$loginor->Sql("select CONDI as CONDITIONNEMENT, CDCON as CONDITIONNEMENT_DIVISBLE from ${prefix_base_rubis}GESTCOM.AARTICP1 where NOART='".$com->{'SENART'}."'"); # regarde le conditionnement de l'article
+		if ($loginor->Sql("select CONDI as CONDITIONNEMENT, CDCON as CONDITIONNEMENT_DIVISBLE from ${prefix_base_rubis}GESTCOM.AARTICP1 where NOART='".$com->{'SENART'}."'")) { # regarde le conditionnement de l'article
+			die "Erreur dans la recquete de recuperation des conditionnement article (".$loginor->Error().")";
+		}
 		while($loginor->FetchRow()) {
 			my %row = $loginor->DataHash() ;
 			if ($row{'CONDITIONNEMENT_DIVISBLE'} eq 'NON' && $row{'CONDITIONNEMENT'} && $row{'CONDITIONNEMENT'}>1) { # si un condi non divible est renseigné, on doit le commandé par nombre
 				$nombre = ceil($com->{'SENQTE'} / $row{'CONDITIONNEMENT'});
 			}
 		}
+		%row = {};
 
+		# genere la ligne
 		print CSV join(';',
 					$data->{$uniqid}->{'SNOCLI'}, 	# n° client
 					$uniqid,					  	# numero unique
@@ -250,7 +258,7 @@ foreach my $uniqid (keys %$data) {
 					$data->{$uniqid}->{'SNTCVI'}, 	# ligne adr4
 					$data->{$uniqid}->{'SNTCCP'}, 	# ligne adr5
 					$data->{$uniqid}->{'SNTCBD'},  	# ligne adr6
-					$data->{$uniqid}->{'SENRP1'}	# remise web
+					$com->{'SENRP1'}				# remise web
 			  )."\n";
 	}	
 }
