@@ -251,6 +251,7 @@ select
 --ENTETE.NOCLI,
 --ENTETE.NOBON,
 CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) as DATE_BON,
+count(*) as NB_CDE,
 --CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) as DATE_LIV,
 SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' $reservation)) as LIGNES_COMMANDEES,
 --(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='ANN' and PROFI='1' $reservation) as LIGNES_ANNULEES,
@@ -322,17 +323,18 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 	while($row = odbc_fetch_array($res)) {
 		if ($old_day == '') { // premier record
 			$old_day = $row['DATE_BON'];
-			$nb_cde = $order_day = $cancel_day = $deliver_day = $reliquat_day = $in_time_day = $out_time_day = 0; // on reset les compteurs
+			$order_day = $cancel_day = $deliver_day = $reliquat_day = $in_time_day = $out_time_day = 0; // on reset les compteurs
 		}
 
 		if ($old_day != $row['DATE_BON']) { // changemnt de journée --> on affiche les infos récoltée
 			afficheInfo();
-			$nb_cde = $order_day = $cancel_day = $deliver_day = $reliquat_day = $in_time_day = $out_time_day = 0; // on reset les compteurs
+			$order_day = $cancel_day = $deliver_day = $reliquat_day = $in_time_day = $out_time_day = 0; // on reset les compteurs
 		} // fin new day
 
-		$nb_cde++;
+		
 		$total_cde++;
 
+		$nb_cde 			= $row['NB_CDE'];
 		$order_day 			+= $row['LIGNES_COMMANDEES'];
 //		$cancel_day 		+= $row['LIGNES_ANNULEES'];
 		$deliver_day 		+= $row['LIGNES_LIVREES'];
