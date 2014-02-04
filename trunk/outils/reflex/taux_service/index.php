@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/> 
-<title>Taux de service</title>
+<title>Taux de service Reflex</title>
 
 <style>
 body {
@@ -110,27 +110,37 @@ tfoot {
 <script language="javascript">
 <!--
 
+//initialise les date picker
+$.datepicker.setDefaults({
+ 	dateFormat:'dd/mm/yy',
+ 	beforeShowDay: $.datepicker.noWeekends,
+	changeMonth: true,
+	changeYear:true,
+	firstDay: 1,
+	dayNamesShort: 		[ 'Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam' ],
+	dayNames: 			[ 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi' ],
+	dayNamesMin: 		[ 'Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa' ],
+	monthNamesShort: 	['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Déc'],
+	monthNames: 		['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Décembre']
+});
+
 var pourcent_good 	= <?= isset($_POST['pourcent-good']) 	? $_POST['pourcent-good']	:'95' ?>;
 var pourcent_medium = <?= isset($_POST['pourcent-medium']) 	? $_POST['pourcent-medium']	:'90' ?>;
 
 $(document).ready(function(){
+	
 	$( '#date_from' ).datepicker({
-	 	dateFormat:'dd/mm/yy',
-		changeMonth: true, changeYear:true,
 		onClose: function( selectedDate ) {
-				$( '#date_to' ).datepicker( 'option', 'minDate', selectedDate );
+			$( '#date_to' ).datepicker( 'option', 'minDate', selectedDate );
 		}
 	});
 
 	$( '#date_to' ).datepicker({
-	 	dateFormat:'dd/mm/yy',
-		changeMonth: true, changeYear:true,
-		onClose: function( selectedDate ) {
-				$( '#date_from' ).datepicker( 'option', 'maxDate', selectedDate );
+	 	onClose: function( selectedDate ) {
+			$( '#date_from' ).datepicker( 'option', 'maxDate', selectedDate );
 		}
 	});
-
-
+	
 	$('#pourcent-good').val(pourcent_good);
 	$('#pourcent-medium').val(pourcent_medium);
 	$('#pourcent-bad').text(pourcent_medium);
@@ -188,13 +198,14 @@ function verif_form(){
 <form name="cde" method="POST" action="<?=$_SERVER['PHP_SELF']?>">
 <input type="hidden" name="action" value="taux_service" />
 <div id="recherche">
-	<h1>Voir les taux de service</h1>
+	<h1>Voir les taux de service Reflex</h1>
 	Du chargement du <input type="text" id="date_from" name="date_from" value="<?= isset($_POST['date_from']) ? $_POST['date_from']:''?>" size="10" maxlength="10"/>
 	au chargement du <input type="text" id="date_to" name="date_to" value="<?= isset($_POST['date_to']) ? $_POST['date_to']:''?>" size="10" maxlength="10"/>
-	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les taux de service</a><br/>
-	<input type="checkbox" name="reservation" 	id="reservation" 	<?= isset($_POST['reservation'])? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les réservations</label><br/>
-	<input type="checkbox" name="cession" 		id="cession" 		<?= isset($_POST['cession']) 	? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
-	<input type="checkbox" name="all_client" 	id="all_client" 	<?= isset($_POST['all_client']) ? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label>
+	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les taux de service Reflex</a><br/>
+	<input type="checkbox" name="reservation" 				id="reservation" 			<?= isset($_POST['reservation'])			? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les réservations</label><br/>
+	<input type="checkbox" name="cession" 					id="cession" 				<?= isset($_POST['cession']) 				? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
+	<input type="checkbox" name="all_client" 				id="all_client" 			<?= isset($_POST['all_client']) 			? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label><br/>
+	<input type="checkbox" name="only_first_preparation" 	id="only_first_preparation" <?= isset($_POST['only_first_preparation']) ? 'checked="checked"':'' ?> /> 	<label for="only_first_preparation">Inclure seulement les premières descente en préparation (-001)</label>
 </div>
 
 
@@ -228,6 +239,11 @@ $reservation = " and P1RRSO='' ";
 if(isset($_POST['reservation']))
 	$reservation = '';
 
+// on ne tient compte que des premieres descentes en preparation
+$only_first_preparation = '';
+if(isset($_POST['only_first_preparation']))
+	$only_first_preparation = " and OERODP like '%-001' ";
+
 $sql = <<<EOT
 select
 	OENANN as ANN_ODP, OENODP as NUM_ODP,
@@ -252,6 +268,7 @@ where
 	and RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
 	$cession
 	$all_client
+	$only_first_preparation
 
 group by OESCHG ,OEACHG , OEMCHG, OEJCHG, OENANN, OENODP, OERODD, OERODP
 order by OESCHG ASC ,OEACHG ASC, OEMCHG ASC, OEJCHG ASC,OENODP  ASC
@@ -265,7 +282,7 @@ EOT;
 
 <table id="lignes">
 	<caption>
-		Taux de service du <?=$_POST['date_from']?> au <?=$_POST['date_to']?>
+		Taux de service Reflex du <?=$_POST['date_from']?> au <?=$_POST['date_to']?>
 	</caption>
 	<thead>
 	<tr>

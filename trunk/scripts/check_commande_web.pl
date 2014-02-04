@@ -8,8 +8,8 @@ use POSIX qw(strftime);
 use Win32::ODBC;
 use Net::SMTP;
 
-my @TO_EMAIL	= ('benjamin.poulain@coopmcs.com','thierry.lemoignic@coopmcs.com');
-my @TO_NAME		= ('Benjamin Poulain','Thierry Le Moignic');
+my @TO_EMAIL	= ('benjamin.poulain@coopmcs.com','thierry.lemoignic@coopmcs.com','aymeric.merigot@coopmcs.com');
+my @TO_NAME		= ('Benjamin Poulain','Thierry Le Moignic','Aymeric Merigot');
 use constant FROM_EMAIL	=> 'commande@coopmcs.com';
 use constant FROM_NAME	=> 'Erreur commande web';
 

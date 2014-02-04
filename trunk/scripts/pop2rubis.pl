@@ -25,8 +25,6 @@ print print_time()."START\n";
 
 # charge la config en mémoire
 my $cfg  = new Config::IniFiles( -file => 'pop2rubis.ini' , -nocase=>1 ) or die "Impossible de charger le fichier de config 'pop2rubis.ini'";
-my $data = {} ;
-
 
 # conection à la base Loginor
 my $cfg2 = new Phpconst2perlconst(-file => '../inc/config.php');
@@ -97,12 +95,7 @@ if (defined($authentification) && $authentification > 0) {
 		# procedure de la validation que l'email est bien une commande
 		if ($email->header('To') =~ m/$valid_to/i  && $email->header('Subject') =~ m/^$valid_subject/i) { # ok l'email est valide, on l'examine
 			my ($code_client) = ($email->header('Subject') =~ m/\((.+?)\)$/i);
-			my $code_cab = '';
-			if ($code_client =~ /^CAB(\d+)$/i) {
-				$code_client = '056039';
-				$code_cab = $1;
-			}
-
+			
 			# stock le mail en local pour analyse plus tard
 			open(F,"temp/$messageId.txt") or die ("Ne peux pas creer le fichier temp $messageId.txt ($!)");
 			print F "from=$code_client\n";
@@ -132,10 +125,8 @@ print print_time()."POP3 get $nb_mail mail(s)\n";
 ######################################################################################################################
 FILE_FETCH:
 
-if ($nb_file + $nb_mail <= 0) { # aucun fichier a traiter, on saute à la fin
-	goto END;
-}
-
+my $data = {} ;
+my @files_to_delete ;
 opendir(D,'temp') or die "Impossible d'ouvrir le réertoire local pour lecture ($!)";
 foreach my $filename (readdir(D)) { # pour chaque fichier présent dans le répertoire
 
@@ -148,13 +139,19 @@ foreach my $filename (readdir(D)) { # pour chaque fichier présent dans le répert
 	open(F, "temp/$filename") or die "Ne peux pas ouvrir $filename ($!)";
 	my @body = <F>;
 	close F;
-	unlink("temp/$filename") or die "Ne peux pas supprimer le fichier $filename ($!)";
+	push @files_to_delete, "temp/$filename"; # on note qu'il faudra supprimer ce fichier plus tard (quand tout ce sera bien passé)
 
 	my $code_client = '';
 	foreach (@body) {
 		if (/^\s*from\s*=(.*)/i) { # code du client
 			$code_client = $1;
 		}
+	}
+
+	my $code_cab = '';
+	if ($code_client =~ /^CAB(\d+)$/i) {
+		$code_client = '056039';
+		$code_cab = $1;
 	}
 
 	if ($code_client eq '') {
@@ -263,6 +260,11 @@ if ($debug) {
 # GENERATION DU FICHIER CSV
 ######################################################################################################################
 CSV:
+
+if (keys %$data <= 0) { # si aucune donnée traité, on va à la fin
+	goto END;
+}
+
 print print_time()."Generating CSV file ... ";
 open(CSV,'>>'.$cfg->val('file','path_temporary_file')) or die "Ne peux pas creer le fichier CSV temporaire '".$cfg->val('file','path_temporary_file')."' ($!)";
 # print header
@@ -351,11 +353,20 @@ if (!-e $cfg->val('file','path_file') && -e $cfg->val('file','path_temporary_fil
 	 # si le fichier existe deja alors on ne le copie pas, on attend patiement.
 }
 
+# on supprime les fichiers du répertoire temp si tout c'est bien passé
+print print_time()."Removing files ... ";
+foreach (@files_to_delete) {
+	unlink or die "Ne peux pas supprimer le fichier $_ ($!)";
+}
+print "ok\n";
+
 END:
 $loginor->Close(); #close la connection a Rubis
 print print_time()."END\n\n";
-print STDERR Dumper($data) if $debug;
 
+
+
+#########################################################################################################################################
 sub print_time {
 	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
 	return '';
