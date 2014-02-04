@@ -297,7 +297,8 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 		<th>% de livrées</th>
 		<th>Lignes livrées à temps</th>
 		<th>Lignes livrées en retard</th>
-		<th>% de livrées à temps</th>
+		<th>% de livrées à temps / livrées</th>
+		<th>% de livrées à temps / commandées</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -370,6 +371,7 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 						<td class="pourcent"><?=(int)(100*$total_deliver / $total_order)?></td>
 						<td><?=$total_in_time?></td>
 						<td><?=$total_out_time?></td>
+						<td class="pourcent"><?=(int)(100*$total_in_time / $total_deliver)?></td>
 						<td class="pourcent"><?=(int)(100*$total_in_time / $total_order)?></td>
 					</tr>				
 				</tfoot>
@@ -404,6 +406,7 @@ function afficheInfo() {
 		<td class="pourcent"><?=(int)(100*$deliver_day / $order_day)?></td>
 		<td><?=$in_time_day?></td>
 		<td><?=$out_time_day?></td>
+		<td class="pourcent"><?=(int)(100*$in_time_day / $deliver_day)?></td>
 		<td class="pourcent"><?=(int)(100*$in_time_day / $order_day)?></td>
 	</tr>
 <? } ?>
