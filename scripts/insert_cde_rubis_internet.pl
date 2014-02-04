@@ -396,7 +396,6 @@ EOT
 }
 
 my $res = $mysql->query("SELECT * FROM devis_ligne"); # selection le détails des devis expo
-print "OK\n";
 
 while(my %row = $res->fetchhash) {
 	map { $row{$_}=trim(quotify($row{$_})); } keys %row ; # nettoyage et prepa sql des valeur

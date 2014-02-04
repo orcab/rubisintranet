@@ -42,8 +42,8 @@ select
 	FICHE_STOCK.DEPOT
 from
 	${prefix_base_rubis}GESTCOM.ASTOCKP1 STOCK
-		left join ${prefix_base_rubis}GESTCOM.ASTOFIP1 FICHE_STOCK
-			on STOCK.NOART=FICHE_STOCK.NOART and STOCK.DEPOT=FICHE_STOCK.DEPOT
+	left join ${prefix_base_rubis}GESTCOM.ASTOFIP1 FICHE_STOCK
+		on STOCK.NOART=FICHE_STOCK.NOART and STOCK.DEPOT=FICHE_STOCK.DEPOT
 where
 		(STOCK.DEPOT='AFA' or STOCK.DEPOT='AFL')
 	and FICHE_STOCK.STSER='OUI'						-- est servi sur stock
@@ -60,6 +60,28 @@ while($loginor->FetchRow()) {
 	$row{'QTE_DISPO'} = $row{'QTE_REEL'} - $row{'QTE_CDE_CLIENT_STOCK'} ;
 	$row{'SERVI'} = $row{'SERVI'} eq 'OUI' ? 1:0;
 	print SQL "REPLACE INTO qte_article (code_article,depot,qte,mini,qte_cde) VALUES ('$row{CODE_ARTICLE}','$row{DEPOT}','$row{QTE_DISPO}','$row{MINI}','$row{QTE_CDE_FOURN}');\n";
+}
+
+print print_time()."Select des suspendus ...";
+my $sql = <<EOT;
+select
+	ARTICLE.NOART as CODE_ARTICLE
+from
+	${prefix_base_rubis}GESTCOM.AARTICP1 ARTICLE
+	left join ${prefix_base_rubis}GESTCOM.ASTOFIP1 FICHE_STOCK
+		on FICHE_STOCK.NOART=ARTICLE.NOART
+where
+		(ARTICLE.ETARE='S' or FICHE_STOCK.STSTS='S')
+	and (FICHE_STOCK.DEPOT='AFA' or FICHE_STOCK.DEPOT='AFL')
+EOT
+
+$loginor->Sql($sql);
+print "OK\n";
+
+while($loginor->FetchRow()) {
+	my %row = $loginor->DataHash() ;
+	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
+	print SQL "UPDATE article SET suspendu='1' WHERE code_article='$row{CODE_ARTICLE}' and suspendu='0';\n";
 }
 
 $loginor->Close();

@@ -153,7 +153,9 @@ CREATE TABLE IF NOT EXISTS `article` (
 	`sur_tarif` tinyint(1) NOT NULL,
 	`ecotaxe` decimal(10,2) default NULL,
 	`date_creation` date NOT NULL,
+	`suspendu` tinyint(1) default '0',
 	PRIMARY KEY  (`id`),
 	UNIQUE KEY `code_article` (`code_article`),
-	KEY `fourn` (`fournisseur`)
+	KEY `fourn` (`fournisseur`),
+	KEY `suspendu` (`suspendu`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;

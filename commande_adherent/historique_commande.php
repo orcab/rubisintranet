@@ -400,7 +400,7 @@ function send_return_mail(img,nobon,nomcli,email) {
 		<th style="vertical-align:top;" class="hide_when_print">PDF<br/>chiffré</th>
 		<th style="vertical-align:top;" class="hide_when_print">PDF</th>
 		<th style="vertical-align:top;" class="hide_when_print">Etiq</th>
-		<th style="vertical-align:top;" class="hide_when_print">Ret</th>
+		<!--<th style="vertical-align:top;" class="hide_when_print">Ret</th>-->
 	</tr>
 	</thead>
 	<tbody>
@@ -484,7 +484,7 @@ EOT;
 
 if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 
-	$total_ligne = 0 ;
+	$total_cde = 0 ;
 	$total_montant = 0 ;
 
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
@@ -527,7 +527,7 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="../gfx/pdf-icon_avec_prix.png" alt="Edition PDF" /></a></td>
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix"><img src="../gfx/pdf-icon_sans_prix_FR.png" alt="Edition PDF - Ligne F et R" /></a><br/><a href="edition_pdf.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>&options[]=sans_prix&options[]=ligne_R"><img src="../gfx/pdf-icon_sans_prix_R.png" alt="Edition PDF - Ligne R" style="margin-top:3px;"/></a></td>
 		<td style="text-align:center;" class="hide_when_print"><a href="edition_etiquette.php?NOBON=<?=$row['NOBON']?>&NOCLI=<?=$row['NOCLI']?>"><img src="gfx/icon_etiquette.png" alt="Edition Etiquette" /></a></td>
-		<td style="text-align:center;" class="hide_when_print"><img src="gfx/send_mail.png" alt="Prévenir le vendeur d'un retour" title="Prévenir le vendeur d'un retour" onclick="send_return_mail(this,'<?=$row['NOBON']?>','<?=addslashes($row['NOMSB'])?>','<?=isset($email_vendeur[$row['LIVSB']]) && $email_vendeur[$row['LIVSB']] ? $email_vendeur[$row['LIVSB']]:''?>')";/></td>
+<!--		<td style="text-align:center;" class="hide_when_print"><img src="gfx/send_mail.png" alt="Prévenir le vendeur d'un retour" title="Prévenir le vendeur d'un retour" onclick="send_return_mail(this,'<?=$row['NOBON']?>','<?=addslashes($row['NOMSB'])?>','<?=isset($email_vendeur[$row['LIVSB']]) && $email_vendeur[$row['LIVSB']] ? $email_vendeur[$row['LIVSB']]:''?>')";/></td> -->
 	</tr>
 
 
@@ -566,14 +566,14 @@ if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 			</tr>
 <?		} // fin affiche les relances commande
 
-		$total_ligne++;
+		$total_cde++;
 		$total_montant += $row['MONTBT'] ;
 	} // while commande ?>
 	</tbody>
 	<tfoot>
 	<tr>
 		<td colspan="4">
-			Nombre de lignes : <?=$total_ligne?>
+			Nombre de commande : <?=$total_cde?>
 		</td>
 		<td colspan="9">
 			Total des montants : <?=$total_montant?> &euro;
