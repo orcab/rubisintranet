@@ -137,7 +137,9 @@ var timeout = 31;
 
 $(document).ready(function(){
 	$('#code_article').focus();
+<? if ($_SERVER['REMOTE_ADDR'] == '10.211.14.63') { // on recharge la page uniquement si c'est l'écran d'accueil du comptoir ?>
 	refresh();
+<? } ?>
 });
 
 function refresh() {

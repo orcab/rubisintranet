@@ -21,7 +21,7 @@ use Phpconst2perlconst ;
 
 my $debug; GetOptions ('debug' => \$debug);  # flag
 $|=1;
-print print_time()."START\n";
+print get_time()."START\n";
 
 # charge la config en mémoire
 my $cfg  = new Config::IniFiles( -file => 'pop2rubis.ini' , -nocase=>1 ) or die "Impossible de charger le fichier de config 'pop2rubis.ini'";
@@ -29,12 +29,12 @@ my $cfg  = new Config::IniFiles( -file => 'pop2rubis.ini' , -nocase=>1 ) or die 
 # conection à la base Loginor
 my $cfg2 = new Phpconst2perlconst(-file => '../inc/config.php');
 my $prefix_base_rubis = $cfg2->{LOGINOR_PREFIX_BASE};
-print print_time()."Connecting to ODBC '".$cfg2->{LOGINOR_DSN}."' ... ";
+print get_time()."Connecting to ODBC '".$cfg2->{LOGINOR_DSN}."' ... ";
 my $loginor = new Win32::ODBC('DSN='.$cfg2->{LOGINOR_DSN}.';UID='.$cfg2->{LOGINOR_USER}.';PWD='.$cfg2->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
 print "ok\n";
 
 # on tente d'aller sur le disqie partagé --> erreur
-print print_time()."Testing access to disk ... ";
+print get_time()."Testing access to disk ... ";
 open(TEST,'+>TEST.TMP') or die "Ne peux pas creer le fichier TEST 'TEST.TMP' ($!)"; close(TEST);
 unlink('TEST.TMP') or die "Ne peux pas supprimer le fichier TEST 'TEST.TMP' ($!)";
 print "ok\n";
@@ -48,10 +48,9 @@ my $nb_file = 0;
 # recuperation des commandes via FTP
 ######################################################################################################################
 FTP_FETCH:
-print print_time()."FTP connection ... ";
+print get_time()."FTP connection ... ";
 my 	$ftp = Net::FTP->new($cfg->val(qw/FTP host/), Debug => 0) or die "Cannot connect to ".$cfg->val(qw/FTP host/).": $@";
-print "ok\n";
-print print_time()."FTP authentification ... ";
+print "ok, authentification ... ";
 	$ftp->login($cfg->val(qw/FTP user/), $cfg->val(qw/FTP pass/)) or die "Cannot login ", $ftp->message;
 print "ok\n";
 	$ftp->cwd($cfg->val(qw/FTP directory/)) or die "Cannot change working directory ", $ftp->message;
@@ -69,55 +68,55 @@ foreach ($ftp->ls) {
 	$ftp->delete($_); # on supprime dans tous les cas
 }
 $ftp->quit;
-print print_time()."FTP get $nb_file file(s)\n";
+print get_time()."FTP get $nb_file file(s)\n";
 goto FILE_FETCH;
 
 
 ######################################################################################################################
 # recuperation des commandes via EMAIL
 ######################################################################################################################
-POP3_FETCH:
-print print_time()."POP3 connection ... ";
-my $pop3 = Net::POP3->new($cfg->val('pop3','host'), ResvPort=>$cfg->val('pop3','port') , Timeout => 3) or die "Impossible de se connecter au serveur POP3";
-print "ok\n";
+# POP3_FETCH:
+# print get_time()."POP3 connection ... ";
+# my $pop3 = Net::POP3->new($cfg->val('pop3','host'), ResvPort=>$cfg->val('pop3','port') , Timeout => 3) or die "Impossible de se connecter au serveur POP3";
+# print "ok\n";
 
-print print_time()."POP3 authentification ... ";
-my $authentification = $pop3->login($cfg->val('pop3','user'), $cfg->val('pop3','pass'));
-if (defined($authentification) && $authentification > 0) {
-	print "ok\n";
-	foreach my $msgnum (keys %{$pop3->list}) {
-		my $email= Email::Simple->new(join('',@{$pop3->get($msgnum)}));
-		my ($messageId) = ($email->header('Message-Id') =~ m/^<(.+?)\@/i);
-		$messageId = substr($messageId, 0 , 15);
-		my $valid_subject   = $cfg->val('pop3','valid_subject');
-		my $valid_to   		= $cfg->val('pop3','valid_to');
+# print get_time()."POP3 authentification ... ";
+# my $authentification = $pop3->login($cfg->val('pop3','user'), $cfg->val('pop3','pass'));
+# if (defined($authentification) && $authentification > 0) {
+# 	print "ok\n";
+# 	foreach my $msgnum (keys %{$pop3->list}) {
+# 		my $email= Email::Simple->new(join('',@{$pop3->get($msgnum)}));
+# 		my ($messageId) = ($email->header('Message-Id') =~ m/^<(.+?)\@/i);
+# 		$messageId = substr($messageId, 0 , 15);
+# 		my $valid_subject   = $cfg->val('pop3','valid_subject');
+# 		my $valid_to   		= $cfg->val('pop3','valid_to');
 
-		# procedure de la validation que l'email est bien une commande
-		if ($email->header('To') =~ m/$valid_to/i  && $email->header('Subject') =~ m/^$valid_subject/i) { # ok l'email est valide, on l'examine
-			my ($code_client) = ($email->header('Subject') =~ m/\((.+?)\)$/i);
+# 		# procedure de la validation que l'email est bien une commande
+# 		if ($email->header('To') =~ m/$valid_to/i  && $email->header('Subject') =~ m/^$valid_subject/i) { # ok l'email est valide, on l'examine
+# 			my ($code_client) = ($email->header('Subject') =~ m/\((.+?)\)$/i);
 			
-			# stock le mail en local pour analyse plus tard
-			open(F,"temp/$messageId.txt") or die ("Ne peux pas creer le fichier temp $messageId.txt ($!)");
-			print F "from=$code_client\n";
-			print F $email->body;
-			close(F);
+# 			# stock le mail en local pour analyse plus tard
+# 			open(F,"temp/$messageId.txt") or die ("Ne peux pas creer le fichier temp $messageId.txt ($!)");
+# 			print F "from=$code_client\n";
+# 			print F $email->body;
+# 			close(F);
 
-			# deleting message from pop3
-			$pop3->delete($_);
-			$nb_mail++;
+# 			# deleting message from pop3
+# 			$pop3->delete($_);
+# 			$nb_mail++;
 		
-		} else {
-			print print_time()."Malformed email found ($msgnum). To:'".$email->header('To')."', Subject:'".$email->header('Subject')."'. Deleting ... ";
-			$pop3->delete($msgnum);
-			print "ok\n";
-		}
-	}
+# 		} else {
+# 			print get_time()."Malformed email found ($msgnum). To:'".$email->header('To')."', Subject:'".$email->header('Subject')."'. Deleting ... ";
+# 			$pop3->delete($msgnum);
+# 			print "ok\n";
+# 		}
+# 	}
 
-} elsif ($authentification == '0E0') {
-	print "ok, but no message\n";
-	$pop3->quit;
-}
-print print_time()."POP3 get $nb_mail mail(s)\n";
+# } elsif ($authentification == '0E0') {
+# 	print "ok, but no message\n";
+# 	$pop3->quit;
+# }
+# print get_time()."POP3 get $nb_mail mail(s)\n";
 
 
 ######################################################################################################################
@@ -155,12 +154,12 @@ foreach my $filename (readdir(D)) { # pour chaque fichier présent dans le répert
 	}
 
 	if ($code_client eq '') {
-		print print_time()."Malformed commande in $filename (no code_client). Skip\n";
+		print get_time()."Malformed commande in $filename (no code_client). Skip\n";
 		next ;
 	}
 
 	my $ligne = 1;
-	print print_time()."Commande found from $code_client\n";
+	print get_time()."Commande found from $code_client\n";
 	$data->{$messageId} = {	'SNOCLI'=>$code_client,
 							'SNTBOS'=>'', 'SNTBOA'=>'', 'SNTBOM'=>'', 'SNTBOJ'=>'', # date du bon
 							'SNTLIS'=>'', 'SNTLIA'=>'', 'SNTLIM'=>'', 'SNTLIJ'=>'', # date de livraison
@@ -265,7 +264,7 @@ if (keys %$data <= 0) { # si aucune donnée traité, on va à la fin
 	goto END;
 }
 
-print print_time()."Generating CSV file ... ";
+print get_time()."Generating CSV file ... ";
 open(CSV,'>>'.$cfg->val('file','path_temporary_file')) or die "Ne peux pas creer le fichier CSV temporaire '".$cfg->val('file','path_temporary_file')."' ($!)";
 # print header
 print CSV join(';',qw/SNOCLI SNOBON SNTROF SNTCHA SNTBOS SNTBOA SNTBOM SNTBOJ SNTLIS SNTLIA SNTLIM SNTLIJ
@@ -345,6 +344,17 @@ foreach my $uniqid (keys %$data) {
 close CSV;
 print "ok\n";
 
+# si le fichier final est deja présent mais qu'il ne comporte que les entetes --> bug. Le fichier s'est bloqué pour une raison inconnu
+# il faut alors supprimer le fichier pour que le fichier temp puisse etre traité
+if (-e $cfg->val('file','path_file')) {
+	open(F,'<'.$cfg->val('file','path_file'));
+	my @lines = <F>;
+	close F;
+
+	if (scalar @lines <= 1) { # le fichier n'a qu'une seul ligne --> bug, on le supprime.
+		unlink($cfg->val('file','path_file')) ;
+	}
+}
 
 # copie du fichier temporaire a l'emplacement finale sur le disque partagé
 if (!-e $cfg->val('file','path_file') && -e $cfg->val('file','path_temporary_file')) { # si le fichier finale n'existe pas alors on move le fichier temporaire
@@ -354,20 +364,23 @@ if (!-e $cfg->val('file','path_file') && -e $cfg->val('file','path_temporary_fil
 }
 
 # on supprime les fichiers du répertoire temp si tout c'est bien passé
-print print_time()."Removing files ... ";
+print get_time()."Removing files ... ";
+# sauvegarde les fichiers
+my $save_path = 'cde_web_historique/'.strftime('%Y/%m/%d',localtime);
+mkpath($save_path); # cree le répertoire de sauvegarde des cde web
 foreach (@files_to_delete) {
-	unlink or die "Ne peux pas supprimer le fichier $_ ($!)";
+	#unlink or die "Ne peux pas supprimer le fichier $_ ($!)";
+	move($_,"$save_path/".basename($_));
 }
 print "ok\n";
 
 END:
 $loginor->Close(); #close la connection a Rubis
-print print_time()."END\n\n";
+print get_time()."END\n\n";
 
 
 
 #########################################################################################################################################
-sub print_time {
-	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
-	return '';
+sub get_time {
+	return strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
 }
