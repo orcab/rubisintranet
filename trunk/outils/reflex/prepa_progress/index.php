@@ -125,6 +125,14 @@ td.manquant {
 	background: linear-gradient(to right,#5F5 0%,#CFC 100%);
 }
 
+.emplacement {
+    color: darkgreen;
+    font-weight: normal;
+}
+.num_artisan {
+    font-weight: bold;
+}
+
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
 <link rel="stylesheet" href="../../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../../js/fontawesome/css/icon-custom.css">
@@ -133,7 +141,7 @@ td.manquant {
 <script language="javascript">
 <!--
 
-var timeout = 31;
+var timeout = 61;
 
 $(document).ready(function(){
 	$('#code_article').focus();
@@ -200,6 +208,8 @@ EOT;
 		$destinataires[$row['CODE_DESTINATAIRE']] = $row['LIBELLE_DESTINATAIRE'];
 	}
 
+	$now_hhmmss 	= date('Gis');
+
 	$today_yyymmdd 	= date('Y-m-d');
 	$today['siecle']= substr($today_yyymmdd,0,2);
 	$today['annee'] = substr($today_yyymmdd,2,2);
@@ -232,40 +242,45 @@ EOT;
 
 		$sql = <<<EOT
 select
---	*,
 	PENANN as PREPA_ANNEE,
 	PENPRE as PREPA_NUMERO,
---	P1TVLP as LIGNE_VALIDEE,
 	PEHVPP as HEURE_VALIDATION,
 	PEHCRE as HEURE_CREATION,
 	PECDES as CODE_DESTINATAIRE,
---	DSLDES as LIBELLE_DESTINATAIRE,
 	OERODP as REFERENCE_OPD,
 	ODP_ENTETE.OECMOP as TYPE,
 	PESCRE as CREATION_SIECLE, PEACRE as CREATION_ANNEE, PEMCRE as CREATION_MOIS, PEJCRE as CREATION_JOUR,
 	(select COUNT(*) 				from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE and P1TVLP='1') 	as LIGNES_PREPAREES,
 	(select COUNT(*) 				from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as LIGNES_A_PREPARER,
 	(select SUM(P1QAPR - P1NQAM) 	from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as PEUT_PREPARER,
-	(select SUM(P1QAPR) 			from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as A_PREPARER
---	(select SUM(P1NQAM) 			from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as MANQUE
+	(select SUM(P1QAPR) 			from RFXPRODDTA.reflex.HLPRPLP where P1NANP=PENANN and PENPRE=P1NPRE) 					as A_PREPARER,
+	(select TOP 1 (EMC1EM+' '+EMC2EM+' '+EMC3EM+' '+EMC4EM+' '+EMC5EM)
+		from ${REFLEX_BASE}.HLGESOP GEI_SORTIS
+			left join ${REFLEX_BASE}.HLSUSOP SUPPORT_SORTIS
+				on GEI_SORTIS.GSNSUP=SUPPORT_SORTIS.SXNSUP
+			left join ${REFLEX_BASE}.HLEMPLP EMPLACEMENTS
+				on EMPLACEMENTS.EMNEMP=SUPPORT_SORTIS.SXNEMP
+
+		where PREPA_ENTETE.PENANN=GEI_SORTIS.GSNAPP and PREPA_ENTETE.PENPRE=GEI_SORTIS.GSNPRE
+	) as EMPLACEMENT_SUPPORT_SORTIS
 from
 				${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 	left join 	${REFLEX_BASE}.HLPRPLP PREPA_DETAIL
 		on PREPA_ENTETE.PENANN=PREPA_DETAIL.P1NANP and PREPA_ENTETE.PENPRE=PREPA_DETAIL.P1NPRE
 	left join ${REFLEX_BASE}.HLODPEP ODP_ENTETE
 		on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
---	left join ${REFLEX_BASE}.HLDESTP DESTINATAIRE
---		on PREPA_ENTETE.PECDES=DESTINATAIRE.DSCDES
+
 where
 		($where_type_prepa)
 		and (select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE)>0
+		and ($now_hhmmss - PEHCRE) <= 10000	-- pas de commande validé il y a plus d'une heure
 group by PENANN,PENPRE,PEHVPP,PEHCRE,PECDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
 order by PESCRE DESC, PEACRE DESC, PEMCRE DESC, PEJCRE DESC, HEURE_CREATION DESC
 EOT;
 
-#echo "Coupé temporairement pour un test de performance. Benjamin";
-#echo "<pre>$sql</pre><br/>\n";
-#exit;
+//echo "Coupé temporairement pour un test de performance. Benjamin";
+//echo "<pre>$sql</pre><br/>\n";
+//exit;
 
 	$res 	= odbc_exec($reflex,$sql) or die("Impossible de rechercher les prepa du jour : <br/>$sql");
 	while($row = odbc_fetch_array($res)) {
@@ -283,7 +298,9 @@ EOT;
 			}
 ?>
 			<tr class="<?	echo $delay['hours']>=1 ? ' more-than-one-hour':''; // plus d'une heure depuis la validation ?>">
-				<td class="num_artisan"><?=$row['LIBELLE_DESTINATAIRE']?></td>
+				<td class="num_artisan"><?=$row['LIBELLE_DESTINATAIRE']?><br/>
+					<?= $row['EMPLACEMENT_SUPPORT_SORTIS'] ? "<span class='emplacement'>Emplacement de dépose : $row[EMPLACEMENT_SUPPORT_SORTIS]</span>":''?>
+				</td>
 				<td class="type"><?=$row['TYPE']?></td>
 				<td class="type"><?=(int)($row['PEUT_PREPARER'] * 100 / $row['A_PREPARER'])?>%</td>
 				<td class="num_commande">
@@ -317,6 +334,7 @@ EOT;
 	</tbody>	
 </table>
 
+<? if ($_SERVER['REMOTE_ADDR'] == '10.211.14.63') { // meteo si c'est l'écran d'accueil du comptoir ?>
 
 <h2>Météo à 14 jours</h2>
 <?
@@ -346,6 +364,8 @@ echo $html_meteo;
 }
 </style>
 
+<? } ?>
+
 </body>
 </html>
 <?
@@ -358,10 +378,10 @@ function reflex_hour_to_hhmmss($heure) {
 	else
 		$regs = array(0,0,0,0);
 
-	$heure_mmhhss = sprintf('%02d:%02d:%02d',$regs[1],$regs[2],$regs[3]);
-	if ($heure_mmhhss == '00:00:00') $heure_mmhhss = '';
+	$heure_hhmmss = sprintf('%02d:%02d:%02d',$regs[1],$regs[2],$regs[3]);
+	if ($heure_hhmmss == '00:00:00') $heure_hhmmss = '';
 
-	return $heure_mmhhss;
+	return $heure_hhmmss;
 }
 
 
