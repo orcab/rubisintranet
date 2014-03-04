@@ -273,7 +273,6 @@ from
 where
 		($where_type_prepa)
 		and (select SUM(P1QAPR - P1NQAM) from RFXPRODDTA.reflex.HLPRPLP where PENPRE=P1NPRE)>0
-		and ($now_hhmmss - PEHCRE) <= 10000	-- pas de commande validé il y a plus d'une heure
 group by PENANN,PENPRE,PEHVPP,PEHCRE,PECDES,OERODP,ODP_ENTETE.OECMOP,PESCRE,PEACRE,PEMCRE,PEJCRE
 order by PESCRE DESC, PEACRE DESC, PEMCRE DESC, PEJCRE DESC, HEURE_CREATION DESC
 EOT;
