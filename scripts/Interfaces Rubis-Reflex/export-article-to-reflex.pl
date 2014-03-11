@@ -4,6 +4,7 @@ use strict;
 use Data::Dumper;
 use Math::Round;
 use Win32::ODBC;
+use Win32API::File qw/getLogicalDrives/;
 use File::Path;
 use File::Copy;
 use File::Basename;
@@ -612,8 +613,8 @@ if ($i > 0) {
 	}
 	$export_directory = uc($export_directory);
 
-	my $letter= substr(trim($export_directory),0,1); # on recupere la lettre a créer
-	if (!exists getDrivesType()->{$letter}) { # connecte le lecteur réseau car il n'est pas mappé quand le script PHP se lance
+	my $letter = substr(trim($export_directory),0,1); # on recupere la lettre a créer
+	if (!isDriveMapped($letter)) { # connecte le lecteur réseau car il n'est pas mappé quand le script PHP se lance
 		my $location = '\\\\reflex\\'.($test ? 'INTMC_INTMC':'INTMC_INTMC2');
 		my $user = 'Administrateur';
 		my $pass = 'C100manche';

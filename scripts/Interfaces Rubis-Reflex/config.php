@@ -26,4 +26,6 @@ define('FTP_USER','AFREFLEX');						$FTP_USER						= FTP_USER;
 define('FTP_PASS','INTREF$');						$FTP_PASS						= FTP_PASS;
 define('FTP_PATH','/AF/AFA/REFLEX/R54');			$FTP_PATH						= FTP_PATH;
 define('FTP_PATH_TEST','/AF/AFZ/REFLEX/R54');		$FTP_PATH_TEST					= FTP_PATH_TEST;
+
+define('SMS_GATEWAY','http://10.211.14.248:9090/sendsms?');
 ?>
