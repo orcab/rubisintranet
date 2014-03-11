@@ -3,7 +3,7 @@ use strict;
 #use warnings;
 
 sub get_time {
-	return strftime "[%Y-%m-%d %H:%M:%S]", localtime;
+	return strftime("[%Y-%m-%d %H:%M:%S]", localtime);
 }
 
 sub second2hms($) {
@@ -63,6 +63,12 @@ sub rtrim($) {
 	return $s;
 }
 
+sub quotify {
+	my $t = shift;
+	$t =~ s/'/''/g;
+	return $t ;
+}
+
 # envoi un sms via la passerrelle
 use LWP::Simple;
 use URI::Encode qw(uri_encode);
@@ -74,6 +80,28 @@ sub sendSMS($$$) {
   		return ($reponse =~ m/Mesage\s+SENT\s*!/i ? 1:0);
 	} else {
 			return 0;
+	}
+}
+
+
+sub isDriveMapped($) {
+	local $_;
+	my $letter = lc(shift);
+	foreach (getLogicalDrives()) {
+		if (lc(substr($_,0,1)) eq $letter) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+sub icaldate2sqldate($) {
+	my $ical = shift;
+	if ($ical =~ /^.*?:?(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?/i) { # valid ical date	20110915T084903Z ou 20110915 ou Europe/Paris:20110916T163000
+		return "$1-$2-$3 ".($4?$4:'00').':'.($5?$5:'00').':'.($6?$6:'00');	
+	} else {
+		return 0;
 	}
 }
 

@@ -11,6 +11,7 @@ use Config::IniFiles;
 use Time::Local; # convert sec, min, hour, day, mounth, year into sec since 1970
 use Data::Uniqid qw ( luniqid );
 use File::Copy; # move
+require 'Interfaces Rubis-Reflex/useful.pl';
 
 my $ini	= new Config::IniFiles( -file => 'ical2sqlite.ini' );
 my $sqlite = DBI->connect('dbi:SQLite:'.$ini->val(qw/files sqlite_output/),'','',{ RaiseError => 0, AutoCommit => 0 }) or die("Pas de DB");
@@ -18,7 +19,7 @@ my $now = time ;
 
 init_sqlite();
 
-print print_time()."Insertion des events...";
+print get_time()." Insertion des events...";
 
 my %data ;
 my %event_data ;
@@ -79,7 +80,7 @@ print " ok\n";
 
 $sqlite->commit;
 $sqlite->disconnect();
-print print_time()."END\n\n";
+print get_time()." END\n\n";
 
 ####################################################################################################################
 
@@ -109,34 +110,4 @@ EOT
 
 	$sqlite->commit; # valide les table et les trigger
 	#$sqlite->commit; $sqlite->disconnect(); exit;
-}
-
-
-####################################################################################################################
-sub print_time {
-	print strftime('[%Y-%m-%d %H:%M:%S] ', localtime);
-	return '';
-}
-
-sub trim {
-	my $t = shift;
-	$t =~ s/^\s+//g;
-	$t =~ s/\s+$//g;
-	return $t ;
-}
-
-sub quotify {
-	my $t = shift;
-	$t =~ s/'/''/g;
-	return $t ;
-}
-
-sub icaldate2sqldate($) {
-	my $ical = shift;
-	if ($ical =~ /^.*?:?(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2}))?/i) { # valid ical date			20110915T084903Z ou 20110915 ou Europe/Paris:20110916T163000
-		return "$1-$2-$3 ".($4?$4:'00').':'.($5?$5:'00').':'.($6?$6:'00');	
-	} else {
-		return 0;
-	}
-	
 }

@@ -7,8 +7,9 @@ use POSIX qw(strftime);
 require 'Phpconst2perlconst.pm';
 use Phpconst2perlconst ;
 use Config::IniFiles;
+require 'Interfaces Rubis-Reflex/useful.pl';
 
-print print_time()."START\n";
+print get_time()." START\n";
 
 my $ini = new Config::IniFiles( -file => 'insert_cde_rubis_internet.ini' );
 my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
@@ -30,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `qte_article` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 ;
 EOT
 
-print print_time()."Select des quantites ...";
+print get_time()." Select des quantites ...";
 my $sql = <<EOT;
 select
 	STOCK.NOART as CODE_ARTICLE,
@@ -62,7 +63,8 @@ while($loginor->FetchRow()) {
 	print SQL "REPLACE INTO qte_article (code_article,depot,qte,mini,qte_cde) VALUES ('$row{CODE_ARTICLE}','$row{DEPOT}','$row{QTE_DISPO}','$row{MINI}','$row{QTE_CDE_FOURN}');\n";
 }
 
-print print_time()."Select des suspendus ...";
+############################################## ARTICLE SUSPENDUS ################################################""
+print get_time()." Select des suspendus ...";
 my $sql = <<EOT;
 select
 	ARTICLE.NOART as CODE_ARTICLE
@@ -84,17 +86,43 @@ while($loginor->FetchRow()) {
 	print SQL "UPDATE article SET suspendu='1' WHERE code_article='$row{CODE_ARTICLE}' and suspendu='0';\n";
 }
 
+############################################## ARTICLE EN ACHAT INTERDIT ################################################""
+print get_time()." Select des achats interdits ...";
+my $sql = <<EOT;
+select
+	ARTICLE.NOART as CODE_ARTICLE
+from
+	${prefix_base_rubis}GESTCOM.AARTICP1 ARTICLE
+	left join ${prefix_base_rubis}GESTCOM.ASTOFIP1 FICHE_STOCK
+		on FICHE_STOCK.NOART=ARTICLE.NOART and FICHE_STOCK.DEPOT='AFA'
+	left join ${prefix_base_rubis}GESTCOM.ASTOCKP1 FICHE_QTE
+		on FICHE_QTE.NOART=ARTICLE.NOART and FICHE_QTE.DEPOT='AFA'
+where
+		FICHE_STOCK.STO11='O'		-- achat interdit
+	and FICHE_QTE.QTINV<=0 			-- pas de stock
+EOT
+
+$loginor->Sql($sql);
+print "OK\n";
+
+while($loginor->FetchRow()) {
+	my %row = $loginor->DataHash() ;
+	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
+	print SQL "UPDATE article SET suspendu='1' WHERE code_article='$row{CODE_ARTICLE}' and suspendu='0';\n";
+}
+
+
 $loginor->Close();
 close SQL;
 
 
 # on compress la base pour l'envoyé sur le serveur FTP
-print print_time()."Compression du fichier SQL ... ";
+print get_time()." Compression du fichier SQL ... ";
 system("bzip2 -zkf8 qte_article.sql");
 print "OK\n";
 
 
-print print_time()."Transfert ... ";
+print get_time()." Transfert ... ";
 my $cmd = join(' ',	'pscp',
 					'-scp',
 					'-pw',
@@ -105,7 +133,7 @@ my $cmd = join(' ',	'pscp',
 `$cmd`;
 print "OK\n";
 
-print print_time()."Decompression ... ";
+print get_time()." Decompression ... ";
 my $cmd = join(' ',	'plink',
 					'-pw',
 					$ini->val(qw/SSH pass/),
@@ -118,23 +146,4 @@ END_FTP: ;
 
 END: ;
 
-print print_time()."END\n\n";
-
-sub print_time {
-	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
-	return '';
-}
-
-sub trim {
-	my $t = shift;
-	$t =~ s/^\s+//g;
-	$t =~ s/\s+$//g;
-	$t =~ s/\n/ /g;
-	return $t ;
-}
-
-sub quotify {
-	my $t = shift;
-	$t =~ s/'/''/g;
-	return $t ;
-}
+print get_time()." END\n\n";

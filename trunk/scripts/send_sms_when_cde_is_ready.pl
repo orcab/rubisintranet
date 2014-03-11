@@ -13,7 +13,6 @@ use Phpconst2perlconst ;
 use Getopt::Long;
 
 use constant 'SEND_SMS' => 1;
-use constant 'SEND_MAIL' => 0;
 
 my ($test,$help);
 GetOptions('test!'=>\$test,'help|usage!'=>\$help) ;
@@ -34,7 +33,7 @@ my $prefix_base_reflex 	= $test ? $cfg->{'REFLEX_PREFIX_BASE_TEST'} : $cfg->{'RE
 my $reflex 				= new Win32::ODBC('DSN='.$cfg->{'REFLEX_DSN'}.';UID='.$cfg->{'REFLEX_USER'}.';PWD='.$cfg->{'REFLEX_PASS'}.';') or die "Ne peux pas se connecter à REFLEX";
 ########################################################################################
 
-printf "%s Select des prepa reflex\n",get_time(); $old_time=time;
+#printf "%s Select des prepa reflex\n",get_time(); $old_time=time;
 
 my $today_yyyymmdd = strftime('%Y%m%d', localtime);
 my %today = (	'siecle'=>substr($today_yyyymmdd,0,2),
@@ -55,6 +54,7 @@ RIGHT('0'+ CONVERT(VARCHAR,PESCRE),2) + RIGHT('0'+ CONVERT(VARCHAR,PEACRE),2) +'
 	COMMENTAIRE.COTXTC as NUM_PORTABLE,
 	ODP_ENTETE.OERODP as REFERENCE_ODP,
 	ODP_ENTETE.OERODD as REFERENCE_DESTINATAIRE,
+	PEHVPP as HEURE_VALIDATION,
 	(select TOP 1 (EMC1EM+' '+EMC2EM+' '+EMC3EM+' '+EMC4EM+' '+EMC5EM)
 		from RFXPRODDTA.reflex.HLGESOP GEI_SORTIS
 			left join RFXPRODDTA.reflex.HLSUSOP SUPPORT_SORTIS
@@ -93,17 +93,14 @@ while ($reflex->FetchRow()) {
 	my %row = $reflex->DataHash() ;
 
 	#print Dumper(\%row);
-
 	my @reference_odp = split(/[\/\-]/,$row{'REFERENCE_ODP'});
 	#print Dumper(\@reference_odp);
 	my $text = "Votre commande $reference_odp[1]\nReference : $row{REFERENCE_DESTINATAIRE} est prete.\nVous pouvez venir la retirer a Plescop.\nL'equipe MCS";
-	
 	#print $text."\n";
 
 	# here we can't send info to customers about a finish prepa
 	if (SEND_SMS && $row{'NUM_PORTABLE'} && sendSMS($row{'NUM_PORTABLE'},$text,$cfg->{'SMS_GATEWAY'})) {
-		printf "%s SMS send to %s (%s)\n",get_time(),$row{'CODE_DESTINATAIRE'},$row{'NUM_PORTABLE'}; $old_time=time;
+		my $text_log = $text;	$text_log =~ s/\n/ /g; # remove CR
+		printf "%s SMS send to %s (%s) %s\n",get_time(),$row{'CODE_DESTINATAIRE'},$row{'NUM_PORTABLE'},$text_log; $old_time=time;
 	}
 }
-
-print "END\n";
