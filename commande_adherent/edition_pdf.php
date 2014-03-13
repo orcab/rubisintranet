@@ -24,9 +24,12 @@ $ligne_R = '';
 if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniquement les lignes R
 	$ligne_R = "and TRAIT='R'" ;
 
+//${'LOGINOR_PREFIX_BASE'} = 'AFZ'; // pour les tests uniquement
+
 $sql_entete = <<<EOT
 select	BON.NOCLI,NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,MONTBT,
 		TELCL,TLCCL,TOUCL,TELCC,TLXCL,COMC1,
+		FTRAB as FRAIS_TRANSPORT,
 		CHANTIER.CHAD1						-- nom du chantier
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
@@ -266,12 +269,21 @@ $pdf->SetFillColor(240); // gris clair
 if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde sans prix
 
 } else {
+	// affichage des eventuels frais de port
+	if ($row_entete['FRAIS_TRANSPORT']) {
+		$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
+		$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"Frais de port",1,0,'L',1);
+		$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['FRAIS_TRANSPORT'])).EURO,1,0,'R',1);
+		$pdf->Ln();
+	}
+
+	// affichage du total de la commande
 	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
 	$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTBT'])).EURO,1,0,'R',1);
 }
 
-
+// generation du pdf avec un numero unique pour que les navigateur gere bien le cache
 $pdf->Output('cde_adh_'.$NOBON_escape.'('.crc32(uniqid()).').pdf','I');
 
 odbc_close($loginor);
