@@ -27,8 +27,10 @@ if (isset($_GET['options']) && in_array('ligne_R',$_GET['options'])) // uniqueme
 //${'LOGINOR_PREFIX_BASE'} = 'AFZ'; // pour les tests uniquement
 
 $sql_entete = <<<EOT
-select	BON.NOCLI,NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,MONTBT,
+select	BON.NOCLI,NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUDSB,DLSSB,DLASB,DLMSB,DLJSB,RFCSB,
 		TELCL,TLCCL,TOUCL,TELCC,TLXCL,COMC1,
+		MONTBT as MONTANT_HT,
+		MTTCBT as MONTANT_TTC,
 		FTRAB as FRAIS_TRANSPORT,
 		CHANTIER.CHAD1						-- nom du chantier
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
@@ -260,15 +262,16 @@ while($row = odbc_fetch_array($detail_commande)) {
 
 
 // fin de la cde
-if($pdf->GetY() +  2*7 > PAGE_HEIGHT - 29) // check le saut de page
-	$pdf->AddPage();
-
-$pdf->SetFont('helvetica','B',10);
-$pdf->SetFillColor(240); // gris clair
-
 if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde sans prix
 
 } else {
+
+	if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
+	$pdf->AddPage();
+
+	$pdf->SetFont('helvetica','B',10);
+	$pdf->SetFillColor(240); // gris clair
+
 	// affichage des eventuels frais de port
 	if ($row_entete['FRAIS_TRANSPORT']) {
 		$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
@@ -277,10 +280,16 @@ if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde 
 		$pdf->Ln();
 	}
 
-	// affichage du total de la commande
+	// affichage du total de la commande HT
 	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
-	$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTBT'])).EURO,1,0,'R',1);
+	$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTANT_HT'])).EURO,1,0,'R',1);
+	$pdf->Ln();
+
+	// affichage du total de la commande TTC
+	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
+	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL TTC",1,0,'L',1);
+	$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTANT_TTC'])).EURO,1,0,'R',1);
 }
 
 // generation du pdf avec un numero unique pour que les navigateur gere bien le cache
