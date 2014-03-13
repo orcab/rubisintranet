@@ -18,27 +18,33 @@ if (!(isset($_GET['NOBON']) && $_GET['NOBON'])) { ?>
 $NOBON_escape = mysql_escape_string($_GET['NOBON']);
 $NOCLI_escape = mysql_escape_string($_GET['NOCLI']);
 
+//${'LOGINOR_PREFIX_BASE'} = 'AFZ'; // pour les tests uniquement
+
 $sql_entete = <<<EOT
-select NOBON,ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,CPOSB,NOMSB,VALFS,VALFA,VALFM,VALFJ,CATCL
-from ${LOGINOR_PREFIX_BASE}GESTCOM.AENTBVP1 ENTETE, ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
+select 	NOBON,ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,CPOSB,NOMSB,VALFS,VALFA,VALFM,VALFJ,CATCL,
+		MONTBT as MONTANT_HT,
+		MTTCBT as MONTANT_TTC,
+		FTRAB as FRAIS_TRANSPORT
+from 	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBVP1 ENTETE,
+		${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 where	NOBON='$NOBON_escape'
 	and ENTETE.NOCLI='$NOCLI_escape'
 	and ENTETE.NOCLI=CLIENT.NOCLI
 EOT;
 
 $sql_detail = <<<EOT
-select NOLIG,ARCOM,CODAR,DS1DB,DS2DB,DS3DB,CONSA,FOUR1,QTESA,UNICD,PRINE,EDIT1,REFFO,DET97,TANU0 as ECOTAXE
-from ${LOGINOR_PREFIX_BASE}GESTCOM.ADETBVP1 DEVIS
-	left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
-		on DEVIS.CODAR=ARTICLE_FOURNISSEUR.NOART
-			and DEVIS.NOFOU=ARTICLE_FOURNISSEUR.NOFOU
-			and ARTICLE_FOURNISSEUR.AGENC='$LOGINOR_AGENCE'
-	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
-		on DEVIS.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
+select 	NOLIG,ARCOM,CODAR,DS1DB,DS2DB,DS3DB,CONSA,FOUR1,QTESA,UNICD,PRINE,EDIT1,REFFO,DET97,
+		TANU0 as ECOTAXE
+from 	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBVP1 DEVIS
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
+			on DEVIS.CODAR=ARTICLE_FOURNISSEUR.NOART
+				and DEVIS.NOFOU=ARTICLE_FOURNISSEUR.NOFOU
+				and ARTICLE_FOURNISSEUR.AGENC='$LOGINOR_AGENCE'
+		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
+			on DEVIS.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where	NOBON='$NOBON_escape'
 	and DEVIS.NOCLI='$NOCLI_escape'
 	and ETSBE<>'ANN'
--- 	and CODAR<>'' -- suite a MAJ rubis v6
 order by NOLIG
 EOT;
 
@@ -52,7 +58,6 @@ $entete_devis	= odbc_exec($loginor,$sql_entete) ;
 $row_entete		= odbc_fetch_array($entete_devis);
 $row_entete		= array_map('trim',$row_entete);
 $detail_devis	= odbc_exec($loginor,$sql_detail) ; 
-
 
 // génération du doc PDF
 $pdf=new PDF();
@@ -70,7 +75,6 @@ if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) // devis 
 else
 	$pdf->SetWidths(array(REF_WIDTH,FOURNISSEUR_WIDTH,DESIGNATION_DEVIS_WIDTH,QTE_WIDTH,PUHT_WIDTH,PTHT_WIDTH));
 
-$total_ht = 0;
 $sous_total_ht = 0;
 $kit = array();
 while($row = odbc_fetch_array($detail_devis)) {
@@ -189,7 +193,6 @@ while($row = odbc_fetch_array($detail_devis)) {
 			}
 		}
 
-		$total_ht		+= $row['QTESA']*$row['PRINE'] + $row['ECOTAXE']*$row['QTESA']; // on rajoute la somme au total
 		$sous_total_ht	+= $row['QTESA']*$row['PRINE'] + $row['ECOTAXE']*$row['QTESA']; // on rajoute la somme au sous total
 	}
 }
@@ -203,36 +206,35 @@ if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(230); // gris clair
 
+if ($row_entete['FRAIS_TRANSPORT']) { // frais de transport
+	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
+	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"Frais de transport",1,0,'L',1);
+	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['FRAIS_TRANSPORT'])).EURO,1,0,'R',1);
+	$pdf->Ln();
+}
+
+// total HT
 if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis sans prix
 	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH + PAGE_WIDTH/10,7,"MONTANT TOTAL HT",1,0,'L',1);
-	$pdf->Cell(DESIGNATION_DEVIS_WIDTH + QTE_WIDTH - PAGE_WIDTH/10,7,str_replace('.',',',sprintf('%0.2f',$total_ht)).EURO,1,0,'R',1);
+	$pdf->Cell(DESIGNATION_DEVIS_WIDTH + QTE_WIDTH - PAGE_WIDTH/10,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTANT_HT'])).EURO,1,0,'R',1);
 } else {
 	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL HT",1,0,'L',1);
-	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_ht)).EURO,1,0,'R',1);
+	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTANT_HT'])).EURO,1,0,'R',1);
 }
 $pdf->Ln();
 
+// Total TTC
 if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis sans prix
-	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH + PAGE_WIDTH/10,7,"MONTANT TOTAL TTC (TVA ".TTC1."%)",1,0,'L',1);
-	$pdf->Cell(DESIGNATION_DEVIS_WIDTH + QTE_WIDTH - PAGE_WIDTH/10,7,str_replace('.',',',sprintf('%0.2f',$total_ht * TTC1 / 100) + $total_ht).EURO,1,0,'R',1);
+	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH + PAGE_WIDTH/10,7,"MONTANT TOTAL TTC",1,0,'L',1);
+	$pdf->Cell(DESIGNATION_DEVIS_WIDTH + QTE_WIDTH - PAGE_WIDTH/10,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTANT_TTC'])).EURO,1,0,'R',1);
 } else {
 	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
-	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL TTC (TVA ".TTC1."%)",1,0,'L',1);
-	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_ht * TTC1 / 100) + $total_ht).EURO,1,0,'R',1);
+	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL TTC",1,0,'L',1);
+	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['MONTANT_TTC'])).EURO,1,0,'R',1);
 }
-$pdf->Ln();
 
-if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // devis sans prix
-	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH + PAGE_WIDTH/10,7,"MONTANT TOTAL TTC (TVA ".TTC2."%)",1,0,'L',1);
-	$pdf->Cell(DESIGNATION_DEVIS_WIDTH + QTE_WIDTH - PAGE_WIDTH/10,7,str_replace('.',',',sprintf('%0.2f',$total_ht * TTC2 / 100) + $total_ht).EURO,1,0,'R',1);
-} else {
-	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
-	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"MONTANT TOTAL TTC (TVA ".TTC2."%)",1,0,'L',1);
-	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$total_ht * TTC2 / 100) + $total_ht).EURO,1,0,'R',1);
-}
-$pdf->Ln();
-
+// generation du pdf avec un numero unique pour que les navigateur gere bien le cache
 $pdf->Output('devis_'.$NOBON_escape.'('.crc32(uniqid()).').pdf','I');
 
 odbc_close($loginor);
