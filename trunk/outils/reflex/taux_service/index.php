@@ -359,10 +359,10 @@ EOT;
 						<td><?=sprintf('%0.2f',$total_ligne / $total_cde)?></td>
 						<td><?=$total_ligne?></td>
 						<td><?=$total_ligne_doable?></td>
-						<td class="pourcent"><?=(int)(100*$total_ligne_doable / $total_ligne)?></td>
+						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_doable / $total_ligne)?></td>
 						<td><?=$total_ligne_done?></td>
-						<td class="pourcent"><?=(int)(100*$total_ligne_done / $total_ligne_doable)?></td>
-						<td class="pourcent"><?=(int)(100*$total_ligne_done / $total_ligne)?></td>
+						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_done / $total_ligne_doable)?></td>
+						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_done / $total_ligne)?></td>
 					</tr>
 					
 				</tfoot>
@@ -393,9 +393,9 @@ function afficheInfo() {
 		<td><?=sprintf('%0.2f',$total_ligne_day / $nb_cde)?></td>
 		<td><?=$total_ligne_day?></td>
 		<td><?=$doable_ligne_day?></td>
-		<td class="pourcent"><?=(int)(100*$doable_ligne_day / $total_ligne_day)?></td>
+		<td class="pourcent"><?=sprintf('%0.2f',100*$doable_ligne_day / $total_ligne_day)?></td>
 		<td><?=$done_ligne_day?></td>
-		<td class="pourcent"><?=(int)(100* $done_ligne_day / $doable_ligne_day)?></td>
-		<td class="pourcent"><?=(int)(100*$done_ligne_day / $total_ligne_day)?></td>
+		<td class="pourcent"><?=sprintf('%0.2f',100* $done_ligne_day / $doable_ligne_day)?></td>
+		<td class="pourcent"><?=sprintf('%0.2f',100*$done_ligne_day / $total_ligne_day)?></td>
 	</tr>
 <? } ?>
