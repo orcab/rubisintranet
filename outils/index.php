@@ -46,13 +46,17 @@ img:hover {
 </tr>
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br>EDI</a><br></td>
-	<td nowrap>
+	<td nowrap="nowrap">
+	<!--
 		<img src="feuille_tournee/gfx/feuille_tournee.png"><br>
 		<a href="feuille_tournee/feuille_tournee.php">Feuille de tournée</a><br/>
 		<a href="feuille_tournee/carte_tournee.php">Carte de tournée</a>
+	-->
 	</td>
 	<td style="width:50%;padding-bottom:20px;">
+		<!--
 		<a href="http://10.211.14.10/intranet/outils/ged/"><img src="ged/gfx/ged_icon.png"><br>GED</a>
+		-->
 	</td>
 </tr>
 <tr>
@@ -72,7 +76,7 @@ img:hover {
 	<td><!--<a href="reliquat_a_livrer/index.php"><img src="reliquat_a_livrer/gfx/reliquat_a_livrer.png"><br>Reliquats à préparer et livrer</a>-->
 		<a href="tableau_livraison/historique_commande.php"><img src="tableau_livraison/gfx/icon_tableau.png"><br>Tableau de bords des livraisons</a>
 	</td>
-	<td><a href="bon_mise_en_stock/index.php"><img src="bon_mise_en_stock/gfx/bon_mise_en_stock.png"><br>Bon de mise en stock</a></td>
+	<td><!--<a href="bon_mise_en_stock/index.php"><img src="bon_mise_en_stock/gfx/bon_mise_en_stock.png"><br>Bon de mise en stock</a>--></td>
 	<td><a href="fiche_fournisseur/index.php"><img src="fiche_fournisseur/gfx/fiche_fournisseur.png"><br>Fiches Fournisseurs</a></td>
 </tr>
 <tr>
@@ -93,7 +97,7 @@ img:hover {
 			<a href="sms/index.php"><img src="sms/gfx/sms.png"><br/>Envoi d'SMS</a></td>
 <? } ?>
 	<td><a href="reflex/index.php"><img src="reflex/gfx/reflex.png"><br/>Reflex</a></td>
-	<td></td>
+	<td><a href="requeteur_sql/index.php"><img src="requeteur_sql/gfx/requeteur_sql.png" width="90px"><br/>Requeteur SQL</a></td>
 </tr>
 
 </table>
