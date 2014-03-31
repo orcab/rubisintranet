@@ -7,7 +7,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'get_detail_box' && isset($_GET['bo
 	// va récupérer la liste articles (et des infos) présent dans le box
 	$sql = <<<EOT
 select
-	A.NOART,A.DESI1,A.ACTIV,A.FAMI1,
+	A.NOART,A.DESI1,A.ACTIV,A.FAMI1,A.SFAM1,
 	AF.NOFOU,AF.REFFO,
 	F.NOMFO,
 	S.LOCAL, S.LOCA2, S.LOCA3,
@@ -72,7 +72,8 @@ EOT;
 														'code_mcs'			=> $row['NOART'],
 														'ecotaxe'			=> $row['ECOTAXE'],
 														'activite'			=> $row['ACTIV'],
-														'famille'			=> $row['FAMI1']
+														'famille'			=> $row['FAMI1'],
+														'sousfamille'		=> $row['SFAM1']
 													);
 
 		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = 0;

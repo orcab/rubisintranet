@@ -135,7 +135,7 @@ function refresh_etiquette(sel,id) {
 						}
 
 						html += '<tr>'+
-									'<td class="type_article type_'+detail.activite+'_'+detail.famille+'" title="'+detail.famille+'"></td>' ;
+									'<td class="type_article type_'+detail.activite+' type_'+detail.activite+'_'+detail.famille+' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'" title="'+detail.famille+'"></td>' ;
 
 						// si la designation cont-ient, "miroir", on change l'icon à la volée
 						if (detail.designation.match(/miroir/i)) {
@@ -143,7 +143,7 @@ function refresh_etiquette(sel,id) {
 							detail.famille  = 'miroir';
 						}
 
-						html += 	'<td class="icon_article icon_'+detail.activite+'_'+detail.famille+'" title="'+detail.famille+'"></td>'+
+						html += 	'<td class="icon_article icon_'+detail.activite+' icon_'+detail.activite+'_'+detail.famille+' icon_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'" title="'+detail.famille+'"></td>'+
 									'<td class="fournisseur">'+
 										'<div class="fournisseur">'+detail.fournisseur+'</div>'+
 										'<div class="reference">'+detail.reference+'</div>'+
@@ -246,54 +246,30 @@ table.articles tbody.espacement { height: 1em; }
 td.type_article { width:10px; }
 td.icon_article { width:32px; height:32px; background-repeat:no-repeat; background-position: center center;}
 
-td.type_00B_B00 { background:grey; }
-td.type_00B_B01 { background:purple; }
-td.type_00B_B02 { background:red; }
-td.type_00B_B03 { background:orange; }
-td.type_00B_B04 { background:green; }
-td.type_00B_B05 { background:salmon; }
-td.type_00B_B06 { background:deeppink; }
-td.type_00B_B07 { background:darkkhaki; }
-td.type_00B_B08 { background:blue; }
-td.type_00B_B09 { background:mediumpurple; }
-td.type_00B_B10 { background:olive; }
-td.type_00B_B11 { background:teal; }
-td.type_00B_B12 { background:green; }
-td.type_00B_B13 { background:steelblue; }
-td.type_00B_B14 { background:peru; }
-td.type_00B_B15 { background:darkslategray; }
-td.type_00B_B16 { background:yellow; }
-td.type_00B_B17 { background:IndianRed; }
-td.type_00B_B18 { background:OrangeRed; }
-td.type_00B_B19 { background:GreenYellow; }
-td.type_00B_B20 { background:MediumSpringGreen; }
-
-td.type_00D_D08 { background:lightgreen; }
-
-td.icon_00B_B00 { /* receveur de douche */ }
-td.icon_00B_B01 { background-image:url('gfx/icon/douche_32px.png'); }
-td.icon_00B_B02 { background-image:url('gfx/icon/douche_32px.png'); }
-td.icon_00B_B03 { background-image:url('gfx/icon/douche_paroi_32px.png'); }
-td.icon_00B_B04 { background-image:url('gfx/icon/baignoire_32px.png'); }
-td.icon_00B_B05 { background-image:url('gfx/icon/robinet_32px.png'); }
-td.icon_00B_B06 { background-image:url('gfx/icon/spa_32px.png'); }
-td.icon_00B_B07 { background-image:url('gfx/icon/spa_32px.png'); }
-td.icon_00B_B08 { background-image:url('gfx/icon/wc_32px.png'); }
-td.icon_00B_B09 { /* urinoir */ }
-td.icon_00B_B10 { background-image:url('gfx/icon/vasque_32px.png'); }
-td.icon_00B_B11 { background-image:url('gfx/icon/vasque_32px.png'); }
-td.icon_00B_B12 { background-image:url('gfx/icon/vasque_32px.png'); }
-td.icon_00B_B13 { /* bidet et fixation */ }
-td.icon_00B_B14 { background-image:url('gfx/icon/robinet_32px.png'); }
-td.icon_00B_B15 { background-image:url('gfx/icon/meuble_32px.png'); }
-td.icon_00B_B16 { /* accessoire */ }
-td.icon_00B_B17 { background-image:url('gfx/icon/evier_32px.png'); }
-td.icon_00B_B18 { background-image:url('gfx/icon/robinet_32px.png'); }
-td.icon_00B_B19 { /* saintaire collectivité */ }
-td.icon_00B_B20 { background-image:url('gfx/icon/robinet_32px.png'); }
+td.icon_00B_B00 { background-image:url('gfx/icon/receveur_32px.png'); } td.type_00B_B00 { background:grey; }
+td.icon_00B_B01 { background-image:url('gfx/icon/douche_32px.png'); } td.type_00B_B01 { background:purple; }
+td.icon_00B_B02 { background-image:url('gfx/icon/douche_32px.png'); } td.type_00B_B02 { background:lightgreen; }
+td.icon_00B_B03 { background-image:url('gfx/icon/douche_paroi_32px.png'); } td.type_00B_B03 { background:orange; }
+td.icon_00B_B04 { background-image:url('gfx/icon/baignoire_32px.png'); } td.type_00B_B04 { background:pink; }
+td.icon_00B_B05 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B05 { background:blue; }
+td.icon_00B_B06 { background-image:url('gfx/icon/spa_32px.png'); } td.type_00B_B06 { background:deeppink; }
+td.icon_00B_B07 { background-image:url('gfx/icon/spa_32px.png'); } td.type_00B_B07 { background:darkkhaki; }
+td.icon_00B_B08 { background-image:url('gfx/icon/wc_32px.png'); } td.type_00B_B08 { background:salmon; }
+td.icon_00B_B09 { /* urinoir */ } td.type_00B_B09 { background:mediumpurple; }
+td.icon_00B_B10 { background-image:url('gfx/icon/vasque_32px.png'); } td.type_00B_B10 { background:lightblue; }
+td.icon_00B_B11 { background-image:url('gfx/icon/vasque_32px.png'); } td.type_00B_B11 { background:lightblue; }
+td.icon_00B_B12 { background-image:url('gfx/icon/vasque_32px.png'); } td.type_00B_B12 { background:lightblue; }
+td.icon_00B_B13 { background-image:url('gfx/icon/bidet_32px.png'); } td.type_00B_B13 { background:steelblue; }
+td.icon_00B_B14 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B14 { background:blue; }
+td.icon_00B_B15 { background-image:url('gfx/icon/meuble_32px.png'); } td.type_00B_B15 { background:darkblue; }
+td.icon_00B_B16 { /* accessoire */ } td.type_00B_B16 { background:black; }
+td.icon_00B_B17 { background-image:url('gfx/icon/evier_32px.png'); } td.type_00B_B17 { background:IndianRed; }
+td.icon_00B_B18 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B18 { background:blue; }
+td.icon_00B_B19 { /* saintaire collectivité */ } td.type_00B_B19 { background:GreenYellow; }
+td.icon_00B_B20 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B20 { background:blue; }
 td.icon_meuble_miroir { background-image:url('gfx/icon/miroir_32px.png'); }
-
-td.icon_00D_D08 { background-image:url('gfx/icon/radiateur_32px.png'); }
+td.icon_00D_D08 { background-image:url('gfx/icon/radiateur_32px.png'); } td.type_00D_D08 { background:red; }
+td.icon_00D_D09 { background-image:url('gfx/icon/light_32px.png'); } td.type_00D_D09_900 { background:yellow; } td.type_00D_D09_902 { background:green; }
 
 td.fournisseur { padding-left:5px; }
 div.fournisseur { font-weight: bold; }
