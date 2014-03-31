@@ -1,12 +1,13 @@
 <?
 include('../inc/config.php');
 
-if ($_GET['what'] == 'get_detail_box' && isset($_GET['val']) && $_GET['val']) { ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR DANS SQLITE
+////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR DANS SQLITE
+if (isset($_GET['what']) && $_GET['what'] == 'get_detail_box' && isset($_GET['box']) && $_GET['box']) {
 	
 	// va récupérer la liste articles (et des infos) présent dans le box
 	$sql = <<<EOT
 select
-	A.NOART,A.DESI1,A.ACTIV,
+	A.NOART,A.DESI1,A.ACTIV,A.FAMI1,
 	AF.NOFOU,AF.REFFO,
 	F.NOMFO,
 	S.LOCAL, S.LOCA2, S.LOCA3,
@@ -27,15 +28,15 @@ from			${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 				on A.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where
-			(LOCAL like '%$_GET[val]%' or LOCA2 like '%$_GET[val]%' or LOCA3 like '%$_GET[val]%')	-- la localisation correspond au critere de recherche
+			(LOCAL like '%$_GET[box]%' or LOCA2 like '%$_GET[box]%' or LOCA3 like '%$_GET[box]%')	-- la localisation correspond au critere de recherche
 		and PV.AGENC ='AFA' and PV.PVT09='E'	-- prix en cours
 --		and QTE.QTINV>0							-- au moins 1 dans le stock
 EOT;
 
 	//echo "\n$sql"; exit;
 
-	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
-	$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
+	$loginor  	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+	$res 		= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
 
 	// va récupérer la liste des prix des articles du box
 	$articles = array();
@@ -48,7 +49,7 @@ EOT;
 		foreach (split('/',join('/',array($row['LOCAL'],$row['LOCA2'],$row['LOCA3']))) as $local) { // pour chaque localisation
 			$qte = 0;
 			if ($local) {
-				if (preg_match("/$_GET[val]([a-z]*)(-(\\d+))?/i",$local,$matches)) {
+				if (preg_match("/$_GET[box]([a-z]*)(-(\\d+))?/i",$local,$matches)) {
 					$qte += isset($matches[3]) ? $matches[3] : 1; // on test la quantité "X25a-3"
 					$sousbox = $matches[1] ? $matches[1] : 'commun';
 
@@ -69,28 +70,11 @@ EOT;
 														'fournisseur'		=> $row['NOMFO'],
 														'reference'			=> $row['REFFO'],
 														'code_mcs'			=> $row['NOART'],
-														'ecotaxe'			=> $row['ECOTAXE']
+														'ecotaxe'			=> $row['ECOTAXE'],
+														'activite'			=> $row['ACTIV'],
+														'famille'			=> $row['FAMI1']
 													);
 
-		/*$mode	= '';
-		if	($row['PX_PUBLIC'] > 0) {
-
-			if ($row['PX_PUBLIC'] <= $row['PX_AVEC_COEF']) { // si un prix public est renseigné, on prend le moins cher des deux
-				$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = round($row['PX_PUBLIC'],2) ;
-				$mode = 'pp';
-			} else {
-				$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = round($row['PX_AVEC_COEF'],2) ;
-				$mode = 'adh';
-			}
-
-		} else {
-			$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = round($row['PX_AVEC_COEF'],2);	// sinon on prend le prix calculé avec la formule
-			$mode = 'adh';
-		}
-		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = $mode;*/
-
-
-		
 		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = 0;
 		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = '';
 
@@ -115,7 +99,6 @@ EOT;
 //	print_r($localisations);
 //	exit;
 
-
 	header('Content-type: text/json');
 	header('Content-type: application/json');
 
@@ -127,8 +110,48 @@ EOT;
 
 
 
+////// ENREGISTRE LES TITRES DES BOX ET SOUS BOX
+elseif (isset($_POST['what']) && $_POST['what'] == 'save_box_titles' && isset($_POST['box']) && $_POST['box']) {
+	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+	// efface les précédents titres
+	mysql_query("DELETE FROM libelle_box_expo WHERE box='".strtolower(mysql_escape_string($_POST['box']))."'") ;
+
+	// enregistre les nouveaux titres
+	$sql = "INSERT INTO libelle_box_expo (libelle,box,ordre,creation_ip,creation_date) VALUES ";
+	$values = array();
+	for($i=0 ; $i<sizeof($_POST['titles']) ; $i++)
+		$values[] = "('".utf8_decode(mysql_escape_string($_POST['titles'][$i]))."','".strtolower(mysql_escape_string($_POST['box']))."','".($i+1)."','$_SERVER[REMOTE_ADDR]',NOW())";
+	$sql .= join(',',$values); // (values), (values), (values)...
+	if (!mysql_query($sql)) // insertion des données
+		echo "Erreur dans l'insertion des titres : ".mysql_error(); // en cas d'erreur on remonte l'info
+}
+
+
+
+////// RECUPERE LES TITRES DES BOX ET SOUS BOX
+elseif (isset($_GET['what']) && $_GET['what'] == 'get_box_titles' && isset($_GET['box']) && $_GET['box']) {
+	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+	
+	// select les titres du box
+	$sql = "SELECT libelle FROM libelle_box_expo WHERE box='".strtolower(mysql_escape_string($_GET['box']))."' ORDER BY ordre ASC";
+	$res = mysql_query($sql);
+	if (!$res) // select des données
+		echo "Erreur dans la selection des titres : ".mysql_error(); // en cas d'erreur on remonte l'info
+
+	$titles = array();
+	while($row = mysql_fetch_array($res))
+		$titles[] = utf8_encode($row['libelle']);
+	echo json_encode($titles);
+}
+
+
+
 // CAS PAR DEFAUT
 else {
 	echo "Aucune procedure selectionnée";
+	//var_dump($_GET);
+	//var_dump($_POST);
 }
 ?>
