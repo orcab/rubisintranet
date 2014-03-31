@@ -58,7 +58,7 @@ $(document).ready(function() {
 
 			// faire une sauvegarde des titres dans la base sql
 			var titles = []; // listes des titres
-			$('.title').each(function(){ titles.push($(this).html()); });
+			$(this).parents('table.articles').find('.title').each(function(){ titles.push($(this).html()); });
 
 			$.ajax({
 				type: 'POST',
@@ -178,7 +178,7 @@ function refresh_etiquette(sel,id) {
 				// affiche la liste des titres précédement enregistrés
 				$.getJSON('ajax_etiquette_expo.php', { 'what':'get_box_titles', 'box': box } , function(json){
 					//console.log(json);
-					var titles_elm = $('.title');	// recupere les different titre de la page
+					var titles_elm = $('#etiquette'+id).find('.title');	// recupere les different titre de la page
 					for(var i=0 ; i<json.length ; i++) {
 						//console.log(titles_elm[i]);
 						//console.log(json[i]);
