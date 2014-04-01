@@ -246,30 +246,33 @@ table.articles tbody.espacement { height: 1em; }
 td.type_article { width:10px; }
 td.icon_article { width:32px; height:32px; background-repeat:no-repeat; background-position: center center;}
 
-td.icon_00B_B00 { background-image:url('gfx/icon/receveur_32px.png'); } td.type_00B_B00 { background:grey; }
-td.icon_00B_B01 { background-image:url('gfx/icon/douche_32px.png'); } td.type_00B_B01 { background:purple; }
-td.icon_00B_B02 { background-image:url('gfx/icon/douche_32px.png'); } td.type_00B_B02 { background:purple; }
+td.icon_00A_A05 { background-image:url('gfx/icon/poele_32px.png'); } 		td.type_00A_A05 { background:Chocolate; }
+td.icon_00A_A07 { background-image:url('gfx/icon/radiateur_32px.png'); } 	td.type_00A_A07 { background:red; }
+td.icon_00B_B00 { background-image:url('gfx/icon/receveur_32px.png'); } 	td.type_00B_B00 { background:grey; }
+td.icon_00B_B01 { background-image:url('gfx/icon/douche_32px.png'); } 		td.type_00B_B01 { background:purple; }
+td.icon_00B_B02 { background-image:url('gfx/icon/douche_32px.png'); } 		td.type_00B_B02 { background:purple; }
 td.icon_00B_B03 { background-image:url('gfx/icon/douche_paroi_32px.png'); } td.type_00B_B03 { background:orange; }
-td.icon_00B_B04 { background-image:url('gfx/icon/baignoire_32px.png'); } td.type_00B_B04 { background:pink; }
-td.icon_00B_B05 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B05 { background:Turquoise; }
-td.icon_00B_B06 { background-image:url('gfx/icon/spa_32px.png'); } td.type_00B_B06 { background:darkkhaki; }
-td.icon_00B_B07 { background-image:url('gfx/icon/spa_32px.png'); } td.type_00B_B07 { background:darkkhaki; }
-td.icon_00B_B08 { background-image:url('gfx/icon/wc_32px.png'); } td.type_00B_B08 { background:BlueViolet; }
-td.icon_00B_B09 { /* urinoir */ } td.type_00B_B09 { background:mediumpurple; }
-td.icon_00B_B10 { background-image:url('gfx/icon/vasque_32px.png'); } td.type_00B_B10 { background:lightblue; }
-td.icon_00B_B11 { background-image:url('gfx/icon/vasque_32px.png'); } td.type_00B_B11 { background:lightblue; }
-td.icon_00B_B12 { background-image:url('gfx/icon/vasque_32px.png'); } td.type_00B_B12 { background:lightblue; }
-td.icon_00B_B13 { background-image:url('gfx/icon/bidet_32px.png'); } td.type_00B_B13 { background:steelblue; }
-td.icon_00B_B14 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B14 { background:Turquoise; }
-td.icon_00B_B15 { background-image:url('gfx/icon/meuble_32px.png'); } td.type_00B_B15 { background:DeepPink; }
-td.icon_00B_B16 { background-image:url('gfx/icon/accessoires_32px.png'); } td.type_00B_B16 { background:Chartreuse; }
-td.icon_00B_B17 { background-image:url('gfx/icon/evier_32px.png'); } td.type_00B_B17 { background:IndianRed; }
-td.icon_00B_B18 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B18 { background:Turquoise; }
-td.icon_00B_B19 { /* saintaire collectivité */ } td.type_00B_B19 { background:GreenYellow; }
-td.icon_00B_B20 { background-image:url('gfx/icon/robinet_32px.png'); } td.type_00B_B20 { background:Turquoise; }
+td.icon_00B_B04 { background-image:url('gfx/icon/baignoire_32px.png'); } 	td.type_00B_B04 { background:pink; }
+td.icon_00B_B05 { background-image:url('gfx/icon/robinet_32px.png'); } 		td.type_00B_B05 { background:Turquoise; }
+td.icon_00B_B06 { background-image:url('gfx/icon/spa_32px.png'); } 			td.type_00B_B06 { background:darkkhaki; }
+td.icon_00B_B07 { background-image:url('gfx/icon/spa_32px.png'); } 			td.type_00B_B07 { background:darkkhaki; }
+td.icon_00B_B08 { background-image:url('gfx/icon/wc_32px.png'); } 			td.type_00B_B08 { background:BlueViolet; }
+td.icon_00B_B09 { /* urinoir */ } 											td.type_00B_B09 { background:mediumpurple; }
+td.icon_00B_B10 { background-image:url('gfx/icon/vasque_32px.png'); } 		td.type_00B_B10 { background:lightblue; }
+td.icon_00B_B11 { background-image:url('gfx/icon/vasque_32px.png'); } 		td.type_00B_B11 { background:lightblue; }
+td.icon_00B_B12 { background-image:url('gfx/icon/vasque_32px.png'); } 		td.type_00B_B12 { background:lightblue; }
+td.icon_00B_B13 { background-image:url('gfx/icon/bidet_32px.png'); } 		td.type_00B_B13 { background:steelblue; }
+td.icon_00B_B14 { background-image:url('gfx/icon/robinet_32px.png'); } 		td.type_00B_B14 { background:Turquoise; }
+td.icon_00B_B15 { background-image:url('gfx/icon/meuble_32px.png'); } 		td.type_00B_B15 { background:DeepPink; }
+td.icon_00B_B16 { background-image:url('gfx/icon/accessoires_32px.png'); } 	td.type_00B_B16 { background:Chartreuse; }
+td.icon_00B_B17 { background-image:url('gfx/icon/evier_32px.png'); } 		td.type_00B_B17 { background:IndianRed; }
+td.icon_00B_B18 { background-image:url('gfx/icon/robinet_32px.png'); } 		td.type_00B_B18 { background:Turquoise; }
+td.icon_00B_B19 { /* saintaire collectivité */ } 							td.type_00B_B19 { background:GreenYellow; }
+td.icon_00B_B20 { background-image:url('gfx/icon/robinet_32px.png'); } 		td.type_00B_B20 { background:Turquoise; }
 td.icon_meuble_miroir { background-image:url('gfx/icon/miroir_32px.png'); }
-td.icon_00D_D08 { background-image:url('gfx/icon/radiateur_32px.png'); } td.type_00D_D08 { background:red; }
-td.icon_00D_D09 { background-image:url('gfx/icon/light_32px.png'); } td.type_00D_D09_900 { background:yellow; } td.type_00D_D09_902 { background:green; }
+td.icon_00D_D08 { background-image:url('gfx/icon/radiateur_32px.png'); } 	td.type_00D_D08 { background:red; }
+td.icon_00D_D09 { background-image:url('gfx/icon/light_32px.png'); } 		td.type_00D_D09_900 { background:yellow; } td.type_00D_D09_902 { background:green; }
+
 
 td.fournisseur { padding-left:5px; }
 div.fournisseur { font-weight: bold; }
