@@ -7,7 +7,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'get_detail_box' && isset($_GET['bo
 	// va récupérer la liste articles (et des infos) présent dans le box
 	$sql = <<<EOT
 select
-	A.NOART,A.DESI1,A.ACTIV,A.FAMI1,A.SFAM1,
+	A.NOART,A.DESI1,A.ACTIV,A.FAMI1,A.SFAM1,ART04,ART05,
 	AF.NOFOU,AF.REFFO,
 	F.NOMFO,
 	S.LOCAL, S.LOCA2, S.LOCA3,
@@ -57,9 +57,7 @@ EOT;
 					if (!isset($localisations[$sousbox]))
 						$localisations[$sousbox] = array();
 
-					array_push($localisations[$sousbox],	array(	'article'=>"$row[NOFOU];$row[REFFO]",
-																	'qte'=>$qte)
-								);
+					array_push($localisations[$sousbox], array(	'article'=>"$row[NOFOU];$row[REFFO]",'qte'=>$qte) );
 				}
 			}
 		}
@@ -73,7 +71,9 @@ EOT;
 														'ecotaxe'			=> $row['ECOTAXE'],
 														'activite'			=> $row['ACTIV'],
 														'famille'			=> $row['FAMI1'],
-														'sousfamille'		=> $row['SFAM1']
+														'sousfamille'		=> $row['SFAM1'],
+														'chapitre'			=> $row['ART04'],
+														'souschapitre'		=> $row['ART05']
 													);
 
 		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = 0;
