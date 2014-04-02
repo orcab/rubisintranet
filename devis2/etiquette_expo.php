@@ -134,8 +134,13 @@ function refresh_etiquette(sel,id) {
 							detail.px_public = 0; // on met le prix à 0 car il sera faux de toute façon
 						}
 
-						html += '<tr>'+
-									'<td class="type_article type_'+detail.activite+' type_'+detail.activite+'_'+detail.famille+' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'" title="'+detail.famille+'"></td>' ;
+						html += '<tr>'+	'<td class="type_article'+
+										' type_'+detail.activite+
+										' type_'+detail.activite+'_'+detail.famille+
+										' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+
+										' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+
+										' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+
+										'" title="'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+'"></td>' ;
 
 						// si la designation cont-ient, "miroir", on change l'icon à la volée
 						if (detail.designation.match(/miroir/i)) {
@@ -143,7 +148,13 @@ function refresh_etiquette(sel,id) {
 							detail.famille  = 'miroir';
 						}
 
-						html += 	'<td class="icon_article icon_'+detail.activite+' icon_'+detail.activite+'_'+detail.famille+' icon_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'" title="'+detail.famille+'"></td>'+
+						html += 	'<td class="icon_article'+
+									' icon_'+detail.activite+
+									' icon_'+detail.activite+'_'+detail.famille+
+									' icon_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+
+									' icon_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+
+									' icon_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.soouschapitre+
+									'" title="'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+'"></td>'+
 									'<td class="fournisseur">'+
 										'<div class="fournisseur">'+detail.fournisseur+'</div>'+
 										'<div class="reference">'+detail.reference+'</div>'+
@@ -272,6 +283,9 @@ td.icon_00B_B20 { background-image:url('gfx/icon/robinet_32px.png'); } 		td.type
 td.icon_meuble_miroir { background-image:url('gfx/icon/miroir_32px.png'); }
 td.icon_00D_D08 { background-image:url('gfx/icon/radiateur_32px.png'); } 	td.type_00D_D08 { background:red; }
 td.icon_00D_D09 { background-image:url('gfx/icon/light_32px.png'); } 		td.type_00D_D09_900 { background:yellow; } td.type_00D_D09_902 { background:green; }
+td.icon_00D_D09_900_001 { background-image:url('gfx/icon/plafonier_32px.png'); }
+td.icon_00D_D09_900_002 { background-image:url('gfx/icon/suspension_32px.png'); }
+td.icon_00D_D09_900_003 { background-image:url('gfx/icon/applique_32px.png'); }
 
 
 td.fournisseur { padding-left:5px; }
