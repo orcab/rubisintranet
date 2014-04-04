@@ -4,6 +4,8 @@ include('../inc/config.php');
 ////// RECHERCHE DES INFO VIA LA REF FOURNISSEUR DANS SQLITE
 if (isset($_GET['what']) && $_GET['what'] == 'get_detail_box' && isset($_GET['box']) && $_GET['box']) {
 	
+	$box_escape = mysql_escape_string($_GET['box']);
+
 	// va récupérer la liste articles (et des infos) présent dans le box
 	$sql = <<<EOT
 select
@@ -28,7 +30,7 @@ from			${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 A
 	left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 				on A.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 where
-			(LOCAL like '%$_GET[box]%' or LOCA2 like '%$_GET[box]%' or LOCA3 like '%$_GET[box]%')	-- la localisation correspond au critere de recherche
+			(LOCAL like '%$box_escape%' or LOCA2 like '%$box_escape%' or LOCA3 like '%$box_escape%')	-- la localisation correspond au critere de recherche
 		and PV.AGENC ='AFA' and PV.PVT09='E'	-- prix en cours
 --		and QTE.QTINV>0							-- au moins 1 dans le stock
 EOT;
@@ -44,6 +46,8 @@ EOT;
 	while($row = odbc_fetch_array($res)) {
 		$row = array_map('trim',$row);
 		//$row['DESI1'] = base64_encode($row['DESI1']);
+		//$cle_article = "$row[NOFOU];$row[REFFO]";
+		$cle_article = $row['NOART'];
 
 		$sousbox = 'commun';
 		foreach (split('/',join('/',array($row['LOCAL'],$row['LOCA2'],$row['LOCA3']))) as $local) { // pour chaque localisation
@@ -57,42 +61,42 @@ EOT;
 					if (!isset($localisations[$sousbox]))
 						$localisations[$sousbox] = array();
 
-					array_push($localisations[$sousbox], array(	'article'=>"$row[NOFOU];$row[REFFO]",'qte'=>$qte) );
+					array_push($localisations[$sousbox], array(	'article'=>$cle_article,'qte'=>$qte) );
 				}
 			}
 		}
 
 		// on renseigne les infos articles
-		$articles["$row[NOFOU];$row[REFFO]"] = array(	'designation'		=> utf8_encode($row['DESI1']),
-														'code_fournisseur'	=> $row['NOFOU'],
-														'fournisseur'		=> $row['NOMFO'],
-														'reference'			=> $row['REFFO'],
-														'code_mcs'			=> $row['NOART'],
-														'ecotaxe'			=> $row['ECOTAXE'],
-														'activite'			=> $row['ACTIV'],
-														'famille'			=> $row['FAMI1'],
-														'sousfamille'		=> $row['SFAM1'],
-														'chapitre'			=> $row['ART04'],
-														'souschapitre'		=> $row['ART05']
-													);
+		$articles[$cle_article] = array(	'designation'		=> utf8_encode($row['DESI1']),
+											'code_fournisseur'	=> $row['NOFOU'],
+											'fournisseur'		=> $row['NOMFO'],
+											'reference'			=> $row['REFFO'],
+											'code_mcs'			=> $row['NOART'],
+											'ecotaxe'			=> $row['ECOTAXE'],
+											'activite'			=> $row['ACTIV'],
+											'famille'			=> $row['FAMI1'],
+											'sousfamille'		=> $row['SFAM1'],
+											'chapitre'			=> $row['ART04'],
+											'souschapitre'		=> $row['ART05']
+										);
 
-		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = 0;
-		$articles["$row[NOFOU];$row[REFFO]"]['mode'] = '';
+		$articles[$cle_article]['px_public'] 	= 0;
+		$articles[$cle_article]['mode'] 		= '';
 
 		if		($row['PX_PUBLIC'] <= 0) {					// prix public vide, on prend le prix adh * coef
-			$articles["$row[NOFOU];$row[REFFO]"]['px_public']	= $row['PX_AVEC_COEF'];
-			$articles["$row[NOFOU];$row[REFFO]"]['mode']		= 'adh';
+			$articles[$cle_article]['px_public']	= $row['PX_AVEC_COEF'];
+			$articles[$cle_article]['mode']			= 'adh';
 
 		} elseif	($row['PX_AVEC_COEF'] < $row['PX_PUBLIC'] && $row['ACTIV'] != '00D')	{	// prix adh inférieur au prix public, on prend le prix adh * coef. ne marche pas pour les articles elec
-			$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = $row['PX_AVEC_COEF'];
-			$articles["$row[NOFOU];$row[REFFO]"]['mode']		= 'adh';
+			$articles[$cle_article]['px_public'] 	= $row['PX_AVEC_COEF'];
+			$articles[$cle_article]['mode']			= 'adh';
 
 		} else {										// prix public inférieur au prix adh, on prend le prix public
-			$articles["$row[NOFOU];$row[REFFO]"]['px_public'] = $row['PX_PUBLIC'];
-			$articles["$row[NOFOU];$row[REFFO]"]['mode']		= 'pp';
+			$articles[$cle_article]['px_public'] 	= $row['PX_PUBLIC'];
+			$articles[$cle_article]['mode']			= 'pp';
 		}
 
-		$articles["$row[NOFOU];$row[REFFO]"]['px_public'] += $row['ECOTAXE'] ; // on rajoute l'écotaxe
+		$articles[$cle_article]['px_public'] += $row['ECOTAXE'] ; // on rajoute l'écotaxe
 
 	} // while chaque article
 
