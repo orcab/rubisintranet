@@ -32,6 +32,7 @@ select	BON.NOCLI,NOBON,DSECS,DSECA,DSECM,DSECJ,LIVSB,NOMSB,AD1SB,AD2SB,CPOSB,BUD
 		MONTBT as MONTANT_HT,
 		MTTCBT as MONTANT_TTC,
 		FTRAB as FRAIS_TRANSPORT,
+		ENT02 as FRAIS_TRANSPORT_GRATUIT,
 		CHANTIER.CHAD1						-- nom du chantier
 from	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
@@ -273,7 +274,7 @@ if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde 
 	$pdf->SetFillColor(240); // gris clair
 
 	// affichage des eventuels frais de port
-	if ($row_entete['FRAIS_TRANSPORT']) {
+	if ($row_entete['FRAIS_TRANSPORT'] && $row_entete['FRAIS_TRANSPORT_GRATUIT'] != 'O') {
 		$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 		$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"Frais de port",1,0,'L',1);
 		$pdf->Cell(UNITE_WIDTH + QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH + TYPE_CDE_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['FRAIS_TRANSPORT'])).EURO,1,0,'R',1);
