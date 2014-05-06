@@ -24,7 +24,8 @@ $sql_entete = <<<EOT
 select 	NOBON,ENTETE.NOCLI,DSECM,DSECJ,DSECS,DSECA,LIVSB,RFCSB,BUDSB,AD1SB,AD2SB,CPOSB,NOMSB,VALFS,VALFA,VALFM,VALFJ,CATCL,
 		MONTBT as MONTANT_HT,
 		MTTCBT as MONTANT_TTC,
-		FTRAB as FRAIS_TRANSPORT
+		FTRAB as FRAIS_TRANSPORT,
+		ENT02 as FRAIS_TRANSPORT_GRATUIT
 from 	${LOGINOR_PREFIX_BASE}GESTCOM.AENTBVP1 ENTETE,
 		${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 where	NOBON='$NOBON_escape'
@@ -206,7 +207,7 @@ if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
 $pdf->SetFont('helvetica','B',10);
 $pdf->SetFillColor(230); // gris clair
 
-if ($row_entete['FRAIS_TRANSPORT']) { // frais de transport
+if ($row_entete['FRAIS_TRANSPORT'] && $row_entete['FRAIS_TRANSPORT_GRATUIT'] != 'O') { // frais de port
 	$pdf->Cell(REF_WIDTH + FOURNISSEUR_WIDTH,7,'',1,0,'',1);
 	$pdf->Cell(DESIGNATION_DEVIS_WIDTH,7,"Frais de transport",1,0,'L',1);
 	$pdf->Cell(QTE_WIDTH + PUHT_WIDTH + PTHT_WIDTH,7,str_replace('.',',',sprintf('%0.2f',$row_entete['FRAIS_TRANSPORT'])).EURO,1,0,'R',1);

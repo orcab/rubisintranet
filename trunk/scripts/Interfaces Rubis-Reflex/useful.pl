@@ -32,6 +32,13 @@ sub dot2comma($) {
 	return $float;
 }
 
+sub remove_useless_zero($) {
+	my ($number) = shift;
+	$number =~ s/\.0+$//;
+	return $number;
+}
+
+
 sub binary($) {
 	my $value = shift;
 	if ($value) {

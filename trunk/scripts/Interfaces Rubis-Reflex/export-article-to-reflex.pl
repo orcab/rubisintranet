@@ -161,6 +161,7 @@ my $old_time = 0;
 my $cfg 				= new Phpconst2perlconst(-file => 'config.php');
 my $prefix_base_rubis 	= $cfg->{'LOGINOR_PREFIX_BASE_'.($test ? 'TEST':'PROD')};
 my $loginor 			= new Win32::ODBC('DSN='.$cfg->{'LOGINOR_DSN'}.';UID='.$cfg->{'LOGINOR_USER'}.';PWD='.$cfg->{'LOGINOR_PASS'}.';') or die "Ne peux pas se connecter à rubis";
+my $loginor2 			= new Win32::ODBC('DSN='.$cfg->{'LOGINOR_DSN'}.';UID='.$cfg->{'LOGINOR_USER'}.';PWD='.$cfg->{'LOGINOR_PASS'}.';') or die "Ne peux pas se connecter à rubis";
 my $prefix_base_reflex 	= $test ? $cfg->{'REFLEX_PREFIX_BASE_TEST'} : $cfg->{'REFLEX_PREFIX_BASE'};
 my $reflex 				= new Win32::ODBC('DSN='.$cfg->{'REFLEX_DSN'}.';UID='.$cfg->{'REFLEX_USER'}.';PWD='.$cfg->{'REFLEX_PASS'}.';') or die "Ne peux pas se connecter à REFLEX";
 
@@ -192,8 +193,8 @@ select *
 	from		${prefix_base_rubis}GESTCOM.AARTICP1 A
 	left join	${prefix_base_rubis}GESTCOM.AARFOUP1 AF
 		on A.NOART=AF.NOART and AF.NOFOU=A.FOUR1
---	left join	${prefix_base_rubis}GESTCOM.ATARPAP1 PR
---				on A.NOART=PR.NOART
+	left join	${prefix_base_rubis}GESTCOM.ATARPAP1 PR
+				on A.NOART=PR.NOART and PR.PRV03='E'
 	left join	${prefix_base_rubis}GESTCOM.ASTOFIP1 S
 				on A.NOART=S.NOART and S.DEPOT='AFA'
 where	1=1 and 
@@ -240,6 +241,24 @@ while($loginor->FetchRow()) {
 	# pour éviter le traitement des doublons
 	next if exists $articles_deja_vu{$row{'NOART'}};  # on a deja traité l'article, on passe au suivant
 	$articles_deja_vu{$row{'NOART'}} = 1 ;
+
+	# recupere les commentaires article avec les dimmensions.
+	 my %dimensions = ('L20'=>0, 'L30'=>0, 'H20'=>0, 'H30'=>0, 'P20'=>0, 'P30'=>0, 'PB20'=>0, 'PB30'=>0);
+	 my $sql2 = "select CDLIB from ${prefix_base_rubis}GESTCOM.ADETCOP1 where CDFIC='AARTICP1' and CDCOD='$row{NOART}'";
+	 $loginor2->Sql($sql2);
+	 while($loginor2->FetchRow()) {
+	 	my %row2 = $loginor2->DataHash() ;
+	 	# regarde si des valeurs correspondent au dimension
+	 	my @values = split( /\s*,\s*/ , $row2{'CDLIB'} );
+	 	foreach (@values) {
+	 		my @key_val = split(/\s*=\s*/);
+	 		$dimensions{$key_val[0]} = $key_val[1];
+	 	}
+	 }
+
+	#print Dumper(\%dimensions);
+	#exit;
+
 
 	# nettoyage de caracteres qui fait planter l'importation dans reflex
 	$row{'DESI1'} =~ s///g;
@@ -351,36 +370,40 @@ while($loginor->FetchRow()) {
 	$data{'QUANTITE_VL_SOUS_CONDITIONNEMENT_30'}		= fill_with_zero($surco,$field_sizes{'QUANTITE_VL_SOUS_CONDITIONNEMENT'});
 	$data{'REFERENCE_COMMANDE_VL'}						= fill_with_blank(REFERENCE_COMMANDE_VL,$field_sizes{'REFERENCE_COMMANDE_VL'});
 	
-	$data{'POIDS_BRUT_10'}								= fill_with_zero($row{'POIDB'}?$row{'POIDB'}:0,$field_sizes{'POIDS_BRUT'});
+	$data{'POIDS_BRUT_10'}								= fill_with_zero($row{'POIDB'}?$row{'POIDB'} * 1000 : 0,$field_sizes{'POIDS_BRUT'});
 	$data{'POIDS_NET_10'}								= fill_with_zero($data{'POIDS_BRUT_10'},$field_sizes{'POIDS_NET'});
-	$data{'HAUTEUR_10'}									= fill_with_zero($row{'HAUTA'} ? $row{'HAUTA'} / 10 : 0,$field_sizes{'HAUTEUR'});
-	$data{'LARGEUR_10'}									= fill_with_zero($row{'LARGA'} ? $row{'LARGA'} / 10 : 0,$field_sizes{'LARGEUR'});
-	$data{'PROFONDEUR_10'}								= fill_with_zero($row{'LONGA'} ? $row{'LONGA'} / 10 : 0,$field_sizes{'PROFONDEUR'});
+	$data{'HAUTEUR_10'}									= fill_with_zero($row{'HAUTA'} ? $row{'HAUTA'} * 10 : 0,$field_sizes{'HAUTEUR'});
+	$data{'LARGEUR_10'}									= fill_with_zero($row{'LARGA'} ? $row{'LARGA'} * 10 : 0,$field_sizes{'LARGEUR'});
+	$data{'PROFONDEUR_10'}								= fill_with_zero($row{'LONGA'} ? $row{'LONGA'} * 10 : 0,$field_sizes{'PROFONDEUR'});
 	my $volume = $data{'HAUTEUR_10'} * $data{'LARGEUR_10'} * $data{'PROFONDEUR_10'};
 	$data{'VOLUME_10'}									= fill_with_zero($volume?$volume:0,$field_sizes{'VOLUME'});
 
-	$data{'POIDS_BRUT_20'}								= fill_with_zero($row{'POIDB'} * $data{'QUANTITE_VL_SOUS_CONDITIONNEMENT_20'},$field_sizes{'POIDS_BRUT'});
-	$data{'POIDS_NET_20'}								= fill_with_zero($data{'POIDS_BRUT_20'},$field_sizes{'POIDS_NET'});
-	$data{'HAUTEUR_20'}									= fill_with_zero($row{'ART38'} ? $row{'ART38'} / 10 : 0,$field_sizes{'HAUTEUR'});
-	$data{'LARGEUR_20'}									= fill_with_zero($row{'ART39'} ? $row{'ART39'} / 10 : 0,$field_sizes{'LARGEUR'});
-	$data{'PROFONDEUR_20'}								= fill_with_zero($row{'ART40'} ? $row{'ART40'} / 10 : 0,$field_sizes{'PROFONDEUR'});
-	$volume = $data{'HAUTEUR_20'} * $data{'HAUTEUR_20'} * $data{'HAUTEUR_20'};
-	$data{'VOLUME_20'}									= fill_with_zero($volume?$volume:0,$field_sizes{'VOLUME'});
+	# le poids brut de la vl 20 est soit renseigné, soit un multiple du poids de la vl 10
+	my $poids_brut_20 = ($dimensions{'PB20'} ? $dimensions{'PB20'} : $row{'POIDB'} * $data{'QUANTITE_VL_SOUS_CONDITIONNEMENT_20'}) * 1000;
+	$data{'POIDS_BRUT_20'}								= fill_with_zero($poids_brut_20,$field_sizes{'POIDS_BRUT'});
+	$data{'POIDS_NET_20'}								= fill_with_zero($poids_brut_20,$field_sizes{'POIDS_NET'});
+	$data{'HAUTEUR_20'}									= fill_with_zero($dimensions{'H20'} * 10,$field_sizes{'HAUTEUR'});
+	$data{'LARGEUR_20'}									= fill_with_zero($dimensions{'L20'} * 10,$field_sizes{'LARGEUR'});
+	$data{'PROFONDEUR_20'}								= fill_with_zero($dimensions{'P20'} * 10,$field_sizes{'PROFONDEUR'});
+	$volume = $data{'HAUTEUR_20'} * $data{'LARGEUR_20'} * $data{'PROFONDEUR_20'};
+	$data{'VOLUME_20'}									= fill_with_zero($volume,$field_sizes{'VOLUME'});
 
-	$data{'POIDS_BRUT_30'}								= fill_with_zero($row{'ARTL1'}?$row{'ARTL1'}:0,$field_sizes{'POIDS_BRUT'});
-	$data{'POIDS_NET_30'}								= fill_with_zero($data{'POIDS_BRUT_30'},$field_sizes{'POIDS_NET'});
-	$data{'HAUTEUR_30'}									= fill_with_zero($row{'ARTL2'} ? $row{'ARTL2'} / 10 : 0,$field_sizes{'HAUTEUR'});
-	$data{'LARGEUR_30'}									= fill_with_zero($row{'ARTL3'} ? $row{'ARTL3'} / 10 : 0,$field_sizes{'LARGEUR'});
-	$data{'PROFONDEUR_30'}								= fill_with_zero($row{'ARTL4'} ? $row{'ARTL4'} / 10 : 0,$field_sizes{'PROFONDEUR'});
-	$volume = $data{'HAUTEUR_30'} * $data{'HAUTEUR_30'} * $data{'HAUTEUR_30'};
-	$data{'VOLUME_30'}									= fill_with_zero($volume?$volume:0,$field_sizes{'VOLUME'});
+	# le poids brut de la vl 30 est soit renseigné, soit un multiple du poids de la vl 10
+	my $poids_brut_30 = ($dimensions{'PB30'} ? $dimensions{'PB30'} : $row{'POIDB'} * $data{'QUANTITE_VL_SOUS_CONDITIONNEMENT_30'}) * 1000;
+	$data{'POIDS_BRUT_30'}								= fill_with_zero($poids_brut_30,$field_sizes{'POIDS_BRUT'});
+	$data{'POIDS_NET_30'}								= fill_with_zero($poids_brut_30,$field_sizes{'POIDS_NET'});
+	$data{'HAUTEUR_30'}									= fill_with_zero($dimensions{'H30'} * 10,$field_sizes{'HAUTEUR'});
+	$data{'LARGEUR_30'}									= fill_with_zero($dimensions{'L30'} * 10,$field_sizes{'LARGEUR'});
+	$data{'PROFONDEUR_30'}								= fill_with_zero($dimensions{'P30'} * 10,$field_sizes{'PROFONDEUR'});
+	$volume = $data{'HAUTEUR_30'} * $data{'LARGEUR_30'} * $data{'PROFONDEUR_30'};
+	$data{'VOLUME_30'}									= fill_with_zero($volume,$field_sizes{'VOLUME'});
 
-#	my $prix_vl_10 = $row{'PRVT2'};
-#	if ($row{'CDCON'} eq 'NON') { # si conditionnement non divisible
-#		$prix_vl_10 = $row{'PRVT2'}*$row{'CONDI'};
-#	}
-#	$prix_vl_10 *= 1000;
-	my $prix_vl_10  = 1000;
+	# calcul du prix
+	my $prix_vl_10 = $row{'PRVT2'};
+	if ($row{'CDCON'} eq 'NON') { # si conditionnement non divisible
+		$prix_vl_10 = $row{'PRVT2'}*$row{'CONDI'};
+	}
+	$prix_vl_10 *= 1000;
 
 	$data{'PRIX_STANDARD_10'}							= fill_with_zero(round($prix_vl_10)													,$field_sizes{'PRIX_STANDARD'});
 	$data{'PRIX_STANDARD_20'}							= fill_with_zero(round($prix_vl_10 * $data{'QUANTITE_VL_SOUS_CONDITIONNEMENT_20'})	,$field_sizes{'PRIX_STANDARD'});
