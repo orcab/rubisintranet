@@ -58,7 +58,8 @@ print "OK\n";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
 	map { $row{$_} = trim(quotify($row{$_})) ; } keys %row ;
-	$row{'QTE_DISPO'} = $row{'QTE_REEL'} - $row{'QTE_CDE_CLIENT_STOCK'} ;
+	#$row{'QTE_DISPO'} = $row{'QTE_REEL'} - $row{'QTE_CDE_CLIENT_STOCK'} ;
+	$row{'QTE_DISPO'} = $row{'QTE_REEL'};
 	$row{'SERVI'} = $row{'SERVI'} eq 'OUI' ? 1:0;
 	print SQL "REPLACE INTO qte_article (code_article,depot,qte,mini,qte_cde) VALUES ('$row{CODE_ARTICLE}','$row{DEPOT}','$row{QTE_DISPO}','$row{MINI}','$row{QTE_CDE_FOURN}');\n";
 }
