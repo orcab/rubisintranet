@@ -591,6 +591,7 @@ div#phrase {
 	left:0;
 	cursor:pointer;
 	padding:3px;
+	padding-bottom: 70px;
 }
 
 div#phrase ul {
