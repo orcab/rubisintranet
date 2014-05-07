@@ -178,7 +178,7 @@ jQuery(function(){
 /* -- Ecrit les éléments sélectionnés dans le select de destination et les efface de celui d'origine -- */ 
 function changedata(ids, dest){
     ids.each(function(){
-    dest.append("<option value='" + jQuery(this).val() + "'>" + jQuery(this).text() + "</option>");
+    	dest.append("<option value='" + jQuery(this).val() + "'>" + jQuery(this).text() + "</option>");
     });
     jQuery(ids).remove();
 } 
@@ -195,6 +195,13 @@ function putsels(){
     jQuery("#phone_number").val(listsels_to_post.join(','));
 }
 
+
+/* add custum number */
+function add_custom_number() {
+	var phone_number = $('#custom_number').val().replace(/[^0-9\+]/,'');
+	$('#selplaylist').append("<option value='" + phone_number + "'>" + phone_number + "</option>");
+	putsels();
+}
 
 
 function ajouter_group(groupid) {
@@ -301,6 +308,10 @@ while ($row = mysql_fetch_array($res)) {
     <br/><br/>
     <a class="btn btn-info" onclick="ajouter_group(<?=PLOMBIER?>);"><i class="icon-arrow-right"></i> Ajouter les plombiers</a>
     <a class="btn btn-info" onclick="ajouter_group(<?=ELECTRICIEN?>);"><i class="icon-arrow-right"></i> Ajouter les electriciens</a>
+    <br/><br/>
+    <input type="text" id="custom_number" name="custom_number" size="10" maxsize="15"/>
+    <a class="btn btn-info" onclick="add_custom_number();"><i class="icon-arrow-right"></i> Ajouter ce num&eacute;ro</a>
+
 </div>
 
 <h2>Message (<?=TAILLE_MAXIMUM_MESSAGE?> car maximum)</h2>
