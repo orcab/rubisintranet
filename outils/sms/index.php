@@ -231,7 +231,7 @@ function putsels(){
 
 /* add custum number */
 function add_custom_number() {
-	var phone_number = $('#custom_number').val().replace(/[^0-9\+]/,'');
+	var phone_number = $('#custom_number').val().replace(/[^0-9\+]/g,'');
 	$('#selplaylist').append("<option value='" + phone_number + "'>" + phone_number + "</option>");
 	putsels();
 }
