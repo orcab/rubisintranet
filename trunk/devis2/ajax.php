@@ -166,8 +166,8 @@ elseif (isset($_POST['what']) && $_POST['what'] == 'sauvegarde_auto') {
 
 
 ////// RECHERCHE DES PHRASES PRE-ENREGSITREES
-elseif (isset($_GET['what']) && $_GET['what'] == 'get_phrase') { 
-	$res = mysql_query("SELECT * FROM devis_phrase ORDER BY mot_cle ASC") or die("Ne peux pas récupérer la liste des phrases ".mysql_error());
+elseif (isset($_GET['what']) && $_GET['what'] == 'get_phrase' && isset($_GET['app']) && $_GET['app']) { 
+	$res = mysql_query("SELECT * FROM phrase WHERE app='".mysql_escape_string($_GET['app'])."' ORDER BY mot_cle ASC") or die("Ne peux pas récupérer la liste des phrases ".mysql_error());
 	$rows = array();
 	while($row = mysql_fetch_array($res)) {
 		array_push($rows,array_map('utf8_encode',$row)); // encodage utf8
@@ -179,9 +179,11 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'get_phrase') {
 ////// AJOUTE UNE PHRASE
 elseif (isset($_GET['what']) && $_GET['what'] == 'save_phrase' &&
 		isset($_GET['mot_cle']) && $_GET['mot_cle'] &&
+		isset($_GET['app']) && $_GET['app'] &&
 		isset($_GET['phrase']) && $_GET['phrase']) { 
 	
-	mysql_query("REPLACE INTO devis_phrase (mot_cle,phrase,last_editor,last_modification_date) VALUES (".
+	mysql_query("REPLACE INTO phrase (app,mot_cle,phrase,last_editor,last_modification_date) VALUES (".
+				"'".mysql_escape_string($_GET['app'])."',".
 				"'".mysql_escape_string($_GET['mot_cle'])."',".
 				"'".mysql_escape_string($_GET['phrase'])."',".
 				"'".mysql_escape_string($_SERVER['REMOTE_ADDR'])."',".
@@ -193,9 +195,10 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'save_phrase' &&
 
 ////// SUPPRIME UNe PHRASE
 elseif (isset($_GET['what']) && $_GET['what'] == 'delete_phrase' &&
+		isset($_GET['app']) && $_GET['app'] &&
 		isset($_GET['mot_cle']) && $_GET['mot_cle']) { 
 	
-	mysql_query("DELETE FROM devis_phrase WHERE mot_cle='".mysql_escape_string($_GET['mot_cle'])."'") or die("Ne peux pas supprimer la phrase ".mysql_error());
+	mysql_query("DELETE FROM phrase WHERE app='".mysql_escape_string($_GET['app'])."' AND mot_cle='".mysql_escape_string($_GET['mot_cle'])."'") or die("Ne peux pas supprimer la phrase ".mysql_error());
 	echo '1';
 }
 

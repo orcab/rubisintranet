@@ -10,11 +10,15 @@ if (!($droit & PEUT_CREER_DEVIS)) { // n'a pas le droit de faire des devis
 	die("Vos droits ne vous permettent pas d'accéder à cette partie de l'intranet");
 }
 
+if (!isset($_GET['app'])) { // n'a pas le droit de faire des devis
+	die("Aucune application de spécifier. Veuillez passer le paramètre 'app' en URL");
+}
+
 ?>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
-<title>Modification des phrases expo</title>
+<title>Modification des phrases <?=$_GET['app']?></title>
 <style>
 a		{ text-decoration:none; }
 a:hover { text-decoration:underline; }
@@ -79,7 +83,7 @@ function show_phrase() {
 	$.ajax({
 		type: 'GET',
 		url:  'ajax.php',
-		data: 'what=get_phrase',
+		data: 'what=get_phrase&app=<?=$_GET['app']?>',
 		dataType: 'json',
 		success: function(json){
 			$('#phrase').css('background','none');
@@ -128,7 +132,7 @@ $(document).ready(function(){
 			$.ajax({
 				type: 'GET',
 				url:  'ajax.php',
-				data: 'what=delete_phrase'+	'&mot_cle='+$this.parent('div').children('.mot_cle').val(),
+				data: 'what=delete_phrase'+	'&app=<?=$_GET['app']?>&mot_cle='+$this.parent('div').children('.mot_cle').val(),
 				success: function(result){
 					// ok ca c'est bien passé
 					$this.parent('div').remove();
@@ -159,6 +163,7 @@ $(document).ready(function(){
 			type: 'GET',
 			url:  'ajax.php',
 			data: 'what=save_phrase'+	'&mot_cle='+mot_cle+
+										'&app=<?=$_GET['app']?>'+
 										'&phrase='+phrase,
 			success: function(result){
 				// ok ca c'est bien passé
@@ -193,7 +198,7 @@ $(document).ready(function(){
 <!-- menu de naviguation -->
 <? include('../inc/naviguation.php'); ?>
 
-<h1>Modification des phrases expo</h1> 
+<h1>Modification des phrases <?=$_GET['app']?></h1> 
 
 <form method="post" name="creation_article">
 <div id="phrase"></div>

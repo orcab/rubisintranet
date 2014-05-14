@@ -106,7 +106,7 @@ function valide_form(mes_options) {
 var last_btn_phrase_push;
 var phrases = [];
 <?	// selection des phrases pré-établies pour les designations
-	$res = mysql_query("SELECT mot_cle,phrase FROM devis_phrase WHERE deleted=0 ORDER BY mot_cle ASC") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
+	$res = mysql_query("SELECT mot_cle,phrase FROM phrase WHERE app='devis' AND deleted=0 ORDER BY mot_cle ASC") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
 	while($row = mysql_fetch_array($res)) { ?>
 		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=utf8_decode(preg_replace("/[\n|\r]+/",'\\n',preg_replace('/"/',"\\\"",$row['phrase'])))?>";
 <?	} ?>
@@ -120,7 +120,7 @@ function affiche_choix_phrase(btn_elm) {
 	for(var mot_cle in phrases) {
 		html += '<li>'+mot_cle+'</li>';
 	}
-	html += '</ul><div style="float:right;text-align:right;margin-top:1em;"><a href="javascript:cache_choix_phrase();">Fermer [X]</a><br/><a href="modification_phrase.php" target="_blank">Editer les phrases</a></div>';
+	html += '</ul><div style="float:right;text-align:right;margin-top:1em;"><a href="javascript:cache_choix_phrase();">Fermer [X]</a><br/><a href="modification_phrase.php?app=devis" target="_blank">Editer les phrases</a></div>';
 
 	$('div#phrase').css({'top': div_offset.top + div_height + 5, 'left': div_offset.left }).html(html).show('fast');
 }
