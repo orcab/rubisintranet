@@ -6,10 +6,6 @@ $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base
 
 $droit = recuperer_droit();
 
-if (!($droit & PEUT_CREER_DEVIS)) { // n'a pas le droit de faire des devis
-	die("Vos droits ne vous permettent pas d'accéder à cette partie de l'intranet");
-}
-
 if (!isset($_GET['app'])) { // n'a pas le droit de faire des devis
 	die("Aucune application de spécifier. Veuillez passer le paramètre 'app' en URL");
 }
