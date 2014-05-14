@@ -130,6 +130,27 @@ ul#btselmulti li{
     margin:5px 0 0 0;
 }
 
+/* phrases */
+input.phrase { vertical-align:top; }
+
+div#phrase {
+	border:solid 1px #6290B3;
+	background:#e7eef3;
+	font-size:0.7em;
+	display:none;
+	position:absolute;
+	top:0;
+	left:0;
+	cursor:pointer;
+	padding:3px;
+}
+
+div#phrase ul {
+	list-style:none;
+	padding-left: 20px;
+    margin: 0;
+}
+
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
 <link rel="stylesheet" href="../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../js/fontawesome/css/icon-custom.css">
@@ -149,6 +170,18 @@ $(document).ready(function(){
 			$('#nb_car').removeClass('attention');
 		}
     });
+
+
+	// affichage des phrases pré-enregistrées
+	$('body').delegate('input.phrase','click',function() {
+		affiche_choix_phrase(this);
+	});
+
+	// affichage des phrases pré-enregistrées
+	$('div#phrase').delegate('li','click',function() {
+		affiche_phrase(this);
+	});
+
 }) ;
 
 
@@ -241,11 +274,54 @@ function verif_form() {
 		document.cde.submit();
 }
 
+
+// gestion des phrases
+var last_btn_phrase_push;
+var phrases = [];
+<?	// selection des phrases pré-établies pour les designations
+	$res = mysql_query("SELECT mot_cle,phrase FROM phrase WHERE app='sms' AND deleted=0 ORDER BY mot_cle ASC") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
+	while($row = mysql_fetch_array($res)) { ?>
+		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=utf8_decode(preg_replace("/[\n|\r]+/",'\\n',preg_replace('/"/',"\\\"",$row['phrase'])))?>";
+<?	} ?>
+
+function affiche_choix_phrase(btn_elm) {
+	// placement du div
+	last_btn_phrase_push = btn_elm;	// on stock quel bouton a été appuyer pour pouvoir affecté le texte au bon textarea ensuite (les div sont générique)
+	var div_offset = $(btn_elm).offset();
+	var div_height = $(btn_elm).height();
+	var html = '<ul>';
+	for(var mot_cle in phrases) {
+		html += '<li>'+mot_cle+'</li>';
+	}
+	html += '</ul><div style="float:right;text-align:right;margin-top:1em;"><a href="javascript:cache_choix_phrase();">Fermer [X]</a><br/><a href="../../devis2/modification_phrase.php?app=sms" target="_blank">Editer les phrases</a></div>';
+
+	$('div#phrase').css({'top': div_offset.top + div_height + 5, 'left': div_offset.left }).html(html).show('fast');
+}
+
+function cache_choix_phrase() {
+	$('div#phrase').hide('fast');
+}
+
+// on clique sur la phrase de notre choix
+function affiche_phrase(li_elm) {
+	var phrase= phrases[$(li_elm).text()];
+	cache_choix_phrase();
+
+	// colle la phrase dans le bon cadre
+	var textarea;
+	textarea = $(last_btn_phrase_push).next('textarea');
+	$(textarea).text(
+						$(textarea).text().length > 0 ? $(textarea).text() + "\n" + phrase : phrase
+					);
+}
+
+
 //-->
 </script>
 
 </head>
 <body>
+<div id="phrase"></div><!-- pour la sugestion des phrases -->
 <a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils</a>
 
 <? if (		isset($_POST['action']) && $_POST['action']=='envoi-sms'
@@ -309,12 +385,13 @@ while ($row = mysql_fetch_array($res)) {
     <a class="btn btn-info" onclick="ajouter_group(<?=PLOMBIER?>);"><i class="icon-arrow-right"></i> Ajouter les plombiers</a>
     <a class="btn btn-info" onclick="ajouter_group(<?=ELECTRICIEN?>);"><i class="icon-arrow-right"></i> Ajouter les electriciens</a>
     <br/><br/>
-    <input type="text" id="custom_number" name="custom_number" size="10" maxsize="15"/>
+    <input type="text" id="custom_number" name="custom_number" size="12" maxsize="15" placeholder="Autre numéro"/>
     <a class="btn btn-info" onclick="add_custom_number();"><i class="icon-arrow-right"></i> Ajouter ce num&eacute;ro</a>
 
 </div>
 
 <h2>Message (<?=TAILLE_MAXIMUM_MESSAGE?> car maximum)</h2>
+<input type="button" class="phrase phrase_cli" value="..." />
 <textarea name="message" id="message" cols="50" rows="5"></textarea>
 <div id="nb_car"></div>
 <br/><br/>
