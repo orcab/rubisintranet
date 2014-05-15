@@ -308,11 +308,7 @@ function affiche_phrase(li_elm) {
 	cache_choix_phrase();
 
 	// colle la phrase dans le bon cadre
-	var textarea;
-	textarea = $(last_btn_phrase_push).next('textarea');
-	$(textarea).text(
-						$(textarea).text().length > 0 ? $(textarea).text() + "\n" + phrase : phrase
-					);
+	$('#message').val($('#message').val().length > 0 ? $('#message').val() + "\n" + phrase : phrase);
 }
 
 
