@@ -43,6 +43,21 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'activer'
 }
 
 
+// SERVI SUR STOCK OUI ou NON (agence)
+elseif (isset($_GET['what']) && preg_match('/^servi-(on|off)-/',$_GET['what'])
+	&&	isset($_GET['code_article']) && $_GET['code_article']) {
+
+	$tmp = explode('-',$_GET['what']);
+	if ($tmp[1] == 'on')
+		$tmp[1] = 'OUI';
+	else
+		$tmp[1] = 'NON';
+
+	$res = odbc_exec($loginor,"update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='".strtoupper($tmp[1])."' where NOART='".mysql_escape_string($_GET['code_article'])."' and DEPOT='".strtoupper($tmp[2])."'"); # stock
+
+	echo json_encode(array('result'=>1));
+}
+
 
 // ACHAT INTERDIT DES CODES ARTICLES
 elseif (isset($_GET['what']) && $_GET['what'] == 'achat-interdit'
