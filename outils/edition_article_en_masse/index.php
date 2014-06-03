@@ -219,6 +219,14 @@ $(document).ready(function(){
 			<option value="suspendre">Supendre les codes</option>
 			<option value="activer">Activer les codes</option>
 		</optgroup>
+		<optgroup label="Servis sur stock">
+			<option value="servi-on-afa">(AFA) Servis sur stock</option>
+			<option value="servi-off-afa">(AFA) Non servi</option>
+			<option value="servi-on-afl">(AFL) Servis sur stock</option>
+			<option value="servi-off-afl">(AFL) Non servi</option>
+			<option value="servi-on-afb">(AFB) Servis sur stock</option>
+			<option value="servi-off-afb">(AFB) Non servi</option>
+		</optgroup>
 		<optgroup label="Achats">
 			<option value="achat-interdit">Achats interdit</option>
 			<option value="achat-autorise">Achats autorisé</option>
