@@ -246,6 +246,7 @@ FROM 	RFXPRODDTA.reflex.HLPRPLP PREPA_DETAIL
 			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 WHERE 	P1QPRE<P1QAPR AND P1NNSL=0
 	and P1SSCA='$date[siecle]' and P1ANCA='$date[annee]' and P1MOCA='$date[mois]' and P1JOCA='$date[jour]'
+	and P1TVLP=1 --prepa validée
 EOT;
 }
 
