@@ -74,10 +74,11 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 WHERE 	P1QPRE<P1QAPR AND P1NNSL=0
 	and P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour'
+	and P1TVLP=1 --prepa validée
 ORDER BY P1CART ASC
 EOT
 
-print $sql;
+#print $sql;
 
 my $message = <<EOT ;
 <html>
