@@ -28,4 +28,12 @@ define('FTP_PATH','/AF/AFA/REFLEX/R54');			$FTP_PATH						= FTP_PATH;
 define('FTP_PATH_TEST','/AF/AFZ/REFLEX/R54');		$FTP_PATH_TEST					= FTP_PATH_TEST;
 
 define('SMS_GATEWAY','http://10.211.14.248:9090/sendsms?');
+
+
+////////////////////// SERVEUR SMTP POUR L'ENVOI DE MAIL ////////////////////////////////////////
+define('SMTP_SERVEUR','ns0.ovh.net');	// un serveur SMTP pour l'envoi de mail
+define('SMTP_USER','benjamin.poulain%coopmcs.com'); // le user sur un SMTP protégé
+define('SMTP_PASS','ranaruta'); // le password sur un SMTP protégé
+define('SMTP_PORT',587); // le port SMTP
+define('SMTP_TLS_SLL',''); // Utilisé TLS ou SSL ou rien ?
 ?>
