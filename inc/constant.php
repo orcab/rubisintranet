@@ -357,4 +357,45 @@ function getCategorieUser($username) {
 	return e('categorie',mysql_fetch_array($res));
 }
 
+
+/* append a local file to a distant file on a ftp server */
+function append_local_file_to_ftp_file($server,$user,$pass,$content,$remote_file) {
+	$remote_dirname 	= strtoupper(dirname($remote_file));
+	$remote_filename 	= strtoupper(basename($remote_file));
+
+	// set up basic connection
+	$conn_id = ftp_connect($server);
+	if (!$conn_id) return -1;
+
+	// login with username and password
+	$login_result = ftp_login($conn_id, $user, $pass); 
+	if (!$login_result) return -2;
+
+	ftp_pasv($conn_id, true);
+
+	// chdir
+	ftp_raw($conn_id, "CWD ".$remote_dirname);
+	if (ftp_pwd($conn_id) != $remote_dirname) return -3;
+
+	// download distant file exist
+	$local_temp_file = uniqid().'.txt';
+	@ftp_get($conn_id, $local_temp_file, $remote_filename, FTP_BINARY);
+		
+	$file = fopen($local_temp_file,'a');
+	fwrite($file,$content); // append new content
+	fclose($file);
+	
+	// upload the new content
+	$upload = ftp_put($conn_id, $remote_filename, $local_temp_file, FTP_BINARY);
+
+	unlink($local_temp_file);
+
+	// check upload status
+	if (!$upload) return -2;
+
+	// close the FTP stream 
+	ftp_close($conn_id);
+	return 1;
+}
+
 ?>

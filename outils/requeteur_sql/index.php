@@ -88,12 +88,12 @@ pre#requete {
 <script type="text/javascript" src="../../js/jquery.js"></script>
 <script type="text/javascript" src="../../js/jquery-ui-1.10.3.custom.min.js"></script>
 
+<link rel="stylesheet" href="../../js/highlight/styles/arta.css">
+<script src="../../js/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
 <script language="javascript">
 <!--
-
-$(document).ready(function(){
-	
-});
 
 function verif_form() {
 	var selected_request = $('#requeteur input[type=radio]:checked').val()
@@ -198,8 +198,7 @@ function verif_form() {
 </tfoot>
 
 </table>
-
-<pre id="requete"><?=htmlentities($sql)?></pre>
+<pre><code><?=htmlentities($sql)?></code></pre>
 <? } // fin if requete ?>
 
 </body>
@@ -232,8 +231,19 @@ function manquant_a_la_preparation_reflex() {
 	$date = extract_days_from_date_ddmmyyyy($_POST['param1']);
 
 	return <<<EOT
-SELECT 	P1CART as CODE_ARTICLE,P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA , P1CDES as DESTINATAIRE
-FROM 	RFXPRODDTA.reflex.HLPRPLP
+SELECT 	P1CART as CODE_ARTICLE,
+		ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
+		P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA ,
+		OERODP as REFERENCE_OPD,
+		P1CDES as CODE_DEST,
+		DSLDES as DESTINATAIRE
+FROM 	RFXPRODDTA.reflex.HLPRPLP PREPA_DETAIL
+		left join RFXPRODDTA.reflex.HLARTIP ARTICLE
+			on PREPA_DETAIL.P1CART=ARTICLE.ARCART
+		left join RFXPRODDTA.reflex.HLDESTP DEST
+			on PREPA_DETAIL.P1CDES=DEST.DSCDES
+		left join RFXPRODDTA.reflex.HLODPEP ODP_ENTETE
+			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 WHERE 	P1QPRE<P1QAPR AND P1NNSL=0
 	and P1SSCA='$date[siecle]' and P1ANCA='$date[annee]' and P1MOCA='$date[mois]' and P1JOCA='$date[jour]'
 EOT;

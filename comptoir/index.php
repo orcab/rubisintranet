@@ -11,7 +11,7 @@ if (isset($_GET['deconnexion']) && $_GET['deconnexion'] == 1) {
 
 // on a des infos d'identifications
 if ((isset($_POST['username']) && isset($_POST['password'])) || isset($_POST['barcode'])) {
-	include('../inc/config.php');
+	include_once('../inc/config.php');
 
 	define('DEBUG',isset($_POST['debug'])?TRUE:FALSE);
 
@@ -166,7 +166,6 @@ $(document).ready(function(){
 		<img src="gfx/barcode_reader.png">&nbsp;<input id="barcode" name="barcode" type="password" value="" size="13" maxlength="13"/>
 	</div>
 </div>
-
 </form>
 </body>
 </html>

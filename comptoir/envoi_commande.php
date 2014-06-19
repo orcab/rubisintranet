@@ -127,7 +127,7 @@ for($i=0 ; $i<sizeof($_SESSION['panier']) ; $i++) {
 		)."\r\n";	 // fin join
 }
 
-
+/*
 // copie du buffer dans le fichier CSV
 if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // serveur de test
 	$csv_filename = 'WEB/CPT.CSV';
@@ -140,12 +140,18 @@ if ($_SERVER['SERVER_ADDR'] == '10.211.14.46') { // serveur de test
 	$pass = LOGINOR_PASS;
 	system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
 	$csv_filename = "$letter:/WEB/CDC.CSV";
-	//$csv_filename = "$letter:/TEST.CSV";
 }
 
 $CSV = fopen($csv_filename,'a') or die("Ne peux pas ouvrir le fichier CSV '$csv_filename'"); // ouvre en mode ajout (append)
 fwrite($CSV,$buffer) or die("Ne peux pas ecrire les données dans le fichier CSV '$csv_filename'");
 fclose($CSV);
+*/
+
+
+append_local_file_to_ftp_file(	'10.211.200.1',LOGINOR_USER,LOGINOR_PASS,
+								$buffer,
+								'/QDLS/AFA/WEB/CDC.CSV');
+
 
 //echo $buffer;
 
