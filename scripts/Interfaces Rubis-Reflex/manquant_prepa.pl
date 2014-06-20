@@ -24,8 +24,8 @@ my ($siecle,$annee,$mois,$jour) = (	substr(strftime('%Y',localtime),0,2),
 									strftime('%d',localtime)
 								);
 
-my ($test,$date,$help);
-GetOptions('test!'=>\$test, 'date:s'=>\$date , 'help|usage!'=>\$help) ;
+my ($test,$date,$noemail,$help);
+GetOptions('test!'=>\$test, 'date:s'=>\$date , 'noemail!'=>\$noemail, 'help|usage!'=>\$help) ;
 die <<EOT if ($help);
 Liste des arguments :
 --test
@@ -33,6 +33,9 @@ Liste des arguments :
 
 --date=yyyy-mm-dd
 	Date des manquant à la pr&eacute;paration (aujourd'hui par d&eacute;faut)
+
+--noemail
+	N'envoi pas l'email
 
 --usage ou --help
 	Affiche ce message
@@ -42,6 +45,8 @@ EOT
 ########################################################################################
 my $old_time = 0;
 my $cfg 				= new Phpconst2perlconst(-file => 'config.php');
+my $prefix_base_rubis 	= $cfg->{'LOGINOR_PREFIX_BASE_'.($test ? 'TEST':'PROD')};
+my $rubis 				= new Win32::ODBC('DSN='.$cfg->{'LOGINOR_DSN'}.';UID='.$cfg->{'LOGINOR_USER'}.';PWD='.$cfg->{'LOGINOR_PASS'}.';') or die "Ne peux pas se connecter à rubis";
 my $prefix_base_reflex 	= $test ? $cfg->{'REFLEX_PREFIX_BASE_TEST'} : $cfg->{'REFLEX_PREFIX_BASE'};
 my $reflex 				= new Win32::ODBC('DSN='.$cfg->{'REFLEX_DSN'}.';UID='.$cfg->{'REFLEX_USER'}.';PWD='.$cfg->{'REFLEX_PASS'}.';') or die "Ne peux pas se connecter à REFLEX";
 ########################################################################################
@@ -60,13 +65,15 @@ if (length($date)<=0) { # aucune date de sp&eacute;cifi&eacute; --> on prend le 
 
 printf "%s Select des articles pour le $siecle$annee-$mois-$jour\n",get_time();	$old_time=time;
 
-my $sql = <<EOT ;
+my $sql_reflex = <<EOT ;
 SELECT 	P1CART as CODE_ARTICLE,
 		ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
 		P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA ,
 		OERODP as REFERENCE_OPD,
 		P1CDES as CODE_DEST,
-		DSLDES as DESTINATAIRE
+		DSLDES as DESTINATAIRE,
+		COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ
+
 FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 		left join ${prefix_base_reflex}.HLARTIP ARTICLE
 			on PREPA_DETAIL.P1CART=ARTICLE.ARCART
@@ -74,18 +81,24 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 			on PREPA_DETAIL.P1CDES=DEST.DSCDES
 		left join ${prefix_base_reflex}.HLODPEP ODP_ENTETE
 			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
+		left join ${prefix_base_reflex}.HLCOMMP COMMENTAIRE
+			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
+
 WHERE 	P1QPRE<P1QAPR AND P1NNSL=0
 	and P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour'
 	and P1TVLP=1 --prepa validée
+
 ORDER BY P1CART ASC
 EOT
 
-#print $sql;
+#print $sql_reflex;exit;
 
+my $heure = strftime('%H:%M:%S', localtime);
 my $message = <<EOT ;
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 <body>
+<h3>Voici les articles manquant &agrave; la pr&eacute;paration Reflex le $jour/$mois/$annee &agrave; $heure</h3>
 <table border="1" cellspacing="0" cellpadding="0">
 	<tr>
 		<th>Code article</th>
@@ -101,34 +114,44 @@ my $message = <<EOT ;
 	</tr>
 EOT
 
-if ($reflex->Sql($sql))  { die "SQL Reflex GEI failed : ", $reflex->Error(); }
+if ($reflex->Sql($sql_reflex))  { die "SQL Reflex GEI failed : ", $reflex->Error(); }
 while ($reflex->FetchRow()) {
-	my 	%row = $reflex->DataHash() ;
-	#my 	($client,$cde) = split(/[\/\-]/,$row_reflex{'REFERENCE_OPD'});
-	$message .= "<tr><td>$row{CODE_ARTICLE}</td><td>$row{DESIGNATION}</td><td>$row{DESIGNATION2}</td><td>$row{QTE_A_PREPARER}</td><td>$row{QTE_PREPAREE}</td><td>$row{ANNEE_PREPA}</td><td>$row{NUM_PREPA}</td><td>$row{REFERENCE_OPD}</td><td>$row{CODE_DEST}</td><td>$row{DESTINATAIRE}</td></tr>\n";
+	my 	%row_reflex = $reflex->DataHash() ;
+	my 	($client,$cde,$noligne) = split(/[\/\-]/,$row_reflex{'COMMENTAIRE_ZZZ'});
+
+	my $sql_rubis = "select ETSBE as ETAT from ${prefix_base_rubis}GESTCOM.ADETBOP1 where NOBON='$cde' and NOCLI='$client' and NOLIG='$noligne'";
+	if ($rubis->Sql($sql_rubis))  { die "SQL Rubis cde failed : ", $rubis->Error(); }
+	$rubis->FetchRow();
+	my %row_rubis = $rubis->DataHash();
+	#print STDERR "DEBUG ".$row_reflex{'COMMENTAIRE_ZZZ'}.' / etat='.$row_rubis{'ETAT'}."\n";
+	if ($row_rubis{'ETAT'} eq '') { # ligne non supprimée
+		$message .= "<tr><td>$row_reflex{CODE_ARTICLE}</td><td>$row_reflex{DESIGNATION}</td><td>$row_reflex{DESIGNATION2}</td><td>$row_reflex{QTE_A_PREPARER}</td><td>$row_reflex{QTE_PREPAREE}</td><td>$row_reflex{ANNEE_PREPA}</td><td>$row_reflex{NUM_PREPA}</td><td>$row_reflex{REFERENCE_OPD}</td><td>$row_reflex{CODE_DEST}</td><td>$row_reflex{DESTINATAIRE}</td></tr>\n";
+	}
 } # fin while reflex
 
 $message .= "</table></body></html>\n";
 
-printf "%s Envoi email\n",get_time();	$old_time=time;
+if (!$noemail) {
+	printf "%s Envoi email\n",get_time();	$old_time=time;
+	my 	$smtp = Net::SMTP->new($cfg->{'SMTP_SERVEUR'}) or die "Pas de connexion SMTP a ".$cfg->{'SMTP_SERVEUR'}.": $!\n";
+		$smtp->auth($cfg->{'SMTP_USER'},$cfg->{'SMTP_PASS'} );
+	 	$smtp->mail(FROM_EMAIL);
+	 	$smtp->to(@TO_EMAIL);
 
-my 	$smtp = Net::SMTP->new($cfg->{'SMTP_SERVEUR'}) or die "Pas de connexion SMTP a ".$cfg->{'SMTP_SERVEUR'}.": $!\n";
-	$smtp->auth($cfg->{'SMTP_USER'},$cfg->{'SMTP_PASS'} );
- 	$smtp->mail(FROM_EMAIL);
- 	$smtp->to(@TO_EMAIL);
+	 	$smtp->data();
+	 	$smtp->datasend('To: '.$TO_NAME[0].' <'.$TO_EMAIL[0].">\n");
+	 	$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
+	 	$smtp->datasend("Subject: Manquant à la préparation Reflex du $jour/$mois/$annee\n");
+	 	$smtp->datasend("MIME-Version: 1.0\n");
+	 	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
+	 	$smtp->datasend("\n--frontier\n");
+	 	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
+	 	$smtp->datasend("\n");
+	 	$smtp->datasend($message);
+	 	$smtp->datasend("--frontier--\n");
+	 	$smtp->dataend();
+	 	$smtp->quit;
 
- 	$smtp->data();
- 	$smtp->datasend('To: '.$TO_NAME[0].' <'.$TO_EMAIL[0].">\n");
- 	$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
- 	$smtp->datasend("Subject: Manquant à la préparation Reflex du $jour/$mois/$annee\n");
- 	$smtp->datasend("MIME-Version: 1.0\n");
- 	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
- 	$smtp->datasend("\n--frontier\n");
- 	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
- 	$smtp->datasend("\n");
- 	$smtp->datasend("<h3>Voici les articles manquant &agrave; la pr&eacute;paration Reflex le $jour/$mois/$annee &agrave; ".strftime('%H:%M:%S', localtime)."</h3>\n\n");
- 	$smtp->datasend($message);
- 	$smtp->datasend("--frontier--\n");
- 	$smtp->dataend();
-
- 	$smtp->quit;
+ } else {
+ 	print $message;
+ }
