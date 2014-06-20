@@ -12,8 +12,8 @@ use Getopt::Long;
 use Net::SMTP;
 use constant FROM_EMAIL	=> 'reflex@coopmcs.com';
 use constant FROM_NAME	=> 'Manquant prepa reflex';
-my @TO_EMAIL	= ('bernard.taverson@coopmcs.com','regis.lefloch@coopmcs.com','jeremy.morice@coopmcs.com','claude.kergosien@coopmcs.com');
-my @TO_NAME		= ('Bernard Taverson','Regis Le Floch','Jemery Morice','Claude Kergosien');
+my @TO_EMAIL	= ('bernard.taverson@coopmcs.com','emmanuel.lemab@coopmcs.com','regis.lefloch@coopmcs.com','jeremy.morice@coopmcs.com','claude.kergosien@coopmcs.com');
+my @TO_NAME		= ('Bernard Taverson','Emmanuel Le Mab','Regis Le Floch','Jemery Morice','Claude Kergosien');
 #my @TO_EMAIL	= ('benjamin.poulain@coopmcs.com');
 #my @TO_NAME		= ('Benjamin Poulain');
 
@@ -40,6 +40,7 @@ EOT
 
 
 ########################################################################################
+my $old_time = 0;
 my $cfg 				= new Phpconst2perlconst(-file => 'config.php');
 my $prefix_base_reflex 	= $test ? $cfg->{'REFLEX_PREFIX_BASE_TEST'} : $cfg->{'REFLEX_PREFIX_BASE'};
 my $reflex 				= new Win32::ODBC('DSN='.$cfg->{'REFLEX_DSN'}.';UID='.$cfg->{'REFLEX_USER'}.';PWD='.$cfg->{'REFLEX_PASS'}.';') or die "Ne peux pas se connecter à REFLEX";
@@ -51,12 +52,13 @@ if (length($date)>0 && $date !~ m/^\d{4}-\d{2}-\d{2}$/)  {
 }
 
 if (length($date)<=0) { # aucune date de sp&eacute;cifi&eacute; --> on prend le denrier jour ouvr&eacute;
-	print "Aucune date de specifiee. Aujourd'hui\n\t--date=$siecle$annee-$mois-$jour\n";
+	#print "Aucune date de specifiee. Aujourd'hui\n\t--date=$siecle$annee-$mois-$jour\n";
 } else {
 	($siecle,$annee,$mois,$jour) 	= ($date =~ m/^(\d{2})(\d{2})-(\d{2})-(\d{2})$/);
 }
 ########################################################################################
 
+printf "%s Select des articles pour le $siecle$annee-$mois-$jour\n",get_time();	$old_time=time;
 
 my $sql = <<EOT ;
 SELECT 	P1CART as CODE_ARTICLE,
@@ -108,6 +110,8 @@ while ($reflex->FetchRow()) {
 
 $message .= "</table></body></html>\n";
 
+printf "%s Envoi email\n",get_time();	$old_time=time;
+
 my 	$smtp = Net::SMTP->new($cfg->{'SMTP_SERVEUR'}) or die "Pas de connexion SMTP a ".$cfg->{'SMTP_SERVEUR'}.": $!\n";
 	$smtp->auth($cfg->{'SMTP_USER'},$cfg->{'SMTP_PASS'} );
  	$smtp->mail(FROM_EMAIL);
@@ -128,5 +132,3 @@ my 	$smtp = Net::SMTP->new($cfg->{'SMTP_SERVEUR'}) or die "Pas de connexion SMTP
  	$smtp->dataend();
 
  	$smtp->quit;
-
-#print $message;
