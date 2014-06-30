@@ -33,9 +33,10 @@ where
 			(LOCAL like '%$box_escape%' or LOCA2 like '%$box_escape%' or LOCA3 like '%$box_escape%')	-- la localisation correspond au critere de recherche
 		and PV.AGENC ='AFA' and PV.PVT09='E'	-- prix en cours
 --		and QTE.QTINV>0							-- au moins 1 dans le stock
+order by LOCAL ASC,LOCA2 ASC,LOCA3 ASC
 EOT;
 
-	//echo "\n$sql"; exit;
+	//echo "\n$sql";//exit;
 
 	$loginor  	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$res 		= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
@@ -77,7 +78,8 @@ EOT;
 											'famille'			=> $row['FAMI1'],
 											'sousfamille'		=> $row['SFAM1'],
 											'chapitre'			=> $row['ART04'],
-											'souschapitre'		=> $row['ART05']
+											'souschapitre'		=> $row['ART05'],
+											'localisation'		=> $row['LOCAL']
 										);
 
 		$articles[$cle_article]['px_public'] 	= 0;

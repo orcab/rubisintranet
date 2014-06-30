@@ -105,11 +105,20 @@ function verif_form() {
 
 	} else if 	(		selected_request == 'manquant_a_la_preparation_reflex'
 					||	selected_request == 'remise_zero_gei_reflex'
+					||	selected_request == 'livraison_entre_5h_et_5h30_rubis'
 				) {
 		// ask for a date (dd/mm/yyyy)
 		var input_user = '';
 		while (!input_user) {
 			input_user = prompt("Pour quelle date ? (jj/mm/aaaa)");
+		}
+		$('#param1').val(input_user);
+
+	} else if 	(		selected_request == 'livraison_en_double_rubis' ) {
+		// ask for a year (yyyy)
+		var input_user = '';
+		while (!input_user) {
+			input_user = prompt("Pour quelle année ? (aaaa)");
 		}
 		$('#param1').val(input_user);
 	}
@@ -131,7 +140,9 @@ function verif_form() {
 	<input type="radio" id="montant_honorable_rubis" name="requete" value="montant_honorable_rubis"/><label for="montant_honorable_rubis">Montant honorable à l'instant T (Rubis)</label><br/>
 	<input type="radio" id="manquant_a_la_preparation_reflex" name="requete" value="manquant_a_la_preparation_reflex"/><label for="manquant_a_la_preparation_reflex">Manquant à la préparation à une date (Reflex)</label><br/>
 	<!--<input type="radio" id="remise_zero_gei_reflex" name="requete" value="remise_zero_gei_reflex"/><label for="remise_zero_gei_reflex">Remise à 0 des GEI pour une date (Reflex)</label><br/>-->
-	<input type="radio" id="code_taille_emplacement_article_lie_reflex" name="requete" value="code_taille_emplacement_article_lie_reflex"/><label for="code_taille_emplacement_article_lie_reflex">Code taille emplacement et articles liés (Reflex)</label>
+	<input type="radio" id="code_taille_emplacement_article_lie_reflex" name="requete" value="code_taille_emplacement_article_lie_reflex"/><label for="code_taille_emplacement_article_lie_reflex">Code taille emplacement et articles liés (Reflex)</label><br/>
+	<input type="radio" id="livraison_entre_5h_et_5h30_rubis" name="requete" value="livraison_entre_5h_et_5h30_rubis"/><label for="livraison_entre_5h_et_5h30_rubis">Livraison entre 5h et 5h30 via STRACC (Rubis)</label><br/>
+	<input type="radio" id="livraison_en_double_rubis" name="requete" value="livraison_en_double_rubis"/><label for="livraison_en_double_rubis">Test (Rubis)</label>
 	<br/><br/>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Afficher les résultats</a><br/>
 </div>
@@ -296,8 +307,55 @@ order by GECART ASC
 EOT;
 }
 
+
+function livraison_entre_5h_et_5h30_rubis() {
+	$date = extract_days_from_date_ddmmyyyy($_POST['param1']);
+	return <<<EOT
+select 	TCE_K1 as CLIENT, CLIENT.NOMCL as NOM_CLIENT, TCE_K3 as NO_BON, TCE_K4 as NO_LIGNE, TCE_ART as ARTICLE, ARTICLE.DESI1 as DESIGNATION1,ARTICLE.DESI2 as DESIGNATION2,
+		(TCE_DCS || TCE_DCA ||  '-' || TCE_DCM || '-' || TCE_DCJ || ' ' || substr(TCE_DCH,1,2) || 'h' || substr(TCE_DCH,3,2) || 'm' || substr(TCE_DCH,5,2)) as DATE_HEURE
+from 	AFAGESTCOM.ATRACEP1 TRACE1
+		left join AFAGESTCOM.AARTICP1 ARTICLE
+		 	on TRACE1.TCE_ART=ARTICLE.NOART
+		 left join AFAGESTCOM.ACLIENP1 CLIENT
+		 	on TRACE1.TCE_K1=CLIENT.NOCLI
+where
+		TCE_DCH>50000 and TCE_DCH<53000
+	and TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
+	and TCE_DCS='$date[siecle]' and TCE_DCA='$date[annee]' and TCE_DCM='$date[mois]' and TCE_DCJ='$date[jour]'
+EOT;
+}
+
+
+function livraison_en_double_rubis() {
+	$date = extract_year_from_date($_POST['param1']);
+	return <<<EOT
+select 	 count(*) as NB_LIV, TCE_K3 as NUM_CDE,TCE_K1 as CODE_CLIENT, CLIENT.NOMCL as NOM_CLIENT,TCE_K4 as NUM_LIGNE, TCE_ART as CODE_ARTICLE,ARTICLE.DESI1 as DESIGNATION1,ARTICLE.DESI2 as DESIGNATION2,
+
+(
+	select 		max(TCE_DCS || TCE_DCA ||  '-' || TCE_DCM || '-' || TCE_DCJ || ' ' || substr(TCE_DCH,1,2) || 'h' || substr(TCE_DCH,3,2) || 'm' || substr(TCE_DCH,5,2))
+	from 		AFAGESTCOM.ATRACEP1 TRACE2
+	where  		TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
+			and TRACE1.TCE_K3=TRACE2.TCE_K3 and TRACE1.TCE_K1=TRACE2.TCE_K1 and TRACE1.TCE_K4=TRACE2.TCE_K4
+) as DERNIERE_LIV
+
+from 	 AFAGESTCOM.ATRACEP1 TRACE1
+		 left join AFAGESTCOM.AARTICP1 ARTICLE
+		 	on TRACE1.TCE_ART=ARTICLE.NOART
+		 left join AFAGESTCOM.ACLIENP1 CLIENT
+		 	on TRACE1.TCE_K1=CLIENT.NOCLI
+where
+		 TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
+	and  TCE_DCS='$date[siecle]' and TCE_DCA='$date[annee]'
+group by TCE_K3,TCE_K1,TCE_K4, TCE_ART, DESI1, DESI2, NOMCL
+having 	 count(*)>1
+order by DERNIERE_LIV
+EOT;
+//--TCE_K3='Z4066V' and TCE_K1='056096' and TCE_K4='013'
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 function extract_days_from_date_ddmmyyyy($var) {
-	if (strlen($var) > 0) {
+	if (strlen($var) > 0 && preg_match('|^\d{2}/\d{2}/\d{4}$|',$var)) {
 		$tmp = split('/',$var); // format dd/mm/yyyy
 		$jour = $tmp[0];
 		$mois = $tmp[1];
@@ -308,4 +366,16 @@ function extract_days_from_date_ddmmyyyy($var) {
 		die("Format de date non reconnu");
 	}
 }
+
+
+function extract_year_from_date($var) {
+	if (strlen($var) > 0 && preg_match('|^\d{4}$|',$var)) {
+		$siecle = substr($var,0,2);
+		$annee = substr($var,2,2);
+		return array('siecle'=>$siecle, 'annee'=>$annee);
+	} else {
+		die("Format d'annee non reconnu");
+	}
+}
+
 ?>

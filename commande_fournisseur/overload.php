@@ -28,7 +28,7 @@ class PDF extends FPDF
 		
 		// logo gauche et droite en haut de page
 		if (PDF_CDE_FOURNISSEUR_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_CDE_FOURNISSEUR_LOGO_HAUT_GAUCHE,0,0,62);
-		if (PDF_CDE_FOURNISSEUR_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_CDE_FOURNISSEUR_LOGO_HAUT_DROITE,PAGE_WIDTH - 20,0,20);
+		if (PDF_CDE_FOURNISSEUR_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_CDE_FOURNISSEUR_LOGO_HAUT_DROITE,PAGE_WIDTH - 51,0,50);
 
 		// le dépot a livré et les coordonnées du fournisseur
 		$this->SetXY(63,2);

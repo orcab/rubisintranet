@@ -110,10 +110,17 @@ function refresh_etiquette(sel,id) {
 				var soustotal1 	= 0;
 				//var nb_article_dans_sousboxsoustotal1 	= 0;
 				// affiche les articles en parcourant les sous box
-				for(sousbox in data.sousboxs) {
+				var sousbox_in_order = new Array();
+				for(sousbox in data.sousboxs)
+					sousbox_in_order.push(sousbox);
 
+				sousbox_in_order.sort(); // tri les sous box dans l'ordre des lettres
+
+
+				for(var i=0 ; i<sousbox_in_order.length ; i++) {
+					var sousbox = sousbox_in_order[i];
 					html += '<tbody class="sousbox">';
-					html += '<tr><td colspan="5" class="titre-sousbox"><div class="title_icons">'+// container pour titre + icons
+					html += '<tr><td colspan="5" class="titre-sousbox"><div class="title_icons">'+ // container pour titre + icons
 								'<div class="icons hide_when_print"><i class="icon-edit edit"></i> <i class="icon-save save"></i></div>'+ // icon
 								'<div class="title"></div>'+	// titre
 							'</div></td></tr>';
@@ -140,7 +147,9 @@ function refresh_etiquette(sel,id) {
 										' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+
 										' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+
 										' type_'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+
-										'" title="'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+'"></td>' ;
+										'" title="'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+'">'+
+										'<span class="localisation hide_when_print">'+(sousbox == 'commun' ? '':sousbox)+'</span>'+
+										'</td>' ;
 
 						// si la designation cont-ient, "miroir", on change l'icon à la volée
 						if (detail.designation.match(/miroir/i)) {
@@ -362,6 +371,10 @@ td.titre-sousbox div {
 }
 .icons { float: left; }
 i.save { visibility: hidden; }
+
+.localisation {
+	color:white;
+}
 
 tfoot td, .sous-total {
     text-align: right;

@@ -38,7 +38,7 @@ h1 {
     font-size: 0.9em;
     text-align: center;
 }
-tr.annule {
+.annule {
     color: #CCCCCC;
     text-decoration: line-through;
 }
@@ -202,7 +202,7 @@ EOT;
 		$etat_rubis 	= trim($row['ETAT_RUBIS']) 	? true:false;
 		$rubis_livree	= trim($row['R_F'])=='F'||trim($row['R_F'])=='OUI' 	? true:false;
 ?>
-		<tr class="<?=$etat_rubis ? ' annule':''?> <?=$rubis_livree ? ' rubis_livre':'rubis_non_livre'?>">
+		<tr class="<?=$etat_rubis ? ' annule': ($rubis_livree ? ' rubis_livre':'rubis_non_livre')?>">
 			<td class="num_tier"><?=$row['NUM_TIER']?></td>
 			<td class="num_ligne"><?=$row['NUM_LIGNE']?></td>
 			<td class="code_article"><?=$row['CODE_ARTICLE']?></td>
@@ -215,11 +215,11 @@ EOT;
 				<?=$row['LIGNE_EDITE']=='OUI'?'OUI':'NON'?>
 			<? } ?>
 			</td>
-			<td class="r_f <?= $rubis_livree ? 'rubis_livre':'rubis_non_livre' ?>"><?=$rubis_livree ? ($_POST['type_cde']=='client'?'Livrée':'Receptionnée'):'Reliquat' ?></td>
+			<td class="r_f <?=$etat_rubis ? ' annule':  ($rubis_livree ? 'rubis_livre':'rubis_non_livre') ?>"><?=$rubis_livree ? ($_POST['type_cde']=='client'?'Livrée':'Receptionnée'):'Reliquat'?></td>
 			<td class="type"><?=$row['TYPE']?></td>
 			<td class="etat_rubis"><?=$row['ETAT_RUBIS']?></td>
 			<? $etat_reflex = trim($row['ETAT_REFLEX']) ? true:false; ?>
-			<td class="etat_reflex <?= $etat_reflex ? 'reflex_envoyee':'reflex_non_envoyee' ?>" style="text-align:right;padding-right:1em;">
+			<td class="etat_reflex <?=$etat_rubis ? ' annule': ($etat_reflex ? 'reflex_envoyee':'reflex_non_envoyee')?>" style="text-align:right;padding-right:1em;">
 			<?	if (!$rubis_livree)
 					if ($etat_reflex)
 						echo 'Envoyée';
