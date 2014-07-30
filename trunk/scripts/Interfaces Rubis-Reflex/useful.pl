@@ -112,4 +112,41 @@ sub icaldate2sqldate($) {
 	}
 }
 
+sub send_mail(%) {
+	my $ref_param = shift;
+
+	my @to_email = keys 	%{$ref_param->{'to'}};
+	my @to_name  = values 	%{$ref_param->{'to'}};
+	#print Dumper($ref_param,\@to_email,\@to_name);
+
+	my 	$smtp = Net::SMTP->new($ref_param->{'smtp_serveur'}) or return -1;
+		$smtp->auth($ref_param->{'smtp_user'},$ref_param->{'smtp_password'});
+	 	$smtp->mail($ref_param->{'from_email'}) or return -3;
+	 	$smtp->to(keys %{$ref_param->{'to'}}) or return -4;
+
+	  	$smtp->data();
+	  	$smtp->datasend('To: '.$to_name[0].' <'.$to_email[0].">\n");
+	  	$smtp->datasend('From: '.$ref_param->{'from_name'}.' <'.$ref_param->{'from_email'}.">\n");
+	  	$smtp->datasend("Subject: ".$ref_param->{'subject'}."\n");
+
+	  	if ($ref_param->{'html'}) {
+		  	$smtp->datasend("MIME-Version: 1.0\n");
+		  	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
+		  	$smtp->datasend("\n--frontier\n");
+		  	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
+		  	$smtp->datasend("\n");
+		}
+
+	  	$smtp->datasend($ref_param->{'message'});
+	  	
+	  	if ($ref_param->{'html'}) {
+	  		$smtp->datasend("\n--frontier--\n");
+	  	}
+
+	  	$smtp->dataend();
+	 	$smtp->quit or return -7;
+
+	 	return 1;
+}
+
 1;

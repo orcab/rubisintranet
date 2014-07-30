@@ -14,9 +14,12 @@ require 'useful.pl'; # load get_time / second2hms
 use Phpconst2perlconst ;
 use Getopt::Long;
 
+# class d'article autorisé
+my @valid_class = ('A'..'D');
+
 # gestion des arguments
-my (@articles,$debug,$all,$stock_only,$test,$days,$help);
-GetOptions('articles=s'=>\@articles, 'debug!'=>\$debug, 'all!'=>\$all, 'stock-only'=>\$stock_only, 'test!'=>\$test, 'days=i'=>\$days, 'help|usage!'=>\$help) ;
+my (@articles,$debug,$all,$stock_only,$class,$test,$days,$help);
+GetOptions('articles=s'=>\@articles, 'debug!'=>\$debug, 'all!'=>\$all, 'stock-only'=>\$stock_only,'class=s'=>\$class , 'test!'=>\$test, 'days=i'=>\$days, 'help|usage!'=>\$help) ;
 die "Erreur : On ne peut pas utiliser les arguments --days et --all en meme temps" if ($all && $days);
 die <<EOT if ($help);
 Liste des arguments :
@@ -26,6 +29,8 @@ Liste des arguments :
 	Importe tous les articles
 --stock-only
 	N'importe que les produits servis sur stock
+--class=A|B|C|D
+	Restrein l'importation sur une famille de class de stock
 --days=x
 	Importe les articles modifies depuis x jour
 --test
@@ -42,6 +47,7 @@ use constant {
 	# entete
 	CODE_APPLICATION									=>	'HL',
 	CODE_INTERFACE										=>	'03',
+	CODE_INTERFACE_ASSOCIATION_FAMILLE					=>	'20',
 	CODE_INTERFACE_IDENTIFIANT_VL						=>	'22',
 	CODE_INTERFACE_CONDITIONNEMENT_ARTICLE_FOURNISSEUR	=>	'13',
 	CODE_RUBRIQUE_ARTICLE								=>	'110',
@@ -53,6 +59,7 @@ use constant {
 	CODE_RUBRIQUE_SUPPRESSION_ARTICLE_VL				=>	'820',
 	CODE_RUBRIQUE_FAMILLE_IC							=>	'117',
 	CODE_RUBRIQUE_VALEUR_IC								=>	'118',
+	CODE_RUBRIQUE_ASSOCIATION_FAMILLE					=>	'110',
 	CODE_RUBRIQUE_IDENTIFIANT_VL						=>	'110',
 	CODE_RUBRIQUE_CONDITIONNEMENT_ARTICLE_FOURNISSEUR	=>	'110',
 
@@ -101,7 +108,11 @@ use constant {
 	CODE_VL_IDENTIFIANT_VL						=>	10,
 
 	# Conditionnement article fournisseur
-	CODE_VL_CONDITIONNEMENT_ARTICLE_FOURNISSEUR	=>	30
+	CODE_VL_CONDITIONNEMENT_ARTICLE_FOURNISSEUR	=>	30,
+
+	# association famille article
+	CODE_VL_ASSOCIATION_FAMILLE					=>	30,
+	TOP_DISSOCIATION_PREALBALE_EVENTUELLE		=>	0,
 };
 
 my %field_sizes = (qw/	CODE_ACTIVITE										3
@@ -153,6 +164,7 @@ my %field_sizes = (qw/	CODE_ACTIVITE										3
 						CODE_TYPE_IDENTIFIANT_VL							6
 						IDENTIFIANT_VL										35
 						CODE_FOURNISSEUR									13
+						CODE_FAMILLE_ARTICLE								15
 /);
 
 #print Dumper(\%field_sizes); exit;
@@ -197,7 +209,7 @@ select *
 				on A.NOART=PR.NOART and PR.PRV03='E'
 	left join	${prefix_base_rubis}GESTCOM.ASTOFIP1 S
 				on A.NOART=S.NOART and S.DEPOT='AFA'
-where	1=1 and 
+where	1=1
 EOT
 
 my @where = ();
@@ -207,15 +219,25 @@ if ($all) {
 
 } else { # on importe que quelques articles ou des dates de modif
 	if ($#articles < 0) { # si pas d'argument, on import en fonction du delta de modification
-		push @where, " ((DATE(CONCAT(A.DARMS,CONCAT(A.DARMA,CONCAT('-',CONCAT(A.DARMM,CONCAT('-',A.DARMJ)))))) + $days_until_last_article_modif DAYS) > CURRENT DATE )";
+		push @where, " and ((DATE(CONCAT(A.DARMS,CONCAT(A.DARMA,CONCAT('-',CONCAT(A.DARMM,CONCAT('-',A.DARMJ)))))) + $days_until_last_article_modif DAYS) > CURRENT DATE )";
 	} else {
-		push @where, " (".join(' or ',@articles_to_export).") ";
+		push @where, " and (".join(' or ',@articles_to_export).") ";
 	}
+}
+
+# on restrient au article  aune class de stock (a,b,c,d)
+if ($class) {
+	$class = uc($class);
+	printf "%s Select de la Class '$class'\n",get_time();	$old_time=time;
+	if (!in_array($class,\@valid_class)) {
+		die "Erreur : --class non reconnue. Class valident (".join(',',@valid_class).")";
+	}
+	push @where, " and (S.STCLA='$class') ";
 }
 
 # on restrient au article servis sur stock
 if ($stock_only) {
-	push @where, " (A.SERST='OUI') ";
+	push @where, " and (A.SERST='OUI') ";
 }
 
 $sql .= join(' and ',@where)." ORDER BY A.NOART ASC";
@@ -258,7 +280,6 @@ while($loginor->FetchRow()) {
 
 	#print Dumper(\%dimensions);
 	#exit;
-
 
 	# nettoyage de caracteres qui fait planter l'importation dans reflex
 	$row{'DESI1'} =~ s///g;
@@ -458,12 +479,18 @@ while($loginor->FetchRow()) {
 	$data{'CODE_VL_CONDITIONNEMENT_ARTICLE_FOURNISSEUR'}= fill_with_blank(CODE_VL_CONDITIONNEMENT_ARTICLE_FOURNISSEUR,$field_sizes{'CODE_VL'});
 	$data{'CODE_FOURNISSEUR'}							= fill_with_blank($row{'FOUR1'},$field_sizes{'CODE_FOURNISSEUR'});
 
-
-######### correction des erreurs de saisie ###############################################################################################################################
-
+######### correction des erreurs de saisie #########################################################################################
 	$data{'CODE_FAMILLE_STOCKAGE'} = fill_with_blank('PAL',$field_sizes{'CODE_FAMILLE_STOCKAGE'}) if $data{'CODE_FAMILLE_STOCKAGE'} eq 'DEP' ;
 
-##########################################################################################################################################################################
+####################################################################################################################################
+
+######### association famille article #########################################################################################
+	if (!in_array($row{'STCLA'},\@valid_class)) {
+		$row{'STCLA'} = 'D';
+	}
+	$data{'CODE_FAMILLE_ARTICLE'} 						= fill_with_blank($row{'STCLA'},$field_sizes{'CODE_FAMILLE_ARTICLE'});
+	
+####################################################################################################################################
 
 	my $num_sequence = fill_with_zero($i+1,7);
 
@@ -608,6 +635,11 @@ while($loginor->FetchRow()) {
 	print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE_CONDITIONNEMENT_ARTICLE_FOURNISSEUR,CODE_RUBRIQUE_CONDITIONNEMENT_ARTICLE_FOURNISSEUR)).
 					join('',@data{qw/CODE_ACTIVITE CODE CODE_VL_CONDITIONNEMENT_ARTICLE_FOURNISSEUR CODE_FOURNISSEUR/})."\n";
 
+
+	# association famille article
+	print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE_ASSOCIATION_FAMILLE,CODE_RUBRIQUE_ASSOCIATION_FAMILLE)).
+					join('',@data{qw/CODE_ACTIVITE CODE/}).
+					CODE_VL_ASSOCIATION_FAMILLE.$data{'CODE_FAMILLE_ARTICLE'}.TOP_DISSOCIATION_PREALBALE_EVENTUELLE."\n";
 
 =begin
 	# on laisse tous les articles activé dans Reflex

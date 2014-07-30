@@ -5,16 +5,12 @@ use Config::IniFiles;
 require 'Phpconst2perlconst.pm';
 use Phpconst2perlconst ;
 use POSIX qw(strftime);
+require 'Interfaces Rubis-Reflex/useful.pl'; # send_mail
 use Win32::ODBC;
 use Net::SMTP;
 
-my @TO_EMAIL	= ('benjamin.poulain@coopmcs.com','thierry.lemoignic@coopmcs.com','aymeric.merigot@coopmcs.com');
-my @TO_NAME		= ('Benjamin Poulain','Thierry Le Moignic','Aymeric Merigot');
-use constant FROM_EMAIL	=> 'commande@coopmcs.com';
-use constant FROM_NAME	=> 'Erreur commande web';
 
 # check si les commandes web ce sont bien intégrées
-
 print print_time()."START\n";
 
 my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
@@ -75,21 +71,20 @@ EOT
 
 # envoi le mail avec le rapport d'erreur
 if ($nb_erreur > 0) {
-	my $smtp = Net::SMTP->new($cfg->{SMTP_SERVEUR}) or die "Pas de connexion SMTP: $!\n";
-	$smtp->auth($cfg->{SMTP_USER},$cfg->{SMTP_PASS} );
-	$smtp->mail(FROM_EMAIL);
-	$smtp->to(@TO_EMAIL);
-
-	$smtp->data();
-	$smtp->datasend('To: '.$TO_NAME[0].' <'.$TO_EMAIL[0].">\n");
-	$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
-	$smtp->datasend("Subject: Erreur d'integration de commande web du $jour/$mois/$annee\n");
-	$smtp->datasend("\n");
-	$smtp->datasend("Voici les erreurs d'intégration de commande web dans Rubis pour la journée du $jour/$mois/$annee\n\n");
-	$smtp->datasend($message);
-	$smtp->dataend();
-
-	$smtp->quit;
+	send_mail({
+		'smtp_serveur'	=> $cfg->{'SMTP_SERVEUR'},
+		'smtp_user'		=> $cfg->{'SMTP_USER'},
+		'smtp_password'	=> $cfg->{'SMTP_PASS'},
+		'from_email' 	=> 'commande@coopmcs.com',
+		'from_name' 	=> 'Erreur commande web',
+		'subject'		=> "Erreur d'integration de commande web du $jour/$mois/$annee",
+		'message'		=> "Voici les erreurs d'intégration de commande web dans Rubis pour la journée du $jour/$mois/$annee\n\n$message",
+		'html'			=> 0,
+		'to'			=> {	'thierry.lemoignic@coopmcs.com'	=>	'Thierry Le Moignic',
+								'aymeric.merigot@coopmcs.com'	=>	'Aymeric Merigot',
+								'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain'
+							}
+	}) or die "Impossible d'envoyer le mail";
 }
 
 print print_time()."END\n\n";

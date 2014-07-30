@@ -660,7 +660,7 @@ a:hover {
 	</tr>
 <?	
 	$sql = <<<EOT
-SELECT	code_article,fournisseur,ref_fournisseur,chemin,designation,servi_sur_stock,prix_revient,prix_net,prix_achat_brut,remise1,remise2,remise3,sur_tarif,conditionnement,unite,date_creation,
+SELECT	code_article,fournisseur,code_fournisseur,ref_fournisseur,chemin,designation,servi_sur_stock,prix_revient,prix_net,prix_achat_brut,remise1,remise2,remise3,sur_tarif,conditionnement,unite,date_creation,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
@@ -710,8 +710,11 @@ EOT;
 		<tr id="<?=$row['code_article']?>" class="<?=($row['stock_afa'].$row['stock_afl'] == '' ? ' nonstock':'stock')?>">
 			<!-- photo -->
 			<td class="photo">
+<?				if (strlen($row['fournisseur']) > 0 && strlen($row['ref_fournisseur']) > 0) { ?>
+					<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur=<?=$row['code_fournisseur']?>&ref=<?=$row['ref_fournisseur']?>&largeur=500&hauteur=500"/>
+<?				} ?>
 <?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/>
+				<!--	<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/> -->
 <?				} ?>
 			</td>
 			<!-- code article -->

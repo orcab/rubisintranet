@@ -117,9 +117,9 @@ $.datepicker.setDefaults({
 	changeMonth: true,
 	changeYear:true,
 	firstDay: 1,
-	dayNamesShort: 		[ 'Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam' ],
-	dayNames: 			[ 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi' ],
-	dayNamesMin: 		[ 'Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa' ],
+	dayNamesShort: 		['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+	dayNames: 			['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+	dayNamesMin: 		['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'],
 	monthNamesShort: 	['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Déc'],
 	monthNames: 		['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Décembre']
 });

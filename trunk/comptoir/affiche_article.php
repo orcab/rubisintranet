@@ -425,7 +425,7 @@ $(document).ready(function() {
 		$table .= " INNER JOIN page_accueil PA ON A.code_article = PA.code_article";
 
 	$sql = <<<EOT
-SELECT	A.code_article,fournisseur,ref_fournisseur,designation,prix_net,prix_public,conditionnement,unite,chemin,date_creation,DATEDIFF(NOW(),date_creation) as days_since_creation,
+SELECT	A.code_article,fournisseur,code_fournisseur,ref_fournisseur,designation,prix_net,prix_public,conditionnement,unite,chemin,date_creation,DATEDIFF(NOW(),date_creation) as days_since_creation,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
@@ -454,8 +454,11 @@ EOT;
 		<tr id="ligne_<?=$row['code_article']?>" class="<?=$stocker?'stock':'nonstock'?> <?=$stock_a_0?'stock_a_0':''?>">
 			<!-- photo -->
 			<td class="photo">
+<?				if (strlen($row['fournisseur']) > 0 && strlen($row['ref_fournisseur']) > 0) { ?>
+					<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur=<?=$row['code_fournisseur']?>&ref=<?=$row['ref_fournisseur']?>&largeur=500&hauteur=500"/>
+<?				} ?>
 <?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/>
+					<!-- <img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/> -->
 <?				} ?>
 			</td>
 

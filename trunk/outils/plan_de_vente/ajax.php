@@ -49,7 +49,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
 	$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
 	$etat_avant_modif = e('ETARE',odbc_fetch_array(odbc_exec($loginor,"select ETARE from ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 where NOART='$_GET[code_article]'")));
 	if (trim($etat_avant_modif) == '') { // passer l'article en suspendu
-		if (!mysql_query("DELETE FROM article WHERE code_article='$_GET[code_article]'")) { // mysql
+		if (!mysql_query("update article WHERE set suspendu=1 where code_article='$_GET[code_article]'")) { // mysql
 			echo "{stock:1,debug:'Impossible de supprimer : ".ereg_replace("'","",mysql_error())."'}";
 		} else {
 			if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod
@@ -60,7 +60,7 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'inverse_etat_article' &&
 			echo "{stock:0}";
 		}
 	} else { // passer l'article activé
-		if (!mysql_query("INSERT INTO article (code_article,designation,chemin) VALUES ('$_GET[code_article]','Visible demain matin','$_GET[chemin]')")) { // mysql
+		if (!mysql_query("update article WHERE set suspendu=0 where code_article='$_GET[code_article]'")) { // mysql
 			echo "{stock:0,debug:'Impossible de creer : ".ereg_replace("'","",mysql_error())."'}";
 		} else {
 			if ($_SERVER['SERVER_ADDR'] == '10.211.14.6') { // que en prod

@@ -74,8 +74,7 @@ from
 	left join ${prefix_base_rubis}GESTCOM.ASTOFIP1 FICHE_STOCK
 		on FICHE_STOCK.NOART=ARTICLE.NOART
 where
-		(ARTICLE.ETARE='S' or FICHE_STOCK.STSTS='S')
-	and (FICHE_STOCK.DEPOT='AFA' or FICHE_STOCK.DEPOT='AFL')
+	ARTICLE.ETARE='S'
 EOT
 
 $loginor->Sql($sql);

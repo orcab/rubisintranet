@@ -36,15 +36,19 @@ my $reflex 				= new Win32::ODBC('DSN='.$cfg->{'REFLEX_DSN'}.';UID='.$cfg->{'REF
 ################### CREATION DU FICHIER DE SORTIE ######################################
 mkpath(dirname(OUTPUT_FILENAME)) if !-d dirname(OUTPUT_FILENAME) ;
 open(CSV,'+>'.OUTPUT_FILENAME) or die "ne peux pas creer le fichier de sortie '".OUTPUT_FILENAME."' ($!)";
-print CSV join(';',qw/ARTICLE NUM_CLIENT NOM_CLIENT CDE_RUBIS QTE_BON QTE_GEI NUM_GEI NUM_SUPPORT RESA_DESTINATAIRE_REFLEX RESA_REF_REFLEX DESI1 DESI2 DESI3 BON_PREPA_EDITE CODE_VENDEUR MONTANT_PR_LIGNE MONTANT_CA_LIGNE/)."\n";
+print CSV join(';',qw/ARTICLE NUM_CLIENT NOM_CLIENT CDE_RUBIS QTE_BON QTE_GEI NUM_GEI NUM_SUPPORT LOCALISATION RESA_REF_REFLEX DESI1 DESI2 DESI3 BON_PREPA_EDITE CODE_VENDEUR MONTANT_PR_LIGNE MONTANT_CA_LIGNE/)."\n";
 
 ################# SELECT REFLEX ########################################################
 printf "%s Select des stock reflex\n",get_time(); $old_time=time;
 my $sql_reflex = <<EOT ;
 select
-	GECART as CODE_ARTICLE, GECDES as RESA_DESTINATAIRE, GENGEI as NUM_GEI, GENSUP as NUM_SUPPORT, GEQGEI as QTE_GEI, GERRSO as RESA_REF_REFLEX
+	GECART as CODE_ARTICLE, GECDES as RESA_DESTINATAIRE, GENGEI as NUM_GEI, GENSUP as NUM_SUPPORT, GEQGEI as QTE_GEI, GERRSO as RESA_REF_REFLEX,(EMC1EM + ' ' + EMC2EM + ' '+ EMC3EM + ' ' + EMC4EM + ' ' + EMC5EM) as LOCALISATION
 from
-	${prefix_base_reflex}.HLGEINP GEI
+	${prefix_base_reflex}.HLGEINP 				GEI
+	left join	${prefix_base_reflex}.HLSUPPP 	SUPPORT
+		on GEI.GENSUP=SUPPORT.SUNSUP
+	left join  	${prefix_base_reflex}.HLEMPLP 	EMPLACEMENT
+		on SUPPORT.SUNEMP=EMPLACEMENT.EMNEMP
 where
 		GECTST='200' and GECDPO='AFA' and GECACT='MCS' and GECPRP='MCS' and GECQAL='AFA' 	--on restreint au dépot AFA en qualité AFA
 	and (GECDES<>'' or GERRSO<>'')
@@ -81,30 +85,30 @@ EOT
 
 	if ($rubis->Sql($sql_rubis))  { die "SQL Rubis RESA failed : ", $rubis->Error(); }
 	my $nb_row = 0;
-	#while ($rubis->FetchRow()) {
+
 	if ($rubis->FetchRow()) {
-		my %row_rubis = $rubis->DataHash() ;
+		# my %row_rubis = $rubis->DataHash() ;
 		
-		print CSV join(';',	$row_reflex{'CODE_ARTICLE'},
-							$code_client_resa,
-							$row_rubis{'NOM_CLIENT'},
-							$row_rubis{'NUM_BON'},
-							remove_useless_zero($row_rubis{'QTE_BON'}),
-							$row_reflex{'QTE_GEI'},
-							$row_reflex{'NUM_GEI'},
-							$row_reflex{'NUM_SUPPORT'},
-							$row_reflex{'RESA_DESTINATAIRE'},
-							$row_reflex{'RESA_REF_REFLEX'},
-							$row_rubis{'DESI1'},
-							$row_rubis{'DESI2'},
-							$row_rubis{'DESI3'},
-							$row_rubis{'BON_PREPA_EDITE'},
-							$row_rubis{'CODE_VENDEUR'},
-							dot2comma($row_rubis{'MONTANT_PR_LIGNE'}),
-							dot2comma($row_rubis{'MONTANT_CA_LIGNE'})
-					)."\n";
+		# print CSV join(';',	$row_reflex{'CODE_ARTICLE'},
+		# 					$code_client_resa,
+		# 					$row_rubis{'NOM_CLIENT'},
+		# 					$row_rubis{'NUM_BON'},
+		# 					remove_useless_zero($row_rubis{'QTE_BON'}),
+		# 					$row_reflex{'QTE_GEI'},
+		# 					$row_reflex{'NUM_GEI'},
+		# 					$row_reflex{'NUM_SUPPORT'},
+		# 					$row_reflex{'LOCALISATION'},
+		# 					$row_reflex{'RESA_REF_REFLEX'},
+		# 					$row_rubis{'DESI1'},
+		# 					$row_rubis{'DESI2'},
+		# 					$row_rubis{'DESI3'},
+		# 					$row_rubis{'BON_PREPA_EDITE'},
+		# 					$row_rubis{'CODE_VENDEUR'},
+		# 					dot2comma($row_rubis{'MONTANT_PR_LIGNE'}),
+		# 					dot2comma($row_rubis{'MONTANT_CA_LIGNE'})
+		# 			)."\n";
 		$nb_row++;
-	} # fin while rubis
+	} # fin if in rubis
 
 	if ($nb_row <= 0) { # de pas de réservation dans RUBIS
 		print CSV join(';',	$row_reflex{'CODE_ARTICLE'},
@@ -115,7 +119,7 @@ EOT
 							$row_reflex{'QTE_GEI'},
 							$row_reflex{'NUM_GEI'},
 							$row_reflex{'NUM_SUPPORT'},
-							$row_reflex{'RESA_DESTINATAIRE'},
+							$row_reflex{'LOCALISATION'},
 							$row_reflex{'RESA_REF_REFLEX'},
 							'',
 							'',
@@ -130,12 +134,3 @@ EOT
 } # fin while reflex
 
 close(CSV);
-
-# cree une sauvegarde du fichier
-=begin
-printf "%s Create save file\n",get_time();
-mkpath(dirname(OUTPUT_FILENAME).'/sauvegarde') if !-d dirname(OUTPUT_FILENAME).'/sauvegarde' ;
-copy(	OUTPUT_FILENAME,
-		dirname(OUTPUT_FILENAME).'/sauvegarde/'.strftime("%Y-%m-%d %Hh%Mm%Ss ", localtime).basename(OUTPUT_FILENAME)
-	);
-=cut
