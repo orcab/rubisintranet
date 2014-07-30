@@ -24,6 +24,7 @@ select	A.NOART as CODE_ARTICLE,
 		AFOG3 as GENCOD,SERST as SERVI_SUR_STOCK,CONDI as CONDITIONNEMENT,SURCO as SURCONDITIONNEMENT,CDCON as CONDI_DIVISIBLE,LUNTA as UNITE,
 		ACTIV as ACTIVITE,FAMI1 as FAMILLE,SFAM1 as SOUSFAMILLE,ART04 as CHAPITRE,ART05 as SOUSCHAPITRE,
 		NOMFO as FOURNISSEUR,REFFO as REF_FOURNISSEUR,AFOGE as REF_FOURNISSEUR_CONDENSEE,
+		FOUR1 as CODE_FOURNISSEUR,
 		ROUND(PV.PVEN1,3) as PRIX_VENTE_ADH,
 		ROUND(PV.PVEN6,3) as PRIX_VENTE_PUBLIC,
 		PARVT as PRIX_ACHAT_BRUT, RMRV1 as REMISE1, RMRV2 as REMISE2, RMRV3 as REMISE3,PRVT2 as PRIX_ACHAT_NET,
@@ -95,7 +96,7 @@ while($loginor->FetchRow()) {
 	push @chemin, $row{'SOUSCHAPITRE'}	if $row{'SOUSCHAPITRE'} ;
 	my $chemin = join('.',@chemin);
 	
-	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_achat_brut,prix_revient,prix_net,prix_public,remise1,remise2,remise3,sur_tarif,ecotaxe,date_creation) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_ACHAT_BRUT}','$row{PRIX_ACHAT_NET}','$row{PRIX_VENTE_ADH}','$row{PRIX_PUBLIC}','$row{REMISE1}','$row{REMISE2}','$row{REMISE3}','$sur_tarif','$row{ECOTAXE}','$row{DATE_CREATION}');") or warn( Dumper(\%row) );
+	$mysql->query("INSERT IGNORE INTO article (code_article,designation,gencod,servi_sur_stock,conditionnement,surconditionnement,unite,activite,famille,sousfamille,chapitre,souschapitre,chemin,fournisseur,ref_fournisseur,ref_fournisseur_condensee,prix_achat_brut,prix_revient,prix_net,prix_public,remise1,remise2,remise3,sur_tarif,ecotaxe,date_creation,code_fournisseur) VALUES ('$row{CODE_ARTICLE}','".join("\n",($row{'DESIGNATION1'},$row{'DESIGNATION2'},$row{'DESIGNATION3'}))."','$row{GENCOD}',$servi_sur_stock,'$row{CONDITIONNEMENT}','$row{SURCONDITIONNEMENT}','$row{UNITE}','$row{ACTIVITE}','$row{FAMILLE}','$row{SOUSFAMILLE}','$row{CHAPITRE}','$row{SOUSCHAPITRE}','$chemin','$row{FOURNISSEUR}','$row{REF_FOURNISSEUR}','$row{REF_FOURNISSEUR_CONDENSEE}','$row{PRIX_ACHAT_BRUT}','$row{PRIX_ACHAT_NET}','$row{PRIX_VENTE_ADH}','$row{PRIX_PUBLIC}','$row{REMISE1}','$row{REMISE2}','$row{REMISE3}','$sur_tarif','$row{ECOTAXE}','$row{DATE_CREATION}','$row{CODE_FOURNISSEUR}');") or warn( Dumper(\%row) );
 }
 close F ;
 print " ok\n";
@@ -154,6 +155,7 @@ CREATE TABLE IF NOT EXISTS `article` (
 	`ecotaxe` decimal(10,2) default NULL,
 	`date_creation` date NOT NULL,
 	`suspendu` tinyint(1) default '0',
+	`code_fournisseur` varchar(6) default NULL,
 	PRIMARY KEY  (`id`),
 	UNIQUE KEY `code_article` (`code_article`),
 	KEY `fourn` (`fournisseur`),

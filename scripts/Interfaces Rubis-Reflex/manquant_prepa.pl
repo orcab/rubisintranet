@@ -10,12 +10,6 @@ require 'useful.pl'; # load get_time / second2hms
 use Phpconst2perlconst ;
 use Getopt::Long;
 use Net::SMTP;
-use constant FROM_EMAIL	=> 'reflex@coopmcs.com';
-use constant FROM_NAME	=> 'Manquant prepa reflex';
-my @TO_EMAIL	= ('bernard.taverson@coopmcs.com','emmanuel.lemab@coopmcs.com','regis.lefloch@coopmcs.com','jeremy.morice@coopmcs.com','claude.kergosien@coopmcs.com');
-my @TO_NAME		= ('Bernard Taverson','Emmanuel Le Mab','Regis Le Floch','Jemery Morice','Claude Kergosien');
-#my @TO_EMAIL	= ('benjamin.poulain@coopmcs.com');
-#my @TO_NAME		= ('Benjamin Poulain');
 
 $|=1;
 my ($siecle,$annee,$mois,$jour) = (	substr(strftime('%Y',localtime),0,2),
@@ -84,9 +78,10 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 		left join ${prefix_base_reflex}.HLCOMMP COMMENTAIRE
 			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
 
-WHERE 	P1QPRE<P1QAPR AND P1NNSL=0
-	and P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour'
+WHERE 	P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
 	and P1TVLP=1 --prepa validée
+	and P1QPRE<P1QAPR --la qte preparée est inférieur à la qte demandée
+	and P1NNSL=0 --la qte non servi au lancement
 
 ORDER BY P1CART ASC
 EOT
@@ -133,24 +128,24 @@ $message .= "</table></body></html>\n";
 
 if (!$noemail) {
 	printf "%s Envoi email\n",get_time();	$old_time=time;
-	my 	$smtp = Net::SMTP->new($cfg->{'SMTP_SERVEUR'}) or die "Pas de connexion SMTP a ".$cfg->{'SMTP_SERVEUR'}.": $!\n";
-		$smtp->auth($cfg->{'SMTP_USER'},$cfg->{'SMTP_PASS'} );
-	 	$smtp->mail(FROM_EMAIL);
-	 	$smtp->to(@TO_EMAIL);
+	send_mail({
+		'smtp_serveur'	=> $cfg->{'SMTP_SERVEUR'},
+		'smtp_user'		=> $cfg->{'SMTP_USER'},
+		'smtp_password'	=> $cfg->{'SMTP_PASS'},
+		'from_email' 	=> 'reflex@coopmcs.com',
+		'from_name' 	=> 'Manquant prepa reflex',
+		'subject'		=> "Manquant à la préparation Reflex du $jour/$mois/$annee",
+		'message'		=> $message,
+		'html'			=> 1,
+		'to'			=> {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
+								'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab',
+								'regis.lefloch@coopmcs.com'		=>	'Regis Le Floch',
+								'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
+								'claude.kergosien@coopmcs.com'	=>	'Claude Kergosien',
+								'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain'
+							}
 
-	 	$smtp->data();
-	 	$smtp->datasend('To: '.$TO_NAME[0].' <'.$TO_EMAIL[0].">\n");
-	 	$smtp->datasend('From: '.FROM_NAME.' <'.FROM_EMAIL.">\n");
-	 	$smtp->datasend("Subject: Manquant à la préparation Reflex du $jour/$mois/$annee\n");
-	 	$smtp->datasend("MIME-Version: 1.0\n");
-	 	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
-	 	$smtp->datasend("\n--frontier\n");
-	 	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
-	 	$smtp->datasend("\n");
-	 	$smtp->datasend($message);
-	 	$smtp->datasend("--frontier--\n");
-	 	$smtp->dataend();
-	 	$smtp->quit;
+	}) or die "Impossible d'envoyer le mail";
 
  } else {
  	print $message;
