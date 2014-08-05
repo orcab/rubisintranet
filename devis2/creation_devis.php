@@ -136,8 +136,8 @@ function affiche_phrase(li_elm) {
 
 	// colle la phrase dans le bon cadre
 	var textarea;
-	textarea = $(last_btn_phrase_push).next('textarea.designation');	
-	$(textarea).text($(textarea).text() + "\n" + phrase);
+	textarea = $(last_btn_phrase_push).next('textarea.designation');
+	$(textarea).val($(textarea).val().length > 0 ? $(textarea).val() + "\n" + phrase : phrase);
 }
 
 
