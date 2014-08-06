@@ -137,12 +137,12 @@ function verif_form() {
 <input type="hidden" id="param1" name="param1" value=""/>
 <div id="recherche">
 	<h1>Choix de la requete</h1>
-	<input type="radio" id="montant_honorable_rubis" name="requete" value="montant_honorable_rubis"/><label for="montant_honorable_rubis">Montant honorable à l'instant T (Rubis)</label><br/>
-	<input type="radio" id="manquant_a_la_preparation_reflex" name="requete" value="manquant_a_la_preparation_reflex"/><label for="manquant_a_la_preparation_reflex">Manquant à la préparation à une date (Reflex)</label><br/>
-	<!--<input type="radio" id="remise_zero_gei_reflex" name="requete" value="remise_zero_gei_reflex"/><label for="remise_zero_gei_reflex">Remise à 0 des GEI pour une date (Reflex)</label><br/>-->
-	<input type="radio" id="code_taille_emplacement_article_lie_reflex" name="requete" value="code_taille_emplacement_article_lie_reflex"/><label for="code_taille_emplacement_article_lie_reflex">Code taille emplacement et articles liés (Reflex)</label><br/>
-	<input type="radio" id="livraison_entre_5h_et_5h30_rubis" name="requete" value="livraison_entre_5h_et_5h30_rubis"/><label for="livraison_entre_5h_et_5h30_rubis">Livraison entre 5h et 5h30 via STRACC (Rubis)</label><br/>
-	<input type="radio" id="livraison_en_double_rubis" name="requete" value="livraison_en_double_rubis"/><label for="livraison_en_double_rubis">Test (Rubis)</label>
+	<input type="radio" id="montant_honorable_rubis" 					name="requete" value="montant_honorable_rubis"/><label 						for="montant_honorable_rubis">Montant honorable à l'instant T (Rubis)</label><br/>
+	<input type="radio" id="manquant_a_la_preparation_reflex" 			name="requete" value="manquant_a_la_preparation_reflex"/><label 			for="manquant_a_la_preparation_reflex">Manquant à la préparation à une date (Reflex)</label><br/>
+	<!--<input type="radio" id="remise_zero_gei_reflex" 				name="requete" value="remise_zero_gei_reflex"/><label 						for="remise_zero_gei_reflex">Remise à 0 des GEI pour une date (Reflex)</label><br/>-->
+	<input type="radio" id="code_taille_emplacement_article_lie_reflex" name="requete" value="code_taille_emplacement_article_lie_reflex"/><label 	for="code_taille_emplacement_article_lie_reflex">Code taille emplacement et articles liés (Reflex)</label><br/>
+	<input type="radio" id="livraison_entre_5h_et_5h30_rubis" 			name="requete" value="livraison_entre_5h_et_5h30_rubis"/><label 			for="livraison_entre_5h_et_5h30_rubis">Livraison entre 5h et 5h30 via STRACC (Rubis)</label><br/>
+	<input type="radio" id="livraison_en_double_rubis" 					name="requete" value="livraison_en_double_rubis"/><label 					for="livraison_en_double_rubis">Test (Rubis)</label>
 	<br/><br/>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Afficher les résultats</a><br/>
 </div>
@@ -255,11 +255,18 @@ FROM 	RFXPRODDTA.reflex.HLPRPLP PREPA_DETAIL
 			on PREPA_DETAIL.P1CDES=DEST.DSCDES
 		left join RFXPRODDTA.reflex.HLODPEP ODP_ENTETE
 			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
-WHERE 	P1QPRE<P1QAPR AND P1NNSL=0
-	and P1SSCA='$date[siecle]' and P1ANCA='$date[annee]' and P1MOCA='$date[mois]' and P1JOCA='$date[jour]'
-	and P1TVLP=1 --prepa validée
+WHERE 	
+		P1SSCA='$date[siecle]' and P1ANCA='$date[annee]' and P1MOCA='$date[mois]' and P1JOCA='$date[jour]'
+	and P1TVLP=1 	--prepa validée
+	and (	P1NNSL>0 and P1RRSO=''	-- avec des manquant au lancement sans réservation
+			OR 
+		 	P1QPRE<P1QAPR AND P1NNSL=0	-- quantité préparée inférieur a quantité demandée
+		)
+ORDER BY CODE_ARTICLE ASC
 EOT;
 }
+
+
 
 function remise_zero_gei_reflex() {
 	$date = extract_days_from_date_ddmmyyyy($_POST['param1']);
