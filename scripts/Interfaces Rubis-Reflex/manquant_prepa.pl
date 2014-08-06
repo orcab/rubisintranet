@@ -80,10 +80,11 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 
 WHERE 	P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
 	and P1TVLP=1 --prepa validée
-	and P1QPRE<P1QAPR --la qte preparée est inférieur à la qte demandée
-	and P1NNSL=0 --la qte non servi au lancement
-
-ORDER BY P1CART ASC
+	and (	P1NNSL>0 and P1RRSO=''	-- avec des manquant au lancement sans réservation
+			OR 
+		 	P1QPRE<P1QAPR AND P1NNSL=0	-- quantité préparée inférieur a quantité demandée
+		)
+ORDER BY CODE_ARTICLE ASC
 EOT
 
 #print $sql_reflex;exit;
