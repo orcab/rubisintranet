@@ -166,7 +166,7 @@ function refresh_etiquette(sel,id) {
 									'" title="'+detail.activite+'_'+detail.famille+'_'+detail.sousfamille+'_'+detail.chapitre+'_'+detail.souschapitre+'"></td>'+
 									'<td class="fournisseur">'+
 										'<div class="fournisseur">'+detail.fournisseur+'</div>'+
-										'<div class="reference">'+detail.reference+'</div>'+
+										'<div class="reference hide_when_print">'+detail.reference+'</div>'+
 									'</td>'+
 										'<td class="designation">'+(qte > 1 ? '<strong>x'+qte+'</strong> ':'') + detail.designation+
 										'<div class="code_mcs">Code : '+detail.code_mcs+' '+

@@ -638,7 +638,8 @@ select	ECHEANCE.LIECH as LIBELLE_ECHEANCE,
 		CLIENT.RENDI as MDP_SITE_WEB,
 		CLIENT.PROFE as DATE_ADHESION,
 		CLIENT.CLSIR as SIRET,
-		CLIENT.CONTA as DIRIGEANT
+		CLIENT.CONTA as DIRIGEANT,
+		CLIENT.CLID8 as CONSEIL_ADMIN
 from	${LOGINOR_PREFIX_BASE}GESTCOM.ACLIENP1 CLIENT
 			left join ${LOGINOR_PREFIX_BASE}GESTCOM.AECHEAP1 ECHEANCE
 				on CLIENT.NUECH=ECHEANCE.NUECH
@@ -691,6 +692,7 @@ EOT;
 			<tr><td>Echéance :</td><td><?=trim($row_rubis['LIBELLE_ECHEANCE'])?></td></tr>
 			<tr><td>Réglement :</td><td><?=trim($info_rubis['REG'])?></td></tr>
 			<tr><td>Date d'adhésion :</td><td><?=trim($row_rubis['DATE_ADHESION'])?></td></tr>
+			<tr><td>Conseil d'admin ? :</td><td><?=trim($row_rubis['CONSEIL_ADMIN']) ? 'OUI':'NON'?></td></tr>
 			<tr><td>MDP Site Web :</td><td><?=trim($row_rubis['MDP_SITE_WEB'])?></td></tr>
 			<tr><td>Distance de MCS :</td><td id="distance_from_mcs"></td></tr>
 			<tr>
