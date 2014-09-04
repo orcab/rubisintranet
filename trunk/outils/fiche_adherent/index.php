@@ -157,6 +157,8 @@ div.date, div.humeur, div.createur, div.type {
 
 </style>
 
+<link rel="stylesheet" href="../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../js/fontawesome/css/icon-custom.css">
+
 <style type="text/css">@import url(../../js/boutton.css);</style>
 <script language="javascript" src="../../js/jquery.js"></script>
 <script type="text/javascript">
@@ -393,6 +395,11 @@ while($row = mysql_fetch_array($res)) { ?>
 <table id="liste-artisan-favoris" style="margin:auto;width:40%;margin-top:10px;">
 	<caption>FAVORIS</caption>
 </table>
+
+<br/>
+<a class="btn" href="trombinoscope_artisan.php"><i class="icon-ok"></i> Générer le trombinoscope des artisans</a>
+<!-- KCLIENP1 (table contact) / ACLIENP1.CLID8 (administrateur)-->
+
 
 <div id="debug"></div>
 
