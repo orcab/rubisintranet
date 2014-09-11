@@ -32,8 +32,9 @@ define('SMS_GATEWAY','http://10.211.14.248:9090/sendsms?');
 
 ////////////////////// SERVEUR SMTP POUR L'ENVOI DE MAIL ////////////////////////////////////////
 define('SMTP_SERVEUR','ns0.ovh.net');	// un serveur SMTP pour l'envoi de mail
+//define('SMTP_SERVEUR','smtp.wanadoo.fr');	// un serveur SMTP pour l'envoi de mail
 define('SMTP_USER','benjamin.poulain%coopmcs.com'); // le user sur un SMTP protégé
-define('SMTP_PASS','ranaruta'); // le password sur un SMTP protégé
+define('SMTP_PASS','v7bp3ki2'); // le password sur un SMTP protégé
 define('SMTP_PORT',587); // le port SMTP
 define('SMTP_TLS_SLL',''); // Utilisé TLS ou SSL ou rien ?
 ?>

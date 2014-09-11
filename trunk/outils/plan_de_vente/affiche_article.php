@@ -1,39 +1,44 @@
 <?php
-	include('../../inc/config.php');
-	
-	define('PREFIX_IMAGE_PATH','../../tarif2/miniatures/');
+include('../../inc/config.php');
 
-	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
-	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+//define('PREFIX_IMAGE_PATH','../../tarif2/miniatures/');
 
-	$droit = recuperer_droit();
+$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-	session_start();
+$droit = recuperer_droit();
 
-	if (isset($_GET['chemin'])) { // recherche par arborérence
-		$_SESSION['chemin'] = $_GET['chemin'] ;
-		unset($_SESSION['search_text']);
-	}
+session_start();
 
-	if (isset($_POST['search_text'])) { // recherche de code
-		$_SESSION['search_text'] = $_POST['search_text'] ;
-		unset($_SESSION['chemin']);
-	}
+if (isset($_GET['chemin'])) { // recherche par arborérence
+	$_SESSION['chemin'] = $_GET['chemin'] ;
+	unset($_SESSION['search_text']);
+}
 
-	if (!isset($_SESSION['order'])) $_SESSION['order'] = 'code_article ASC';
-	if (isset($_GET['order']))
-		$_SESSION['order']  = $_GET['order'];
+if (isset($_POST['search_text'])) { // recherche de code
+	$_SESSION['search_text'] = $_POST['search_text'] ;
+	unset($_SESSION['chemin']);
+}
 
-	$IMAGES = array();
-	if (file_exists('images_data.php'))
-		include 'images_data.php';
-	else
-		echo ("Impossible de charger le fichier de cache des images");
+if (!isset($_SESSION['order'])) $_SESSION['order'] = 'code_article ASC';
+if (isset($_GET['order']))
+	$_SESSION['order']  = $_GET['order'];
+
+/*
+$IMAGES = array();
+if (file_exists('images_data.php'))
+	include 'images_data.php';
+else
+	echo ("Impossible de charger le fichier de cache des images");
+	*/
 	//print_r($IMAGES);exit;
 ?>
 <html>
 <head>
 <style>
+
+@font-face { font-family: SG05; src: url('../../fonts/SG05.ttf'); }
+
 body { margin:0px; }
 body,pre { font-family: verdana,helvetica; }
 pre { font-size:10px; }
@@ -76,11 +81,13 @@ table#article td.stock {
 	background-repeat:no-repeat;
 	width:30px;
 	text-align:center;
+	vertical-align: top;
 }
-table#article td.s0 { background-image:url('gfx/stock2-0.png'); }
-table#article td.s1 { background-image:url('gfx/stock2-1.png'); }
-table#article td.s2 { background-image:url('gfx/stock2-2.png'); }
-table#article td.s3 { background-image:url('gfx/stock2-3.png'); }
+
+table#article td.s0 { background-image:url('gfx/stock2-0.png'); color:#c0c0c0;}
+table#article td.s1 { background-image:url('gfx/stock2-1.png'); color:#ed1f24;}
+table#article td.s2 { background-image:url('gfx/stock2-2.png'); color:#f68e46;}
+table#article td.s3 { background-image:url('gfx/stock2-3.png'); color:#3fac49;}
 
 table#article td.stock img { margin-top:20px; }
 
@@ -151,9 +158,17 @@ td.prix_revient {
 }
 
 tr.nonstock { display:none; }
-tr.stock { }
+
+div.stock_reel {
+	font-size:2em;
+	font-family:SG05;
+	margin-top:8px;
+}
 
 </style>
+<!-- GESTION DES ICONS EN POLICE -->
+<link rel="stylesheet" href="../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../js/fontawesome/css/icon-custom.css">
+
 <style type="text/css">@import url(../../js/boutton.css);</style>
 <style type="text/css">@import url(../../js/infobulle.css);</style>
 <SCRIPT LANGUAGE="JavaScript" SRC="../../js/jquery.js"></SCRIPT>
@@ -713,18 +728,19 @@ EOT;
 <?				if (strlen($row['fournisseur']) > 0 && strlen($row['ref_fournisseur']) > 0) { ?>
 					<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur=<?=$row['code_fournisseur']?>&ref=<?=$row['ref_fournisseur']?>&largeur=500&hauteur=500"/>
 <?				} ?>
-<?				if (array_key_exists($row['code_article'],$IMAGES)) { // il y a une photo ?>
-				<!--	<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$row['code_article']][0]?>"/> -->
-<?				} ?>
 			</td>
+			
 			<!-- code article -->
 			<td class="code_article"><a href="javascript:detail_article('<?=$row['code_article']?>');" class="info"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['code_article']) : $row['code_article']?><span>Afficher les détails de l'article</span></a></td>
+			
 			<!-- fournisseur -->
 			<td class="fournisseur" style="font-size:9px;"><?=wordwrap($row['fournisseur'], 20, "<br />\n")?></td>
+			
 			<!-- ref fournisseur -->
 			<td class="ref_fournisseur" style="font-size:9px;">
 				<?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['ref_fournisseur']) : $row['ref_fournisseur']?>
 			</td>
+
 			<!-- designation -->
 			<td class="designation" style="font-size:9px;">
 				<pre style="font-size:9px;">
@@ -761,20 +777,24 @@ EOT;
 				elseif  ($row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) echo "s2";	// en dessous du mini
 				else								echo "s3";									// au dessus du mini
 			?>">
+			<div class="stock_reel"><?=str_replace('.000','',$row['stock_afa'])?></div>
 <?			if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
-				<img src="gfx/reappro.png"/>
+				<i class="icon-truck icon-2x" title="Réappro en cours"></i>
 <?			} ?>
 			</td>
+
 			<td class="stock <?
 				if		($row['stock_afl'] == '')	echo "s0";									// pas stocké
 				elseif  ($row['stock_afl'] <= 0)	echo "s1";									// en rupture
 				elseif  ($row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) echo "s2";	// en dessous du mini
 				else								echo "s3";									// au dessus du mini
 			?>">
+			<div class="stock_reel"><?=str_replace('.000','',$row['stock_afl'])?></div>
 <?			if ($row['reappro_afl'] > 0) { // reappro de stock en cours ?>
-				<img src="gfx/reappro.png"/>
+				<i class="icon-truck icon-2x" title="Réappro en cours"></i>
 <?			} ?>
 			</td>
+
 			<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 				<td><input type="checkbox" name="checkbox_<?=$row['code_article']?>" /></td>
 			<? } ?>
@@ -788,6 +808,7 @@ EOT;
 					</a>
 				<? } ?>
 			</td>
+
 			<!-- sur tarif -->
 			<td class="sur_tarif" align="center">
 				<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
@@ -798,6 +819,7 @@ EOT;
 					</a>
 				<? } ?>
 			</td>
+
 			<!-- prix revient -->
 			<td class="prix_revient" nowrap="nowrap" title="Prix achat brut : <?=$row['prix_achat_brut']."\n"?>Remises : <?=$row['remise1']?> + <?=$row['remise2']?> + <?=$row['remise3']."\n"?>Prix revient : <?=$row['prix_revient']."\n"?>Marge/Coef : <? 
 				$coef	= $row['prix_net'] / $row['prix_revient'];
@@ -811,6 +833,7 @@ EOT;
 					printf('%0.2f&euro;',$row['prix_revient']);
 				} ?>
 			</td>
+
 			<!-- prix net -->
 			<td class="prix_net" nowrap="nowrap"><?
 				if ($row['conditionnement'] > 1) {
@@ -820,6 +843,7 @@ EOT;
 					printf('%0.2f&euro;',$row['prix_net']);
 				} ?>
 			</td>
+
 			<? if ($droit & PEUT_MODIFIER_ARTICLE) { ?>
 				<td align="center">			
 					<a class="info"><span>Suspendre l'article</span><img src="gfx/suspendre.png" onclick="inverse_etat_article(this,'<?=$row['code_article']?>','<?=isset($_SESSION['chemin'])?$_SESSION['chemin']:''?>');"></a>

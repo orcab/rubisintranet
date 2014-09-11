@@ -80,9 +80,9 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 
 WHERE 	P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
 	and P1TVLP=1 --prepa validée
-	and (	P1NNSL>0 and P1RRSO=''	-- avec des manquant au lancement sans réservation
+	and (	(P1NNSL>0 and P1RRSO='')	-- avec des manquant au lancement sans réservation
 			OR 
-		 	P1QPRE<P1QAPR AND P1NNSL=0	-- quantité préparée inférieur a quantité demandée
+		 	(P1QPRE<P1QAPR AND P1NNSL=0)	-- quantité préparée inférieur a quantité demandée
 		)
 ORDER BY CODE_ARTICLE ASC
 EOT
