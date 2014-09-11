@@ -112,41 +112,54 @@ sub icaldate2sqldate($) {
 	}
 }
 
+sub smtp_auth(%) {
+	my $ref_param = shift;
+	use Net::POP3;
+	my $pop = Net::POP3->new($ref_param->{'smtp_serveur'});
+	if ($pop->login($ref_param->{'smtp_user'},$ref_param->{'smtp_password'})>0) {
+		$pop->quit;
+	}
+}
+
 sub send_mail(%) {
 	my $ref_param = shift;
 
 	my @to_email = keys 	%{$ref_param->{'to'}};
 	my @to_name  = values 	%{$ref_param->{'to'}};
-	#print Dumper($ref_param,\@to_email,\@to_name);
+	
+	#smtp_auth($ref_param);
+	my 	$smtp = Net::SMTP->new(	$ref_param->{'smtp_serveur'}) or return -1;
 
-	my 	$smtp = Net::SMTP->new($ref_param->{'smtp_serveur'}) or return -1;
+	if (exists $ref_param->{'smtp_user'}) {
 		$smtp->auth($ref_param->{'smtp_user'},$ref_param->{'smtp_password'});
-	 	$smtp->mail($ref_param->{'from_email'}) or return -3;
-	 	$smtp->to(keys %{$ref_param->{'to'}}) or return -4;
+	}
 
-	  	$smtp->data();
-	  	$smtp->datasend('To: '.$to_name[0].' <'.$to_email[0].">\n");
-	  	$smtp->datasend('From: '.$ref_param->{'from_name'}.' <'.$ref_param->{'from_email'}.">\n");
-	  	$smtp->datasend("Subject: ".$ref_param->{'subject'}."\n");
+ 	$smtp->mail($ref_param->{'from_email'}) or return -3;
+ 	$smtp->to(keys %{$ref_param->{'to'}}) or return -4;
 
-	  	if ($ref_param->{'html'}) {
-		  	$smtp->datasend("MIME-Version: 1.0\n");
-		  	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
-		  	$smtp->datasend("\n--frontier\n");
-		  	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
-		  	$smtp->datasend("\n");
-		}
+  	$smtp->data();
+  	$smtp->datasend('To: '.$to_name[0].' <'.$to_email[0].">\n");
+  	$smtp->datasend('From: '.$ref_param->{'from_name'}.' <'.$ref_param->{'from_email'}.">\n");
+  	$smtp->datasend("Subject: ".$ref_param->{'subject'}."\n");
 
-	  	$smtp->datasend($ref_param->{'message'});
-	  	
-	  	if ($ref_param->{'html'}) {
-	  		$smtp->datasend("\n--frontier--\n");
-	  	}
+  	if ($ref_param->{'html'}) {
+	  	$smtp->datasend("MIME-Version: 1.0\n");
+	  	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
+	  	$smtp->datasend("\n--frontier\n");
+	  	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
+	  	$smtp->datasend("\n");
+	}
 
-	  	$smtp->dataend();
-	 	$smtp->quit or return -7;
+  	$smtp->datasend($ref_param->{'message'});
+  	
+  	if ($ref_param->{'html'}) {
+  		$smtp->datasend("\n--frontier--\n");
+  	}
 
-	 	return 1;
+  	$smtp->dataend();
+ 	$smtp->quit or return -7;
+
+ 	return 1;
 }
 
 1;

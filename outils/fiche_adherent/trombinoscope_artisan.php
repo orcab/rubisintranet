@@ -24,6 +24,7 @@ where
 			CLIENT.ETCLE=''		--client actif
 		and CLIENT.CATCL='1' 	-- type adhérent
 		and CLIENT.NOMCL<>'ADHERENT'
+		and CLIENT.NOCLI<>'056039'
 order by CLIENT.NOMCL asc
 EOT;
 

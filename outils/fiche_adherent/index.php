@@ -397,7 +397,7 @@ while($row = mysql_fetch_array($res)) { ?>
 </table>
 
 <br/>
-<a class="btn" href="trombinoscope_artisan.php"><i class="icon-ok"></i> Générer le trombinoscope des artisans</a>
+<a class="btn" href="trombinoscope_artisan.php" style="margin-left:100px;"><i class="icon-ok"></i> Générer le trombinoscope des artisans</a>
 <!-- KCLIENP1 (table contact) / ACLIENP1.CLID8 (administrateur)-->
 
 
