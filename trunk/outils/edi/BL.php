@@ -83,7 +83,7 @@ EOT;
 	$type_cde	= $row_entete['TYCDE']=='SPE' ? 'S':'';
 	$qte		= str_replace('.000','',$row_entete['QTESA']);
 	$pu			= sprintf('%0.2f',$row_entete['PRINE']);
-	$total		+= $qte * $pu ; //sprintf('%0.2f',$row_entete['MONTBT']);
+	$total		+= $row_entete['QTESA'] * $row_entete['PRINE'] ; //sprintf('%0.2f',$row_entete['MONTBT']);
 
 	$html .= <<<EOT
 <tr>
@@ -103,6 +103,7 @@ EOT;
 
 // derniere facture et pied de mail
 if ($nb_bon) {
+	$total = sprintf('%0.2f',$total);
 	$html .= <<<EOT
 <tr>
 	<td colspan="2">&nbsp;</td>

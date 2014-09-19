@@ -112,54 +112,27 @@ sub icaldate2sqldate($) {
 	}
 }
 
-sub smtp_auth(%) {
-	my $ref_param = shift;
-	use Net::POP3;
-	my $pop = Net::POP3->new($ref_param->{'smtp_serveur'});
-	if ($pop->login($ref_param->{'smtp_user'},$ref_param->{'smtp_password'})>0) {
-		$pop->quit;
-	}
-}
 
 sub send_mail(%) {
+	use JSON;
 	my $ref_param = shift;
 
-	my @to_email = keys 	%{$ref_param->{'to'}};
-	my @to_name  = values 	%{$ref_param->{'to'}};
-	
-	#smtp_auth($ref_param);
-	my 	$smtp = Net::SMTP->new(	$ref_param->{'smtp_serveur'}) or return -1;
+	my $hash = {
+		'server'	=>	$ref_param->{'smtp_serveur'},
+	 	'user'		=>	$ref_param->{'smtp_user'},
+	 	'password'	=>	$ref_param->{'smtp_password'},
+	 	'port'		=>	$ref_param->{'smtp_port'},
+	 	'tls'		=>	0,
+	 	'from'		=>	$ref_param->{'from_email'},
+	 	'html'		=>	$ref_param->{'message'},
+	 	'subject'	=>	$ref_param->{'subject'},
+	 	'to'		=>	$ref_param->{'to'}
+	};
 
-	if (exists $ref_param->{'smtp_user'}) {
-		$smtp->auth($ref_param->{'smtp_user'},$ref_param->{'smtp_password'});
-	}
-
- 	$smtp->mail($ref_param->{'from_email'}) or return -3;
- 	$smtp->to(keys %{$ref_param->{'to'}}) or return -4;
-
-  	$smtp->data();
-  	$smtp->datasend('To: '.$to_name[0].' <'.$to_email[0].">\n");
-  	$smtp->datasend('From: '.$ref_param->{'from_name'}.' <'.$ref_param->{'from_email'}.">\n");
-  	$smtp->datasend("Subject: ".$ref_param->{'subject'}."\n");
-
-  	if ($ref_param->{'html'}) {
-	  	$smtp->datasend("MIME-Version: 1.0\n");
-	  	$smtp->datasend("Content-Type: multipart/mixed; boundary=\"frontier\"\n");
-	  	$smtp->datasend("\n--frontier\n");
-	  	$smtp->datasend("Content-Type: text/html; charset=\"iso-8859-1\" \n");
-	  	$smtp->datasend("\n");
-	}
-
-  	$smtp->datasend($ref_param->{'message'});
-  	
-  	if ($ref_param->{'html'}) {
-  		$smtp->datasend("\n--frontier--\n");
-  	}
-
-  	$smtp->dataend();
- 	$smtp->quit or return -7;
-
- 	return 1;
+	my $json = encode_json($hash);
+	#my $output =  `echo $json | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php`;
+	#print $output;
+	my $exit = system("echo $json | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php");
+	return $exit >= 0 ? 1 : 0 ;
 }
-
 1;

@@ -159,14 +159,13 @@ EOT;
 				if ($need_email) {
 					$mail = new SMTP;
 					$mail->Delivery('relay');
-					$mail->Relay(SMTP_SERVEUR);
+					$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
 					//$mail->AddTo('gwenael.croizer@coopmcs.com', 'Gwenael Croizer') or die("Erreur d'ajour de destinataire");
 					$mail->From('accueil@coopmcs.com','Accueil');
 
 					$mail->Html($html);
-					//echo $row['nom']."\n<br>".$html."<br><br><br>";
 
 					// on enregistre dans la base que le mail a ete envoyé (pour ne pas le réenvoyer plus tard)
 					foreach ($cde_ligne_traitee as $ligne)
@@ -183,9 +182,6 @@ EOT;
 				$message .= "<div class=\"message\" style=\"color:red;\">Erreur $row[nom] n'a pas d'email</div>\n";
 			}
 		}// fin pour chaque adhérents
-
-
-
 
 
 		if ($_POST['what'] == 'mise_a_dispo') { // pour les mises à dispo, on prévient aussi les vendeurs
@@ -258,7 +254,7 @@ EOT;
 				if ($need_email) {
 					$mail = new SMTP;
 					$mail->Delivery('relay');
-					$mail->Relay(SMTP_SERVEUR);
+					$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
 					$mail->From('accueil@coopmcs.com','Accueil');

@@ -610,11 +610,7 @@ a:hover {
 	<table id="entete">
 	<tr>
 		<!-- photo -->
-		<td rowspan="2" class="photo" style="text-align:left;vertical-align:middle;">
-<?				if (isset($_SESSION['chemin']) && array_key_exists($_SESSION['chemin'],$IMAGES)) { // il y a une photo ?>
-					<img class="photo" src="<?=PREFIX_IMAGE_PATH.$IMAGES[$_SESSION['chemin']][0]?>"/>
-<?				} ?>
-		</td>
+		<td rowspan="2" class="photo" style="text-align:left;vertical-align:middle;"></td>
 		<td id="chemin">
 			<div>&nbsp;
 <?			if (isset($_SESSION['chemin'])) {

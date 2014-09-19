@@ -9,7 +9,6 @@ require 'Phpconst2perlconst.pm';
 require 'useful.pl'; # load get_time / second2hms
 use Phpconst2perlconst ;
 use Getopt::Long;
-use Net::SMTP;
 
 $|=1;
 my ($siecle,$annee,$mois,$jour) = (	substr(strftime('%Y',localtime),0,2),
@@ -129,13 +128,15 @@ $message .= "</table></body></html>\n";
 
 if (!$noemail) {
 	printf "%s Envoi email\n",get_time();	$old_time=time;
+
 	send_mail({
 		'smtp_serveur'	=> $cfg->{'SMTP_SERVEUR'},
 		'smtp_user'		=> $cfg->{'SMTP_USER'},
 		'smtp_password'	=> $cfg->{'SMTP_PASS'},
+		'smtp_port'		=> $cfg->{'SMTP_PORT'},
 		'from_email' 	=> 'reflex@coopmcs.com',
 		'from_name' 	=> 'Manquant prepa reflex',
-		'subject'		=> "Manquant à la préparation Reflex du $jour/$mois/$annee",
+		'subject'		=> "Manquant a la preparation Reflex du $jour/$mois/$annee",
 		'message'		=> $message,
 		'html'			=> 1,
 		'to'			=> {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
