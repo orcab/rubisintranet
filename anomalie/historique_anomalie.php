@@ -112,7 +112,7 @@ EOT;
 	require_once '../inc/xpm2/smtp.php';
 	$mail = new SMTP;
 	$mail->Delivery('relay');
-	$mail->Relay(SMTP_SERVEUR);
+	$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 	$emails_deja_envoye = array();
 	foreach ($CHEFS_DE_POLE as $p=>$chef) {
 		if (($row_anomalie['pole'] & $p) && !in_array($chef['email'],$emails_deja_envoye)) {
