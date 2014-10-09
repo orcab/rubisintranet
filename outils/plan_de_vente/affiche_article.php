@@ -1,8 +1,6 @@
 <?php
 include('../../inc/config.php');
 
-//define('PREFIX_IMAGE_PATH','../../tarif2/miniatures/');
-
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
@@ -24,14 +22,6 @@ if (!isset($_SESSION['order'])) $_SESSION['order'] = 'code_article ASC';
 if (isset($_GET['order']))
 	$_SESSION['order']  = $_GET['order'];
 
-/*
-$IMAGES = array();
-if (file_exists('images_data.php'))
-	include 'images_data.php';
-else
-	echo ("Impossible de charger le fichier de cache des images");
-	*/
-	//print_r($IMAGES);exit;
 ?>
 <html>
 <head>
@@ -416,6 +406,42 @@ function valider_nouveau_chemin() {
 <? } // fin de peut déplacer article ?>
 
 
+
+function searchContenuHydra(code_article,fournisseur,ref) {
+
+	// fiche technique
+	$.ajax({url: 'ajax.php',
+				type: 'GET',
+				dataType:'json',
+				data: 'what=hydra_exists&fournisseur='+escape(fournisseur)+'&ref='+escape(ref)+'&type=T&exists=1',
+				success: function(result) {
+					console.log(result);
+					if (result.response['exists'] == 1) { // la fiche technique exists
+						$('tr#ligne_'+code_article+' .fiche_technique').html(
+							'<a href="http://www.coopmcs.com/hydra/getfile.php?fournisseur='+escape(result.request['fournisseur'])+'&ref='+escape(result.request['ref'])+'&type='+escape(result.request['type'])+'">F. Technique</a>'
+							);
+					}
+				}
+		});
+
+	// photo mettré
+	$.ajax({url: 'ajax.php',
+				type: 'GET',
+				dataType:'json',
+				data: 'what=hydra_exists&fournisseur='+escape(fournisseur)+'&ref='+escape(ref)+'&type=M&exists=1',
+				success: function(result) {
+					console.log(result);
+					if (result.response['exists'] == 1) { // la fiche technique exists
+						$('tr#ligne_'+code_article+' .photo_mettre').html(
+								'<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur='+escape(result.request['fournisseur'])+'&ref='+escape(result.request['ref'])+'&type='+escape(result.request['type'])+'&largeur=500&hauteur=500"/>'
+							);
+					}
+				}
+		});
+}
+
+
+
 $(document).ready(function(){
 	$('img.photo').bind('mouseover',function(){
 		//alert($(this).offset().top + 'px    '+$(this).offset().left+'px');
@@ -723,6 +749,11 @@ EOT;
 			<td class="photo">
 <?				if (strlen($row['fournisseur']) > 0 && strlen($row['ref_fournisseur']) > 0) { ?>
 					<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur=<?=$row['code_fournisseur']?>&ref=<?=$row['ref_fournisseur']?>&largeur=500&hauteur=500"/>
+
+<?					$file_exists = trim(join('',file("http://www.coopmcs.com/hydra/getfile.php?fournisseur=$row[code_fournisseur]&ref=$row[ref_fournisseur]&type=M&exists=1")));
+					if ($file_exists == 1) { // si une image metré exists, on affiche la photo ?>
+						<br/><img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur=<?=$row['code_fournisseur']?>&ref=<?=$row['ref_fournisseur']?>&type=M&largeur=500&hauteur=500"/>
+<? 					} ?>
 <?				} ?>
 			</td>
 			
@@ -762,8 +793,14 @@ EOT;
 					<strong class="condi">Vendu par <?=$row['conditionnement']?><?=$row['unite']?></strong>
 <?				} ?>
 
+	
 				<!-- article similaire -->
-				<div style="text-align:right;"><a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><img src="gfx/loupe.png" style="vertical-align:bottom;"/>Articles similaires</a></div>
+				<div class="articles-similaires">
+					<a href="<?=$_SERVER['PHP_SELF']?>?chemin=<?=$row['chemin']?>" class="similaire"><i class="icon-search icon-large" style="color:black;"></i> Articles similaires</a>
+				</div>
+
+				<div class="fiche_technique" style="width:48%;float:left;"></div>
+				<script language="javascript">searchContenuHydra('<?=$row['code_article']?>','<?=$row['code_fournisseur']?>','<?=$row['ref_fournisseur']?>');</script>
 			</td>
 			
 			<!-- gestion des stock -->
