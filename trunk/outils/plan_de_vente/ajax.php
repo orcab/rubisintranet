@@ -150,6 +150,27 @@ elseif (isset($_POST['what']) && $_POST['what'] == 'valider_nouveau_chemin' &&
 }
 
 
+//////////////////////// CHERCHE SI DES DONNEE HYDRA EXISTE //////////////////////////////////////////:
+elseif (	isset($_GET['what'])		&& $_GET['what'] == 'hydra_exists'
+		&&	isset($_GET['fournisseur'])	&& $_GET['fournisseur']
+		&&	isset($_GET['ref'])			&& $_GET['ref']
+		&&	isset($_GET['type'])		&& $_GET['type']) {
+	
+		$tmp = trim(join('',file("http://www.coopmcs.com/hydra/getfile.php?fournisseur=".urlencode($_GET['fournisseur'])."&ref=".urlencode($_GET['ref'])."&type=".urlencode($_GET['type'])."&exists=1")));
+		echo json_encode(array(	'response' 	=> array(
+														'exists' => $tmp),
+								'request'	=> array(
+														'fournisseur'	=> $_GET['fournisseur'],
+														'ref'			=> $_GET['ref'],
+														'type'			=> $_GET['type']
+													)
+								)
+						);
+}
+
+
+
+
 // CAS PAR DEFAUT
 else {
 	echo "{debug:'Aucune procedure selectionnée'}";
