@@ -406,9 +406,20 @@ function valider_nouveau_chemin() {
 <? } // fin de peut déplacer article ?>
 
 
+function searchAllContenuHydra(type_stock) {
+	// pour chaque article, cherche le contenu
+	$('tr[id^=ligne_].nonstock').each(function(){
+		console.log($(this).attr('data-article'));
+		searchContenuHydra(
+			$(this).attr('data-article'),
+			$(this).attr('data-fournisseur'),
+			$(this).attr('data-ref')
+		);
+	});
+}
+
 
 function searchContenuHydra(code_article,fournisseur,ref) {
-
 	// fiche technique
 	$.ajax({url: 'ajax.php',
 				type: 'GET',
@@ -471,12 +482,14 @@ $(document).ready(function(){
 
 	// click sur affiche les produits non stocké
 	$('#show_produit_stock').click(function(){
-		//$(this).parent('label').text('<input id="show_produit_stock" type="checkbox">Cacher les prod');
-		if(this.checked)
+		if(this.checked) {
 			$('.nonstock').show();
-		else
+			searchAllContenuHydra('nonstock')
+		} else {
 			$('.nonstock').hide();
+		}
 	});
+
 }); // document.ready
 
 
@@ -745,7 +758,7 @@ EOT;
 
 		$row['code_article'] = trim(strtoupper($row['code_article']));
 ?>
-		<tr id="ligne_<?=$row['code_article']?>" class="<?=($row['stock_afa'].$row['stock_afl'] == '' ? ' nonstock':'stock')?>">
+		<tr id="ligne_<?=$row['code_article']?>" class="<?=($row['stock_afa'].$row['stock_afl'] == '' ? ' nonstock':'stock')?>" data-article="<?=$row['code_article']?>" data-fournisseur="<?=$row['code_fournisseur']?>" data-ref="<?=$row['ref_fournisseur']?>">
 			<!-- photo -->
 			<td class="photo">
 <?				if (strlen($row['fournisseur']) > 0 && strlen($row['ref_fournisseur']) > 0) { ?>
@@ -796,7 +809,7 @@ EOT;
 				</div>
 
 				<div class="fiche_technique" style="width:48%;float:left;"></div>
-				<script language="javascript">searchContenuHydra('<?=$row['code_article']?>','<?=$row['code_fournisseur']?>','<?=$row['ref_fournisseur']?>');</script>
+				<!--<script language="javascript">searchContenuHydra('<?=$row['code_article']?>','<?=$row['code_fournisseur']?>','<?=$row['ref_fournisseur']?>');</script>-->
 			</td>
 			
 			<!-- gestion des stock -->
@@ -925,18 +938,32 @@ EOT;
 </table>
 </form>
 
+<script type="text/javascript">
+<!--
+$(document).ready(function(){
+
 <? if ($nb_stock <= 0) { ?>
-	<script type="text/javascript">
-	<!--
-	$(document).ready(function(){
-		// si aucun l'article affiché est stocké, on affiche les non stocké
-		$('#show_produit_stock').attr('checked','checked');
-		$('#show_produit_stock').parents('label').addClass('mobile-checked');
-		$('.nonstock').show();
+	// si aucun l'article affiché est stocké, on affiche les non stocké
+	$('#show_produit_stock').attr('checked','checked');
+	$('#show_produit_stock').parents('label').addClass('mobile-checked');
+	$('.nonstock').show();
+	searchAllContenuHydra('nonstock');
+<? } else { ?>
+	// pour chaque article, cherche le contenu
+	$('tr[id^=ligne_].stock').each(function(){
+		console.log($(this).attr('data-article'));
+		searchContenuHydra(
+			$(this).attr('data-article'),
+			$(this).attr('data-fournisseur'),
+			$(this).attr('data-ref')
+		);
 	});
-	//-->
-	</script>
 <? } ?>
+
+});
+//-->
+</script>
+
 
 </body>
 </html>
