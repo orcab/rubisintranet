@@ -424,29 +424,22 @@ function searchContenuHydra(code_article,fournisseur,ref) {
 	$.ajax({url: 'ajax.php',
 				type: 'GET',
 				dataType:'json',
-				data: 'what=hydra_exists&fournisseur='+escape(fournisseur)+'&ref='+escape(ref)+'&type=T&exists=1',
+				data: 'what=hydra_info&fournisseur='+escape(fournisseur)+'&ref='+escape(ref),
 				success: function(result) {
-					console.log(result);
-					if (result.response['exists'] == 1) { // la fiche technique exists
+					//console.log(result);
+					
+					if (result.response[0]['T'] != undefined) { // la fiche technique exists
 						$('tr#ligne_'+code_article+' .fiche_technique').html(
-							'<i class="icon-bookmark icon-large" style="color:black;"></i> <a href="http://www.coopmcs.com/hydra/getfile.php?fournisseur='+escape(result.request['fournisseur'])+'&ref='+escape(result.request['ref'])+'&type='+escape(result.request['type'])+'">F. Technique</a>'
+							'<a class="btn btn-small" href="http://www.coopmcs.com/hydra/getfile.php?fournisseur='+escape(result.request['fournisseur'])+'&ref='+escape(result.request['ref'])+'&type=T"><i class="icon-download"></i> F. Technique</a>'
 						);
 					}
-				}
-		});
 
-	// photo mettré
-	$.ajax({url: 'ajax.php',
-				type: 'GET',
-				dataType:'json',
-				data: 'what=hydra_exists&fournisseur='+escape(fournisseur)+'&ref='+escape(ref)+'&type=M&exists=1',
-				success: function(result) {
-					console.log(result);
-					if (result.response['exists'] == 1) { // la fiche technique exists
+					if (result.response[0]['M'] != undefined) { // photo metré
 						$('tr#ligne_'+code_article+' .photo_mettre').html(
-							'<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur='+escape(result.request['fournisseur'])+'&ref='+escape(result.request['ref'])+'&type='+escape(result.request['type'])+'&largeur=500&hauteur=500"/>'
+								'<img class="photo" src="http://www.coopmcs.com/hydra/getfile.php?fournisseur='+escape(result.request['fournisseur'])+'&ref='+escape(result.request['ref'])+'&type=M&largeur=500&hauteur=500"/>'
 						);
 					}
+					
 				}
 		});
 }
@@ -484,7 +477,7 @@ $(document).ready(function(){
 	$('#show_produit_stock').click(function(){
 		if(this.checked) {
 			$('.nonstock').show();
-			searchAllContenuHydra('nonstock')
+			searchAllContenuHydra('nonstock');
 		} else {
 			$('.nonstock').hide();
 		}
@@ -809,7 +802,6 @@ EOT;
 				</div>
 
 				<div class="fiche_technique" style="width:48%;float:left;"></div>
-				<!--<script language="javascript">searchContenuHydra('<?=$row['code_article']?>','<?=$row['code_fournisseur']?>','<?=$row['ref_fournisseur']?>');</script>-->
 			</td>
 			
 			<!-- gestion des stock -->
@@ -963,7 +955,6 @@ $(document).ready(function(){
 });
 //-->
 </script>
-
 
 </body>
 </html>

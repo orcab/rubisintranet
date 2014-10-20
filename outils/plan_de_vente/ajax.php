@@ -170,6 +170,24 @@ elseif (	isset($_GET['what'])		&& $_GET['what'] == 'hydra_exists'
 
 
 
+//////////////////////// CHERCHE SI DES DONNEE HYDRA INFO //////////////////////////////////////////:
+elseif (	isset($_GET['what'])		&& $_GET['what'] == 'hydra_info'
+		&&	isset($_GET['fournisseur'])	&& $_GET['fournisseur']
+		&&	isset($_GET['ref'])			&& $_GET['ref']) {
+	
+		$tmp = join('',file("http://www.coopmcs.com/hydra/getfile.php?fournisseur=".urlencode($_GET['fournisseur'])."&ref=".urlencode($_GET['ref'])."&info=1&json=1"));
+		$json = json_decode($tmp,true);
+		echo json_encode(array(	'response' 	=> array($json['response']),
+								'request'	=> array(	'fournisseur'	=> $_GET['fournisseur'],
+														'ref'			=> $_GET['ref']
+													)
+								)
+						);
+					
+}
+
+
+
 
 // CAS PAR DEFAUT
 else {
