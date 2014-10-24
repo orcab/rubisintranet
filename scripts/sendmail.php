@@ -21,7 +21,12 @@
 */
 
 $stdin = trim(fgets(STDIN)); // lit une ligne depuis STDIN
-$json = json_decode($stdin);
+#print "DEBUG \$stdin='$stdin'\n";
+
+$json = json_decode($stdin) ;
+if ($json === NULL) {
+	print "ERREUR DECODAGE JSON===============\n$stdin\n===============================\n";
+}
 
 if ($json->{'debug'}) {
 	echo "FROM PHP :\n".$stdin."\n";

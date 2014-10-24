@@ -159,7 +159,7 @@ EOT;
 				require_once '../../inc/xpm2/smtp.php';
 				$mail = new SMTP;
 				$mail->Delivery('relay');
-				$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+				$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 				//$mail->AddTo('ryo@wanadoo.fr', 'test1') or die("Erreur d'ajour de destinataire"); // pour les tests
 				$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
 				$mail->From('no-reply@coopmcs.com');

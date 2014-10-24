@@ -126,13 +126,13 @@ sub send_mail(%) {
 	 	'from'		=>	$ref_param->{'from_email'},
 	 	'html'		=>	$ref_param->{'message'},
 	 	'subject'	=>	$ref_param->{'subject'},
-	 	'to'		=>	$ref_param->{'to'}
+	 	'to'		=>	$ref_param->{'to'},
+	 	'debug'		=>	$ref_param->{'debug'},
 	};
 
-	my $json = encode_json($hash);
-	#my $output =  `echo $json | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php`;
-	#print $output;
-	my $exit = system("echo $json | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php");
+	my $json = new JSON ;
+	my $json_text = $json->ascii->encode($hash);
+	my $exit = system("echo $json_text | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php");
 	return $exit >= 0 ? 1 : 0 ;
 }
 1;

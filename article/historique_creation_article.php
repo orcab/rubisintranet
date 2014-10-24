@@ -21,7 +21,7 @@ if (isset($_GET['action']) && $_GET['action']=='valide_article_en_attente') {
 		mysql_query("UPDATE historique_article SET status=1,date_creation=NOW() WHERE id='$row[id]'") or die(mysql_error());
 		$mail = new SMTP;
 		$mail->Delivery('relay');
-		$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+		$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 		$mail->AddTo($row['de_la_part'], "Creation article") or die("Erreur d'ajour de destinataire");
 		$mail->From('no-reply@coopmcs.com');
 		$html = <<<EOT
@@ -138,7 +138,7 @@ if (isset($_POST['id_article_creer']) && isset($_POST['code_article_creer'])) { 
 			require_once '../inc/xpm2/smtp.php';
 			$mail = new SMTP;
 			$mail->Delivery('relay');
-			$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+			$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 			$mail->AddTo($row_article['de_la_part'], "Creation article") or die("Erreur d'ajour de destinataire");
 			$mail->From('no-reply@coopmcs.com');
 			$html = <<<EOT
