@@ -114,12 +114,12 @@ while ($reflex->FetchRow()) {
 	my 	%row_reflex = $reflex->DataHash() ;
 	my 	($client,$cde,$noligne) = split(/[\/\-]/,$row_reflex{'COMMENTAIRE_ZZZ'});
 
-	my $sql_rubis = "select ETSBE as ETAT from ${prefix_base_rubis}GESTCOM.ADETBOP1 where NOBON='$cde' and NOCLI='$client' and NOLIG='$noligne'";
+	my $sql_rubis = "select ETSBE as ETAT,TRAIT as LIVRAISON from ${prefix_base_rubis}GESTCOM.ADETBOP1 where NOBON='$cde' and NOCLI='$client' and NOLIG='$noligne'";
 	if ($rubis->Sql($sql_rubis))  { die "SQL Rubis cde failed : ", $rubis->Error(); }
 	$rubis->FetchRow();
 	my %row_rubis = $rubis->DataHash();
 	#print STDERR "DEBUG ".$row_reflex{'COMMENTAIRE_ZZZ'}.' / etat='.$row_rubis{'ETAT'}."\n";
-	if ($row_rubis{'ETAT'} eq '') { # ligne non supprimée
+	if ($row_rubis{'ETAT'} eq '' && $row_rubis{'LIVRAISON'} eq 'R') { # ligne non supprimée et non livrée
 		$message .= "<tr><td>$row_reflex{CODE_ARTICLE}</td><td>$row_reflex{DESIGNATION}</td><td>$row_reflex{DESIGNATION2}</td><td>$row_reflex{QTE_A_PREPARER}</td><td>$row_reflex{QTE_PREPAREE}</td><td>$row_reflex{ANNEE_PREPA}</td><td>$row_reflex{NUM_PREPA}</td><td>$row_reflex{REFERENCE_OPD}</td><td>$row_reflex{CODE_DEST}</td><td>$row_reflex{DESTINATAIRE}</td></tr>\n";
 	}
 } # fin while reflex
@@ -144,7 +144,8 @@ if (!$noemail) {
 								'regis.lefloch@coopmcs.com'		=>	'Regis Le Floch',
 								'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
 								'claude.kergosien@coopmcs.com'	=>	'Claude Kergosien',
-								'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain'
+								'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain',
+								'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot'
 							}
 
 	}) or die "Impossible d'envoyer le mail";

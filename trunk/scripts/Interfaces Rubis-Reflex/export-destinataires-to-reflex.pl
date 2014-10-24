@@ -134,28 +134,74 @@ my %field_sizes = (qw/	CODE_ACTIVITE										3
 /);
 
 
-#print Dumper(\%field_sizes); exit;
-
-
 my $old_time = 0;
 my $cfg = new Phpconst2perlconst(-file => 'config.php');
 my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE_PROD};
 my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_USER}.';PWD='.$cfg->{LOGINOR_PASS}.';') or die "Ne peux pas se connecter à rubis";
+
+my @destinataires = ();
+my %code_destinataire_deja_vu = ();
 
 printf "%s Select des clients\n",get_time(); $old_time=time;
 my $sql = "select * from ${prefix_base_rubis}GESTCOM.ACLIENP1 where NOMCL<>'ADHERENT' ORDER BY CATCL ASC, NOCLI ASC"; # regarde les artisans actif
 if ($loginor->Sql($sql)) { # regarde les clients
 	die "Erreur dans la selection des clients\n$sql";
 }
+while($loginor->FetchRow()) {
+	my %row = $loginor->DataHash();
+	
+	next if ($row{'NOCLI'} == 'ATLANT'); # patch pour éviter le CLIENT<>FOURNISSEUR ATLANT
+	
+	$code_destinataire_deja_vu{$row{'NOCLI'}} = 1;
+	push @destinataires,\%row ;
+}
+
+printf "%s Select des fournisseurs\n",get_time(); $old_time=time;
+my $sql = "select * from ${prefix_base_rubis}GESTCOM.AFOURNP1 ORDER BY NOFOU ASC"; # regarde les fournisseurs actif
+if ($loginor->Sql($sql)) { # regarde les clients
+	die "Erreur dans la selection des fournisseurs\n$sql";
+}
+while($loginor->FetchRow()) {
+	my %row = $loginor->DataHash();
+	if (exists $code_destinataire_deja_vu{$row{'NOFOU'}}) { next ; }
+
+	$row{'NOCLI'} = $row{'NOFOU'};
+	$row{'NOMCL'} = $row{'NOMFO'};
+	$row{'TELCL'} = $row{'TELFO'};
+	$row{'TLCCL'} = $row{'TLCFO'};
+	$row{'AD1CL'} = $row{'RUEFO'};
+	$row{'AD2CL'} = $row{'VILFO'};
+	$row{'RUECL'} = '';
+	$row{'CPCLF'} = $row{'CPFOU'};
+	$row{'BURCL'} = $row{'BURFO'};
+	$row{'ETCLE'} = $row{'ETFOE'};
+	$row{'TELCC'} = $row{'TLXFO'};
+	$row{'ETCLE'} = $row{'ETFOE'};
+	$row{'ETCLE'} = $row{'ETFOE'};
+	$row{'ETCLE'} = $row{'ETFOE'};
+	$row{'ETCLE'} = $row{'ETFOE'};
+	$row{'CATCL'} = 0;
+	$row{'TOUCL'} = 0;
+	$row{'COFIN'} = '';
+	$row{'COMC1'} = '';
+	push @destinataires,\%row ;
+}
 
 mkpath(dirname(OUTPUT_FILENAME)) if !-d dirname(OUTPUT_FILENAME) ;
 open(REFLEX,'+>'.OUTPUT_FILENAME) or die "ne peux pas creer le fichier de sortie '".OUTPUT_FILENAME."' ($!)";
 
+if ($debug) {
+	print Dumper(\@destinataires);
+	exit;
+}
+
 my $i=0;
 # recupere les données de Rubis
-while($loginor->FetchRow()) {
+#while($loginor->FetchRow()) {
+foreach (@destinataires) {
 	my %data = ();
-	my %row = $loginor->DataHash() ;
+	#my %row = $loginor->DataHash() ;
+	my %row = %$_;
 	
 	$data{'CODE_ACTIVITE'}								= fill_with_blank(CODE_ACTIVITE,$field_sizes{'CODE_ACTIVITE'});
 	$data{'CODE'}										= fill_with_blank($row{'NOCLI'},$field_sizes{'CODE'});

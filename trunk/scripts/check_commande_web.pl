@@ -75,15 +75,16 @@ if ($nb_erreur > 0) {
 		'smtp_serveur'	=> $cfg->{'SMTP_SERVEUR'},
 		'smtp_user'		=> $cfg->{'SMTP_USER'},
 		'smtp_password'	=> $cfg->{'SMTP_PASS'},
+		'smtp_port'		=> $cfg->{'SMTP_PORT'},
 		'from_email' 	=> 'commande@coopmcs.com',
 		'from_name' 	=> 'Erreur commande web',
 		'subject'		=> "Erreur d'integration de commande web du $jour/$mois/$annee",
 		'message'		=> "Voici les erreurs d'intégration de commande web dans Rubis pour la journée du $jour/$mois/$annee\n\n$message",
 		'html'			=> 0,
-		'to'			=> {	'thierry.lemoignic@coopmcs.com'	=>	'Thierry Le Moignic',
-								'aymeric.merigot@coopmcs.com'	=>	'Aymeric Merigot',
+		'to'			=> {	'aymeric.merigot@coopmcs.com'	=>	'Aymeric Merigot',
 								'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain'
-							}
+							},
+		'debug'			=> 0
 	}) or die "Impossible d'envoyer le mail";
 }
 

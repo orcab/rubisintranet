@@ -15,7 +15,7 @@ if (isset($_GET['what']) && $_GET['what'] == 'send_return_mail' &&
 
 	$mail = new SMTP;
 	$mail->Delivery('relay');
-	$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+	$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 	$mail->From('pascal.herve@coopmcs.com','Pascal Herve');
 	$mail->AddTo($_GET['email']) or die("Erreur d'ajout de destinataire");
 	$mail->Html($html);

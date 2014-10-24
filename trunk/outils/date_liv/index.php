@@ -159,7 +159,7 @@ EOT;
 				if ($need_email) {
 					$mail = new SMTP;
 					$mail->Delivery('relay');
-					$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+					$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
 					//$mail->AddTo('gwenael.croizer@coopmcs.com', 'Gwenael Croizer') or die("Erreur d'ajour de destinataire");
@@ -254,7 +254,7 @@ EOT;
 				if ($need_email) {
 					$mail = new SMTP;
 					$mail->Delivery('relay');
-					$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+					$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
 					//$mail->AddTo('ryo@wanadoo.fr', 'Ben') or die("Erreur d'ajour de destinataire"); // pour les tests
 					$mail->AddTo($row['email'], $row['nom']) or die("Erreur d'ajout de destinataire");
 					$mail->From('accueil@coopmcs.com','Accueil');
