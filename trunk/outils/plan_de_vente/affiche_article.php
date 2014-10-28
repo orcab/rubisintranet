@@ -420,13 +420,14 @@ function searchAllContenuHydra(type_stock) {
 
 
 function searchContenuHydra(code_article,fournisseur,ref) {
-	// fiche technique
+	if (fournisseur == 'LEGRA') fournisseur = 'LEGRAN'; // patch pour MCS
+
 	$.ajax({url: 'ajax.php',
 				type: 'GET',
 				dataType:'json',
 				data: 'what=hydra_info&fournisseur='+escape(fournisseur)+'&ref='+escape(ref),
 				success: function(result) {
-					//console.log(result);
+					console.log(result);
 					
 					if (result.response[0]['T'] != undefined) { // la fiche technique exists
 						$('tr#ligne_'+code_article+' .fiche_technique').html(
