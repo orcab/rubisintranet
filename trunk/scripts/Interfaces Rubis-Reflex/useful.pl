@@ -112,7 +112,7 @@ sub icaldate2sqldate($) {
 	}
 }
 
-
+=begin
 sub send_mail(%) {
 	use JSON;
 	my $ref_param = shift;
@@ -135,4 +135,35 @@ sub send_mail(%) {
 	my $exit = system("echo $json_text | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php");
 	return $exit >= 0 ? 1 : 0 ;
 }
+=cut
+
+sub send_mail(%) {
+	my $ref_param = shift;
+
+	use Data::Uniqid qw(luniqid);
+	my $filename = luniqid().'.txt';
+	open(F,"+>$filename") or die "Unable to create '$filename' ($!)";
+	print F $ref_param->{'message'};
+	close F;
+
+	my $to = join(',',keys $ref_param->{'to'});
+
+	# launch program
+	my $cmd = 'mailsend.exe'.
+				' -smtp '.$ref_param->{'smtp_serveur'}.
+				' -port '.$ref_param->{'smtp_port'}.
+				' -auth'.
+				' -user '.$ref_param->{'smtp_user'}.
+				' -pass '.$ref_param->{'smtp_password'}.
+				" -t $to".
+				' -f '.$ref_param->{'from_email'}.
+				' -sub "'.$ref_param->{'subject'}.'"'.
+				' -mime-type "text/html"'.
+				' -disposition inline'.
+				" -msg-body $filename";
+	`$cmd`;
+	#print $cmd;
+	unlink($filename);
+}
+
 1;
