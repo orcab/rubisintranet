@@ -5,10 +5,11 @@ use Win32::ODBC;
 use strict ;
 use POSIX qw(strftime);
 require 'Phpconst2perlconst.pm';
+require 'Interfaces Rubis-Reflex/useful.pl';
 use Phpconst2perlconst ;
 $|=1;
 
-print print_time()."START\n";
+print get_time()."START\n";
 my $cfg = new Phpconst2perlconst(-file => '../inc/config.php');
 
 my $prefix_base_rubis = $cfg->{LOGINOR_PREFIX_BASE};
@@ -38,9 +39,9 @@ while($loginor->FetchRow()) {
 
 		$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.AARTICP1 set GENCO='$gencod_mcs' where NOART='".$row{'NOART'}."'");
 		$loginor2->Sql("update ${prefix_base_rubis}GESTCOM.AARFOUP1 set AFOG3='$gencod_mcs' where NOART='".$row{'NOART'}."' and NOFOU='CESAFA'");
-		print print_time()."UPDATE '$row{NOART}'\n";
+		print get_time()."UPDATE '$row{NOART}'\n";
 	} else {
-		print print_time()."SKIP '$row{NOART}'\n";
+		print get_time()."SKIP '$row{NOART}'\n";
 	}
 	
 }
@@ -48,9 +49,4 @@ while($loginor->FetchRow()) {
 $loginor->Close();
 $loginor2->Close();
 
-print print_time()."END\n\n";
-
-sub print_time {
-	print strftime "[%Y-%m-%d %H:%M:%S] ", localtime;
-	return '';
-}
+print get_time()."END\n\n";
