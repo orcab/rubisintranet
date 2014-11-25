@@ -148,7 +148,7 @@ EOT
 
 # article ayant du stock mais dont le prélévément était insuffisant
 my $sql_reflex = <<EOT ;
-SELECT 	DISTINCT(P1CART) as CODE_ARTICLE,
+SELECT  DISTINCT(P1CART) as CODE_ARTICLE,
 		ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
 		P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE,
 		(cast(P1NANP as varchar) + '-' + cast(P1NPRE as varchar)) as NUM_PREPA,
@@ -156,7 +156,14 @@ SELECT 	DISTINCT(P1CART) as CODE_ARTICLE,
 		P1CDES as CODE_DEST,
 		DSLDES as DESTINATAIRE,
 		COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ,
-		PREPA_DETAIL.P1RRSO as RESERVATION
+		PREPA_DETAIL.P1RRSO as RESERVATION,
+		(select SUM(RECEPTION_LIGNE_DETAIL.R1Q1SL) from 
+			${prefix_base_reflex}.HLRECPP RECEPTION_ENTETE			
+			left join ${prefix_base_reflex}.HLRECLP RECEPTION_LIGNE_DETAIL
+				on 	RECEPTION_LIGNE_DETAIL.R1NANN=RECEPTION_ENTETE.RENANN and RECEPTION_LIGNE_DETAIL.R1NREC=RECEPTION_ENTETE.RENREC 
+					and RECEPTION_LIGNE_DETAIL.R1CART=PREPA_DETAIL.P1CART and RECEPTION_LIGNE_DETAIL.R1TVLR=0
+			where RECEPTION_ENTETE.RECTRC = '010' and RECEPTION_ENTETE.RETRVA=0
+		) as QTE_EN_RECEPTION
 
 FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 
@@ -170,7 +177,6 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 		left join ${prefix_base_reflex}.HLCOMMP COMMENTAIRE
 			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
-
 where	
 		P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
 	and P1QPRE<P1QAPR AND P1NNSL=0    									-- quantité préparée inférieur a quantité demandée
@@ -178,7 +184,7 @@ where
 
 order by RESERVATION asc, CODE_ARTICLE asc
 EOT
-$message .= draw_table("Article ayant fait l'objet d'une mission incomplette",$sql_reflex);
+$message .= draw_table("Article ayant fait l'objet d'une mission incompl&egrave;te",$sql_reflex);
 
 
 # article n'ayant pas de stock au moment de la mission (vrai manquant)
@@ -191,7 +197,15 @@ SELECT 	DISTINCT(P1CART) as CODE_ARTICLE,
 		P1CDES as CODE_DEST,
 		DSLDES as DESTINATAIRE,
 		COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ,
-		PREPA_DETAIL.P1RRSO as RESERVATION
+		PREPA_DETAIL.P1RRSO as RESERVATION,
+
+		(select SUM(RECEPTION_LIGNE_DETAIL.R1Q1SL) from 
+			${prefix_base_reflex}.HLRECPP RECEPTION_ENTETE			
+			left join ${prefix_base_reflex}.HLRECLP RECEPTION_LIGNE_DETAIL
+				on 	RECEPTION_LIGNE_DETAIL.R1NANN=RECEPTION_ENTETE.RENANN and RECEPTION_LIGNE_DETAIL.R1NREC=RECEPTION_ENTETE.RENREC 
+					and RECEPTION_LIGNE_DETAIL.R1CART=PREPA_DETAIL.P1CART and RECEPTION_LIGNE_DETAIL.R1TVLR=0
+			where RECEPTION_ENTETE.RECTRC = '010' and RECEPTION_ENTETE.RETRVA=0
+		) as QTE_EN_RECEPTION
 
 FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 
@@ -203,7 +217,6 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 		left join ${prefix_base_reflex}.HLCOMMP COMMENTAIRE
 			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
-
 where	
 		P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
 	and P1NNSL>0 and P1RRSO=''					-- avec des manquant au lancement sans réservation
@@ -221,6 +234,27 @@ $message .= "</body></html>\n";
 if (!$noemail) {
 	printf "%s Envoi email\n",get_time();	$old_time=time;
 
+	my $to_list = {};
+
+	if (strftime('%H',localtime) eq '13') { #liste de 13h30
+		$to_list = {	'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain',
+						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot',
+						'francois.dore@coopmcs.com' 	=> 	'Francois Dore',
+						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux'
+					};
+	} else {		#liste de 16h30
+		$to_list = {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
+						'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab',
+						'regis.lefloch@coopmcs.com'		=>	'Regis Le Floch',
+						'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
+						'pierrick.boillet@coopmcs.com'	=>	'Pierrick Boillet',
+						'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain',
+						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot',
+						'francois.dore@coopmcs.com' 	=> 	'Francois Dore',
+						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux'
+					};
+	}
+
 	send_mail({
 		'smtp_serveur'	=> $cfg->{'SMTP_SERVEUR'},
 		'smtp_user'		=> $cfg->{'SMTP_USER'},
@@ -231,15 +265,7 @@ if (!$noemail) {
 		'subject'		=> "Manquant a la preparation Reflex du $jour/$mois/$annee",
 		'message'		=> $message,
 		'html'			=> 1,
-		'to'			=> {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
-								'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab',
-								'regis.lefloch@coopmcs.com'		=>	'Regis Le Floch',
-								'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
-								'claude.kergosien@coopmcs.com'	=>	'Claude Kergosien',
-								'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain',
-								'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot'
-							}
-
+		'to'			=> $to_list
 	}) or die "Impossible d'envoyer le mail";
 
  } else {
@@ -267,6 +293,7 @@ if (!$noemail) {
 		<th>Code client</th>
 		<th>Client</th>
 		<th nowrap="nowrap">R&eacute;sa ?</th>
+		<th nowrap="nowrap">Qte en<br/>Recep</th>
 	</tr>
 EOT
  	die "SQL Reflex GEI failed : ".$reflex->Error() if $reflex->Sql($sql_reflex) ;
@@ -293,7 +320,7 @@ EOT
 		if ($row_rubis{'ETAT'} eq '' && $row_rubis{'LIVRAISON'} eq 'R') { # ligne non supprimée et non livrée
 			$row_reflex{'DESIGNATION'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
 			$row_reflex{'DESIGNATION2'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
-			$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td></tr>\n";
+			$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td><td>".($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;')."</td></tr>\n";
 		}
 	} # fin while reflex
 

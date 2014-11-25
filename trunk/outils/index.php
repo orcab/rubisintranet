@@ -31,6 +31,11 @@ img:hover {
 	-moz-transform: scale(1.1);
 }
 
+img {
+	max-width:90px;
+	max-height:90px;
+}
+
 </style>
 
 </head>
@@ -47,11 +52,8 @@ img:hover {
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br>EDI</a><br></td>
 	<td nowrap="nowrap">
-	<!--
-		<img src="feuille_tournee/gfx/feuille_tournee.png"><br>
-		<a href="feuille_tournee/feuille_tournee.php">Feuille de tournée</a><br/>
-		<a href="feuille_tournee/carte_tournee.php">Carte de tournée</a>
-	-->
+		<img src="stat_geo/gfx/stat_geo.png"><br>
+		<a href="stat_geo/index.php">Stats géospacial</a>
 	</td>
 	<td style="width:50%;padding-bottom:20px;">
 		<!--
