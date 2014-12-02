@@ -4,10 +4,12 @@
 	<name>morbihan.kml</name>
 	<Style id="transBluePoly">
       <LineStyle>
-        <width>1.5</width>
-        <color>7dff0000</color>
-      </LineStyle>
-      
+			<color>ffff0000</color>
+			<width>1.1</width>
+		</LineStyle>
+		<PolyStyle>
+			<fill>0</fill>
+		</PolyStyle>
     </Style>
 	<Placemark>
 		<name>Morbihan</name>

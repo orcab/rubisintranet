@@ -1,4 +1,7 @@
-<? include('../../../inc/config.php'); ?>
+<?
+session_start();
+include('../../../inc/config.php'); 
+?>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/> 
@@ -276,6 +279,15 @@ EOT;
 
 //echo "<pre>$sql</pre>";
 
+$_SESSION['where'] = <<<EOT
+RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
+	and RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+$cession
+$all_client
+$only_first_preparation
+$reservation
+EOT;
+
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
 ?>
@@ -291,8 +303,10 @@ EOT;
 		<th>Nb cde</th>
 		<th>Lignes / cde</th>
 		<th>Lignes commandées</th>
+		<td></td>
 		<th>Lignes préparables</th>
 		<th>% préparable / commandé</th>
+		<td></td>
 		<th>Lignes préparées</th>
 		<th>% préparé / préparable</th>
 		<th>% préparé / commandé</th>
@@ -358,8 +372,10 @@ EOT;
 						<td rowspan="1"><?=$total_cde?></td>
 						<td><?=sprintf('%0.2f',$total_ligne / $total_cde)?></td>
 						<td><?=$total_ligne?></td>
+						<td></td>
 						<td><?=$total_ligne_doable?></td>
 						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_doable / $total_ligne)?></td>
+						<td></td>
 						<td><?=$total_ligne_done?></td>
 						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_done / $total_ligne_doable)?></td>
 						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_done / $total_ligne)?></td>
@@ -384,7 +400,7 @@ EOT;
 <?
 
 function afficheInfo() {
-	global $nb_cde,$old_day,$total_ligne_day,$done_ligne_day,$doable_ligne_day,$total_qte_day,$done_qte_day,$doable_qte_day,$jours_mini;
+	global $nb_cde,$old_day,$total_ligne_day,$done_ligne_day,$doable_ligne_day,$total_qte_day,$done_qte_day,$doable_qte_day,$jours_mini,$sql;
 ?>
 	<tr class="start-of-day">
 		<td rowspan="1"><?=$old_day?></td>
@@ -392,8 +408,10 @@ function afficheInfo() {
 		<td rowspan="1"><?=$nb_cde?></td>
 		<td><?=sprintf('%0.2f',$total_ligne_day / $nb_cde)?></td>
 		<td><?=$total_ligne_day?></td>
+		<td><a class="btn" href="diff.php?type=1" target="_blank"><i class="icon-list"></i></a></td>
 		<td><?=$doable_ligne_day?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100*$doable_ligne_day / $total_ligne_day)?></td>
+		<td><a class="btn" href="diff.php?type=2" target="_blank"><i class="icon-list"></i></a></td>
 		<td><?=$done_ligne_day?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100* $done_ligne_day / $doable_ligne_day)?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100*$done_ligne_day / $total_ligne_day)?></td>
