@@ -41,17 +41,22 @@ td.designation,td.destinataire {
 <body>
 
 <?php
-if(!isset($_SESSION['where']) || strlen($_SESSION['where'])<1)
-	die("Impossible de trouver la session where");
-
 if(!isset($_GET['type']) || strlen($_GET['type'])<1)
 	die("Impossible de trouver le type");
-
 
 if 		($_GET['type']==1)
 	$where_type = "and P1NNSL > 0";
 elseif 	($_GET['type']==2)
 	$where_type = "and P1QPRE < P1QAPR and P1NNSL=0";
+
+if(!isset($_SESSION['where']) || strlen($_SESSION['where'])<1)
+	die("Impossible de trouver la session where");
+
+if(!isset($_GET['date']) || strlen($_GET['date'])<1)
+	die("Impossible de trouver la date");
+
+$where = str_replace('!date-chargement!', $_GET['date'], $_SESSION['where']);
+//$where = str_replace('date-chargement', $_GET['date'], $_SESSION['where']);
 
 $sql = <<<EOT
 select 	(cast(P1NANP as varchar) + '-' + cast(P1NPRE as varchar)) as NUM_PREPA, P1CART as CODE_ARTICLE,P1QAPR as QTE_A_PREPARER,P1QPRE as QTE_PREPAREE,
@@ -73,7 +78,7 @@ from
 		on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
 where
 --start session where
-	$_SESSION[where]
+	$where
 --end session where
 	$where_type
 order by CODE_ARTICLE ASC

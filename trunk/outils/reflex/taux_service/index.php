@@ -280,8 +280,7 @@ EOT;
 //echo "<pre>$sql</pre>";
 
 $_SESSION['where'] = <<<EOT
-RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
-	and RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) = '!date-chargement!'
 $cession
 $all_client
 $only_first_preparation
@@ -408,10 +407,10 @@ function afficheInfo() {
 		<td rowspan="1"><?=$nb_cde?></td>
 		<td><?=sprintf('%0.2f',$total_ligne_day / $nb_cde)?></td>
 		<td><?=$total_ligne_day?></td>
-		<td><a class="btn" href="diff.php?type=1" target="_blank"><i class="icon-list"></i></a></td>
+		<td><a class="btn" href="diff.php?type=1&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a></td>
 		<td><?=$doable_ligne_day?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100*$doable_ligne_day / $total_ligne_day)?></td>
-		<td><a class="btn" href="diff.php?type=2" target="_blank"><i class="icon-list"></i></a></td>
+		<td><a class="btn" href="diff.php?type=2&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a></td>
 		<td><?=$done_ligne_day?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100* $done_ligne_day / $doable_ligne_day)?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100*$done_ligne_day / $total_ligne_day)?></td>
