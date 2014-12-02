@@ -181,10 +181,10 @@ EOT;
 	}
 
 	$where = array();
-	if (isset($_POST['date_from']))
+	if (isset($_POST['date_from']) && strlen($_POST['date_from'])>0)
 		$where[] = "date_bon>='".join('-',array_reverse(explode('/',$_POST['date_from'])))."'";
 
-	if (isset($_POST['date_to']))
+	if (isset($_POST['date_to']) && strlen($_POST['date_to'])>0)
 		$where[] = "date_bon<='".join('-',array_reverse(explode('/',$_POST['date_to'])))."'";
 
 	if (sizeof($where)>0)
@@ -216,9 +216,7 @@ EOT;
 	//var_dump($datas['056032']);
 ?>
 
-
 <script type="text/javascript">
-
 	// définition des options de la carte
 	var myOptions = {
 		zoom: 10,									// Pour afficher le Morbihan
@@ -227,13 +225,12 @@ EOT;
 	};
 
 	var map					= new google.maps.Map(document.getElementById('map_canvas'), myOptions); // creation de la carte
-	// si l'on zoom, il faut effacé les anciennes coordonnées (voir la class overlay)
-
+	
 	// marker MCS
-	var m_mcs = new google.maps.Marker({
+	new google.maps.Marker({
 			position: new google.maps.LatLng(47.683087, -2.801085), // MCS coords
 			map: map,
-			title:"MCS",
+			title:"MCS Plescop",
 			icon: new google.maps.MarkerImage('gfx/mcs-rouge.png',
 						new google.maps.Size(26,14),// taille de l'image
 						new google.maps.Point(0,0),// Origine de l'image
@@ -241,20 +238,29 @@ EOT;
 					)
 		});
 
+	new google.maps.Marker({
+			position: new google.maps.LatLng(47.781940, -3.329979), // MCS Caudan coords
+			map: map,
+			title:"MCS Caudan",
+			icon: new google.maps.MarkerImage('gfx/mcs-rouge.png',
+						new google.maps.Size(26,14),// taille de l'image
+						new google.maps.Point(0,0),// Origine de l'image
+						new google.maps.Point(13,7)// center de l'image
+					)
+		});
 
 	new google.maps.KmlLayer({
-    		//url: 'http://<?=$_SERVER['SERVER_ADDR'].dirname($_SERVER['PHP_SELF'])?>/exemple.kml',
     		url:'http://www.coopmcs.com/kml/morbihan.kml',
     		map:map,
     		preserveViewport :true
   		});
-  	//morbihanLayer.setMap(map);
-	
 
 <?	$montants = array();
+	//var_dump($datas);
 	foreach($datas as $key => $val)
 		if(isset($val[$_POST['type_donnee']]))
 			$montants[] = $val[$_POST['type_donnee']];
+
 	$montant_max = max($montants);
 
 	foreach($datas as $key => $val) {
@@ -273,7 +279,6 @@ EOT;
 <?		}
 	}
 ?>
-
 </script>
 </body>
 </html>

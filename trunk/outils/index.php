@@ -50,11 +50,8 @@ img {
 	<td style="width:50%;padding-bottom:20px;"><a href="barcode_generator/index.php"><img src="barcode_generator/gfx/icon.jpg"><br>Code barre</a></td>
 </tr>
 <tr>
-	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br>EDI</a><br></td>
-	<td nowrap="nowrap">
-		<img src="stat_geo/gfx/stat_geo.png"><br>
-		<a href="stat_geo/index.php">Stats géospacial</a>
-	</td>
+	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br/>EDI</a><br></td>
+	<td nowrap="nowrap"><a href="stat_geo/index.php"><img src="stat_geo/gfx/stat_geo.png"><br/>Stats géospaciales</a></td>
 	<td style="width:50%;padding-bottom:20px;">
 		<!--
 		<a href="http://10.211.14.10/intranet/outils/ged/"><img src="ged/gfx/ged_icon.png"><br>GED</a>
