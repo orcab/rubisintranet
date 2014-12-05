@@ -20,10 +20,8 @@ require_once('save_data_into_database.php');
 $mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
 $database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
 
-
 // enregistre les données dans la base
 save_data_into_database();
-
 
 // GENERATION DU DOCUMENT PDF
 // creation de l'objet
@@ -52,44 +50,44 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if (in_array('px_adh',$options)) // bon destiné a l'artisan
 		$designation .= "\n".trim($_POST['a_2designation'][$i]);
 
-
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // cas d'un article
 		$prix = in_array('px_adh',$options) ? $_POST['a_adh_pu'][$i] : $_POST['a_pu'][$i];
 
 		if ($prix <= 0)
 			$pdf->SetFillColor(255,0,0);
 
-			// si le bon est destiné à l'artisan, on met toutes les infos
-			if (in_array('px_adh',$options)) {
+		setCustomColor();
 
-				$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
-							array('text' => utf8_decode($_POST['a_reference'][$i])	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
-							array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
-							array('text' => my_utf8_decode(stripslashes($designation)).($_POST['a_hid_opt'][$i] ? " (option)":''), 'text-align' => 'L'),
-							array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
-							array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
-							array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
-							)
-						);
+		// si le bon est destiné à l'artisan, on met toutes les infos
+		if (in_array('px_adh',$options)) {
+			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
+						array('text' => utf8_decode($_POST['a_reference'][$i])	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
+						array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
+						array('text' => my_utf8_decode(stripslashes($designation)).($_POST['a_hid_opt'][$i] ? " (option)":''), 'text-align' => 'L'),
+						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
+						)
+					);
 
-			} else { // si le bon est destiné au client, on n'affiche ni la référence, ni le fournisseur
-
-				$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
-							array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
-							array('text' => my_utf8_decode(stripslashes($designation)).($_POST['a_hid_opt'][$i] ? " (option)":''), 'text-align' => 'L'),
-							array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
-							array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
-							array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
-							)
-						);
-			}
-
-
+		} else { // si le bon est destiné au client, on n'affiche ni la référence, ni le fournisseur
+			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
+						array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
+						array('text' => my_utf8_decode(stripslashes($designation)).($_POST['a_hid_opt'][$i] ? " (option)":''), 'text-align' => 'L'),
+						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
+						)
+					);
+		}
 
 		$pdf->SetFillColor(255);
 
 	} elseif(!$_POST['a_reference'][$i] && $_POST['a_designation'][$i]) { // cas d'un commentaire
 		$pdf->SetFillColor(230);
+
+		setCustomColor();
+
 		$pdf->SetFont('','B');
 		if($pdf->GetY() +  7 > PAGE_HEIGHT - 29) // check le saut de page
 			$pdf->AddPage();
@@ -116,16 +114,16 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		else
 			$pdf->MultiCell(0,7,my_utf8_decode(stripslashes($designation)) ,1,'C',1);
 
-		$pdf->SetFillColor(255);
 		$sous_total = 0 ;
 		$sous_total_option = 0;
 	}
-}
 
+	$pdf->SetFillColor(255);
+	$pdf->SetTextColor(0);
+}
 
 if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
 	$pdf->AddPage();
-
 
 $total = in_array('px_adh',$options) ? $total_devis_adh : $total_devis;
 $pdf->SetFont('helvetica','B',10);
@@ -166,4 +164,25 @@ if ($option > 0) { // il y a des options, on balance un disclaimer
 }
 
 $pdf->Output('devis_'.$id_devis.'('.crc32(uniqid()).').pdf','I');
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+function is_rgb_color($str) {
+	return preg_match('/^\d{1,3},\d{1,3},\d{1,3}$/', $str);
+}
+
+
+function setCustomColor() {
+	global $pdf,$i;
+	if (is_rgb_color($_POST['a_designation_background-color'][$i])) {
+		$tmp = explode(',',$_POST['a_designation_background-color'][$i]);
+		$pdf->SetFillColor($tmp[0],$tmp[1],$tmp[2]);
+	}
+
+	if (is_rgb_color($_POST['a_designation_color'][$i])) {
+		$tmp = explode(',',$_POST['a_designation_color'][$i]);
+		$pdf->SetTextColor($tmp[0],$tmp[1],$tmp[2]);
+	}
+}
 ?>

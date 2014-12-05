@@ -152,7 +152,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // ARTICLE SPÉCIFIÉ
 
-		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,`option`) VALUES" ;
+		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,ref_fournisseur,fournisseur,designation,qte,puht,pu_adh_ht,`option`,designation_color,`designation_background-color`) VALUES" ;
 		$sql .= "('$id_devis','".
 				strtoupper(mysql_escape_string(stripslashes($_POST['a_reference'][$i])))."','".
 				strtoupper(mysql_escape_string(stripslashes($_POST['a_fournisseur'][$i])))."','".
@@ -160,7 +160,9 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 				mysql_escape_string(stripslashes($_POST['a_qte'][$i]))."','".
 				mysql_escape_string(stripslashes(str_replace(',','.',$_POST['a_pu'][$i])))."','".
 				mysql_escape_string(stripslashes(str_replace(',','.',$_POST['a_adh_pu'][$i])))."','".
-				mysql_escape_string($_POST['a_hid_opt'][$i]). 
+				mysql_escape_string($_POST['a_hid_opt'][$i])."','".
+				mysql_escape_string($_POST['a_designation_color'][$i])."','".
+				mysql_escape_string($_POST['a_designation_background-color'][$i]).
 				"')" ;
 		if ($_POST['a_hid_opt'][$i]) { // c'est une option, on la compte pas dans le décompte finale
 			$option++;
@@ -191,8 +193,12 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		
 	} elseif(!$_POST['a_reference'][$i] && $_POST['a_designation'][$i]) { // cas d'un commentaire
 
-		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,designation) VALUES ".
-				"($id_devis,'".mysql_escape_string(stripslashes($designation))."')" ;
+		$sql  = "INSERT INTO devis_ligne${table_sufixe} (id_devis,designation,designation_color,`designation_background-color`) VALUES ".
+				"($id_devis,'".
+				mysql_escape_string(stripslashes($designation))."','".
+				mysql_escape_string($_POST['a_designation_color'][$i])."','".
+				mysql_escape_string($_POST['a_designation_background-color'][$i]).
+				"')" ;
 
 		mysql_query($sql) or die("Erreur dans creation des lignes devis (titre) : ".mysql_error());
 
