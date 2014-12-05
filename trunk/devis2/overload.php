@@ -294,14 +294,14 @@ class PDF extends FPDF
 			if (isset($param[$i]['text-align']))	$a = $param[$i]['text-align'];
 			
 			$w=$this->widths[$i];
-			
+
 			//Sauve la position courante
 			$x=$this->GetX();
 			$y=$this->GetY();
 			//Dessine le cadre
 			$this->Rect($x,$y,$w,$h);
 			//Imprime le texte
-			$this->MultiCell($w,5,$data[$i],0,$a,0);
+			$this->MultiCell($w,5,$data[$i],0,$a,1);
 			//Repositionne à droite
 			$this->SetXY($x+$w,$y);
 		}

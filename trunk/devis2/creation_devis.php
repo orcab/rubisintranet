@@ -109,6 +109,8 @@ var phrases = [];
 	$res = mysql_query("SELECT mot_cle,phrase FROM phrase WHERE app='devis' AND deleted=0 ORDER BY mot_cle ASC") or die("Requete de selection des phrases pré-enreistrées impossible ".mysql_error()) ;
 	while($row = mysql_fetch_array($res)) { ?>
 		phrases['<?=preg_replace("/'/","",$row['mot_cle'])?>'] = "<?=utf8_decode(preg_replace("/[\n|\r]+/",'\\n',preg_replace('/"/',"\\\"",$row['phrase'])))?>";
+
+		//" juste pour la coloration syntaxique
 <?	} ?>
 
 function affiche_choix_phrase(btn_elm) {
@@ -141,7 +143,6 @@ function affiche_phrase(li_elm) {
 }
 
 
-
 // variables globales
 var timer ;
 var tr ;
@@ -150,7 +151,6 @@ var div_height;
 var all_results = new Array();
 var nb_results_by_page = 20 ;
 var recherche = '';
-
 
 function draw_page(pageno) {
 	lastpage   = Math.ceil(all_results.length / nb_results_by_page);
@@ -163,7 +163,7 @@ function draw_page(pageno) {
 						'<td class="logo">'			+ (all_results[i].code_mcs ? '<img src="gfx/logo_mcs_micro.png"/>':'')	+ '&nbsp;</td>' +
 						'<td class="designation">'	+ all_results[i].designation1											+ '</td>' +
 						'<td class="px">'			+ parseFloat(all_results[i].px_public).toFixed(2)						+ '&euro;</td>' +
-						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'') +'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;') + '</td>' +
+						'<td class="'+(all_results[i].px_from == 'pp' ? 'pp':'')+'">'+ (all_results[i].px_from == 'pp' ? 'pp':'&nbsp;') + '</td>' +
 						'<td class="ecotaxe">'+ (all_results[i].ecotaxe > 0 ? '('+all_results[i].ecotaxe+'&euro;)':'&nbsp;')	+ '</td>' +
 					'</tr>' ; // on affiche les suggestions
 	} // fino pour chaque résultat
@@ -270,21 +270,20 @@ $pattern_ligne = <<<EOT
 	</td>
 	<td><input type="text"		name="a_reference[]"	value=""		class="ref"			 autocomplete="off" /></td>
 	<td><input type="text"		name="a_fournisseur[]"	value=""		class="fournisseur"	 /></td>
-	<td nowrap="nowrap">
+	<td nowrap="nowrap" class="designation">
 		<input type="button" class="phrase phrase_cli" value="..." />
-		<textarea				rows="2"	class="designation designation1" name="a_designation[]"></textarea><br/>
+		<textarea				rows="2"	class="designation designation1" name="a_designation[]"></textarea>
+		<br/>
 		<input type="button" class="phrase phrase_adh" value="..." />
 		<textarea				rows="2"	class="designation designation2" name="a_2designation[]"></textarea>
-<!--	<input type="hidden"	name="a_hid_maj[]"	value="0"/>
-		<div class="modification">
-			<img src="../gfx/info.png" /> Modifications apportées &nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="a_maj[]" />MAJ
-		</div>
--->
+		<br/>
+		<input type="button" class="colorpicker colorpicker_color" value="A" style="font-weight:bold;"/>
+		<input type="button" class="colorpicker colorpicker_background-color" value="&nbsp;&nbsp;"/>
+		<input type="hidden" name="a_designation_color[]" value=""/>
+		<input type="hidden" name="a_designation_background-color[]" value=""/>
 	</td>
 	<td>
 		<input type="text"		name="a_qte[]"		value="0"	class="qte" onkeyup="recalcul_total();"/>
-		
 	</td>
 	<td style="text-align:right;">
 		<input type="text"		name="a_pu[]"		value="0"	class="pu"  onkeyup="recalcul_total();"/>
@@ -365,8 +364,6 @@ function lance_recherche() {
 
 var pattern_ligne = '<?=preg_replace("/[\n\r]/",'',$pattern_ligne)?>' ;
 
-
-
 $(document).ready(function(){
 		
 	// bouton qui ajoute une ligne à la fin du tableau
@@ -387,7 +384,6 @@ $(document).ready(function(){
 		if ($(this).attr('checked'))	$('.discret').show();
 		else							$('.discret').hide();
 	});
-
 	
 	// active l'auto-save en cas de modification
 	$('body').delegate('input[type=text],textarea','change',function(){
@@ -395,25 +391,11 @@ $(document).ready(function(){
 	}); // en cas de modif d'une valeur, on réactive l'auto_save
 
 
-	// en cas de changement, on affiche l'option de validation des modifications dans la base
-//	$('textarea[name^=a_designation], input[name^=a_pu], input[name^=a_adh_pu]').change(function() {
-//		var parent_td = $(this).parents('tr').children('td') ;
-//		if (parent_td.children('input[name^=a_reference]').val() && parent_td.children('input[name^=a_fournisseur]').val()) // si on a une référence et un fournisseur, c'est que l'on edit un article. Sinon on écrit juste un com'
-//			parent_td.children('div.modification').show();
-//	});
-
-
 	// click sur options
 	$('body').delegate('input[name^=a_opt]','click',function() {
 		$(this).parents('tr').children('td').children('input[name^=a_hid_opt]').val( $(this).attr('checked') ? '1' : '0'  );
 		recalcul_total();
 	});
-
-	// click sur MAJ
-/*	$('body').delegate('input[name^=a_maj]','click',function() {
-		$(this).parents('tr').children('td').children('input[name^=a_hid_maj]').val( $(this).attr('checked') ? '1' : '0'  );
-	});
-*/
 
 	// ajoute un ligne au dessus de la ligne courante
 	$('body').delegate('img[name^=a_add]','click',function() {
@@ -425,7 +407,6 @@ $(document).ready(function(){
 		if (confirm("Voulez-vous vraiment supprimer cette ligne ?"))
 			$(this).parents('tr').remove();  // supprime le TR
 	});
-
 
 	// on doit aller chercher les infos dans la BD et les ramener sur la page
 	$('body').delegate('input[name^=a_reference]','keyup',function (e) {
@@ -446,7 +427,6 @@ $(document).ready(function(){
 		}
 	});
 
-	
 	// affichage des phrases pré-enregistrées
 	$('body').delegate('input.phrase','click',function() {
 		affiche_choix_phrase(this);
@@ -457,18 +437,86 @@ $(document).ready(function(){
 		affiche_phrase(this);
 	});
 
+	// affichage des phrases pré-enregistrées
+	$('body').delegate('input.colorpicker_color','click',function() {
+		createColorPicker(this,'color');
+	});
+
+	$('body').delegate('input.colorpicker_background-color','click',function() {
+		createColorPicker(this,'background-color');
+	});
+
+	$('body').delegate('canvas.colorpicker','mousemove',function(e) {
+		var pos = findPos(this);
+		var c = this.getContext('2d');
+		var p = c.getImageData(e.pageX - pos.x, e.pageY - pos.y, 1, 1).data; 
+		var hex = "#" + ("000000" + rgbToHex(p[0], p[1], p[2])).slice(-6);
+		$(this).parent('td').children('textarea.designation').css($(this).attr('data-type'),hex);
+	});
+
+	$('body').delegate('canvas.colorpicker','click',function(e) {
+		var pos = findPos(this);
+		var c = this.getContext('2d');
+		var p = c.getImageData(e.pageX - pos.x, e.pageY - pos.y, 1, 1).data; 
+		var hex = '#' + ('000000' + rgbToHex(p[0], p[1], p[2])).slice(-6);
+
+		var parent_td = $(this).parent('td');
+		parent_td.children('textarea.designation').css($(this).attr('data-type'),hex);
+		if ($(this).attr('data-type') == 'color') {
+			parent_td.children('input.colorpicker_color').css('color',hex);
+			parent_td.children('input[name^=a_designation_color]').val(p[0]+','+p[1]+','+p[2]);
+		} else {
+			parent_td.children('input.colorpicker_background-color').css('background-color',hex);
+			parent_td.children('input[name^=a_designation_background]').val(p[0]+','+p[1]+','+p[2]);
+		}
+		$(this).remove();
+	});
+
 
 	// au chargement de la page, on ajoute une ligne au tableau des details
 <?	if (!$modif) { // si aucune ligne sur le devis, on en propose une ?>
 		$('#add_ligne').click();
 <?	} ?>
-	
 
 	recalcul_total();
 
 	// on lance la procédure auto-save
-	window.setTimeout ("sauvegarde_auto()", 1000*60*2 ); // on sauve regulierement
+	window.setTimeout ("sauvegarde_auto()", 1000*60*2); // on sauve regulierement
 }); // fin on document ready
+
+
+function createColorPicker(elem,prop) {
+	var pos = findPos(elem);
+	var canvas = document.createElement('canvas');
+	$(canvas).addClass('colorpicker').css({'left':pos.x - 75,'top':pos.y - 75}).attr('data-type',prop);
+	$(elem).after(canvas);
+	
+	var context = canvas.getContext('2d');
+	var wheel = new Image();
+  	wheel.src = '../js/colorpicker/wheel.png';
+  	wheel.onload = function() {
+		context.drawImage(wheel,0,0);
+	}
+}
+
+function findPos(obj) {
+    var curleft = 0, curtop = 0;
+    if (obj.offsetParent) {
+        do {
+            curleft += obj.offsetLeft;
+            curtop += obj.offsetTop;
+        } while (obj = obj.offsetParent);
+        return { x: curleft, y: curtop };
+    }
+    return undefined;
+}
+
+function rgbToHex(r, g, b) {
+    if (r > 255 || g > 255 || b > 255)
+        throw "Invalid color component";
+    return ((r << 16) | (g << 8) | b).toString(16);
+}
+
 
 </script>
 
@@ -613,6 +661,14 @@ div#phrase ul {
 	padding-right:2em;
 	background-color:white;
 	font-size:0.9em;
+}
+
+canvas.colorpicker {
+	width:300px;
+	height:150px;
+	border:none;
+	cursor:crosshair;
+	position:absolute;
 }
 
 </style>
@@ -768,10 +824,13 @@ div#phrase ul {
 				$custom_ligne = preg_replace('/\sname="a_opt\[\]"\s/i',' name="a_opt[]" checked="checked" ',$custom_ligne);
 				$custom_ligne = preg_replace('/\sname="a_hid_opt\[\]"\svalue="0"/i',' name="a_hid_opt[]" value="1" ',$custom_ligne);
 			}
+
 			if ($row_detail['ref_fournisseur'])
 				$custom_ligne = preg_replace('/\sname="a_reference\[\]"\s+value=""\s/i',' name="a_reference[]" value="'.$row_detail['ref_fournisseur'].'" ',$custom_ligne);
+
 			if ($row_detail['fournisseur'])
 				$custom_ligne = preg_replace('/\sname="a_fournisseur\[\]"\s+value=""\s/i',' name="a_fournisseur[]" value="'.$row_detail['fournisseur'].'" ',$custom_ligne);
+
 			if ($row_detail['designation']) {
 				preg_match('/^(.*?)<desi2>(.*?)<\/desi2>$/smi',$row_detail['designation'],$matches);
 				if (isset($matches[2])) {	// nouveau style avec le <desi2>
@@ -781,13 +840,49 @@ div#phrase ul {
 					$desi1 = $row_detail['designation'];
 					$desi2 = '';
 				}
+
 				$custom_ligne = preg_replace('/\s+name="a_designation\[\]"><\/textarea>\s*/i',' name="a_designation[]">'.stripslashes($desi1).'</textarea>',$custom_ligne);
 				$custom_ligne = preg_replace('/\s+name="a_2designation\[\]"><\/textarea>\s*/i',' name="a_2designation[]">'.stripslashes($desi2).'</textarea>',$custom_ligne);
+
+				// style $row_detail['designation_color'] et $row_detail['designation_background-color']
+				$style = array();
+				if (strlen($row_detail['designation_color'])>0) {
+					$tmp = explode(',', $row_detail['designation_color']);
+					$color_hex = rgb2hex($tmp[0],$tmp[1],$tmp[2]);
+					$color_rgb = $row_detail['designation_color'];
+
+					$custom_ligne = preg_replace('/\s+name="a_designation_color\[\]"\s+value=""/i',' name="a_designation_color[]" value="'.$color_rgb.'" ',$custom_ligne);
+
+					$custom_ligne = preg_replace('/\s+colorpicker_color" value="A" style="font-weight:bold;"/i',' colorpicker_color" value="A" style="font-weight:bold;color:'.$color_hex.'" ',$custom_ligne);
+
+					$style[] = "color:$color_hex";
+				}
+
+				if (strlen($row_detail['designation_background-color'])>0) {
+					$tmp = explode(',', $row_detail['designation_background-color']);
+					$color_hex = rgb2hex($tmp[0],$tmp[1],$tmp[2]);
+					$color_rgb = $row_detail['designation_background-color'];
+
+					$custom_ligne = preg_replace('/\s+name="a_designation_background-color\[\]"\s+value=""/i',' name="a_designation_background-color[]" value="'.$color_rgb.'" ',$custom_ligne);
+
+					$custom_ligne = preg_replace('/\s+colorpicker_background-color"/i',' colorpicker_background-color" style="background-color:'.$color_hex.'" ',$custom_ligne);
+
+					$style[] = "background-color:$color_hex";
+				}
+
+				// custom style
+				if (sizeof($style)>0) {
+					$custom_ligne = preg_replace('/\s+name="a_designation\[\]">/i',' style="'.join(';',$style).'" name="a_designation[]">',$custom_ligne);
+					$custom_ligne = preg_replace('/\s+name="a_2designation\[\]">/i',' style="'.join(';',$style).'" name="a_2designation[]">',$custom_ligne);
+				}
 			}
+
 			if ($row_detail['qte'])
 				$custom_ligne = preg_replace('/\sname="a_qte\[\]"\s+value="0"\s/i',' name="a_qte[]" value="'.$row_detail['qte'].'" ',$custom_ligne);
+
 			if ($row_detail['puht'])
 				$custom_ligne = preg_replace('/\sname="a_pu\[\]"\s+value="0"\s/i',' name="a_pu[]" value="'.$row_detail['puht'].'" ',$custom_ligne);
+
 			if ($row_detail['pu_adh_ht'])
 				$custom_ligne = preg_replace('/\sname="a_adh_pu\[\]"\s+value="0"\s/i',' name="a_adh_pu[]" value="'.$row_detail['pu_adh_ht'].'" ',$custom_ligne);
 
@@ -816,9 +911,7 @@ div#phrase ul {
 	</td>
 	<td id="div_bouton">
 		<input type="button" value="Générer le devis"							class="button pdf divers" onclick="valide_form('');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<!--<input type="button" value="Générer le devis sans Entête"				class="button pdf divers" onclick="valide_form('no_header');" />&nbsp;&nbsp;&nbsp;&nbsp;-->
 		<input type="button" value="Générer le devis en prix ADH"				class="button pdf divers discret" onclick="valide_form('px_adh');" />&nbsp;&nbsp;&nbsp;&nbsp;
-		<!--<input type="button" value="Générer le devis en prix ADH sans Entête"	class="button pdf divers discret" onclick="valide_form('px_adh,no_header');" />-->
 	</td>
 	<td id="div_total">
 		<span id="options"></span>&nbsp;&nbsp;
@@ -830,4 +923,19 @@ div#phrase ul {
 
 </body>
 </html>
-<? mysql_close($mysql); ?>
+<? mysql_close($mysql);
+
+
+function rgb2hex($r, $g, $b, $uppercase=false, $shorten=false) {
+	$out = '';
+	 
+	if ($shorten && ($r + $g + $b) % 17 !== 0) $shorten = false;
+	
+	foreach (array($r, $g, $b) as $c) {
+		$hex = base_convert($c, 10, 16);
+		if ($shorten) $out .= $hex[0];
+		else $out .= ($c < 16) ? ('0'.$hex) : $hex;
+	}
+	return '#'.($uppercase ? strtoupper($out) : $out);
+}
+?>
