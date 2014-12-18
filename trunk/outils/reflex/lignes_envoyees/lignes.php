@@ -156,6 +156,7 @@ from
 where
 		DETAIL.CFBON='$num_cde_escape'
 	and DETAIL.CFPRF='1'
+	and DETAIL.CDDE8='CDE'
 EOT;
 	}
 

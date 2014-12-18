@@ -1,4 +1,8 @@
-<? include('../../../inc/config.php'); ?>
+<? include('../../../inc/config.php');
+
+if (isset($_GET['code_artisan']) && $_GET['code_artisan'])
+	$_POST['code_artisan'] = $_GET['code_artisan'];
+?>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/> 
@@ -31,7 +35,7 @@ h1 {
 #lignes {
     border: 1px solid black;
     border-collapse: collapse;
-    width:80%;
+    width:100%;
     margin:auto;
     margin-top: 1em;
 }
@@ -98,6 +102,10 @@ tfoot {
 #color-legend > div {
 	height:2em;
 	margin:auto;
+}
+
+.bon_cpt {
+	border-width: 2px;
 }
 
 </style>
@@ -202,17 +210,14 @@ function verif_form(){
 	Des commandes du  <input type="text" id="date_from" name="date_from" value="<?= isset($_POST['date_from']) ? $_POST['date_from']:''?>" size="10" maxlength="10"/>
 	au commandes du <input type="text" id="date_to" name="date_to" value="<?= isset($_POST['date_to']) ? $_POST['date_to']:''?>" size="10" maxlength="10"/>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Voir les taux de service Rubis</a><br/>
+	<label for="code_artisan">Limiter au code artisan</label> <input type="text" id="code_artisan" name="code_artisan" value="<?= isset($_POST['code_artisan']) ? $_POST['code_artisan']:''?>" size="6" maxlength="6"/> (exemple : 056032)<br/>
 	<input type="checkbox" name="reservation" 				id="reservation" 			<?= isset($_POST['reservation'])			? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les SPE</label><br/>
 	<input type="checkbox" name="cession" 					id="cession" 				<?= isset($_POST['cession']) 				? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
 	<input type="checkbox" name="all_client" 				id="all_client" 			<?= isset($_POST['all_client']) 			? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label><br/>
-<!--	<input type="checkbox" name="only_first_preparation" 	id="only_first_preparation" <?= isset($_POST['only_first_preparation']) ? 'checked="checked"':'' ?> /> 	<label for="only_first_preparation">Inclure seulement les premières descente en préparation (-001)</label>
--->
 </div>
-
 
 <?
 //var_dump($_POST);
-
 if (	isset($_POST['action']) && $_POST['action'] == 'taux_service'
 	&&	isset($_POST['date_from']) && $_POST['date_from'] && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $_POST['date_from'])
 	&&	isset($_POST['date_to']) && $_POST['date_to'] && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $_POST['date_to'])
@@ -229,6 +234,11 @@ $all_client = " and ENTETE.NOCLI like '056%' ";
 if(isset($_POST['all_client']))
 	$all_client = '';
 
+// on inclu les autre type de clients (coop, employes, perso...)
+$client = '';
+if(isset($_POST['code_artisan']) && $_POST['code_artisan'])
+	$client = " and ENTETE.NOCLI = '".mysql_escape_string($_POST['code_artisan'])."' ";
+
 // on inclu les cessions si la case n'est pas cochée
 $cession = " and ENTETE.NOCLI not like 'CES%' ";
 if(isset($_POST['cession']))
@@ -239,34 +249,31 @@ $reservation = " and TYCDD='STO' ";
 if(isset($_POST['reservation']))
 	$reservation = '' ;
 
-// on ne tient compte que des premieres descentes en preparation
-/*
-$only_first_preparation = '';
-if(isset($_POST['only_first_preparation']))
-	$only_first_preparation = " and OERODP like '%-001' ";
-*/
 
 $sql = <<<EOT
 select 
 --ENTETE.NOCLI,
 --ENTETE.NOBON,
-CONCAT(DTBOS,CONCAT(DTBOA,CONCAT('-',CONCAT(DTBOM,CONCAT('-',DTBOJ))))) as DATE_BON,
-count(*) as NB_CDE,
---CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) as DATE_LIV,
-SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' $reservation)) as LIGNES_COMMANDEES,
 --(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='ANN' and PROFI='1' $reservation) as LIGNES_ANNULEES,
 --(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='R' $reservation) as LIGNES_RELIQUATS,
+--(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) > CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation) as LIGNES_LIVREES_EN_RETARD
+--CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) as DATE_LIV,
+(DTBOS || DTBOA || '-' || DTBOM || '-' || DTBOJ) as DATE_BON,
+count(*) as NB_CDE,
+SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' $reservation)) as LIGNES_COMMANDEES,
 SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' $reservation)) as LIGNES_LIVREES,
 SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) <= CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation)) as LIGNES_LIVREES_A_TEMPS
---(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) > CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation) as LIGNES_LIVREES_EN_RETARD
 
-from AFAGESTCOM.AENTBOP1 ENTETE
+from
+	AFAGESTCOM.AENTBOP1 ENTETE
 
 where
-		CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
-	and	CONCAT(DTBOS,CONCAT(DTBOA,CONCAT(DTBOM,DTBOJ))) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+		(DTBOS || DTBOA || DTBOM || DTBOJ) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
+	and	(DTBOS || DTBOA || DTBOM || DTBOJ) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+	and ETSEE=''
 	$cession
 	$all_client
+	$client
 
 group by 
 	DTBOS,DTBOA,DTBOM,DTBOJ
@@ -277,8 +284,37 @@ EOT;
 
 //echo "<pre>$sql</pre>";
 
-$loginor  = odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
-$res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
+$sql2 = <<<EOT
+select
+	(DTBOS || DTBOA || '-' || DTBOM || '-' || DTBOJ) as DATE_BON,
+	count(*) as NB_CDE,
+	CDCAM as TYPE_CDE,
+	LIVSB as VENDEUR,
+	SUM(MONTBT) as MONTANT
+
+from
+	AFAGESTCOM.AENTBOP1 ENTETE
+
+where
+		(DTBOS || DTBOA || DTBOM || DTBOJ) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
+	and	(DTBOS || DTBOA || DTBOM || DTBOJ) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+	and ETSEE=''
+	$cession
+	$all_client
+	$client
+
+group by 
+	DTBOS,DTBOA,DTBOM,DTBOJ,CDCAM,LIVSB
+
+order by
+	DTBOS ASC,DTBOA ASC,DTBOM ASC,DTBOJ ASC
+EOT;
+
+//echo "<pre>$sql2</pre>";
+
+$loginor  	= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+$res 		= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql");
+$res2 		= odbc_exec($loginor,$sql2)  or die("Impossible de lancer la requete 2 : $sql2");
 ?>
 
 <table id="lignes">
@@ -299,6 +335,18 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 		<th>Lignes livrées en retard</th>
 		<th>% de livrées à temps / livrées</th>
 		<th>% de livrées à temps / commandées</th>
+		<th style="border-left-width:3px;" class="bon_cpt">% CDE CPT</th>
+		<th class="montant_cpt">% CA CPT</th>
+		<th style="border-left-width:3px;" class="bon_dis">% CDE DIS</th>
+		<th class="montant_dis">% CA DIS</th>
+		<th style="border-left-width:3px;" class="bon_exp">% CDE EXP</th>
+		<th class="montant_exp">% CA EXP</th>
+		<th style="border-left-width:3px;" class="bon_ldp">% CDE LDP</th>
+		<th class="montant_ldp">% CA LDP</th>
+		<th style="border-left-width:3px;" class="bon_lso">% CDE LSO</th>
+		<th class="montant_lso">% CA LSO</th>
+		<th style="border-left-width:3px;" class="bon_web">% CDE WEB</th>
+		<th class="montant_web">% CA WEB</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -321,6 +369,33 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 	$total_out_time 	= 0;
 	$old_day = '';
 
+	// regarde les pourcentage de type de cde
+	$type_cde_stats = array('TOTAL_BON_   '=>0,'TOTAL_BON_CPT'=>0,'TOTAL_BON_DIS'=>0,'TOTAL_BON_EXP'=>0,'TOTAL_BON_LDP'=>0,'TOTAL_BON_LSO'=>0,'TOTAL_BON_WEB'=>0,
+							'TOTAL_MONTANT_   '=>0,'TOTAL_MONTANT_CPT'=>0,'TOTAL_MONTANT_DIS'=>0,'TOTAL_MONTANT_EXP'=>0,'TOTAL_MONTANT_LDP'=>0,'TOTAL_MONTANT_LSO'=>0,'TOTAL_MONTANT_WEB'=>0,'TOTAL_MONTANT'=>0);
+	while($row = odbc_fetch_array($res2)) {
+		// initialise les compteurs
+		if (!isset($type_cde_stats[$row['DATE_BON']])) // nouvelle date, on cree
+			$type_cde_stats[$row['DATE_BON']] = array('BON_   '=>0,'BON_CPT'=>0,'BON_DIS'=>0,'BON_EXP'=>0,'BON_LDP'=>0,'BON_LSO'=>0,'BON_WEB'=>0,'MONTANT_   '=>0,'MONTANT_CPT'=>0,'MONTANT_DIS'=>0,'MONTANT_EXP'=>0,'MONTANT_LDP'=>0,'MONTANT_LSO'=>0,'MONTANT_WEB'=>0,'TOTAL_MONTANT'=>0);
+
+		// compte les type de cde
+		$type_cde_stats[$row['DATE_BON']]['BON_'.$row['TYPE_CDE']] += $row['NB_CDE'];
+		$type_cde_stats[$row['DATE_BON']]['MONTANT_'.$row['TYPE_CDE']] += $row['MONTANT'];
+		$type_cde_stats[$row['DATE_BON']]['TOTAL_MONTANT'] += $row['MONTANT'];
+		
+		// compte les cde web
+		if ($row['VENDEUR'] == 'WEB') {
+			$type_cde_stats[$row['DATE_BON']]['BON_WEB'] += $row['NB_CDE'];
+			$type_cde_stats['TOTAL_BON_WEB'] += $row['NB_CDE'];
+			$type_cde_stats[$row['DATE_BON']]['MONTANT_WEB'] += $row['MONTANT'];
+			$type_cde_stats['TOTAL_MONTANT_WEB'] += $row['MONTANT'];
+		}
+
+		// cumul des totaux
+		$type_cde_stats['TOTAL_BON_'.$row['TYPE_CDE']] += $row['NB_CDE'];
+		$type_cde_stats['TOTAL_MONTANT_'.$row['TYPE_CDE']] += $row['MONTANT'];
+		$type_cde_stats['TOTAL_MONTANT'] += $row['MONTANT'];
+	}
+
 	while($row = odbc_fetch_array($res)) {
 		if ($old_day == '') { // premier record
 			$old_day = $row['DATE_BON'];
@@ -333,9 +408,9 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 		} // fin new day
 
 		
-		$total_cde++;
+		$total_cde += $row['NB_CDE'];
 
-		$nb_cde 			= $row['NB_CDE'];
+		$nb_cde 			 = $row['NB_CDE'];
 		$order_day 			+= $row['LIGNES_COMMANDEES'];
 //		$cancel_day 		+= $row['LIGNES_ANNULEES'];
 		$deliver_day 		+= $row['LIGNES_LIVREES'];
@@ -359,23 +434,35 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 	odbc_close($loginor);
 	afficheInfo();
 ?>
-				</tobdy>
-				<tfoot>
-					<tr class="start-of-total">
-						<td colspan="2">Total période</td>
-						<td rowspan="1"><?=$total_cde?></td>
-						<td><?=sprintf('%0.2f',$total_order / $total_cde)?></td>
-						<td><?=$total_order?></td>
-						<td><?=$total_deliver?></td>
-						<td><?=$total_reliquat?></td>
-						<td class="pourcent"><?=sprintf('%0.2f',100*$total_deliver / $total_order)?></td>
-						<td><?=$total_in_time?></td>
-						<td><?=$total_out_time?></td>
-						<td class="pourcent"><?=sprintf('%0.2f',100*$total_in_time / $total_deliver)?></td>
-						<td class="pourcent"><?=sprintf('%0.2f',100*$total_in_time / $total_order)?></td>
-					</tr>				
-				</tfoot>
-			</table>
+	</tobdy>
+	<tfoot>
+	<tr class="start-of-total">
+		<td colspan="2">Total période</td>
+		<td rowspan="1"><?=$total_cde?></td>
+		<td><?=sprintf('%0.2f',$total_order / $total_cde)?></td>
+		<td><?=$total_order?></td>
+		<td><?=$total_deliver?></td>
+		<td><?=$total_reliquat?></td>
+		<td class="pourcent"><?=sprintf('%0.2f',100*$total_deliver / $total_order)?></td>
+		<td><?=$total_in_time?></td>
+		<td><?=$total_out_time?></td>
+		<td class="pourcent"><?=sprintf('%0.2f',100*$total_in_time / $total_deliver)?></td>
+		<td class="pourcent"><?=sprintf('%0.2f',100*$total_in_time / $total_order)?></td>
+		<td style="border-left-width:3px;" class="bon_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_CPT'] / $total_cde)?></td>
+		<td class="montant_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_CPT'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_DIS'] / $total_cde)?></td>
+		<td class="montant_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_DIS'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_EXP'] / $total_cde)?></td>
+		<td class="montant_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_EXP'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_LDP'] / $total_cde)?></td>
+		<td class="montant_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_LDP'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_LSO'] / $total_cde)?></td>
+		<td class="montant_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_LSO'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_WEB'] / $total_cde)?></td>
+		<td class="montant_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_WEB'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+	</tr>				
+	</tfoot>
+</table>
 <? } ?>
 
 
@@ -384,29 +471,39 @@ $res = odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : $sql"
 	<div class="pourcent-medium">Supérieur à 	<input type="text" name="pourcent-medium" 	id="pourcent-medium" value="" size="2"/>%</div>
 	<div class="pourcent-bad">Inférieur à <span id="pourcent-bad"></span> %</div>
 </div>
-
 </form>
-
 </body>
 </html>
 
 <?
 
 function afficheInfo() {
-	global $nb_cde,$old_day,$order_day,$order_day,$cancel_day,$deliver_day,$reliquat_day,$in_time_day,$out_time_day,$jours_mini;
+	global $type_cde_stats,$nb_cde,$old_day,$order_day,$order_day,$cancel_day,$deliver_day,$reliquat_day,$in_time_day,$out_time_day,$jours_mini;
 ?>
-	<tr class="start-of-day">
-		<td rowspan="1"><?=$old_day?></td>
-		<td rowspan="1"><?=$jours_mini[date('w',strtotime($old_day))]?></td>
-		<td rowspan="1"><?=$nb_cde?></td>
-		<td><?=sprintf('%0.2f',$order_day / $nb_cde)?></td>
-		<td><?=$order_day?></td>
-		<td><?=$deliver_day?></td>
-		<td><?=$reliquat_day?></td>
-		<td class="pourcent"><?=sprintf('%0.2f',100*$deliver_day / $order_day)?></td>
-		<td><?=$in_time_day?></td>
-		<td><?=$out_time_day?></td>
-		<td class="pourcent"><?=sprintf('%0.2f',100*$in_time_day / $deliver_day)?></td>
-		<td class="pourcent"><?=sprintf('%0.2f',100*$in_time_day / $order_day)?></td>
-	</tr>
+<tr class="start-of-day">
+	<td rowspan="1"><?=$old_day?></td>
+	<td rowspan="1"><?=$jours_mini[date('w',strtotime($old_day))]?></td>
+	<td rowspan="1"><?=$nb_cde?></td>
+	<td><?=sprintf('%0.2f',$order_day / $nb_cde)?></td>
+	<td><?=$order_day?></td>
+	<td><?=$deliver_day?></td>
+	<td><?=$reliquat_day?></td>
+	<td class="pourcent"><?=sprintf('%0.2f',100*$deliver_day / $order_day)?></td>
+	<td><?=$in_time_day?></td>
+	<td><?=$out_time_day?></td>
+	<td class="pourcent"><?=sprintf('%0.2f',100*$in_time_day / $deliver_day)?></td>
+	<td class="pourcent"><?=sprintf('%0.2f',100*$in_time_day / $order_day)?></td>
+	<td style="border-left-width:3px;" class="bon_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_CPT'] / $nb_cde)?></td>
+	<td class="montant_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_CPT'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_DIS'] / $nb_cde)?></td>
+	<td class="montant_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_DIS'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_EXP'] / $nb_cde)?></td>
+	<td class="montant_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_EXP'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_LDP'] / $nb_cde)?></td>
+	<td class="montant_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_LDP'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_LSO'] / $nb_cde)?></td>
+	<td class="montant_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_LSO'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_WEB'] / $nb_cde)?></td>
+	<td class="montant_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_WEB'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+</tr>
 <? } ?>

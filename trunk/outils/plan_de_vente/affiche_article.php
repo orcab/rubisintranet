@@ -672,7 +672,7 @@ a:hover {
 	</tr>
 	<tr>
 		<td style="text-align:right;border:none;">
-			<label for="show_produit_stock" class="mobile" style="width:20em;margin-right:3em;"><input id="show_produit_stock" type="checkbox">Afficher les produits non stockés</label>
+			<label for="show_produit_stock" class="mobile" style="width:20em;margin-right:3em;"><input id="show_produit_stock" type="checkbox">Afficher les produits sans stock</label>
 <? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>
 			<input value="Tout sélectionner" class="button divers" style="background-image:url(gfx/basket_add.png);" type="button" onclick="tout_selectionner();">
 			<input value="Inverser la sélection" class="button divers" style="background-image:url(gfx/basket_invert.png);" type="button" onclick="inverser_selection();">
@@ -709,9 +709,11 @@ SELECT	code_article,fournisseur,code_fournisseur,ref_fournisseur,chemin,designat
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFA') as stock_afa,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as mini_afa,
 		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as reappro_afa,
+		(SELECT servi	FROM qte_article WHERE code_article=A.code_article and depot='AFA') as servi_afa,
 		(SELECT qte		FROM qte_article WHERE code_article=A.code_article and depot='AFL') as stock_afl,
 		(SELECT mini	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as mini_afl,
-		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as reappro_afl
+		(SELECT qte_cde	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as reappro_afl,
+		(SELECT servi	FROM qte_article WHERE code_article=A.code_article and depot='AFL') as servi_afl
 FROM	article A
 WHERE	1=1
 		and
@@ -807,27 +809,27 @@ EOT;
 			
 			<!-- gestion des stock -->
 			<td class="stock <?
-				if		($row['stock_afa'] == '')	echo "s0";									// pas stocké
-				elseif  ($row['stock_afa'] <= 0)	echo "s1";									// en rupture
-				elseif  ($row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) echo "s2";	// en dessous du mini
-				else								echo "s3";									// au dessus du mini
+				if		(!$row['servi_afa'])							echo "s0";											// pas stocké
+				elseif  ($row['servi_afa'] && $row['stock_afa'] <= 0)	echo "s1";											// en rupture
+				elseif  ($row['servi_afa'] && $row['stock_afa'] > 0 && $row['stock_afa'] <= $row['mini_afa']) echo "s2";	// en dessous du mini
+				else													echo "s3";											// au dessus du mini
 			?>">
 			<div class="stock_reel"><?=str_replace('.000','',$row['stock_afa'])?></div>
-<?			if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
-				<i class="icon-truck icon-2x" title="Réappro en cours"></i>
-<?			} ?>
+<?				if ($row['reappro_afa'] > 0) { // reappro de stock en cours ?>
+					<i class="icon-truck icon-2x" title="Réappro en cours"></i>
+<?				} ?>
 			</td>
 
 			<td class="stock <?
-				if		($row['stock_afl'] == '')	echo "s0";									// pas stocké
-				elseif  ($row['stock_afl'] <= 0)	echo "s1";									// en rupture
-				elseif  ($row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) echo "s2";	// en dessous du mini
-				else								echo "s3";									// au dessus du mini
+				if		(!$row['servi_afl'])							echo "s0";											// pas stocké
+				elseif  ($row['servi_afl'] && $row['stock_afl'] <= 0)	echo "s1";											// en rupture
+				elseif  ($row['servi_afl'] && $row['stock_afl'] > 0 && $row['stock_afl'] <= $row['mini_afl']) echo "s2";	// en dessous du mini
+				else													echo "s3";											// au dessus du mini
 			?>">
-			<div class="stock_reel"><?=str_replace('.000','',$row['stock_afl'])?></div>
-<?			if ($row['reappro_afl'] > 0) { // reappro de stock en cours ?>
-				<i class="icon-truck icon-2x" title="Réappro en cours"></i>
-<?			} ?>
+				<div class="stock_reel"><?=str_replace('.000','',$row['stock_afl'])?></div>
+<?				if ($row['reappro_afl'] > 0) { // reappro de stock en cours ?>
+					<i class="icon-truck icon-2x" title="Réappro en cours"></i>
+<?				} ?>
 			</td>
 
 			<? if ($droit & PEUT_DEPLACER_ARTICLE) { ?>

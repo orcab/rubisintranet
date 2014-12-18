@@ -301,7 +301,7 @@ class PDF extends FPDF
 			//Dessine le cadre
 			$this->Rect($x,$y,$w,$h);
 			//Imprime le texte
-			$this->MultiCell($w,5,$data[$i],0,$a,1);
+			$this->MultiCell($w,5,$data[$i],1,$a,1);
 			//Repositionne à droite
 			$this->SetXY($x+$w,$y);
 		}

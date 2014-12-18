@@ -76,13 +76,19 @@ from
 		on PREPA_DETAIL.P1CDES=DEST.DSCDES
 	left join ${REFLEX_BASE}.HLCOMMP COMMENTAIRE
 		on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
+	left join ${REFLEX_BASE}.HLPRENP PREPA_ENTETE
+		on PREPA_DETAIL.P1NANP=PREPA_ENTETE.PENANN and PREPA_DETAIL.P1NPRE=PREPA_ENTETE.PENPRE
 where
 --start session where
 	$where
 --end session where
 	$where_type
+	and PREPA_DETAIL.P1TOPD=0
+	and PREPA_ENTETE.PETOPD=0
 order by CODE_ARTICLE ASC
 EOT;
+
+//echo "<pre>$sql</pre>";
 
 $reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 $res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
