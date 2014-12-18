@@ -19,14 +19,15 @@ my $loginor = new Win32::ODBC('DSN='.$cfg->{LOGINOR_DSN}.';UID='.$cfg->{LOGINOR_
 open(SQL,'+>qte_article.sql') or die "ne peux pas creer le fichier SQL ($!)" ;
 # SQL de creation de la table
 print SQL <<EOT ;
-DROP TABLE `qte_article`;
+DROP TABLE IF EXISTS `qte_article`;
 
 CREATE TABLE IF NOT EXISTS `qte_article` (
   `code_article`	varchar(15) NOT NULL,
   `depot`			varchar(3) NOT NULL,
-  `qte`				float(10,3) default '0.000',
-  `mini`			float(10,3) default '0.000',
-  `qte_cde`			float(10,3) default '0.000',
+  `qte`				float(10,3) default 0,
+  `mini`			float(10,3) default 0,
+  `qte_cde`			float(10,3) default 0,
+  `servi`			bit default 0,
   PRIMARY KEY (`code_article`,`depot`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 ;
 EOT
@@ -47,7 +48,7 @@ from
 		on STOCK.NOART=FICHE_STOCK.NOART and STOCK.DEPOT=FICHE_STOCK.DEPOT
 where
 		(STOCK.DEPOT='AFA' or STOCK.DEPOT='AFL')
-	and FICHE_STOCK.STSER='OUI'						-- est servi sur stock
+	and STOCK.QTINV>0 								-- a du stock
 	and STOCK.ETSOE=''								-- non supsendu
 	and FICHE_STOCK.STSTS=''						-- non suspendu
 EOT
@@ -61,7 +62,12 @@ while($loginor->FetchRow()) {
 	#$row{'QTE_DISPO'} = $row{'QTE_REEL'} - $row{'QTE_CDE_CLIENT_STOCK'} ;
 	$row{'QTE_DISPO'} = $row{'QTE_REEL'};
 	$row{'SERVI'} = $row{'SERVI'} eq 'OUI' ? 1:0;
-	print SQL "REPLACE INTO qte_article (code_article,depot,qte,mini,qte_cde) VALUES ('$row{CODE_ARTICLE}','$row{DEPOT}','$row{QTE_DISPO}','$row{MINI}','$row{QTE_CDE_FOURN}');\n";
+
+	$row{'QTE_DISPO'} 		=~ s/\.000$//;
+	$row{'MINI'} 			=~ s/\.000$//;
+	$row{'QTE_CDE_FOURN'} 	=~ s/\.000$//;
+
+	print SQL "REPLACE INTO qte_article (code_article,depot,qte,mini,qte_cde,servi) VALUES ('$row{CODE_ARTICLE}','$row{DEPOT}','$row{QTE_DISPO}','$row{MINI}','$row{QTE_CDE_FOURN}',$row{SERVI});\n";
 }
 
 ############################################## ARTICLE SUSPENDUS ################################################""

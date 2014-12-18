@@ -219,12 +219,12 @@ FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
 where	
 		P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
-	and P1NNSL>0 and P1RRSO=''					-- avec des manquant au lancement sans réservation
+	and P1NNSL>0 					-- avec des manquant au lancement 
+	and P1RRSO=''					-- sans réservation
 
 order by RESERVATION asc, CODE_ARTICLE asc
 EOT
 $message .= draw_table("Article n'ayant pas de stock au moment du lancement",$sql_reflex);
-
 
 #print $sql_reflex;exit;
 
@@ -251,7 +251,8 @@ if (!$noemail) {
 						'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain',
 						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot',
 						'francois.dore@coopmcs.com' 	=> 	'Francois Dore',
-						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux'
+						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux',
+						'xavier.ledoussal@coopmcs.com' 	=> 	'Xavier Le Doussal'
 					};
 	}
 
@@ -302,10 +303,10 @@ EOT
 		my 	%row_reflex = $reflex->DataHash() ;
 		my 	($client,$cde,$noligne) = split(/[\/\-]/,$row_reflex{'COMMENTAIRE_ZZZ'});
 
-		# regarde si la ligne est toujours actuve dans rubis
+		# regarde si la ligne est toujours active dans rubis
 		my $sql_rubis = <<EOT ;
 select
-	ETSBE as ETAT,TRAIT as LIVRAISON, CLIENT.CATCL as CATGEORIE_CLIENT
+	ETSBE as ETAT,TRAIT as LIVRAISON, CLIENT.CATCL as CATGEORIE_CLIENT,QTESA as QTE_DEMANDEE
 from
 	${prefix_base_rubis}GESTCOM.ADETBOP1 DETAIL_PREPA
 		left join ${prefix_base_rubis}GESTCOM.ACLIENP1 CLIENT
@@ -317,11 +318,15 @@ EOT
 		$rubis->FetchRow();
 		my %row_rubis = $rubis->DataHash();
 		#print STDERR "DEBUG ".$row_reflex{'COMMENTAIRE_ZZZ'}.' / etat='.$row_rubis{'ETAT'}."\n";
-		if ($row_rubis{'ETAT'} eq '' && $row_rubis{'LIVRAISON'} eq 'R') { # ligne non supprimée et non livrée
-			$row_reflex{'DESIGNATION'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
-			$row_reflex{'DESIGNATION2'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
-			$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td><td>".($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;')."</td></tr>\n";
-		}
+
+		if ($row_rubis{'ETAT'} ne '') { next ; }
+		if ($row_rubis{'LIVRAISON'} eq 'F' && $row_reflex{'QTE_PREPAREE'} >= $row_rubis{'QTE_DEMANDEE'}) { next ; }
+
+		#if ($row_rubis{'ETAT'} eq '' && ($row_rubis{'LIVRAISON'} eq 'R')) { # ligne non supprimée et non livrée
+		$row_reflex{'DESIGNATION'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
+		$row_reflex{'DESIGNATION2'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
+		$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td><td>".($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;')."</td></tr>\n";
+		#}
 	} # fin while reflex
 
 	$message .= "</table>";

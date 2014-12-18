@@ -251,24 +251,26 @@ $sql = <<<EOT
 select
 	OENANN as ANN_ODP, OENODP as NUM_ODP,
 	OERODP as REF_DONNEUR_ORDRE,
-	OERODD as REF_COMMANDE, 
+	OERODD as REF_COMMANDE,
 	(RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0' +CONVERT(VARCHAR,OEACHG ),2)+'-'+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+'-'+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2)) as DATE_CHARGEMENT,
-	
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as LIGNES_COMMANDEES,
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as LIGNES_PREPARABLES,
-	(select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP and P1QAPR=P1QPRE $reservation)	as LIGNES_PREPAREES,
-	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_COMMANDER,
-	(select SUM(P1QAPR) from RFXPRODDTA.reflex.HLPRPLP where OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as QTE_PREPARABLE,
-	(select SUM(P1QPRE) from RFXPRODDTA.reflex.HLPRPLP where OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_PREPAREE
+	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1TOPD=0 $reservation) 	as LIGNES_COMMANDEES,
+	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as LIGNES_PREPARABLES,
+	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1QAPR=P1QPRE $reservation)	as LIGNES_PREPAREES,
+	(select SUM(P1QAPR) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_COMMANDER,
+	(select SUM(P1QAPR) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as QTE_PREPARABLE,
+	(select SUM(P1QPRE) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_PREPAREE
 
 from
 	${REFLEX_BASE}.HLODPEP ODP_ENTETE
 	left join ${REFLEX_BASE}.HLPRPLP PREPA_DETAIL
 		on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
+	left join ${REFLEX_BASE}.HLPRENP PREPA_ENTETE
+		on PREPA_DETAIL.P1NANP=PREPA_ENTETE.PENANN and PREPA_DETAIL.P1NPRE=PREPA_ENTETE.PENPRE
 	
 where
-		RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
+	RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
 	and RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2) <= '$date_to[siecle]$date_to[annee]$date_to[mois]$date_to[jour]'
+	and PREPA_ENTETE.PETOPD=0
 	$cession
 	$all_client
 	$only_first_preparation
@@ -277,8 +279,6 @@ group by OESCHG ,OEACHG , OEMCHG, OEJCHG, OENANN, OENODP, OERODD, OERODP
 order by OESCHG ASC ,OEACHG ASC, OEMCHG ASC, OEJCHG ASC,OENODP  ASC
 EOT;
 
-//echo "<pre>$sql</pre>";
-
 $_SESSION['where'] = <<<EOT
 RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) = '!date-chargement!'
 $cession
@@ -286,6 +286,8 @@ $all_client
 $only_first_preparation
 $reservation
 EOT;
+
+	//echo "<pre>$sql</pre>";
 
 	$reflex  = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
@@ -369,15 +371,15 @@ EOT;
 					<tr class="start-of-total">
 						<td colspan="2">Total période</td>
 						<td rowspan="1"><?=$total_cde?></td>
-						<td><?=sprintf('%0.2f',$total_ligne / $total_cde)?></td>
+						<td><?=$total_cde ? sprintf('%0.2f',$total_ligne / $total_cde):'NaN'?></td>
 						<td><?=$total_ligne?></td>
 						<td></td>
 						<td><?=$total_ligne_doable?></td>
-						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_doable / $total_ligne)?></td>
+						<td class="pourcent"><?=$total_ligne ? sprintf('%0.2f',100*$total_ligne_doable / $total_ligne):'NaN'?></td>
 						<td></td>
 						<td><?=$total_ligne_done?></td>
-						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_done / $total_ligne_doable)?></td>
-						<td class="pourcent"><?=sprintf('%0.2f',100*$total_ligne_done / $total_ligne)?></td>
+						<td class="pourcent"><?=$total_ligne_doable ? sprintf('%0.2f',100*$total_ligne_done / $total_ligne_doable):'NaN'?></td>
+						<td class="pourcent"><?=$total_ligne ? sprintf('%0.2f',100*$total_ligne_done / $total_ligne):'NaN'?></td>
 					</tr>
 					
 				</tfoot>
@@ -405,14 +407,18 @@ function afficheInfo() {
 		<td rowspan="1"><?=$old_day?></td>
 		<td rowspan="1"><?=$jours_mini[date('w',strtotime($old_day))]?></td>
 		<td rowspan="1"><?=$nb_cde?></td>
-		<td><?=sprintf('%0.2f',$total_ligne_day / $nb_cde)?></td>
+		<td><?=$nb_cde > 0 ? sprintf('%0.2f',$total_ligne_day / $nb_cde): 'NaN'?></td>
 		<td><?=$total_ligne_day?></td>
-		<td><a class="btn" href="diff.php?type=1&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a></td>
+		<td><? if ($doable_ligne_day < $total_ligne_day) { ?>
+			<a class="btn" href="diff.php?type=1&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a>
+		<? } ?></td>
 		<td><?=$doable_ligne_day?></td>
-		<td class="pourcent"><?=sprintf('%0.2f',100*$doable_ligne_day / $total_ligne_day)?></td>
-		<td><a class="btn" href="diff.php?type=2&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a></td>
+		<td class="pourcent"><?=$total_ligne_day > 0 ? sprintf('%0.2f',100*$doable_ligne_day / $total_ligne_day):'NaN'?></td>
+		<td><? if ($done_ligne_day < $doable_ligne_day) { ?>
+			<a class="btn" href="diff.php?type=2&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a>
+		<? } ?></td>
 		<td><?=$done_ligne_day?></td>
-		<td class="pourcent"><?=sprintf('%0.2f',100* $done_ligne_day / $doable_ligne_day)?></td>
-		<td class="pourcent"><?=sprintf('%0.2f',100*$done_ligne_day / $total_ligne_day)?></td>
+		<td class="pourcent"><?=$doable_ligne_day ? sprintf('%0.2f',100* $done_ligne_day / $doable_ligne_day):'NaN'?></td>
+		<td class="pourcent"><?=$total_ligne_day  ? sprintf('%0.2f',100*$done_ligne_day / $total_ligne_day)  :'NaN'?></td>
 	</tr>
 <? } ?>

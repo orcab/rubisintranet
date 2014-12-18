@@ -50,6 +50,20 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 	if (in_array('px_adh',$options)) // bon destiné a l'artisan
 		$designation .= "\n".trim($_POST['a_2designation'][$i]);
 
+	$designation .= $_POST['a_hid_opt'][$i] ? "\n(option)":'';
+
+	$count = preg_match_all('/\n/',trim($designation),$regs);
+	if ($count > 0 || $_POST['a_hid_opt'][$i])
+		$hauteur_max =  str_repeat("\n ", $count);
+	else
+		$hauteur_max = '';
+
+	if ($_POST['a_hid_opt'][$i])
+		$hauteur_max_prix = str_repeat("\n ", max($count - 1,0));
+	else
+		$hauteur_max_prix =  str_repeat("\n ", $count);;
+		
+
 	if ($_POST['a_reference'][$i] && $_POST['a_qte'][$i]) { // cas d'un article
 		$prix = in_array('px_adh',$options) ? $_POST['a_adh_pu'][$i] : $_POST['a_pu'][$i];
 
@@ -61,22 +75,22 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 		// si le bon est destiné à l'artisan, on met toutes les infos
 		if (in_array('px_adh',$options)) {
 			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
-						array('text' => utf8_decode($_POST['a_reference'][$i])	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
-						array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
-						array('text' => my_utf8_decode(stripslashes($designation)).($_POST['a_hid_opt'][$i] ? " (option)":''), 'text-align' => 'L'),
-						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
-						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
-						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
+						array('text' => utf8_decode($_POST['a_reference'][$i]).$hauteur_max	, 'font-style' => 'B',	'text-align' => 'C', 'font-size' => strlen($_POST['a_reference'][$i])>11 ? 9:10 ),
+						array('text' => utf8_decode($_POST['a_fournisseur'][$i]).$hauteur_max	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
+						array('text' => my_utf8_decode(stripslashes($designation)), 'text-align' => 'L'),
+						array('text' => $_POST['a_qte'][$i].$hauteur_max			, 'text-align' => 'C'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'').$hauteur_max_prix	, 'text-align' => 'R'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'').$hauteur_max_prix	, 'text-align' => 'R'),
 						)
 					);
 
 		} else { // si le bon est destiné au client, on n'affiche ni la référence, ni le fournisseur
 			$pdf->Row(array( //   font-family , font-weight, font-size, font-color, text-align
-						array('text' => utf8_decode($_POST['a_fournisseur'][$i])	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
-						array('text' => my_utf8_decode(stripslashes($designation)).($_POST['a_hid_opt'][$i] ? " (option)":''), 'text-align' => 'L'),
-						array('text' => $_POST['a_qte'][$i]			, 'text-align' => 'C'),
-						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')			, 'text-align' => 'R'),
-						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'')		, 'text-align' => 'R'),
+						array('text' => utf8_decode($_POST['a_fournisseur'][$i]).$hauteur_max	, 'font-style' => '', 'text-align' => 'C', 'font-size' => 10),
+						array('text' => my_utf8_decode(stripslashes($designation)) , 'text-align' => 'L'),
+						array('text' => $_POST['a_qte'][$i].$hauteur_max			, 'text-align' => 'C'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'').$hauteur_max_prix			, 'text-align' => 'R'),
+						array('text' => str_replace('.',',',sprintf("%0.2f",$_POST['a_qte'][$i]*$prix)).EURO.($_POST['a_hid_opt'][$i] ? "\n(option)":'').$hauteur_max_prix		, 'text-align' => 'R'),
 						)
 					);
 		}
@@ -110,7 +124,7 @@ for($i=0 ; $i<sizeof($_POST['a_reference']) ; $i++) {
 			$option_phrase='';
 
 		if ($sous_total)
-			$pdf->MultiCell(0,7,my_utf8_decode(stripslashes($designation)).' ('.str_replace('.',',',sprintf("%0.2f",$sous_total)).EURO.')'.$option_phrase  ,1,'C',1);
+			$pdf->MultiCell(0,7,my_utf8_decode(stripslashes($designation)).' ('.str_replace('.',',',sprintf("%0.2f",$sous_total)).EURO.')'.$option_phrase,1,'C',1);
 		else
 			$pdf->MultiCell(0,7,my_utf8_decode(stripslashes($designation)) ,1,'C',1);
 

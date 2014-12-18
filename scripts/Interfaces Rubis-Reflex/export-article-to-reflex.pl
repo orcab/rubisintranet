@@ -29,7 +29,7 @@ Liste des arguments :
 	Importe tous les articles
 --stock-only
 	N'importe que les produits servis sur stock
---class=A|B|C|D
+--class=A|B|C|D|E
 	Restrein l'importation sur une famille de class de stock
 --days=x
 	Importe les articles modifies depuis x jour
@@ -486,7 +486,7 @@ while($loginor->FetchRow()) {
 
 ######### association famille article #########################################################################################
 	if (!in_array($row{'STCLA'},\@valid_class)) {
-		$row{'STCLA'} = 'D';
+		$row{'STCLA'} = 'E';
 	}
 	$data{'CODE_FAMILLE_ARTICLE'} 						= fill_with_blank($row{'STCLA'},$field_sizes{'CODE_FAMILLE_ARTICLE'});
 	
