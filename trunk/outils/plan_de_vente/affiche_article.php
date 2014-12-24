@@ -14,7 +14,7 @@ if (isset($_GET['chemin'])) { // recherche par arborérence
 }
 
 if (isset($_POST['search_text'])) { // recherche de code
-	$_SESSION['search_text'] = $_POST['search_text'] ;
+	$_SESSION['search_text'] = trim($_POST['search_text']) ;
 	unset($_SESSION['chemin']);
 }
 
