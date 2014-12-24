@@ -22,8 +22,10 @@ print get_time()." Select des prix...";
 my $sql = <<EOT;
 select	A.NOART as CODE_ARTICLE,
 		ROUND(PV.PVEN1,4) as PRIX_VENTE_ADH,
+		ROUND(PV.PVEN1 * 1.5,4) as PRIX_AVEC_COEF,
 		ROUND(PV.PVEN6,4) as PRIX_VENTE_PUBLIC,
 		PARVT as PRIX_ACHAT_BRUT,
+		A.ACTIV as CODE_ACTIVITE,
 		TANU0 as ECOTAXE									-- L'ecotaxe dans la table ATABLEP1
 from	${prefix_base_rubis}GESTCOM.AARTICP1 A
 			left join ${prefix_base_rubis}GESTCOM.ATARPVP1 PV
@@ -38,6 +40,7 @@ where
 	and A.ARDIV<>'OUI'			-- pas d'article divers
 	and A.NOART not like '15%'	-- pas d'article anciennement en expo
 	and A.ETARE=''				-- pas d'article suspendu
+	--and A.NOART='04001953'		-- pour les tests
 EOT
 
 $loginor->Sql($sql);
@@ -54,16 +57,26 @@ while($loginor->FetchRow()) {
 		$row{'TARIF_PUBLIC'} = $row{'PRIX_ACHAT_BRUT'};
 	}
 
+=begin
+	if ($row{'TARIF_PUBLIC'} < $row{'PRIX_VENTE_ADH'}) {
+		$row{'TARIF_PUBLIC'} = 0 ; # si le prix public est inférieur au prix adh --> prix négocier donc prix public NC
+	}
+=cut
 	if ($row{'TARIF_PUBLIC'} < $row{'PRIX_VENTE_ADH'}) {
 		$row{'TARIF_PUBLIC'} = 0 ; # si le prix public est inférieur au prix adh --> prix négocier donc prix public NC
 	}
 
+	if		($row{'TARIF_PUBLIC'} <= 0) {						# prix public vide, on prend le prix adh * coef
+		$row{'TARIF_PUBLIC'} = $row{'PRIX_AVEC_COEF'};
+	} elsif ($row{'PRIX_AVEC_COEF'} < $row{'TARIF_PUBLIC'} && $row{'CODE_ACTIVITE'} ne '00D') {
+		$row{'TARIF_PUBLIC'} = $row{'PRIX_AVEC_COEF'};
+	}
+	
 	print SQL "UPDATE article SET prix_brut='$row{PRIX_VENTE_ADH}',prix_net='$row{PRIX_VENTE_ADH}',prix_public='$row{TARIF_PUBLIC}',ecotaxe='$row{ECOTAXE}' WHERE code_article='$row{CODE_ARTICLE}';\n";
 }
 
 $loginor->Close();
 close SQL;
-
 
 # on compress la base pour l'envoyé sur le serveur FTP
 print get_time()." Compression du fichier SQL ... ";

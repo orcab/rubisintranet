@@ -112,31 +112,6 @@ sub icaldate2sqldate($) {
 	}
 }
 
-=begin
-sub send_mail(%) {
-	use JSON;
-	my $ref_param = shift;
-
-	my $hash = {
-		'server'	=>	$ref_param->{'smtp_serveur'},
-	 	'user'		=>	$ref_param->{'smtp_user'},
-	 	'password'	=>	$ref_param->{'smtp_password'},
-	 	'port'		=>	$ref_param->{'smtp_port'},
-	 	'tls'		=>	0,
-	 	'from'		=>	$ref_param->{'from_email'},
-	 	'html'		=>	$ref_param->{'message'},
-	 	'subject'	=>	$ref_param->{'subject'},
-	 	'to'		=>	$ref_param->{'to'},
-	 	'debug'		=>	$ref_param->{'debug'},
-	};
-
-	my $json = new JSON ;
-	my $json_text = $json->ascii->encode($hash);
-	my $exit = system("echo $json_text | c:\\easyphp\\php\\php -c c:\\easyphp\\apache\\php.ini c:\\easyphp\\www\\intranet\\scripts\\sendmail.php");
-	return $exit >= 0 ? 1 : 0 ;
-}
-=cut
-
 sub send_mail(%) {
 	my $ref_param = shift;
 
@@ -149,7 +124,7 @@ sub send_mail(%) {
 	my $to = join(',',keys $ref_param->{'to'});
 
 	# launch program
-	my $cmd = 'mailsend.exe'.
+	my $cmd = '"C:\\easyphp\\www\\intranet\\scripts\\Interfaces Rubis-Reflex\\mailsend.exe"'.
 				' -smtp '.$ref_param->{'smtp_serveur'}.
 				' -port '.$ref_param->{'smtp_port'}.
 				' -auth'.

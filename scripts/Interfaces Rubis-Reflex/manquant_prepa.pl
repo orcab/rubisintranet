@@ -50,9 +50,7 @@ if (length($date)>0 && $date !~ m/^\d{4}-\d{2}-\d{2}$/)  {
 	die "Le format de date '$date' n'est pas du style yyyy-mm-dd";
 }
 
-if (length($date)<=0) { # aucune date de spécifié --> on prend le dernier jour ouvré
-	#print "Aucune date de specifiee. Aujourd'hui\n\t--date=$siecle$annee-$mois-$jour\n";
-} else {
+if (length($date)>0) { # aucune date de spécifié --> on prend le dernier jour ouvré
 	($siecle,$annee,$mois,$jour) 	= ($date =~ m/^(\d{2})(\d{2})-(\d{2})-(\d{2})$/);
 }
 ########################################################################################

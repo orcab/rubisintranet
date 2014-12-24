@@ -38,6 +38,7 @@ h1 {
     width:100%;
     margin:auto;
     margin-top: 1em;
+    font-size: 1em;
 }
 #lignes th, #lignes td {
     border: 1px solid #999;
@@ -108,6 +109,10 @@ tfoot {
 	border-width: 2px;
 }
 
+.euro {
+	display:none;
+}
+
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
 <link rel="stylesheet" href="../../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../../js/fontawesome/css/icon-custom.css">
@@ -137,13 +142,13 @@ var pourcent_medium = <?= isset($_POST['pourcent-medium']) 	? $_POST['pourcent-m
 
 $(document).ready(function(){
 	
-	$( '#date_from' ).datepicker({
+	$('#date_from').datepicker({
 		onClose: function( selectedDate ) {
 			$( '#date_to' ).datepicker( 'option', 'minDate', selectedDate );
 		}
 	});
 
-	$( '#date_to' ).datepicker({
+	$('#date_to').datepicker({
 	 	onClose: function( selectedDate ) {
 			$( '#date_from' ).datepicker( 'option', 'maxDate', selectedDate );
 		}
@@ -165,6 +170,23 @@ $(document).ready(function(){
 		update_color();
 	});
 
+	$('input:radio[name=choix_unite]').click(function(){
+		//console.log($(this).val());
+		var valeur = $(this).val();
+		if (valeur == 'pourcentage') {
+			$('.euro').css('display','none');
+			$('.pourcentage').css('display','table-cell');
+		} else if (valeur == 'euro') {
+			$('.pourcentage').css('display','none');
+			$('.euro').css('display','table-cell');
+		} else if (valeur == 'les_deux') {
+			$('.pourcentage').css('display','table-cell');
+			$('.euro').css('display','table-cell');
+		} else {
+			$('.pourcentage').css('display','none');
+			$('.euro').css('display','none');
+		}
+	});
 });
 
 
@@ -177,7 +199,6 @@ function update_color() {
 	 	else 									$(this).removeClass('pourcent-medium pourcent-good').addClass('pourcent-bad');
 	 });
 }
-
 
 function verif_form(){
 	var form = document.cde;
@@ -320,6 +341,12 @@ $res2 		= odbc_exec($loginor,$sql2)  or die("Impossible de lancer la requete 2 :
 <table id="lignes">
 	<caption>
 		Taux de service Rubis du <?=$_POST['date_from']?> au <?=$_POST['date_to']?>
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		Voir les statistiques
+		en %<input type="radio" name="choix_unite" value="pourcentage" checked="checked"/>&nbsp;&nbsp;
+		en &euro;<input type="radio" name="choix_unite" value="euro"/>&nbsp;&nbsp;
+		% &euro;<input type="radio" name="choix_unite" value="les_deux"/>&nbsp;&nbsp;
+		rien<input type="radio" name="choix_unite" value="non"/>
 	</caption>
 	<thead>
 	<tr>
@@ -335,18 +362,31 @@ $res2 		= odbc_exec($loginor,$sql2)  or die("Impossible de lancer la requete 2 :
 		<th>Lignes livrées en retard</th>
 		<th>% de livrées à temps / livrées</th>
 		<th>% de livrées à temps / commandées</th>
-		<th style="border-left-width:3px;" class="bon_cpt">% CDE CPT</th>
-		<th class="montant_cpt">% CA CPT</th>
-		<th style="border-left-width:3px;" class="bon_dis">% CDE DIS</th>
-		<th class="montant_dis">% CA DIS</th>
-		<th style="border-left-width:3px;" class="bon_exp">% CDE EXP</th>
-		<th class="montant_exp">% CA EXP</th>
-		<th style="border-left-width:3px;" class="bon_ldp">% CDE LDP</th>
-		<th class="montant_ldp">% CA LDP</th>
-		<th style="border-left-width:3px;" class="bon_lso">% CDE LSO</th>
-		<th class="montant_lso">% CA LSO</th>
-		<th style="border-left-width:3px;" class="bon_web">% CDE WEB</th>
-		<th class="montant_web">% CA WEB</th>
+		<th style="border-left-width:3px;" class="bon_cpt pourcentage">% CDE CPT</th>
+		<th class="montant_cpt pourcentage">% CA CPT</th>
+		<th style="border-left-width:3px;" class="bon_dis pourcentage">% CDE DIS</th>
+		<th class="montant_dis pourcentage">% CA DIS</th>
+		<th style="border-left-width:3px;" class="bon_exp pourcentage">% CDE EXP</th>
+		<th class="montant_exp pourcentage">% CA EXP</th>
+		<th style="border-left-width:3px;" class="bon_ldp pourcentage">% CDE LDP</th>
+		<th class="montant_ldp pourcentage">% CA LDP</th>
+		<th style="border-left-width:3px;" class="bon_lso pourcentage">% CDE LSO</th>
+		<th class="montant_lso pourcentage">% CA LSO</th>
+		<th style="border-left-width:3px;" class="bon_web pourcentage">% CDE WEB</th>
+		<th class="montant_web pourcentage">% CA WEB</th>
+
+		<th style="border-left-width:3px;" class="bon_cpt euro">CDE CPT</th>
+		<th class="montant_cpt euro">&euro; CA CPT</th>
+		<th style="border-left-width:3px;" class="bon_dis euro">CDE DIS</th>
+		<th class="montant_dis euro">&euro; CA DIS</th>
+		<th style="border-left-width:3px;" class="bon_exp euro">CDE EXP</th>
+		<th class="montant_exp euro">&euro; CA EXP</th>
+		<th style="border-left-width:3px;" class="bon_ldp euro">CDE LDP</th>
+		<th class="montant_ldp euro">&euro; CA LDP</th>
+		<th style="border-left-width:3px;" class="bon_lso euro">CDE LSO</th>
+		<th class="montant_lso euro">&euro; CA LSO</th>
+		<th style="border-left-width:3px;" class="bon_web euro">CDE WEB</th>
+		<th class="montant_web euro">&euro; CA WEB</th>
 	</tr>
 	</thead>
 	<tbody>
@@ -448,18 +488,32 @@ $res2 		= odbc_exec($loginor,$sql2)  or die("Impossible de lancer la requete 2 :
 		<td><?=$total_out_time?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100*$total_in_time / $total_deliver)?></td>
 		<td class="pourcent"><?=sprintf('%0.2f',100*$total_in_time / $total_order)?></td>
-		<td style="border-left-width:3px;" class="bon_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_CPT'] / $total_cde)?></td>
-		<td class="montant_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_CPT'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
-		<td style="border-left-width:3px;" class="bon_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_DIS'] / $total_cde)?></td>
-		<td class="montant_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_DIS'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
-		<td style="border-left-width:3px;" class="bon_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_EXP'] / $total_cde)?></td>
-		<td class="montant_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_EXP'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
-		<td style="border-left-width:3px;" class="bon_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_LDP'] / $total_cde)?></td>
-		<td class="montant_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_LDP'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
-		<td style="border-left-width:3px;" class="bon_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_LSO'] / $total_cde)?></td>
-		<td class="montant_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_LSO'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
-		<td style="border-left-width:3px;" class="bon_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_WEB'] / $total_cde)?></td>
-		<td class="montant_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_WEB'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+
+		<td style="border-left-width:3px;" class="bon_cpt pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_CPT'] / $total_cde)?></td>
+		<td class="montant_cpt pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_CPT'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_dis pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_DIS'] / $total_cde)?></td>
+		<td class="montant_dis pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_DIS'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_exp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_EXP'] / $total_cde)?></td>
+		<td class="montant_exp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_EXP'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_ldp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_LDP'] / $total_cde)?></td>
+		<td class="montant_ldp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_LDP'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_lso pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_LSO'] / $total_cde)?></td>
+		<td class="montant_lso pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_LSO'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+		<td style="border-left-width:3px;" class="bon_web pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_BON_WEB'] / $total_cde)?></td>
+		<td class="montant_web pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats['TOTAL_MONTANT_WEB'] / $type_cde_stats['TOTAL_MONTANT'])?></td>
+
+		<td style="border-left-width:3px;" class="bon_cpt euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_BON_CPT']?></td>
+		<td class="montant_cpt euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_MONTANT_CPT']?></td>
+		<td style="border-left-width:3px;" class="bon_dis euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_BON_DIS']?></td>
+		<td class="montant_dis euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_MONTANT_DIS']?></td>
+		<td style="border-left-width:3px;" class="bon_exp euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_BON_EXP']?></td>
+		<td class="montant_exp euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_MONTANT_EXP']?></td>
+		<td style="border-left-width:3px;" class="bon_ldp euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_BON_LDP']?></td>
+		<td class="montant_ldp euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_MONTANT_LDP']?></td>
+		<td style="border-left-width:3px;" class="bon_lso euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_BON_LSO']?></td>
+		<td class="montant_lso euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_MONTANT_LSO']?></td>
+		<td style="border-left-width:3px;" class="bon_web euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_BON_WEB']?></td>
+		<td class="montant_web euro" rowspan="1"><?=(int)$type_cde_stats['TOTAL_MONTANT_WEB']?></td>
 	</tr>				
 	</tfoot>
 </table>
@@ -493,17 +547,31 @@ function afficheInfo() {
 	<td><?=$out_time_day?></td>
 	<td class="pourcent"><?=sprintf('%0.2f',100*$in_time_day / $deliver_day)?></td>
 	<td class="pourcent"><?=sprintf('%0.2f',100*$in_time_day / $order_day)?></td>
-	<td style="border-left-width:3px;" class="bon_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_CPT'] / $nb_cde)?></td>
-	<td class="montant_cpt" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_CPT'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
-	<td style="border-left-width:3px;" class="bon_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_DIS'] / $nb_cde)?></td>
-	<td class="montant_dis" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_DIS'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
-	<td style="border-left-width:3px;" class="bon_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_EXP'] / $nb_cde)?></td>
-	<td class="montant_exp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_EXP'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
-	<td style="border-left-width:3px;" class="bon_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_LDP'] / $nb_cde)?></td>
-	<td class="montant_ldp" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_LDP'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
-	<td style="border-left-width:3px;" class="bon_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_LSO'] / $nb_cde)?></td>
-	<td class="montant_lso" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_LSO'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
-	<td style="border-left-width:3px;" class="bon_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_WEB'] / $nb_cde)?></td>
-	<td class="montant_web" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_WEB'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+
+	<td style="border-left-width:3px;" class="bon_cpt pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_CPT'] / $nb_cde)?></td>
+	<td class="montant_cpt pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_CPT'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_dis pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_DIS'] / $nb_cde)?></td>
+	<td class="montant_dis pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_DIS'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_exp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_EXP'] / $nb_cde)?></td>
+	<td class="montant_exp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_EXP'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_ldp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_LDP'] / $nb_cde)?></td>
+	<td class="montant_ldp pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_LDP'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_lso pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_LSO'] / $nb_cde)?></td>
+	<td class="montant_lso pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_LSO'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+	<td style="border-left-width:3px;" class="bon_web pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['BON_WEB'] / $nb_cde)?></td>
+	<td class="montant_web pourcentage" rowspan="1"><?=sprintf('%0.1f',100*$type_cde_stats[$old_day]['MONTANT_WEB'] / $type_cde_stats[$old_day]['TOTAL_MONTANT'])?></td>
+
+	<td style="border-left-width:3px;" class="bon_cpt euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['BON_CPT']?></td>
+	<td class="montant_cpt euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['MONTANT_CPT']?></td>
+	<td style="border-left-width:3px;" class="bon_dis euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['BON_DIS']?></td>
+	<td class="montant_dis euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['MONTANT_DIS']?></td>
+	<td style="border-left-width:3px;" class="bon_exp euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['BON_EXP']?></td>
+	<td class="montant_exp euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['MONTANT_EXP']?></td>
+	<td style="border-left-width:3px;" class="bon_ldp euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['BON_LDP']?></td>
+	<td class="montant_ldp euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['MONTANT_LDP']?></td>
+	<td style="border-left-width:3px;" class="bon_lso euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['BON_LSO']?></td>
+	<td class="montant_lso euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['MONTANT_LSO']?></td>
+	<td style="border-left-width:3px;" class="bon_web euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['BON_WEB']?></td>
+	<td class="montant_web euro" rowspan="1"><?=(int)$type_cde_stats[$old_day]['MONTANT_WEB']?></td>
 </tr>
 <? } ?>

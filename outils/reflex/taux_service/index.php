@@ -103,6 +103,18 @@ tfoot {
 	margin:auto;
 }
 
+span.diff {
+	background-color: #88f;
+	border-radius: 10px;
+	color: yellow;
+	font-size: 1em;
+	padding: 0 5px;
+	position: relative;
+	top: -10px;
+	margin-bottom: -10px;
+	float: right;
+}
+
 </style>
 <!-- GESTION DES ICONS EN POLICE -->
 <link rel="stylesheet" href="../../../js/fontawesome/css/bootstrap.css"><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome.min.css"><!--[if IE 7]><link rel="stylesheet" href="../../../js/fontawesome/css/font-awesome-ie7.min.css"><![endif]--><link rel="stylesheet" href="../../../js/fontawesome/css/icon-custom.css">
@@ -411,11 +423,13 @@ function afficheInfo() {
 		<td><?=$total_ligne_day?></td>
 		<td><? if ($doable_ligne_day < $total_ligne_day) { ?>
 			<a class="btn" href="diff.php?type=1&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a>
+			<span class="diff"><?=$total_ligne_day - $doable_ligne_day?></span>
 		<? } ?></td>
 		<td><?=$doable_ligne_day?></td>
 		<td class="pourcent"><?=$total_ligne_day > 0 ? sprintf('%0.2f',100*$doable_ligne_day / $total_ligne_day):'NaN'?></td>
 		<td><? if ($done_ligne_day < $doable_ligne_day) { ?>
 			<a class="btn" href="diff.php?type=2&date=<?=str_replace('-','',$old_day)?>" target="_blank"><i class="icon-list"></i></a>
+			<span class="diff"><?=$doable_ligne_day - $done_ligne_day?></span>
 		<? } ?></td>
 		<td><?=$done_ligne_day?></td>
 		<td class="pourcent"><?=$doable_ligne_day ? sprintf('%0.2f',100* $done_ligne_day / $doable_ligne_day):'NaN'?></td>
