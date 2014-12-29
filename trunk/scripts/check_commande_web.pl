@@ -57,7 +57,11 @@ from			${prefix_base_rubis}GESTCOM.APARDEP1 STRACC
 				on STRACC.SEOCLI=CLIENT.NOCLI
 	left join	${prefix_base_rubis}GESTCOM.AARTICP1 ARTICLE
 				on STRACC.SENART=ARTICLE.NOART
-where			SENTET='ANO' and SENPRO='CDC'		-- les erreurs d'intégration sur la procédure CDC (les commandes web)
+	left join	${prefix_base_rubis}GESTCOM.APARENP1 STRACC_ENTETE
+				on STRACC.SEOBON=STRACC_ENTETE.SNOBON
+where			SENPRO='CDC'		-- les erreurs d'intégration sur la procédure CDC (les commandes web) : detail
+			and SNTPRO='CDC'		-- les erreurs d'intégration sur la procédure CDC (les commandes web) : entete
+			and (SENTET='ANO' OR SNTTET='ANO')
 			and SENDCS='$siecle' and SENDCA='$annee' and SENDCM='$mois' and SENDCJ='$jour'	-- sur la journée choisit
 EOT
 $loginor->Sql($sql); # regarde les erreurs de la journée dans la proc CDC

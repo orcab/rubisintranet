@@ -112,7 +112,7 @@ use constant {
 
 	# association famille article
 	CODE_VL_ASSOCIATION_FAMILLE					=>	30,
-	TOP_DISSOCIATION_PREALBALE_EVENTUELLE		=>	0,
+	TOP_DISSOCIATION_PREALBALE_EVENTUELLE		=>	1,
 };
 
 my %field_sizes = (qw/	CODE_ACTIVITE										3
@@ -182,7 +182,7 @@ my $reflex 				= new Win32::ODBC('DSN='.$cfg->{'REFLEX_DSN'}.';UID='.$cfg->{'REF
 my @articles_to_export;
 foreach (@articles) { #pour chaque argument --articles
 	foreach my $article (split / *, */) { #on coupe sur la virgule (cas 05658998,5646987354,876,43436)
-			push @articles_to_export, "A.NOART='$article'";
+		push @articles_to_export, "A.NOART='$article'";
 	}
 }
 
@@ -219,7 +219,10 @@ if ($all) {
 
 } else { # on importe que quelques articles ou des dates de modif
 	if ($#articles < 0) { # si pas d'argument, on import en fonction du delta de modification
-		push @where, " and ((DATE(CONCAT(A.DARMS,CONCAT(A.DARMA,CONCAT('-',CONCAT(A.DARMM,CONCAT('-',A.DARMJ)))))) + $days_until_last_article_modif DAYS) > CURRENT DATE )";
+		push @where, " and (	(DATE(A.DARMS || A.DARMA || '-' || A.DARMM || '-' || A.DARMJ) + $days_until_last_article_modif DAYS) > CURRENT DATE
+								or
+								(DATE(S.STMSS || S.STMAA || '-' || S.STMMM || '-' || S.STMJJ) + $days_until_last_article_modif DAYS) > CURRENT DATE
+							)";
 	} else {
 		push @where, " and (".join(' or ',@articles_to_export).") ";
 	}
@@ -544,8 +547,7 @@ while($loginor->FetchRow()) {
 	print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE,CODE_RUBRIQUE_VALEUR_IC)).join('',@data{qw/CODE_ACTIVITE CODE CODE_IC_2 IC_2/})."\n";
 
 	# supprime les commentaires precedents
-	print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE,CODE_RUBRIQUE_ARTICLE_SUPPRESSION_COMMENTAIRE)).
-					join('',@data{qw/CODE_ACTIVITE CODE/})."\n";
+	print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE,CODE_RUBRIQUE_ARTICLE_SUPPRESSION_COMMENTAIRE)).join('',@data{qw/CODE_ACTIVITE CODE/})."\n";
 
 	my $j=1;
 	# commentaire 1
