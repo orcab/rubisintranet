@@ -767,7 +767,7 @@ EOT;
 			<td class="code_article"><a href="javascript:detail_article('<?=$row['code_article']?>');" class="info"><?=isset($_SESSION['search_text']) ? preg_replace("/(".trim($_SESSION['search_text']).")/i","<strong>$1</strong>",$row['code_article']) : $row['code_article']?><span>Afficher les détails de l'article</span></a></td>
 			
 			<!-- fournisseur -->
-			<td class="fournisseur" style="font-size:9px;"><?=wordwrap($row['fournisseur'], 20, "<br />\n")?></td>
+			<td class="fournisseur" style="font-size:9px;"><?=wordwrap($row['fournisseur'], 20, "<br />\n")?><br/>(<?=$row['code_fournisseur']?>)</td>
 			
 			<!-- ref fournisseur -->
 			<td class="ref_fournisseur" style="font-size:9px;">

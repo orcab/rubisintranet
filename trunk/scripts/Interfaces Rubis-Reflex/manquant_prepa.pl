@@ -135,7 +135,7 @@ my $message = <<EOT ;
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 <head>
 <style>
-.qte,.resa,.client { text-align:center; }
+.qte,.resa,.client,.class { text-align:center; }
 .not-important { color:B5B5B5; }
 </style>
 </head>
@@ -236,9 +236,13 @@ if (!$noemail) {
 
 	if (strftime('%H',localtime) eq '13') { #liste de 13h30
 		$to_list = {	'benjamin.poulain@coopmcs.com' 	=> 	'Benjamin Poulain',
-						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot',
 						'francois.dore@coopmcs.com' 	=> 	'Francois Dore',
-						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux'
+						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux',
+						'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
+						'regis.lefloch@coopmcs.com'		=>	'Regis Le Floch',
+						'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
+						'pierrick.boillet@coopmcs.com'	=>	'Pierrick Boillet',
+						'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab'
 					};
 	} else {		#liste de 16h30
 		$to_list = {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
@@ -293,6 +297,7 @@ if (!$noemail) {
 		<th>Client</th>
 		<th nowrap="nowrap">R&eacute;sa ?</th>
 		<th nowrap="nowrap">Qte en<br/>Recep</th>
+		<th nowrap="nowrap">Class</th>
 	</tr>
 EOT
  	die "SQL Reflex GEI failed : ".$reflex->Error() if $reflex->Sql($sql_reflex) ;
@@ -304,11 +309,13 @@ EOT
 		# regarde si la ligne est toujours active dans rubis
 		my $sql_rubis = <<EOT ;
 select
-	ETSBE as ETAT,TRAIT as LIVRAISON, CLIENT.CATCL as CATGEORIE_CLIENT,QTESA as QTE_DEMANDEE
+	ETSBE as ETAT,TRAIT as LIVRAISON, CLIENT.CATCL as CATGEORIE_CLIENT,QTESA as QTE_DEMANDEE,STCLA as CLASS
 from
 	${prefix_base_rubis}GESTCOM.ADETBOP1 DETAIL_PREPA
-		left join ${prefix_base_rubis}GESTCOM.ACLIENP1 CLIENT
-			on DETAIL_PREPA.NOCLI=CLIENT.NOCLI
+	left join ${prefix_base_rubis}GESTCOM.ACLIENP1 CLIENT
+		on DETAIL_PREPA.NOCLI=CLIENT.NOCLI
+	left join ${prefix_base_rubis}GESTCOM.ASTOFIP1 FICHE_STOCK
+		on DETAIL_PREPA.CODAR=FICHE_STOCK.NOART and FICHE_STOCK.DEPOT='AFA'
 where
 	NOBON='$cde' and DETAIL_PREPA.NOCLI='$client' and NOLIG='$noligne'
 EOT
@@ -323,7 +330,7 @@ EOT
 		#if ($row_rubis{'ETAT'} eq '' && ($row_rubis{'LIVRAISON'} eq 'R')) { # ligne non supprimée et non livrée
 		$row_reflex{'DESIGNATION'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
 		$row_reflex{'DESIGNATION2'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
-		$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td><td>".($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;')."</td></tr>\n";
+		$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td><td>".($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;')."</td>\n<td class='class'>$row_rubis{CLASS}</td></tr>\n";
 		#}
 	} # fin while reflex
 

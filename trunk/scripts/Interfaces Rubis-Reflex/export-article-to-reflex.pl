@@ -15,7 +15,7 @@ use Phpconst2perlconst ;
 use Getopt::Long;
 
 # class d'article autorisé
-my @valid_class = ('A'..'D');
+my @valid_class = ('A'..'E');
 
 # gestion des arguments
 my (@articles,$debug,$all,$stock_only,$class,$test,$days,$help);
@@ -489,7 +489,7 @@ while($loginor->FetchRow()) {
 
 ######### association famille article #########################################################################################
 	if (!in_array($row{'STCLA'},\@valid_class)) {
-		$row{'STCLA'} = 'E';
+		$row{'STCLA'} = 'F';
 	}
 	$data{'CODE_FAMILLE_ARTICLE'} 						= fill_with_blank($row{'STCLA'},$field_sizes{'CODE_FAMILLE_ARTICLE'});
 	
@@ -678,7 +678,11 @@ if ($i > 0) {
 		system("net use $letter: \"$location\" $pass /user:$user /persistent:no>nul 2>&1");
 	}
 
-	copy(OUTPUT_FILENAME,"$export_directory/ART_rubis.txt") or warn "Impossible de déplacer le fichier dans '$export_directory/ART_rubis.txt' ($!)";
+	while (-e "$export_directory/ART_rubis.txt") {
+		sleep(20);
+	}
 
+	copy(OUTPUT_FILENAME,"$export_directory/ART_rubis.txt") or warn "Impossible de déplacer le fichier dans '$export_directory/ART_rubis.txt' ($!)";
+	
 	require 'save-file-to-zip.pl';
 }
