@@ -44,13 +44,13 @@ class PDF extends FPDF
 			$nom_artisan = my_utf8_decode($_POST['artisan_nom']);
 
 		$json = array('t'=>'devis_expo','b'=>$id_devis,'c'=>$nom_artisan,'d'=>time(),'p'=>$this->PageNo());
-		$qrcode = new QRcode(json_encode($json), 'H'); // error level : L, M, Q, H
+		$qrcode = new QRcode(json_encode($json), 'L'); // error level : L, M, Q, H
 		//$qrcode = new QRcode("t=cdecli,c=$row_entete[NOBON]/$row_entete[NOCLI],d=".time(), 'H'); // error level : L, M, Q, H
-		$qrcode->displayFPDF($this, (PAGE_WIDTH / 2) - 10 , 0, 20);
+		$qrcode->displayFPDF($this, PAGE_WIDTH - 25 , 5, 20);
 
 		// logo gauche et droite en haut de page si le theme le demande
 		if (!in_array('no_header',$options)) {
-			if (PDF_DEVIS_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_GAUCHE,0,0,62);
+			if (PDF_DEVIS_LOGO_HAUT_GAUCHE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_GAUCHE,5,5,62);
 			if (PDF_DEVIS_LOGO_HAUT_DROITE)	$this->Image('gfx/'.PDF_DEVIS_LOGO_HAUT_DROITE,PAGE_WIDTH - 50,0,50);
 		}
 

@@ -120,6 +120,11 @@ tfoot {
 <link rel="stylesheet" href="../../../js/ui-lightness/jquery-ui-1.10.3.custom.min.css">
 <script type="text/javascript" src="../../../js/jquery.js"></script>
 <script type="text/javascript" src="../../../js/jquery-ui-1.10.3.custom.min.js"></script>
+
+<!-- pour le chosen -->
+<script language="javascript" src="../../../js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="../../../js/chosen/chosen.css" />
+
 <script language="javascript">
 <!--
 
@@ -142,6 +147,9 @@ var pourcent_medium = <?= isset($_POST['pourcent-medium']) 	? $_POST['pourcent-m
 
 $(document).ready(function(){
 	
+	// plugin chosen
+	$(".chzn-select").chosen();
+
 	$('#date_from').datepicker({
 		onClose: function( selectedDate ) {
 			$( '#date_to' ).datepicker( 'option', 'minDate', selectedDate );
@@ -192,7 +200,6 @@ $(document).ready(function(){
 
 function update_color() {
 	$('.pourcent').each(function(){
-	 	
 	 	var pourcent = parseInt($(this).text());
 	 	if 		(pourcent >= pourcent_good) 	$(this).removeClass('pourcent-bad pourcent-medium').addClass('pourcent-good');
 	 	else if (pourcent >= pourcent_medium) 	$(this).removeClass('pourcent-bad pourcent-good').addClass('pourcent-medium');
@@ -235,6 +242,11 @@ function verif_form(){
 	<input type="checkbox" name="reservation" 				id="reservation" 			<?= isset($_POST['reservation'])			? 'checked="checked"':'' ?> /> <label for="reservation">Inclure les SPE</label><br/>
 	<input type="checkbox" name="cession" 					id="cession" 				<?= isset($_POST['cession']) 				? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
 	<input type="checkbox" name="all_client" 				id="all_client" 			<?= isset($_POST['all_client']) 			? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label><br/>
+	<span style="position:relative;top:-10px;">Class produit : </span><select name="class[]" id="class" data-placeholder="Class" style="width:300px;" multiple="multiple" class="chzn-select">
+ 		<? foreach (array('A','B','C','D','E','vide') as $c) { ?>
+ 			<option value="<?=$c?>"<?=isset($_POST['class']) && is_array($_POST['class']) && in_array($c,$_POST['class']) ? ' selected="selected"':''?>><?=$c?></option>
+		<? } ?>
+	</select>
 </div>
 
 <?
@@ -243,6 +255,8 @@ if (	isset($_POST['action']) && $_POST['action'] == 'taux_service'
 	&&	isset($_POST['date_from']) && $_POST['date_from'] && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $_POST['date_from'])
 	&&	isset($_POST['date_to']) && $_POST['date_to'] && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $_POST['date_to'])
 	) {	
+
+$table = '';
 
 preg_match('/^(\d{2})\/(\d{2})\/(\d{2})(\d{2})$/', $_POST['date_from'],$regs);
 $date_from = array('jour'=>$regs[1],'mois'=>$regs[2],'siecle'=>$regs[3],'annee'=>$regs[4]);
@@ -270,20 +284,41 @@ $reservation = " and TYCDD='STO' ";
 if(isset($_POST['reservation']))
 	$reservation = '' ;
 
+// on restreint sur les class
+$class = '';
+if (isset($_POST['class']) && is_array($_POST['class'])) {
+	if (sizeof($_POST['class']) == 0 || sizeof($_POST['class']) == 6) {
+		// ne rien faire, on veut toutes les class
+	} else {
+		// faire une restriction sur les class demandées
+		$class_r = array();
+		$table .= " left join AFAGESTCOM.ASTOFIP1 FICHE_STOCK on DETAIL.CODAR=FICHE_STOCK.NOART and FICHE_STOCK.DEPOT='AFA' ";
+		foreach ($_POST['class'] as $c) {
+			if ($c == 'vide') $c = '';
+			$class_r[] = " FICHE_STOCK.STCLA='".mysql_escape_string($c)."' ";
+		}
+		$class = '('.join(" OR ",$class_r).')';
+	}
+}
+if (strlen($class)>0)
+	$class = " and $class ";
+
+//var_dump($_POST);
+
 
 $sql = <<<EOT
 select 
 --ENTETE.NOCLI,
 --ENTETE.NOBON,
---(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='ANN' and PROFI='1' $reservation) as LIGNES_ANNULEES,
---(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='R' $reservation) as LIGNES_RELIQUATS,
---(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) > CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation) as LIGNES_LIVREES_EN_RETARD
+--(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL $table where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='ANN' and PROFI='1' $reservation $class) as LIGNES_ANNULEES,
+--(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL $table where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='R' $reservation $class) as LIGNES_RELIQUATS,
+--(select count(*) from AFAGESTCOM.ADETBOP1 DETAIL $table where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) > CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation $class) as LIGNES_LIVREES_EN_RETARD
 --CONCAT(DLSSB,CONCAT(DLASB,CONCAT(DLMSB,DLJSB))) as DATE_LIV,
 (DTBOS || DTBOA || '-' || DTBOM || '-' || DTBOJ) as DATE_BON,
 count(*) as NB_CDE,
-SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' $reservation)) as LIGNES_COMMANDEES,
-SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' $reservation)) as LIGNES_LIVREES,
-SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) <= CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation)) as LIGNES_LIVREES_A_TEMPS
+SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL $table where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' $reservation $class)) as LIGNES_COMMANDEES,
+SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL $table where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' $reservation $class)) as LIGNES_LIVREES,
+SUM((select count(*) from AFAGESTCOM.ADETBOP1 DETAIL $table where ENTETE.NOBON=DETAIL.NOBON and ENTETE.NOCLI=DETAIL.NOCLI and ETSBE='' and PROFI='1' and TRAIT='F' and CONCAT(DETAIL.DTLIS,CONCAT(DETAIL.DTLIA,CONCAT(DETAIL.DTLIM,DETAIL.DTLIJ))) <= CONCAT(ENTETE.DLSSB,CONCAT(ENTETE.DLASB,CONCAT(ENTETE.DLMSB,ENTETE.DLJSB))) $reservation $class)) as LIGNES_LIVREES_A_TEMPS
 
 from
 	AFAGESTCOM.AENTBOP1 ENTETE

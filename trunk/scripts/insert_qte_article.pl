@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `qte_article` (
   `qte`				float(10,3) default 0,
   `mini`			float(10,3) default 0,
   `qte_cde`			float(10,3) default 0,
-  `servi`			bit default 0,
+  `servi`			tinyint(1) default 0,
   PRIMARY KEY (`code_article`,`depot`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 ;
 EOT

@@ -86,7 +86,7 @@ function verif_form(){
 	var erreur = false;
 
 	if (!form.code_article.value) {
-		alert("Veuillez préciser un n° de commande");
+		alert("Veuillez préciser un code article");
 		erreur = true;
 	}
 

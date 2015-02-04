@@ -59,13 +59,19 @@ $where = str_replace('!date-chargement!', $_GET['date'], $_SESSION['where']);
 //$where = str_replace('date-chargement', $_GET['date'], $_SESSION['where']);
 
 $sql = <<<EOT
-select 	(cast(P1NANP as varchar) + '-' + cast(P1NPRE as varchar)) as NUM_PREPA, P1CART as CODE_ARTICLE,P1QAPR as QTE_A_PREPARER,P1QPRE as QTE_PREPAREE,
-	ARLART as DESIGNATION, ARMDAR as DESIGNATION2,
+select
+	(cast(P1NANP as varchar) + '-' + cast(P1NPRE as varchar)) as NUM_PREPA,
+	P1CART as CODE_ARTICLE,
+	P1QAPR as QTE_A_PREPARER,
+	P1QPRE as QTE_PREPAREE,
+	ARLART as DESIGNATION,
+	ARMDAR as DESIGNATION2,
 --	OERODP as REFERENCE_OPD,
 	P1CDES as CODE_DEST,
 	DSLDES as DESTINATAIRE,
 	COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ,
-	PREPA_DETAIL.P1RRSO as RESERVATION
+	PREPA_DETAIL.P1RRSO as RESERVATION,
+	ARTICLE_FAMILLE.A2CFAR as CLASS
 from
 	RFXPRODDTA.reflex.HLPRPLP PREPA_DETAIL
 	left join ${REFLEX_BASE}.HLODPEP ODP_ENTETE
@@ -78,6 +84,8 @@ from
 		on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
 	left join ${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 		on PREPA_DETAIL.P1NANP=PREPA_ENTETE.PENANN and PREPA_DETAIL.P1NPRE=PREPA_ENTETE.PENPRE
+	left join ${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE
+		on PREPA_DETAIL.P1CART=ARTICLE_FAMILLE.A2CART and ARTICLE_FAMILLE.A2CFAN='CLASSE'
 where
 --start session where
 	$where
@@ -107,6 +115,7 @@ $res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de 
 			<th class="destinataire">CLIENT</th>
 			<th class="commande">COMMANDE</th>
 			<th class="reservation">RESA</th>
+			<th class="class">CLASS</th>
 		<tr>
 	</thead>
 	<tbody>
@@ -114,7 +123,6 @@ $res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la modification de 
 //select COUNT(*) from RFXPRODDTA.reflex.HLPRPLP    where OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation
 $i=0;
 while($row = odbc_fetch_array($res)) { ?>
-
 	<tr>
 		<td class="indice"><?=++$i?></td>
 		<td class="num_prepa"><?=$row['NUM_PREPA']?></td>
@@ -126,8 +134,8 @@ while($row = odbc_fetch_array($res)) { ?>
 		<td class="destinataire"><?=$row['CODE_DEST']?><br/><?=$row['DESTINATAIRE']?></td>
 		<td class="commande"><?=$row['COMMENTAIRE_ZZZ']?></td>
 		<td class="reservation"><?=$row['RESERVATION'] ? 'OUI':''?></td>
+		<td class="class"><?=$row['CLASS']?></td>
 	</tr>
-
 <? }
 odbc_close($reflex);
 ?>
