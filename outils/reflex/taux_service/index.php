@@ -122,6 +122,11 @@ span.diff {
 <link rel="stylesheet" href="../../../js/ui-lightness/jquery-ui-1.10.3.custom.min.css">
 <script type="text/javascript" src="../../../js/jquery.js"></script>
 <script type="text/javascript" src="../../../js/jquery-ui-1.10.3.custom.min.js"></script>
+
+<!-- pour le chosen -->
+<script language="javascript" src="../../../js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="../../../js/chosen/chosen.css" />
+
 <script language="javascript">
 <!--
 
@@ -144,6 +149,9 @@ var pourcent_medium = <?= isset($_POST['pourcent-medium']) 	? $_POST['pourcent-m
 
 $(document).ready(function(){
 	
+	// plugin chosen
+	$(".chzn-select").chosen();
+
 	$( '#date_from' ).datepicker({
 		onClose: function( selectedDate ) {
 			$( '#date_to' ).datepicker( 'option', 'minDate', selectedDate );
@@ -221,6 +229,12 @@ function verif_form(){
 	<input type="checkbox" name="cession" 					id="cession" 				<?= isset($_POST['cession']) 				? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
 	<input type="checkbox" name="all_client" 				id="all_client" 			<?= isset($_POST['all_client']) 			? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label><br/>
 	<input type="checkbox" name="only_first_preparation" 	id="only_first_preparation" <?= isset($_POST['only_first_preparation']) ? 'checked="checked"':'' ?> /> 	<label for="only_first_preparation">Inclure seulement les premières descente en préparation (-001)</label>
+	<br/>
+	<span style="position:relative;top:-10px;">Class produit : </span><select name="class[]" id="class" data-placeholder="Class" style="width:300px;" multiple="multiple" class="chzn-select">
+ 		<? foreach (array('A','B','C','D','E','F') as $c) { ?>
+ 			<option value="<?=$c?>"<?=isset($_POST['class']) && is_array($_POST['class']) && in_array($c,$_POST['class']) ? ' selected="selected"':''?>><?=$c?></option>
+		<? } ?>
+	</select>
 </div>
 
 
@@ -259,18 +273,42 @@ $only_first_preparation = '';
 if(isset($_POST['only_first_preparation']))
 	$only_first_preparation = " and OERODP like '%-001' ";
 
+// gestion des class article
+$class = '';
+if (isset($_POST['class']) && is_array($_POST['class'])) {
+	if (sizeof($_POST['class']) == 0 || sizeof($_POST['class']) == 6) {
+		// ne rien faire, on veut toutes les class
+	} else {
+		// faire une restriction sur les class demandées
+		$class_r = array();
+		foreach ($_POST['class'] as $c) {
+			if ($c == 'vide') $c = '';
+			$class_r[] = " A2CFAR='".mysql_escape_string($c)."' ";
+		}
+		$class = '('.join(" OR ",$class_r).')';
+	}
+}
+if (strlen($class)>0)
+	$class = " and $class ";
+
 $sql = <<<EOT
 select
 	OENANN as ANN_ODP, OENODP as NUM_ODP,
 	OERODP as REF_DONNEUR_ORDRE,
 	OERODD as REF_COMMANDE,
 	(RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0' +CONVERT(VARCHAR,OEACHG ),2)+'-'+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+'-'+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG),2)) as DATE_CHARGEMENT,
-	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1TOPD=0 $reservation) 	as LIGNES_COMMANDEES,
-	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as LIGNES_PREPARABLES,
-	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1QAPR=P1QPRE $reservation)	as LIGNES_PREPAREES,
-	(select SUM(P1QAPR) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_COMMANDER,
-	(select SUM(P1QAPR) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0      $reservation) 	as QTE_PREPARABLE,
-	(select SUM(P1QPRE) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP                   $reservation) 	as QTE_PREPAREE
+
+	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP,${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1TOPD=0 $reservation and P1CART=A2CART and A2CFAN='CLASSE' $class) as LIGNES_COMMANDEES,
+
+	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP,${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0 $reservation and P1CART=A2CART and A2CFAN='CLASSE' $class) as LIGNES_PREPARABLES,
+
+	(select COUNT(*) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP,${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1QAPR=P1QPRE $reservation and P1CART=A2CART and A2CFAN='CLASSE' $class) as LIGNES_PREPAREES,
+
+	(select SUM(P1QAPR) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP,${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP $reservation and P1CART=A2CART and A2CFAN='CLASSE' $class) as QTE_COMMANDER,
+
+	(select SUM(P1QAPR) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP,${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP and P1NNSL=0 $reservation and P1CART=A2CART and A2CFAN='CLASSE' $class) 	as QTE_PREPARABLE,
+
+	(select SUM(P1QPRE) from ${REFLEX_BASE}.HLPRPLP,${REFLEX_BASE}.HLPRENP,${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE where PETOPD=0 and P1TOPD=0 and P1NANP=PENANN and P1NPRE=PENPRE and OENANN=P1NANO and OENODP=P1NODP $reservation and P1CART=A2CART and A2CFAN='CLASSE' $class) as QTE_PREPAREE
 
 from
 	${REFLEX_BASE}.HLODPEP ODP_ENTETE
@@ -278,6 +316,8 @@ from
 		on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
 	left join ${REFLEX_BASE}.HLPRENP PREPA_ENTETE
 		on PREPA_DETAIL.P1NANP=PREPA_ENTETE.PENANN and PREPA_DETAIL.P1NPRE=PREPA_ENTETE.PENPRE
+	left join ${REFLEX_BASE}.HLCDFAP ARTICLE_FAMILLE
+		on PREPA_DETAIL.P1CART=ARTICLE_FAMILLE.A2CART and ARTICLE_FAMILLE.A2CFAN='CLASSE'
 	
 where
 	RIGHT('0'+ CONVERT(VARCHAR,OESCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEACHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEMCHG ),2)+RIGHT('0'+ CONVERT(VARCHAR,OEJCHG ),2) >= '$date_from[siecle]$date_from[annee]$date_from[mois]$date_from[jour]'
@@ -286,6 +326,7 @@ where
 	$cession
 	$all_client
 	$only_first_preparation
+	$class
 
 group by OESCHG ,OEACHG , OEMCHG, OEJCHG, OENANN, OENODP, OERODD, OERODP
 order by OESCHG ASC ,OEACHG ASC, OEMCHG ASC, OEJCHG ASC,OENODP  ASC
@@ -297,6 +338,7 @@ $cession
 $all_client
 $only_first_preparation
 $reservation
+$class
 EOT;
 
 	//echo "<pre>$sql</pre>";

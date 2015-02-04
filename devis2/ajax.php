@@ -133,15 +133,17 @@ elseif (isset($_GET['what']) && $_GET['what'] == 'calcul_cmd_rubis' && isset($_G
 			select	SUM(MONHT) as PTHT
 			from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1
 			where	NOCLI = '$row[num_artisan]' and
-					($cmds) and
-					PROFI = 1
+					($cmds)
+					and	PROFI = 1
+					and ETSBE=''
 EOT;
 	} else { // si pas d'artisan
 		$sql = <<<EOT
 			select	SUM(MONHT) as PTHT
 			from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1
-			where	($cmds) and
-					PROFI = 1
+			where	($cmds)
+					and	PROFI = 1
+					and ETSBE=''
 EOT;
 	}
 	$prix_cmd_rubis = sprintf('%0.2f',e('PTHT',odbc_fetch_array(odbc_exec($loginor,$sql)))) ;

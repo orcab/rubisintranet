@@ -242,7 +242,8 @@ if (!$noemail) {
 						'regis.lefloch@coopmcs.com'		=>	'Regis Le Floch',
 						'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
 						'pierrick.boillet@coopmcs.com'	=>	'Pierrick Boillet',
-						'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab'
+						'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab',
+						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot'
 					};
 	} else {		#liste de 16h30
 		$to_list = {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',

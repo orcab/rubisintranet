@@ -46,7 +46,7 @@ img:hover {
 	<td style="width:33%;padding-bottom:20px;"><a href="envoi_article/index.php"><img src="envoi_article/gfx/envoi_article.png" style="width:90px;"><br/>Forcer la descente d'article dans Reflex</a></td>
 </tr>
 <tr>
-	<td style="width:33%;padding-bottom:20px;"></td>
+	<td style="width:33%;padding-bottom:20px;"><a href="gestion_vl/index.php"><img src="gestion_vl/gfx/gestion_vl.png"><br/>Gestion des VL article</a></td>
 	<td style="width:33%;padding-bottom:20px;"><img src="prepa_progress/gfx/prepa_progress.png" style="width:90px;"><br/>
 		<a href="prepa_progress/index.php?CPT=on">Avancement des prepa CPT</a><br/>
 		<a href="prepa_progress/index.php?DIS=on&LDP=on&EXP=on&LSO=on">Avancement des prepa DIS,LDP,EXP,LSO</a>

@@ -209,7 +209,7 @@ select *
 				on A.NOART=PR.NOART and PR.PRV03='E'
 	left join	${prefix_base_rubis}GESTCOM.ASTOFIP1 S
 				on A.NOART=S.NOART and S.DEPOT='AFA'
-where	1=1
+where	A.CDKIT<>'OUI'	-- n'importe pas les kit
 EOT
 
 my @where = ();
