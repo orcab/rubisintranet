@@ -289,10 +289,14 @@ EOT;
 
 <script type="text/javascript">
 
+function max(val1,val2) {
+	return (val1 > val2 ? val1 : val2);
+}
+
 function update_data(obj) {
 	var objName = $(obj).attr('name') ;
 	var newVal	= $(obj).val();
-	console.log("newVal="+newVal);
+	//console.log("newVal="+newVal);
 
 	if (objName == 'CONDI') { // conditionnement de vente
 		//console.log("#SUR_CONDITIONNEMENT_VENTE=" + $('#SUR_CONDITIONNEMENT_VENTE').text());
@@ -316,22 +320,31 @@ function update_data(obj) {
 		}
 	}
 
-	update_unite_logistique();
+	update_unite_logistique(objName,newVal);
 }
 
-function update_unite_logistique() {
+function update_unite_logistique(objName,newVal) {
 	var unite_logistique = '';
 	//console.log("$('select[name=CDCON] option:selected').val()="+$('select[name=CDCON] option:selected').val());
 		
 	if ($('select[name=CDCON] option:selected').val()=='OUI') { // divisible --> unité de facturation
 		unite_logistique = $('#unite_facturation').text();
+		$('#AFPCB').val('1').attr('disabled','disabled')
+
 	} else {  // non divisible
+		$('#AFPCB').removeAttr('disabled');
+
+		// on copie la saisie de condi dans les deux cases
+		if (objName == 'CONDI' || objName == 'AFPCB')
+			$('#CONDI, #AFPCB').val(newVal);
+
 		if ($('input[name=DIAA4]:checked').val() == 1) {
-			unite_logistique = $('#ARTD4').val();;
+			unite_logistique = $('#ARTD4').val();
 		} else {
-			unite_logistique = $('#ARTD5').val();;
+			unite_logistique = $('#ARTD5').val();
 		}
 	}
+
 	$('.unite_logistique').text(unite_logistique);
 }
 </script>
@@ -342,14 +355,14 @@ function update_unite_logistique() {
 <h1>Achat</h1>
 <div class="fiche_fournisseur">
 	<input type="radio" id="ARF01-1" name="ARF01" value="1"<?=$row['CHOIX_CONDITIONNEMENT_ACHAT']==1 ? ' checked="checked"':''?>  onclick="update_data(this);"/>
-	<label for="ARF01-1"<?=$row['CHOIX_CONDITIONNEMENT_ACHAT']==1 ? '':' class="moins-visible"'?>>Conditionnement d'achat
-	<input type="text" id="AFPCB" name="AFPCB" value="<?=$row['CONDITIONNEMENT_ACHAT']?>"/> <?=$row['TABLE_UNITE']?>
-	</label><br/>
+	<label for="ARF01-1"<?=$row['CHOIX_CONDITIONNEMENT_ACHAT']==1 ? '':' class="moins-visible"'?>>Conditionnement d'achat</label>
+	<input type="text" id="AFPCB" name="AFPCB" value="<?=$row['CONDITIONNEMENT_ACHAT']?>"<?=$row['CONDITIONNEMENT_DIVISIBLE']=='OUI'?' disabled="disabled"':''?> onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
+	<br/>
 
 	<input type="radio" id="ARF01-2" name="ARF01" value="2"<?=$row['CHOIX_CONDITIONNEMENT_ACHAT']==2 ? ' checked="checked"':''?> onclick="update_data(this);"/>
-	<label for="ARF01-2"<?=$row['CHOIX_CONDITIONNEMENT_ACHAT']==2 ? '':' class="moins-visible"'?>>Sur conditionnement d'achat
+	<label for="ARF01-2"<?=$row['CHOIX_CONDITIONNEMENT_ACHAT']==2 ? '':' class="moins-visible"'?>>Sur conditionnement d'achat</label>
 	<input type="text" id="AFPPD" name="AFPPD" value="<?=$row['SUR_CONDITIONNEMENT_ACHAT']?>"/> <?=$row['TABLE_UNITE']?>
-	</label>
+	
 </div>
 
 <h1>Vente</h1>
@@ -361,17 +374,16 @@ function update_unite_logistique() {
 
 	<input type="radio" id="DIAA4-1" name="DIAA4" value="1"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==1 ? ' checked="checked"':''?> onclick="update_data(this);"/>
 	<input type="hidden" name="DIAA4" value="1"/>
-	<label for="DIAA4-1"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==1 ? '':' class="moins-visible"'?>>Conditionnement de vente
+	<label for="DIAA4-1"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==1 ? '':' class="moins-visible"'?>>Conditionnement de vente</label>
 	<input type="text" id="CONDI" name="CONDI" value="<?=$row['CONDITIONNEMENT_VENTE']?>" onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
 	= <input type="text" id="ARTD4" name="ARTD4" value="<?=$row['UNITE_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/><br/>
-	</label>
+	
 
 	<input type="radio" id="DIAA4-2" name="DIAA4" value="2"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==2 ? ' checked="checked"':''?> onclick="update_data(this);"/>
-	<label for="DIAA4-2"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==2 ? '':' class="moins-visible"'?>>Sur conditionnement de vente
+	<label for="DIAA4-2"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==2 ? '':' class="moins-visible"'?>>Sur conditionnement de vente</label>
 	<input type="text" id="SURCO" name="SURCO" value="<?= $row['CONDITIONNEMENT_VENTE'] * $row['SUR_CONDITIONNEMENT_VENTE']?>" onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
 	= <span id="SUR_CONDITIONNEMENT_VENTE"><?=$row['SUR_CONDITIONNEMENT_VENTE']?></span> <span id="UNITE_CONDITIONNEMENT"><?=$row['UNITE_CONDITIONNEMENT']?></span>
 	= <input type="text" id="ARTD5" name="ARTD5" value="<?=$row['UNITE_SUR_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/>
-	</label>
 </div>
 
 

@@ -54,6 +54,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'creation_article') { ///////
 <tr><td>Eco Taxe</td><td>$eco_taxe<br/><br/></td></tr>
 
 <tr><td>Unité de vente/achat</td><td>$_POST[unite_vente]</td></tr>
+
+<tr><td>Conditionnement d'achat</td><td>$_POST[conditionnement_achat]</td></tr>
+<tr><td>Sur conditionnement d'achat</td><td>$_POST[sur_conditionnement_achat]</td></tr>
+<tr><td>Type de conditionnement d'achat</td><td>$_POST[type_conditionnement_achat]</td></tr>
+
 <tr><td>Stocké au dépôt</td><td>$_POST[stock]</td></tr>
 <tr><td>Divisible</td><td>$_POST[divisible]</td></tr>
 EOT;
@@ -103,6 +108,11 @@ EOT;
 	$description .= $_POST['date_achat_venir']	? "Date prix à venir : $_POST[date_achat_venir]\n":'';
 
 	$description .= $_POST['unite_vente']		? "Unité de vente : $_POST[unite_vente]\n":'';
+
+	$description .= $_POST['conditionnement_achat']		? "Conditionnement d'achat : $_POST[conditionnement_achat]\n":'';
+	$description .= $_POST['sur_conditionnement_achat']	? "Sur conditionnement d'achat : $_POST[sur_conditionnement_achat]\n":'';
+	$description .= $_POST['type_conditionnement_achat']? "Type de conditionnement d'achat : $_POST[type_conditionnement_achat]\n":'';
+
 	$description .= $_POST['stock']				? "Stocké au dépôt : $_POST[stock]\n":'';
 	$description .= $_POST['divisible']			? "Divisible : $_POST[divisible]\n":'';
 
@@ -173,6 +183,7 @@ option.type-produit-global { color:grey; }
 .descriptif {	background-color: #FCC;	}
 .famille 	{	background-color: #FFC;	}
 .stock 		{	background-color: #CCF; }
+.achat 		{	background-color: #F5F;	}
 .libelle_unite_vl10 {font-size:0.8em;}
 
 </style>
@@ -215,7 +226,7 @@ function envoi_formulaire() {
 		alert("Veuillez saisir une ECO TAXE (0 si aucune éco taxe sur le produit)"); erreur = 1;
 	}
 	else if ($('input:radio[name=divisible]:checked').val()=='non' && $('#conditionnement_vl10').val()=='') {
-			alert("Veuillez rentrer une valeur de conditionnement"); erreur = 1;
+			alert("Veuillez rentrer une valeur de conditionnement de vente"); erreur = 1;
 	}
 	else if      (document.creation_article.marge.value.length <= 0 && document.creation_article.px_vente.value.length <= 0) {
 		alert("Veuillez saisir soit une marge (ou choisir le type de produit) ou un prix de vente"); erreur = 1;
@@ -533,20 +544,45 @@ $(document).ready(function(){
 	</td>
 </tr>
 
-
+<tr>
+	<th class="label achat">Achat</th>
+	<td class="valeur">
+		Conditionnement achat
+		<input type="text" name="conditionnement_achat" id="conditionnement_achat" value="" size="5" placeholder="nb unité"
+			onkeyup="
+				if ($('input[name=divisible]:checked').val() == 'non')
+					$('#conditionnement_vl10').val($(this).val());
+		"/>
+		<span class="libelle_unite_vl10">Unité (UN)</span>
+		<br/>
+		Sur contionnement achat
+		<input type="text" name="sur_conditionnement_achat" id="sur_conditionnement_achat" value="" size="5" placeholder="nb unité"/>
+		<span class="libelle_unite_vl10">Unité (UN)</span>
+		<br/>
+		Acheté par <input type="radio" name="type_conditionnement_achat" value="conditionnement" checked="checked"/> Conditionnement&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" name="type_conditionnement_achat" value="sur_conditionnement" /> Sur contionnement
+	</td>
 <tr>
 	<th class="label stock">Stockage</th>
 	<td class="valeur">
-		<!--<label for="vendu_par_lot_oui">Oui</label><input type="radio" name="stock" value="oui" id="vendu_par_lot_oui" onclick="$('#conditionnement').show('fast');">&nbsp;&nbsp;&nbsp;<label for="vendu_par_lot_non">Non</label><input type="radio" name="stock" value="non" id="vendu_par_lot_non" onclick="$('#conditionnement').hide('fast');" checked>-->
 		
 		<div>Stocké au dépôt ?
 			<label for="stock_oui">Oui</label><input type="radio" name="stock" value="oui" id="stock_oui"/>&nbsp;&nbsp;&nbsp;
 			<label for="stock_non">Non</label><input type="radio" name="stock" value="non" checked="checked" id="stock_non"/>
 		</div>
 
-		<div>Divisible ? 
-			<label for="divisible_oui">Oui</label><input type="radio" name="divisible" value="oui" id="divisible_oui" onclick="$('#block_divisible_oui').show('fast');$('#block_divisible_non').hide('fast');"/>&nbsp;&nbsp;&nbsp;
-			<label for="divisible_non">Non</label><input type="radio" name="divisible" value="non" checked="checked" id="divisible_non"  onclick="$('#block_divisible_non').show('fast');$('#block_divisible_oui').hide('fast');"/>
+		<div>Divisible à la vente ? 
+			<label for="divisible_oui">Oui</label><input type="radio" name="divisible" value="oui" id="divisible_oui"
+				onclick="
+					$('#block_divisible_oui').show('fast');
+					$('#block_divisible_non').hide('fast');
+					$('#conditionnement_achat').val('1').attr('disabled','disabled');
+			"/>&nbsp;&nbsp;&nbsp;
+			<label for="divisible_non">Non</label><input type="radio" name="divisible" value="non" checked="checked" id="divisible_non"
+				onclick="
+					$('#block_divisible_non').show('fast');
+					$('#block_divisible_oui').hide('fast');
+					$('#conditionnement_achat').removeAttr('disabled');
+			"/>
 		</div>
 
 		<div id="block_divisible_non">
@@ -562,7 +598,11 @@ $(document).ready(function(){
 					<option value="SAC">Sac (SAC)</option>
 					<option value="TOU">Touret (TOU)</option>
 				</select>
-				de : <input type="text" name="conditionnement_vl10" id="conditionnement_vl10" value="" size="5" placeholder="nb unité"/>
+				de : <input type="text" name="conditionnement_vl10" id="conditionnement_vl10" value="" size="5" placeholder="nb unité"
+						onkeyup="
+							if ($('input[name=divisible]:checked').val() == 'non')
+								$('#conditionnement_achat').val($(this).val());
+					"/>
 				<span class="libelle_unite_vl10">Unité (UN)</span>
 			</div>
 		</div>
@@ -602,18 +642,6 @@ $(document).ready(function(){
 		</div>
 	</td>
 </tr>
-
-
-<!--<tr><th class="label stock">Stock :</th><td class="valeur">Oui<input type="radio" name="stock" value="oui" onclick="$('#stock_mini_maxi').show('fast');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non<input type="radio" name="stock" value="non" onclick="$('#stock_mini_maxi').hide('fast');" checked>
-<div id="stock_mini_maxi" style="display:none;">
-Stock mini : <input type="text" name="stock_mini" value="" size="5"><br>
-Stock maxi : <input type="text" name="stock_maxi" value="" size="5"><br>
-Stock alerte : <input type="text" name="stock_alerte" value="" size="5">
-</div>
-</td></tr>
-<tr><th class="label stock">Conditionnement :</th><td class="valeur"><input type="text" name="conditionnement" value="1" size="5"></td></tr>
--->
-
 
 <tr>
 	<th class="label famille">Activité :</th>
