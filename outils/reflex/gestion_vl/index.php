@@ -1,4 +1,60 @@
-<? include('../../../inc/config.php'); ?>
+<? include('../../../inc/config.php');
+
+
+// enregistre les modifications
+if (	isset($_POST['action']) 		&& $_POST['action']=='gestion_vl'
+	&&	isset($_POST['code_article']) 	&& strlen($_POST['code_article'])>0
+	&&	isset($_POST['depot']) 			&& strlen($_POST['depot'])>0
+	&&	isset($_POST['fournisseur']) 	&& strlen($_POST['fournisseur'])>0) {
+
+	//print_r($_POST);
+	$_POST_ESCAPE = array_map('mysql_escape_string', $_POST);
+
+	$loginor= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+
+	// fiche de stock
+	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='$_POST_ESCAPE[STSER]' where NOART='$_POST_ESCAPE[code_article]' and DEPOT='$_POST_ESCAPE[depot]'";
+	$res 	= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
+
+	// fiche achat fournisseur
+	$sql = 	"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set ".
+				"AFOG3='$_POST_ESCAPE[AFOG3]',".
+				"AFPCB='$_POST_ESCAPE[AFPCB]',".
+				"ARF01='$_POST_ESCAPE[ARF01]',".
+				"AFPPD='$_POST_ESCAPE[AFPPD]'".
+			" where NOART='$_POST_ESCAPE[code_article]' and NOFOU='$_POST_ESCAPE[fournisseur]'";
+	$res 	= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
+
+	// fiche article
+	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set ".
+				"POIDN='$_POST_ESCAPE[POIDN]',".
+				"LONGA='$_POST_ESCAPE[LONGA]',".
+				"LARGA='$_POST_ESCAPE[LARGA]',".
+				"HAUTA='$_POST_ESCAPE[HAUTA]',".
+				"ART30='$_POST_ESCAPE[ART30]',".
+				"ART31='$_POST_ESCAPE[ART31]',".
+				"ART33='$_POST_ESCAPE[ART33]',".
+				"ART34='$_POST_ESCAPE[ART34]',".
+				"TAUAR='$_POST_ESCAPE[TAUAR]',".
+					"LUACH='$_POST_ESCAPE[TAUAR]',".
+					"LUNTA='$_POST_ESCAPE[TAUAR]',".
+					"LUCDE='$_POST_ESCAPE[TAUAR]',".
+					"ULPRE='$_POST_ESCAPE[TAUAR]',".
+					"LUSTA='$_POST_ESCAPE[TAUAR]',".
+				"CDCON='$_POST_ESCAPE[CDCON]',".
+				"DIAA4='$_POST_ESCAPE[DIAA4]',".
+				"CONDI='$_POST_ESCAPE[CONDI]',".
+				"ARTD4='$_POST_ESCAPE[ARTD4]',".
+				"SURCO='$_POST_ESCAPE[SURCO]',".
+				"ARTD5='$_POST_ESCAPE[ARTD5]'".
+			"where NOART='$_POST_ESCAPE[code_article]'";
+	$res 	= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
+
+	odbc_close($loginor);
+}
+
+
+?>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/> 
@@ -21,6 +77,9 @@ h1 {
 }
 th span {
     font-weight: normal;
+}
+option {
+    font-family: courier new;
 }
 #recherche {
     border: 1px solid grey;
@@ -57,9 +116,10 @@ input.unite {
 }
 td.valeur {
     text-align: left;
+    padding-left: 1em;
 }
 td.valeur select, td.valeur input[type="text"] {
-    margin-left: 1em;
+  /*  margin-left: 1em;*/
 }
 input[name="AFOG3"] {
     width: 8em;
@@ -112,6 +172,67 @@ function verif_form(){
 	if (!erreur)
 		form.submit();
 }
+
+
+function max(val1,val2) {
+	return (val1 > val2 ? val1 : val2);
+}
+
+function update_data(obj) {
+	var objName = $(obj).attr('name') ;
+	var newVal	= $(obj).val();
+
+	if (objName == 'CONDI') { // conditionnement de vente
+		$('#SURCO').val( newVal * $('#SUR_CONDITIONNEMENT_VENTE').text() );
+
+	} else if (objName == 'ARTD4') { // unite de conditionnement de vente
+		$('#UNITE_CONDITIONNEMENT').text( newVal );		
+
+	} else if (objName == 'SURCO') { // sur conditionnement de vente
+		$('#SUR_CONDITIONNEMENT_VENTE').text( newVal / $('#CONDI').val() );
+
+	} else if (objName == 'ARTD5') { // unite de sur conditionnement de vente
+
+	} else if (objName == 'ARF01' || objName == 'DIAA4') {
+		if (newVal == 1) {
+			$('label[for='+objName+'-1]').removeClass('moins-visible');
+			$('label[for='+objName+'-2]').addClass('moins-visible');
+		} else {
+			$('label[for='+objName+'-1]').addClass('moins-visible');
+			$('label[for='+objName+'-2]').removeClass('moins-visible');
+		}
+	}
+
+	update_unite_logistique(objName,newVal);
+}
+
+function update_unite_logistique(objName,newVal) {
+	var unite_logistique = '';
+	//console.log("$('select[name=CDCON] option:selected').val()="+$('select[name=CDCON] option:selected').val());
+		
+	if ($('select[name=CDCON] option:selected').val()=='OUI') { // divisible --> unité de facturation
+		unite_logistique = $('select[name=TAUAR] option:selected').val();
+		$('#AFPCB').val('1').attr('disabled','disabled');
+		$('input[name=DIAA4]').hide(0);
+
+	} else {  // non divisible
+		$('#AFPCB').removeAttr('disabled');
+		$('input[name=DIAA4]').show(0);
+
+		// on copie la saisie de condi dans les deux cases
+		if (objName == 'CONDI' || objName == 'AFPCB')
+			$('#CONDI, #AFPCB').val(newVal);
+
+		if ($('input[name=DIAA4]:checked').val() == 1) {
+			unite_logistique = $('#ARTD4').val();
+		} else {
+			unite_logistique = $('#ARTD5').val();
+		}
+	}
+
+	$('.unite_logistique').text(unite_logistique);
+}
+
 
 //-->
 </script>
@@ -178,15 +299,20 @@ select
 	FICHE_STOCK.STSER as SERVI,
 	FICHE_STOCK.STOMI as MINI,
 	FICHE_STOCK.STALE as ALERTE,
-	FICHE_STOCK.STOMA as MAXI
+	FICHE_STOCK.STOMA as MAXI,
+
+	PRIX_REVIENT.PRVT2 as PR2
 from
 				${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 ARTICLE
 	left join 	${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 FICHE_STOCK
 		on 			ARTICLE.NOART=FICHE_STOCK.NOART and FICHE_STOCK.DEPOT='$_POST_ESCAPE[depot]'
 	left join 	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 		on 			ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE_FOURNISSEUR.NOFOU=ARTICLE.FOUR1
+	left join 	${LOGINOR_PREFIX_BASE}GESTCOM.ATARPAP1 PRIX_REVIENT
+		on 			ARTICLE.NOART=PRIX_REVIENT.NOART
 where
-	ARTICLE.NOART='$_POST_ESCAPE[code_article]'
+		ARTICLE.NOART='$_POST_ESCAPE[code_article]'
+	and PRIX_REVIENT.PRV03='E'	-- tarif de revient en cours
 EOT;
 
 	$reflex = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
@@ -200,14 +326,16 @@ EOT;
 	if ($row['UNITE_SUR_CONDITIONNEMENT'] == '') 	$row['UNITE_SUR_CONDITIONNEMENT'] == 'PAL';
 	if ($row['TABLE_UNITE'] == '') 					$row['TABLE_UNITE'] == 'UN';
 
-	odbc_close($loginor);
 ?>
 <table id="lignes">
 <caption>
 	Article <strong><?=$_POST['code_article']?></strong> (d&eacute;pôt <?=$_POST['depot']?>)<br/>
 	<em><?=$row['DESIGNATION1']?><br/>
-	<?=$row['DESIGNATION2']?></em><br/>
-	Fournisseur habituel : <strong><?=$row['FOURNISSEUR_HABITUEL']?> <?=$row['REFERENCE_FOURNISSEUR']?></strong><br/>
+		<?=$row['DESIGNATION2']?></em>
+	<br/>
+	Fournisseur habituel : <strong><?=$row['FOURNISSEUR_HABITUEL']?> <?=$row['REFERENCE_FOURNISSEUR']?></strong>
+	<input type="hidden" name="fournisseur" value="<?=$row['FOURNISSEUR_HABITUEL']?>" />
+	<br/>
 	<span class="fiche_stock">Servi sur stock :
 		<select name="STSER">
 			<option value="OUI"<?= $row['SERVI']=='OUI' ? ' selected="selected"':'' ?>>OUI</option>
@@ -221,15 +349,15 @@ EOT;
 	<tr><th colspan="2">Information VL10&nbsp;&nbsp;&nbsp;&nbsp;<span class="fiche_stock">Fiche stock</span>&nbsp;&nbsp;&nbsp;<span class="fiche_fournisseur">Fiche fournisseur</span>&nbsp;&nbsp;&nbsp;<span class="fiche_article">Fiche article</span>&nbsp;&nbsp;&nbsp;<span class="fiche_complement">Complément</span></th></tr>
 	<tr>
 		<td class="libelle fiche_stock">Stock mini</td>
-		<td class="valeur fiche_stock"><input type="text" name="STOMI" value="<?=(int)$row['MINI']?>"/></td></tr>
+		<td class="valeur fiche_stock"><?=(int)$row['MINI']?></td></tr>
 	<tr>
 		<tr>
 		<td class="libelle fiche_stock">Stock alerte</td>
-		<td class="valeur fiche_stock"><input type="text" name="STALE" value="<?=(int)$row['ALERTE']?>"/></td></tr>
+		<td class="valeur fiche_stock"><?=(int)$row['ALERTE']?></td></tr>
 	<tr>
 		<tr>
 		<td class="libelle fiche_stock">Stock maxi</td>
-		<td class="valeur fiche_stock"><input type="text" name="STOMA" value="<?=(int)$row['MAXI']?>"/></td></tr>
+		<td class="valeur fiche_stock"><?=(int)$row['MAXI']?></td></tr>
 	<tr>
 	<tr>
 		<td class="libelle fiche_fournisseur">EAN13</td>
@@ -287,70 +415,17 @@ EOT;
 </tbody>
 </table>
 
-<script type="text/javascript">
-
-function max(val1,val2) {
-	return (val1 > val2 ? val1 : val2);
-}
-
-function update_data(obj) {
-	var objName = $(obj).attr('name') ;
-	var newVal	= $(obj).val();
-	//console.log("newVal="+newVal);
-
-	if (objName == 'CONDI') { // conditionnement de vente
-		//console.log("#SUR_CONDITIONNEMENT_VENTE=" + $('#SUR_CONDITIONNEMENT_VENTE').text());
-		$('#SURCO').val( newVal * $('#SUR_CONDITIONNEMENT_VENTE').text() );
-
-	} else if (objName == 'ARTD4') { // unite de conditionnement de vente
-		$('#UNITE_CONDITIONNEMENT').text( newVal );		
-
-	} else if (objName == 'SURCO') { // sur conditionnement de vente
-		$('#SUR_CONDITIONNEMENT_VENTE').text( newVal / $('#CONDI').val() );
-
-	} else if (objName == 'ARTD5') { // unite de sur conditionnement de vente
-
-	} else if (objName == 'ARF01' || objName == 'DIAA4') {
-		if (newVal == 1) {
-			$('label[for='+objName+'-1]').removeClass('moins-visible');
-			$('label[for='+objName+'-2]').addClass('moins-visible');
-		} else {
-			$('label[for='+objName+'-1]').addClass('moins-visible');
-			$('label[for='+objName+'-2]').removeClass('moins-visible');
-		}
-	}
-
-	update_unite_logistique(objName,newVal);
-}
-
-function update_unite_logistique(objName,newVal) {
-	var unite_logistique = '';
-	//console.log("$('select[name=CDCON] option:selected').val()="+$('select[name=CDCON] option:selected').val());
-		
-	if ($('select[name=CDCON] option:selected').val()=='OUI') { // divisible --> unité de facturation
-		unite_logistique = $('#unite_facturation').text();
-		$('#AFPCB').val('1').attr('disabled','disabled')
-
-	} else {  // non divisible
-		$('#AFPCB').removeAttr('disabled');
-
-		// on copie la saisie de condi dans les deux cases
-		if (objName == 'CONDI' || objName == 'AFPCB')
-			$('#CONDI, #AFPCB').val(newVal);
-
-		if ($('input[name=DIAA4]:checked').val() == 1) {
-			unite_logistique = $('#ARTD4').val();
-		} else {
-			unite_logistique = $('#ARTD5').val();
-		}
-	}
-
-	$('.unite_logistique').text(unite_logistique);
-}
-</script>
-
 <div class="conditionnement non-divisible">
-<h1 style="margin-top:0;">Unité de facturation : <span id="unite_facturation"><?=$row['TABLE_UNITE']?></span></h1>
+<h1 style="margin-top:0;">Unité de facturation : 
+	<?=table2select(array(	'name'		=> 'TAUAR',
+							'table'		=> 'ATABLEP1',
+							'key'		=> 'CODPR',
+							'label'		=> 'LIBPR',
+							'selected' 	=> $row['TABLE_UNITE'],
+							'where'		=> "TYPPR='UNP'"
+	))?>
+	<span class="pr2" style="font-weight:normal;">(prix d'achat PR2=<?=$row['PR2']?>&euro;)</span>
+</h1>
 
 <h1>Achat</h1>
 <div class="fiche_fournisseur">
@@ -406,6 +481,9 @@ function update_unite_logistique(objName,newVal) {
 </div>
 </div>
 
+<div style="width:50%;margin:auto;margin-top:1em;">
+	<a class="btn btn-success" onclick="document.cde.submit();"><i class="icon-ok"></i> Enregistrer les modifications</a>
+</div>
 <? } ?>
 </form>
 </body>
@@ -413,14 +491,22 @@ function update_unite_logistique(objName,newVal) {
 <?
 
 function getTableReflex($params) {
-	global $reflex,$REFLEX_BASE;
+	global $reflex,$REFLEX_BASE,$loginor,$LOGINOR_PREFIX_BASE;
 	//params = {table, where}
 
-	$sql = "SELECT * FROM ${REFLEX_BASE}.$params[table]";
+	$prefix_base= $REFLEX_BASE;
+	$dsn_source = $reflex;
+
+	if (substr($params['table'],0,1) == 'A') { // cas d'une table rubis
+		$prefix_base= $LOGINOR_PREFIX_BASE.'GESTCOM';
+		$dsn_source = $loginor;
+	}
+
+	$sql = "SELECT * FROM $prefix_base.$params[table]";
 	if (isset($params['where']) && $params['where'])
 		$sql .= " WHERE $params[where]";
 
-	$res = odbc_exec($reflex,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
+	$res = odbc_exec($dsn_source,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
 	$rows = array();
 	while ($row = odbc_fetch_array($res))
 		array_push($rows,$row);
@@ -430,14 +516,12 @@ function getTableReflex($params) {
 
 function table2select($params) {
 	//params = {name, rows (array), key, label, selected}
-	echo '<select name="'.$params['name'].'">';
+	echo '<select name="'.$params['name'].'" id="'.$params['name'].'" onchange="update_data(this);">';
 	foreach (getTableReflex(array('table'=>$params['table'],'where'=>$params['where'])) as $r) {
-		//printf("DEBUG : key='%s' / selected='%s'",$r[$params['key']],$params['selected']);
-		echo 	'<option value="'.$r[$params['key']].
+		echo 	'<option value="'.trim($r[$params['key']]).
 				'"'.(isset($params['selected']) && $r[$params['key']] == $params['selected'] ? ' selected="selected"':'').'>'.
-				$r[$params['key']].' - '.$r[$params['label']]."</option>\n";
+				$r[$params['key']].str_repeat(' ',3 - strlen($r[$params['key']])).' - '.trim($r[$params['label']])."</option>\n";
 	}
 	echo "</select>\n";
 }
-
 ?>
