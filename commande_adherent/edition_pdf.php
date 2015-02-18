@@ -54,6 +54,7 @@ from	${LOGINOR_PREFIX_BASE}GESTCOM.ADETBOP1 BON
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
 			on		BON.CODAR = ARTICLE_FOURNISSEUR.NOART
 				and	BON.NOFOU = ARTICLE_FOURNISSEUR.NOFOU
+				and ARTICLE_FOURNISSEUR.AGENC = '$LOGINOR_AGENCE'
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ATABLEP1 TAXE
 			on BON.TPFAR=TAXE.CODPR and TAXE.TYPPR='TPF'
 		left join ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 STOCK
@@ -268,7 +269,7 @@ if (isset($_GET['options']) && in_array('sans_prix',$_GET['options'])) { // cde 
 } else {
 
 	if($pdf->GetY() +  3*7 > PAGE_HEIGHT - 29) // check le saut de page
-	$pdf->AddPage();
+		$pdf->AddPage();
 
 	$pdf->SetFont('helvetica','B',10);
 	$pdf->SetFillColor(240); // gris clair
