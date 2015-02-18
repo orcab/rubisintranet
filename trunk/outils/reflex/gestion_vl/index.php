@@ -1,8 +1,9 @@
 <? include('../../../inc/config.php');
 
+$message = '';
 
 // enregistre les modifications
-if (	isset($_POST['action']) 		&& $_POST['action']=='gestion_vl'
+if (	isset($_POST['action']) 		&& $_POST['action']=='validation_vl'
 	&&	isset($_POST['code_article']) 	&& strlen($_POST['code_article'])>0
 	&&	isset($_POST['depot']) 			&& strlen($_POST['depot'])>0
 	&&	isset($_POST['fournisseur']) 	&& strlen($_POST['fournisseur'])>0) {
@@ -10,14 +11,44 @@ if (	isset($_POST['action']) 		&& $_POST['action']=='gestion_vl'
 	//print_r($_POST);
 	$_POST_ESCAPE = array_map('mysql_escape_string', $_POST);
 
+	foreach ($_POST_ESCAPE as $key => $val) // on ne laisse pas de valeur vide
+		if (strlen($val)<=0)
+			$_POST_ESCAPE[$key] = 0;
+
 	$loginor= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
+	$mysql    = mysql_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PASS) or die("Impossible de se connecter");
+	$database = mysql_select_db(MYSQL_BASE) or die("Impossible de se choisir la base");
+
+	$now = date('Ymd');
+	$siecle = substr($now,0,2);
+	$annee 	= substr($now,2,2);
+	$mois 	= substr($now,4,2);
+	$jour 	= substr($now,6,2);
+	$ip 	= 'AF'.join('.',array_slice(explode('.',$_SERVER['REMOTE_ADDR']), 2)); // deux dernier chiffre de l'ip
+	$user 	= e('login',mysql_fetch_array(mysql_query("SELECT UCASE(loginor) AS login FROM employe WHERE ip='".mysql_escape_string($_SERVER['REMOTE_ADDR'])."'")));
 
 	// fiche de stock
-	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set STSER='$_POST_ESCAPE[STSER]' where NOART='$_POST_ESCAPE[code_article]' and DEPOT='$_POST_ESCAPE[depot]'";
+	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 set ".
+				"STMID='$user',".
+				"STMWS='$ip',".
+				"STMSS='$siecle',".
+				"STMAA='$annee',".
+				"STMMM='$mois',".
+				"STMJJ='$jour',".
+
+				"STSER='$_POST_ESCAPE[STSER]'".
+			" where NOART='$_POST_ESCAPE[code_article]' and DEPOT='$_POST_ESCAPE[depot]'";
 	$res 	= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
 
 	// fiche achat fournisseur
 	$sql = 	"update ${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 set ".
+				"USAFE='$user',".
+				"WSAFR='$ip',".
+				"DAFMS='$siecle',".
+				"DAFMA='$annee',".
+				"DAFMM='$mois',".
+				"DAFMJ='$jour',".
+
 				"AFOG3='$_POST_ESCAPE[AFOG3]',".
 				"AFPCB='$_POST_ESCAPE[AFPCB]',".
 				"ARF01='$_POST_ESCAPE[ARF01]',".
@@ -27,6 +58,13 @@ if (	isset($_POST['action']) 		&& $_POST['action']=='gestion_vl'
 
 	// fiche article
 	$sql = "update ${LOGINOR_PREFIX_BASE}GESTCOM.AARTICP1 set ".
+				"USARE='$user',".
+				"WSARR='$ip',".
+				"DARMS='$siecle',".
+				"DARMA='$annee',".
+				"DARMM='$mois',".
+				"DARMJ='$jour',".
+
 				"POIDN='$_POST_ESCAPE[POIDN]',".
 				"LONGA='$_POST_ESCAPE[LONGA]',".
 				"LARGA='$_POST_ESCAPE[LARGA]',".
@@ -51,6 +89,25 @@ if (	isset($_POST['action']) 		&& $_POST['action']=='gestion_vl'
 	$res 	= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
 
 	odbc_close($loginor);
+
+	// si l'ancien conditionnement de vente etait différent du nouveau --> inventaire
+	if ($_POST['CDCON'] != $_POST['old_CDCON'] || $_POST['AFPCB'] != $_POST['old_AFPCB']) {
+		require_once '../inc/xpm2/smtp.php';
+		$mail = new SMTP;
+		$mail->Delivery('relay');
+		$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
+		$mail->AddTo('francois.dore@coopmcs.com', "Francois Dore") or die("Erreur d'ajour de destinataire");
+		$mail->From('reflex@coopmcs.com');
+		$mail->Html("Suite à un changement de conditionnement, veuillez inventorier l'article $_POST_ESCAPE[code_article] dans le dépot $_POST_ESCAPE[depot]");
+		$sent = $mail->Send("Inventaire de $_POST_ESCAPE[code_article]");
+	}
+
+	$previous_directory = getcwd();
+	chdir('c:/easyphp/www/intranet/scripts/Interfaces Rubis-Reflex') or die("Impossible de changer de répertoire de travail");
+	exec('perl export-article-to-reflex.pl --article='.$_POST['code_article']); // envoi la demande de creation a reflex
+	chdir($previous_directory) or die("Impossible de revenir au répertoire de travail");
+
+	$message .= "Article modifié";
 }
 
 
@@ -182,6 +239,11 @@ function update_data(obj) {
 	var objName = $(obj).attr('name') ;
 	var newVal	= $(obj).val();
 
+	if (objName == 'fournisseur') {
+		verif_form();
+		return;
+	}
+
 	if (objName == 'CONDI') { // conditionnement de vente
 		$('#SURCO').val( newVal * $('#SUR_CONDITIONNEMENT_VENTE').text() );
 
@@ -241,6 +303,8 @@ function update_unite_logistique(objName,newVal) {
 <body>
 <a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 
+<div class="message"><?=$message?></div>
+
 <form name="cde" method="POST" action="<?=$_SERVER['PHP_SELF']?>">
 <input type="hidden" name="action" value="gestion_vl" />
 <div id="recherche">
@@ -264,6 +328,13 @@ if (	isset($_POST['action']) && $_POST['action'] == 'gestion_vl'
 	) {
 
 		$_POST_ESCAPE = array_map('mysql_escape_string', $_POST);
+
+		$condition_fournisseur = '';
+		if (isset($_POST['fournisseur']) && strlen($_POST['fournisseur'])>0)
+			$condition_fournisseur = "ARTICLE_FOURNISSEUR.NOFOU='$_POST_ESCAPE[fournisseur]'";
+		else
+			$condition_fournisseur = "ARTICLE_FOURNISSEUR.NOFOU=ARTICLE.FOUR1";
+
 		$sql = <<<EOT
 select
 	ARTICLE.ETARE as SUSPENDU,
@@ -307,13 +378,18 @@ from
 	left join 	${LOGINOR_PREFIX_BASE}GESTCOM.ASTOFIP1 FICHE_STOCK
 		on 			ARTICLE.NOART=FICHE_STOCK.NOART and FICHE_STOCK.DEPOT='$_POST_ESCAPE[depot]'
 	left join 	${LOGINOR_PREFIX_BASE}GESTCOM.AARFOUP1 ARTICLE_FOURNISSEUR
-		on 			ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and ARTICLE_FOURNISSEUR.NOFOU=ARTICLE.FOUR1
+		on 			ARTICLE.NOART=ARTICLE_FOURNISSEUR.NOART and $condition_fournisseur
 	left join 	${LOGINOR_PREFIX_BASE}GESTCOM.ATARPAP1 PRIX_REVIENT
 		on 			ARTICLE.NOART=PRIX_REVIENT.NOART
 where
 		ARTICLE.NOART='$_POST_ESCAPE[code_article]'
 	and PRIX_REVIENT.PRV03='E'	-- tarif de revient en cours
 EOT;
+
+	/*
+	print_r($_POST);
+	printf("<xmp>%s</xmp>",$sql);
+	*/
 
 	$reflex = odbc_connect(REFLEX_DSN,REFLEX_USER,REFLEX_PASS) or die("Impossible de se connecter à Reflex via ODBC ($REFLEX_DSN)");
 	$loginor= odbc_connect(LOGINOR_DSN,LOGINOR_USER,LOGINOR_PASS) or die("Impossible de se connecter à Loginor via ODBC ($LOGINOR_DSN)");
@@ -333,8 +409,20 @@ EOT;
 	<em><?=$row['DESIGNATION1']?><br/>
 		<?=$row['DESIGNATION2']?></em>
 	<br/>
-	Fournisseur habituel : <strong><?=$row['FOURNISSEUR_HABITUEL']?> <?=$row['REFERENCE_FOURNISSEUR']?></strong>
-	<input type="hidden" name="fournisseur" value="<?=$row['FOURNISSEUR_HABITUEL']?>" />
+
+	<span class="fiche_fournisseur">
+	Fiche fournisseur :
+	<?=table2select(array(	'name'		=> 'fournisseur',
+							'table'		=> 'AARFOUP1',
+							'key'		=> 'NOFOU',
+							'label'		=> 'REFFO',
+							'selected' 	=> isset($_POST['fournisseur']) && strlen($_POST['fournisseur'])>0 ? $_POST['fournisseur'] : $row['FOURNISSEUR_HABITUEL'],
+							'where'		=> "NOART='$_POST_ESCAPE[code_article]'"
+	))?>
+	</span>
+
+	<!--<strong><?=$row['FOURNISSEUR_HABITUEL']?> <?=$row['REFERENCE_FOURNISSEUR']?></strong>-->
+	<!--<input type="hidden" name="fournisseur" value="<?=$row['FOURNISSEUR_HABITUEL']?>" />-->
 	<br/>
 	<span class="fiche_stock">Servi sur stock :
 		<select name="STSER">
@@ -421,7 +509,7 @@ EOT;
 							'table'		=> 'ATABLEP1',
 							'key'		=> 'CODPR',
 							'label'		=> 'LIBPR',
-							'selected' 	=> $row['TABLE_UNITE'],
+							'selected' 	=> trim($row['TABLE_UNITE']),
 							'where'		=> "TYPPR='UNP'"
 	))?>
 	<span class="pr2" style="font-weight:normal;">(prix d'achat PR2=<?=$row['PR2']?>&euro;)</span>
@@ -442,6 +530,9 @@ EOT;
 
 <h1>Vente</h1>
 <div class="fiche_article">
+	<input type="hidden" name="old_CDCON" value="<?=$row['CONDITIONNEMENT_DIVISIBLE']?>"/>
+	<input type="hidden" name="old_AFPCB" value="<?=$row['CONDITIONNEMENT_ACHAT']?>"/>
+
 	<select name="CDCON" id="CDCON" onchange="update_data(this);">
 		<option value="OUI"<?= $row['CONDITIONNEMENT_DIVISIBLE']=='OUI' ? ' selected="selected"':'' ?>>Article divisible à la vente</option>
 		<option value="NON"<?= $row['CONDITIONNEMENT_DIVISIBLE']=='NON' ? ' selected="selected"':'' ?>>Article non divisible à la vente</option>
@@ -451,7 +542,9 @@ EOT;
 	<input type="hidden" name="DIAA4" value="1"/>
 	<label for="DIAA4-1"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==1 ? '':' class="moins-visible"'?>>Conditionnement de vente</label>
 	<input type="text" id="CONDI" name="CONDI" value="<?=$row['CONDITIONNEMENT_VENTE']?>" onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
-	= <input type="text" id="ARTD4" name="ARTD4" value="<?=$row['UNITE_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/><br/>
+	= <input type="text" id="ARTD4" name="ARTD4" value="<?=$row['UNITE_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/>
+	(BTE, TOU, COU, SAC, ...)
+	<br/>
 	
 
 	<input type="radio" id="DIAA4-2" name="DIAA4" value="2"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==2 ? ' checked="checked"':''?> onclick="update_data(this);"/>
@@ -459,6 +552,7 @@ EOT;
 	<input type="text" id="SURCO" name="SURCO" value="<?= $row['CONDITIONNEMENT_VENTE'] * $row['SUR_CONDITIONNEMENT_VENTE']?>" onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
 	= <span id="SUR_CONDITIONNEMENT_VENTE"><?=$row['SUR_CONDITIONNEMENT_VENTE']?></span> <span id="UNITE_CONDITIONNEMENT"><?=$row['UNITE_CONDITIONNEMENT']?></span>
 	= <input type="text" id="ARTD5" name="ARTD5" value="<?=$row['UNITE_SUR_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/>
+	(PAL, PQ3, ...)
 </div>
 
 
@@ -482,7 +576,12 @@ EOT;
 </div>
 
 <div style="width:50%;margin:auto;margin-top:1em;">
-	<a class="btn btn-success" onclick="document.cde.submit();"><i class="icon-ok"></i> Enregistrer les modifications</a>
+	<a class="btn btn-success" onclick="
+				$('input').removeAttr('disabled');
+				$('input[name=action]').val('validation_vl');
+				document.cde.submit();
+				"><i class="icon-ok"></i> Enregistrer les modifications</a>
+	<a class="btn btn-warning" onclick="document.cde.reset();">Reset</a>
 </div>
 <? } ?>
 </form>
@@ -518,8 +617,8 @@ function table2select($params) {
 	//params = {name, rows (array), key, label, selected}
 	echo '<select name="'.$params['name'].'" id="'.$params['name'].'" onchange="update_data(this);">';
 	foreach (getTableReflex(array('table'=>$params['table'],'where'=>$params['where'])) as $r) {
-		echo 	'<option value="'.trim($r[$params['key']]).
-				'"'.(isset($params['selected']) && $r[$params['key']] == $params['selected'] ? ' selected="selected"':'').'>'.
+		echo 	'<option value="'.$r[$params['key']].
+				'"'.(isset($params['selected']) && trim($r[$params['key']]) == trim($params['selected']) ? ' selected="selected"':'').'>'.
 				$r[$params['key']].str_repeat(' ',3 - strlen($r[$params['key']])).' - '.trim($r[$params['label']])."</option>\n";
 	}
 	echo "</select>\n";

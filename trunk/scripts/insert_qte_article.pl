@@ -48,7 +48,7 @@ from
 		on STOCK.NOART=FICHE_STOCK.NOART and STOCK.DEPOT=FICHE_STOCK.DEPOT
 where
 		(STOCK.DEPOT='AFA' or STOCK.DEPOT='AFL')
-	and STOCK.QTINV>0 								-- a du stock
+	and (STOCK.QTINV>0 or FICHE_STOCK.STSER='OUI')	-- a du stock ou est stocké
 	and STOCK.ETSOE=''								-- non supsendu
 	and FICHE_STOCK.STSTS=''						-- non suspendu
 EOT

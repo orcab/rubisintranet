@@ -113,8 +113,11 @@ select	NOLIG,ARCOM,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,QTREC,UNICD,PRINE,MONHT,N
 		DDISS,DDISA,DDISM,DDISJ,			-- date de disponibilités
 		CHANTIER.CHAD1,						-- nom du chantier
 		CONCAT(CDE_FOURNISSEUR.CFDLS,CONCAT(CDE_FOURNISSEUR.CFDLA,CONCAT('-',CONCAT(CDE_FOURNISSEUR.CFDLM,CONCAT('-',CDE_FOURNISSEUR.CFDLJ))))) as DATE_LIV_FOURNISSEUR,
-		CDE_FOURNISSEUR.CFCOD as DATE_LIV_FOURNISSEUR_CONFIRM
-from	${prefix_base_rubis}GESTCOM.ADETBOP1 DETAIL_BON
+		CDE_FOURNISSEUR.CFCOD as DATE_LIV_FOURNISSEUR_CONFIRM,
+		FTRAB as FRAIS_TRANSPORT,
+		ENT02 as FRAIS_TRANSPORT_GRATUIT
+from	
+				  ${prefix_base_rubis}GESTCOM.ADETBOP1 DETAIL_BON
 		left join ${prefix_base_rubis}GESTCOM.AENTBOP1 ENTETE_BON
 			on		DETAIL_BON.NOBON=ENTETE_BON.NOBON and DETAIL_BON.NOCLI=ENTETE_BON.NOCLI
 		left join ${prefix_base_rubis}GESTCOM.AFOURNP1 FOURNISSEUR
@@ -139,13 +142,16 @@ $loginor->Sql($sql); # regarde les bon du mois actif
 print "OK\n";
 
 # construction du fichier SQL pour la base internet
-my $old_bon = ''; my $i=0;
-my $nb_ligne = 0;
-my $nb_livre = 0;
-my $nb_prepa = 0;
-my $nb_dispo = 0;
-my $montant_dispo = 0;
-my $montant_livre = 0;
+my $i=0;
+my $old_bon = '';
+my $nb_ligne 		= 0;
+my $nb_livre 		= 0;
+my $nb_prepa 		= 0;
+my $nb_dispo 		= 0;
+my $montant_dispo 	= 0;
+my $montant_livre 	= 0;
+my $frais_port 		= 0;
+
 print print_time()."Insertion des cde dans la base SQLite ...";
 while($loginor->FetchRow()) {
 	my %row = $loginor->DataHash() ;
@@ -165,13 +171,14 @@ while($loginor->FetchRow()) {
 		$nb_dispo = 0;
 		$montant_dispo = 0;
 		$montant_livre = 0;
+		$frais_port = $row{'FRAIS_TRANSPORT_GRATUIT'} eq 'O' ? 0 : $row{'FRAIS_TRANSPORT'}; # calcul des frais de port
 
 		# supprime l'ancien bon et le détail grace au trigger
 		$sqlite->do("DELETE FROM cde_rubis WHERE numero_bon='$row{NOBON}' and numero_artisan='$row{NOCLI}'");
 		die "$DBI::errstr\n" if $sqlite->err();
 
 		# insert la nouvelle entete de commande
-		$sqlite->do("INSERT OR IGNORE INTO cde_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,montant_dispo,montant_livre,reference,chantier,agence,nb_livre,nb_prepa,nb_dispo) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',0,$row{MONTBT},0,0,'$row{RFCSB}','$row{CHAD1}','$row{AGELI}','0','0','0')");
+		$sqlite->do("INSERT OR IGNORE INTO cde_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,montant_dispo,montant_livre,reference,chantier,agence,nb_livre,nb_prepa,nb_dispo,frais_port) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',0,$row{MONTBT},0,0,'$row{RFCSB}','$row{CHAD1}','$row{AGELI}','0','0','0','$frais_port')");
 		die "$DBI::errstr\n" if $sqlite->err();
 	}
 
@@ -213,7 +220,7 @@ while($loginor->FetchRow()) {
 	$old_bon = "$row{NOBON}.$row{NOCLI}";
 } # fin while cde
 
-# met a jour le nomber de ligne preparées et livrées
+# met a jour le nombre de ligne preparées et livrées
 $sqlite->do("UPDATE OR IGNORE cde_rubis SET nb_ligne='$nb_ligne', nb_livre='$nb_livre', nb_prepa='$nb_prepa' WHERE id_bon='$old_bon'");
 print "OK\n";
 END_BON: ;
@@ -252,8 +259,11 @@ select	NOLIG,ARCOM,CODAR,DS1DB,DS2DB,DS3DB,CONSA,QTESA,UNICD,PRINE,MONHT,NOMFO,R
 		NBLIG,
 		AGENCE.AGELI,
 		DSEMS,DSEMA,DSEMM,DSEMJ,	-- date de derniere MAJ du bon
-		TYCDD,PROFI					-- etat de la ligne du bon : special/livrée/preparée/commentaire
-from	${prefix_base_rubis}GESTCOM.ADETBVP1 DETAIL_BON
+		TYCDD,PROFI,				-- etat de la ligne du bon : special/livrée/preparée/commentaire
+		FTRAB as FRAIS_TRANSPORT,
+		ENT02 as FRAIS_TRANSPORT_GRATUIT
+from	
+				  ${prefix_base_rubis}GESTCOM.ADETBVP1 DETAIL_BON
 		left join ${prefix_base_rubis}GESTCOM.AENTBVP1 ENTETE_BON
 			on		DETAIL_BON.NOBON=ENTETE_BON.NOBON
 				and	DETAIL_BON.NOCLI=ENTETE_BON.NOCLI
@@ -291,8 +301,10 @@ while($loginor->FetchRow()) {
 		$sqlite->do("DELETE FROM devis_rubis WHERE numero_bon='$row{NOBON}' and numero_artisan='$row{NOCLI}'");
 		die "$DBI::errstr\n" if $sqlite->err();
 
+		$frais_port = $row{'FRAIS_TRANSPORT_GRATUIT'} eq 'O' ? 0 : $row{'FRAIS_TRANSPORT'}; # calcul des frais de port
+
 		# insert le nouveau
-		$sqlite->do("INSERT OR IGNORE INTO devis_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,reference,agence) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',$row{NBLIG},$row{MONTBT},'$row{RFCSB}','$row{AGELI}')");
+		$sqlite->do("INSERT OR IGNORE INTO devis_rubis (id_bon,numero_bon,numero_artisan,date_bon,date_maj,date_liv,vendeur,nb_ligne,montant,reference,agence,frais_port) VALUES ('$row{NOBON}.$row{NOCLI}','$row{NOBON}','$row{NOCLI}','$row{DATE_BON}','$row{DATE_MAJ}','$row{DATE_LIV}','$row{LIVSB}',$row{NBLIG},$row{MONTBT},'$row{RFCSB}','$row{AGELI}','$frais_port')");
 		die "$DBI::errstr\n" if $sqlite->err();
 	}
 
@@ -516,6 +528,7 @@ CREATE TABLE IF NOT EXISTS "cde_rubis" (
 	"nb_livre" INTEGER NOT NULL,
 	"nb_prepa" INTEGER NOT NULL,
 	"nb_dispo" INTEGER NOT NULL,
+	"frais_port" FLOAT NOT NULL DEFAULT(0),
 	 UNIQUE (numero_bon,numero_artisan) 
 )
 EOT
@@ -576,6 +589,7 @@ CREATE TABLE IF NOT EXISTS "devis_rubis" (
 	"montant" FLOAT NOT NULL ,
 	"reference" VARCHAR(20),
 	"agence" VARCHAR(20),
+	"frais_port" FLOAT NOT NULL DEFAULT(0),
 	 UNIQUE (numero_bon,numero_artisan) 
 )
 EOT
@@ -731,20 +745,28 @@ sub print_help {
 	print <<EOT ;
 Les options possibles sont :
 
-Pour sauter une etape
-	--skip=$tmp
+--skip
+	Pour sauter une etape
+	Etape : bon,devis,devis_expo,vendeurs,chantiers,vaccum,compress,upload
+	Exemple : --skip=vaccum,upload,compress
 
-Pour indexer toutes les donnees sans critere de date
-	--all
+--all
+	Pour indexer toutes les donnees sans critere de date
 
-Pour specifier un nom a la base SQLite (defaut : 'cde_rubis.db')
-	--dbname=<nom du fichier SQLite>
+--dbname=<nom du fichier SQLite>
+	Pour specifier un nom a la base SQLite (defaut : 'cde_rubis.db')
+	
+--from=yyyy-mm-dd
+	Pour specifier une date de depart d'indexation (pour les bons et les devis)
 
-Pour specifier une date de depart d'indexation (pour les bons et les devis)
-	--from=yyyy-mm-dd
+--to=yyyy-mm-dd
+	Pour specifier une date de fin d'indexation (pour les bons et les devis)
+	
+--bon=xxxxxx
+	Pour n'indexer que les documents avec ce numero (pour les bons et les devis)
 
-Pour specifier une date de fin d'indexation (pour les bons et les devis)
-	--to=yyyy-mm-dd
+--client=xxxxxx
+	Pour n'indexer que les documents de ce client (pour les bons et les devis)
 EOT
 	exit;
 }
