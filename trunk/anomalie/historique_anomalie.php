@@ -14,14 +14,15 @@ while ($row = mysql_fetch_array($res))
 	$employe[] = $row['prenom'];
 
 // GESTION DU CLASSEMENT ET DES FILTRES DE RECHERCHE
-if (!isset($_SESSION['anomalie_filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-1,date('d'),date('Y')));
-if (!isset($_SESSION['anomalie_filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']	= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')  ,date('d'),date('Y')));
-if (!isset($_SESSION['anomalie_filtre_adherent']))			$_SESSION['anomalie_filtre_adherent']	= '';
+if (!isset($_SESSION['anomalie_filtre_date_inf']))	$_SESSION['anomalie_filtre_date_inf']				= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')-1,date('d'),date('Y')));
+if (!isset($_SESSION['anomalie_filtre_date_sup']))	$_SESSION['anomalie_filtre_date_sup']				= $date_inf = date('d/m/Y' , mktime(0,0,0,date('m')  ,date('d'),date('Y')));
+if (!isset($_SESSION['anomalie_filtre_adherent']))			$_SESSION['anomalie_filtre_adherent']		= '';
 if (!isset($_SESSION['anomalie_filtre_fournisseur']))		$_SESSION['anomalie_filtre_fournisseur']	= '';
-if (!isset($_SESSION['anomalie_filtre_createur']))			$_SESSION['anomalie_filtre_createur']	= '';
-if (!isset($_SESSION['anomalie_filtre_numero']))			$_SESSION['anomalie_filtre_numero']		= '';
-if (!isset($_SESSION['anomalie_filtre_evolution']))			$_SESSION['anomalie_filtre_evolution']	= '';
-if (!isset($_SESSION['anomalie_filtre_classement']))		$_SESSION['anomalie_filtre_classement'] = 'date_creation DESC';
+if (!isset($_SESSION['anomalie_filtre_createur']))			$_SESSION['anomalie_filtre_createur']		= '';
+if (!isset($_SESSION['anomalie_filtre_numero']))			$_SESSION['anomalie_filtre_numero']			= '';
+if (!isset($_SESSION['anomalie_filtre_num_retour']))		$_SESSION['anomalie_filtre_num_retour']		= '';
+if (!isset($_SESSION['anomalie_filtre_evolution']))			$_SESSION['anomalie_filtre_evolution']		= '';
+if (!isset($_SESSION['anomalie_filtre_classement']))		$_SESSION['anomalie_filtre_classement'] 	= 'date_creation DESC';
 if (!isset($_SESSION['anomalie_filtre_logistique']))		$_SESSION['anomalie_filtre_logistique']		= TRUE;
 if (!isset($_SESSION['anomalie_filtre_commerce']))			$_SESSION['anomalie_filtre_commerce']		= TRUE;
 if (!isset($_SESSION['anomalie_filtre_exposition']))		$_SESSION['anomalie_filtre_exposition']		= TRUE;
@@ -46,6 +47,7 @@ if (isset($_POST['filtre_fournisseur']))$_SESSION['anomalie_filtre_fournisseur']
 if (isset($_GET['filtre_fournisseur'])) $_SESSION['anomalie_filtre_fournisseur']= $_GET['filtre_fournisseur']; // pour pouvoir y acceder via une url
 if (isset($_POST['filtre_createur']))	$_SESSION['anomalie_filtre_createur']	= $_POST['filtre_createur'];
 if (isset($_POST['filtre_numero']))		$_SESSION['anomalie_filtre_numero']		= $_POST['filtre_numero'];
+if (isset($_POST['filtre_num_retour']))	$_SESSION['anomalie_filtre_num_retour']	= $_POST['filtre_num_retour']; // pour les litiges
 if (isset($_POST['filtre_evolution']))	$_SESSION['anomalie_filtre_evolution']	= $_POST['filtre_evolution'];
 if (isset($_GET['filtre_classement']))	$_SESSION['anomalie_filtre_classement'] = $_GET['filtre_classement'];
 if (isset($_SERVER['HTTP_REFERER']) && preg_match('/detail_fournisseur\.php/i',$_SERVER['HTTP_REFERER']))  $_SESSION['anomalie_from_fiche_fournisseur'] = $_GET['filtre_fournisseur']; // on arrive des fiches fournisseurs
@@ -54,7 +56,7 @@ if (isset($_SERVER['HTTP_REFERER']) && preg_match('/historique_anomalie\.php/i',
 	if (isset($_POST['action']) && $_POST['action']=='saisie_commentaire'	||	// ne rien faire si l'on vient de saisir un commentaire
 		isset($_GET['action']) && $_GET['action']=='delete_commentaire'		||	// ne rien faire si l'on vient de supprimer un commentaire
 		isset($_GET['filtre_classement']))										// ne rien faire si l'on vient de changer le classement
-		{ }
+	{ }
 	else {
 		$_SESSION['anomalie_filtre_logistique']		= isset($_POST['filtre_logistique']);
 		$_SESSION['anomalie_filtre_commerce']		= isset($_POST['filtre_commerce']);
@@ -393,6 +395,7 @@ function envoi_formulaire(l_action) {
 <?						} ?>
 					</select>
 				</td>
+				<td>&nbsp;</td>
 				<td style="text-align:right;"><input type="submit" class="button divers" style="background-image:url(/intranet/gfx/magnify.png);" value="Filtrer"></td>
 			</tr>
 			<tr>
@@ -416,6 +419,8 @@ function envoi_formulaire(l_action) {
 				<td><input type="text" name="filtre_fournisseur" value="<?=$_SESSION['anomalie_filtre_fournisseur']?>" size="8"></td>
 				<td style="text-align:right;">Numéro</td>
 				<td style="text-align:left;"><input type="text" name="filtre_numero" value="<?=$_SESSION['anomalie_filtre_numero']?>" size="8"></td>
+				<td style="text-align:right;">N° retour</td>
+				<td style="text-align:left;"><input type="text" name="filtre_num_retour" value="<?=$_SESSION['anomalie_filtre_num_retour']?>" size="11" maxlength="6"></td>
 			</tr>
 			<tr>
 				<td colspan="7" style="padding-top:5px;">
@@ -447,6 +452,7 @@ function envoi_formulaire(l_action) {
 		<th class="pole">Pole<br><a href="historique_anomalie.php?filtre_classement=pole ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=pole DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="evolution">Etat<br><a href="historique_anomalie.php?filtre_classement=evolution ASC, fournisseur ASC"><img src="/intranet/gfx/asc.png"></a><a href="historique_anomalie.php?filtre_classement=evolution DESC, fournisseur DESC"><img src="/intranet/gfx/desc.png"></a></th>
 		<th class="responsabilite">Responsabilité</th>
+		<th class="num_retour">N° Retour</th>
 		<th>Commentaire<br><input name="button_affiche_commentaire" type="button" class="button divers" style="background-image:url(/intranet/gfx/comments.png);" value="Afficher" onclick="liste_toute_commentaire();"></th>
 		<th>Edit</th>
 	</tr>
@@ -458,10 +464,11 @@ function envoi_formulaire(l_action) {
 
 	if ($_SESSION['anomalie_filtre_date_inf'] && $_SESSION['anomalie_filtre_date_inf'] != 'Aucune') $where[] = "date_creation >= '$date_inf_formater 00:00:00'" ;
 	if ($_SESSION['anomalie_filtre_date_sup'] && $_SESSION['anomalie_filtre_date_sup'] != 'Aucune') $where[] = "date_creation <= '$date_sup_formater 23:59:59'" ;
-	if ($_SESSION['anomalie_filtre_adherent'])	$where[] = "artisan like '%".strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_adherent']))."%'" ;
-	if ($_SESSION['anomalie_filtre_createur'])	$where[] = "createur='"	.strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_createur']))."'" ;
-	if ($_SESSION['anomalie_filtre_fournisseur'])$where[] = "fournisseur like '%".strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_fournisseur']))."%'" ;
+	if ($_SESSION['anomalie_filtre_adherent'])		$where[] = "artisan like '%".strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_adherent']))."%'" ;
+	if ($_SESSION['anomalie_filtre_createur'])		$where[] = "createur='"	.strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_createur']))."'" ;
+	if ($_SESSION['anomalie_filtre_fournisseur'])	$where[] = "fournisseur like '%".strtoupper(mysql_escape_string($_SESSION['anomalie_filtre_fournisseur']))."%'" ;
 	if ($_SESSION['anomalie_filtre_numero'])		$where[] = "id='".strtoupper(trim(mysql_escape_string($_SESSION['anomalie_filtre_numero'])))."'" ;
+	if ($_SESSION['anomalie_filtre_num_retour'])	$where[] = "num_retour='".strtoupper(trim(mysql_escape_string($_SESSION['anomalie_filtre_num_retour'])))."'" ;
 
 	$pole = array();
 	if ($_SESSION['anomalie_filtre_logistique'])	$pole[] = '(pole & '.POLE_LOGISTIQUE.	'='.POLE_LOGISTIQUE.')';
@@ -498,14 +505,17 @@ function envoi_formulaire(l_action) {
 	$ordre = $_SESSION['anomalie_filtre_classement'];
 
 	$sql = <<<EOT
-select *,DATE_FORMAT(date_creation,'%d %b %Y') AS date_creation_formatee, DATE_FORMAT(date_creation,'%w') AS jour_creation, DATE_FORMAT(date_cloture,'%d %b %Y') AS date_cloture_formatee
-from anomalie
+SELECT
+	*,
+	DATE_FORMAT(date_creation,'%d %b %Y') AS date_creation_formatee,
+	DATE_FORMAT(date_creation,'%w') AS jour_creation,
+	DATE_FORMAT(date_cloture,'%d %b %Y') AS date_cloture_formatee
+FROM anomalie
 $where
-order by $ordre
+ORDER BY $ordre
 EOT;
 
-if (DEBUG)
-	echo "<div style='color:red;'><pre>$sql</pre></div>" ;
+if (DEBUG) echo "<div style='color:red;'><pre>$sql</pre></div>" ;
 
 	$total_ligne = 0 ;	$i=0;
 	$res = mysql_query($sql) or die("Ne peux pas rechercher les anomalies. ".mysql_error());
@@ -549,6 +559,7 @@ if (DEBUG)
 										}
 			
 		?></td><!-- responsabilité -->
+		<td class="fournisseur" style="text-align:center;"><?=$row['num_retour']?></td><!-- num_retour -->
 		<td style="text-align:center;"><!-- commentaire -->
 <?			
 			$nb_commentaire = e('nb_commentaire',mysql_fetch_array(mysql_query("SELECT count(id) as nb_commentaire FROM anomalie_commentaire WHERE id_anomalie='$row[id]'  AND supprime=0"))); ?>
