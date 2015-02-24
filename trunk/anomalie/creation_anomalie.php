@@ -53,7 +53,8 @@ if		(isset($_POST['action']) && $_POST['action']=='creation_anomalie') {
 			(isset($_POST['pole_administratif'])&& $_POST['pole_administratif']	=='on'	? POLE_ADMINISTRATIF: 0) |
 			(isset($_POST['pole_informatique'])	&& $_POST['pole_informatique']	=='on'	? POLE_INFORMATIQUE	: 0) |
 			(isset($_POST['pole_litige'])		&& $_POST['pole_litige']		=='on'	? POLE_LITIGE		: 0) |
-			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']			=='on'	? POLE_AUTRE		: 0);
+			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']			=='on'	? POLE_AUTRE		: 0) |
+			(isset($_POST['pole_transport'])	&& $_POST['pole_transport']		=='on'	? POLE_TRANSPORT	: 0);
 
 	$resp_coop	= isset($post_escaped['resp_coop']) ? $post_escaped['resp_coop']	: 0;
 	$resp_adh	= isset($post_escaped['resp_adh'])	? $post_escaped['resp_adh']		: 0;
@@ -122,7 +123,8 @@ elseif (isset($_POST['action']) && $_POST['action']=='modification_anomalie') {
 			(isset($_POST['pole_administratif'])&& $_POST['pole_administratif']	=='on'	? POLE_ADMINISTRATIF: 0) |
 			(isset($_POST['pole_informatique'])	&& $_POST['pole_informatique']	=='on'	? POLE_INFORMATIQUE	: 0) |
 			(isset($_POST['pole_litige'])		&& $_POST['pole_litige']		=='on'	? POLE_LITIGE		: 0) |
-			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']			=='on'	? POLE_AUTRE		: 0);
+			(isset($_POST['pole_autre'])		&& $_POST['pole_autre']			=='on'	? POLE_AUTRE		: 0) |
+			(isset($_POST['pole_transport'])	&& $_POST['pole_transport']		=='on'	? POLE_TRANSPORT	: 0);
 
 	$resp_coop	= isset($post_escaped['resp_coop']) ? $post_escaped['resp_coop']	: 0;
 	$resp_adh	= isset($post_escaped['resp_adh'])	? $post_escaped['resp_adh']		: 0;
@@ -308,7 +310,8 @@ function envoi_formulaire() {
 				!pole_administratif.checked &&
 				!pole_informatique.checked &&
 				!pole_litige.checked &&
-				!pole_autre.checked)
+				!pole_autre.checked &&
+				!pole_transport.checked)
 				erreur = "Aucun pôle n'est coché, veuillez en cocher au moins un.";
 		}
 
@@ -540,6 +543,7 @@ $(document).ready(function(){
 				<label for="pole_informatique"	class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_INFORMATIQUE) ?' mobile-checked':'' ?>"><input type="checkbox" id="pole_informatique"		name="pole_informatique"	<?=($id && $row_anomalie['pole'] & POLE_INFORMATIQUE) ?	'checked="on"':'' ?>/>Informatique</label>
 				<label for="pole_litige"		class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_LITIGE)		?' mobile-checked':'' ?>"><input type="checkbox" id="pole_litige"			name="pole_litige"			<?=($id && $row_anomalie['pole'] & POLE_LITIGE) ?		'checked="on"':'' ?>/>Litige</label>
 				<label for="pole_autre"			class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_AUTRE)		?' mobile-checked':'' ?>"><input type="checkbox" id="pole_autre"			name="pole_autre"			<?=($id && $row_anomalie['pole'] & POLE_AUTRE) ?		'checked="on"':'' ?>/>Autres (précisez)</label>
+				<label for="pole_transport"		class="mobile mobile-block<?=($id && $row_anomalie['pole'] & POLE_TRANSPORT)	?' mobile-checked':'' ?>"><input type="checkbox" id="pole_transport"		name="pole_transport"		<?=($id && $row_anomalie['pole'] & POLE_TRANSPORT) ?	'checked="on"':'' ?>/>Transport</label>
 <?			} else { ?>
 				<?= $row_anomalie['pole'] & POLE_LOGISTIQUE		? 'Logisitique<br/>':'' ?>
 				<input type="hidden" name="pole_logistique"		value="<?=$row_anomalie['pole']&POLE_LOGISTIQUE?'on':''?>" />
@@ -551,10 +555,12 @@ $(document).ready(function(){
 				<input type="hidden" name="pole_administratif"	value="<?=$row_anomalie['pole']&POLE_ADMINISTRATIF?'on':''?>" />
 				<?= $row_anomalie['pole'] & POLE_INFORMATIQUE	? 'Informatique<br/>':'' ?>
 				<input type="hidden" name="pole_informatique"	value="<?=$row_anomalie['pole']&POLE_INFORMATIQUE?'on':''?>" />
-				<?= $row_anomalie['pole'] & POLE_LITIGE	? 'Litige<br/>':'' ?>
+				<?= $row_anomalie['pole'] & POLE_LITIGE			? 'Litige<br/>':'' ?>
 				<input type="hidden" name="pole_litige"			value="<?=$row_anomalie['pole']&POLE_LITIGE?'on':''?>" />
 				<?= $row_anomalie['pole'] & POLE_AUTRE			? 'Autre<br/>':'' ?>
 				<input type="hidden" name="pole_autre"			value="<?=$row_anomalie['pole']&POLE_AUTRE?'on':''?>" />
+				<?= $row_anomalie['pole'] & POLE_TRANSPORT		? 'Transport<br/>':'' ?>
+				<input type="hidden" name="pole_transport"		value="<?=$row_anomalie['pole']&POLE_TRANSPORT?'on':''?>" />
 <?			} ?>
 		</td>
 	</tr>
