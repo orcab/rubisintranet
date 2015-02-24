@@ -92,7 +92,7 @@ if (	isset($_POST['action']) 		&& $_POST['action']=='validation_vl'
 
 	// si l'ancien conditionnement de vente etait différent du nouveau --> inventaire
 	if ($_POST['CDCON'] != $_POST['old_CDCON'] || $_POST['AFPCB'] != $_POST['old_AFPCB']) {
-		require_once '../inc/xpm2/smtp.php';
+		require_once '../../../inc/xpm2/smtp.php';
 		$mail = new SMTP;
 		$mail->Delivery('relay');
 		$mail->Relay(SMTP_SERVEUR,SMTP_USER,SMTP_PASS,(int)SMTP_PORT,'autodetect',SMTP_TLS_SLL ? SMTP_TLS_SLL:false);
@@ -213,6 +213,7 @@ input[name="AFOG3"] {
 
 $(document).ready(function(){
 	$('#code_article').focus();
+	update_data(null);
 });
 
 
@@ -230,10 +231,6 @@ function verif_form(){
 		form.submit();
 }
 
-
-function max(val1,val2) {
-	return (val1 > val2 ? val1 : val2);
-}
 
 function update_data(obj) {
 	var objName = $(obj).attr('name') ;
@@ -294,7 +291,6 @@ function update_unite_logistique(objName,newVal) {
 
 	$('.unite_logistique').text(unite_logistique);
 }
-
 
 //-->
 </script>
@@ -371,6 +367,7 @@ select
 	FICHE_STOCK.STOMI as MINI,
 	FICHE_STOCK.STALE as ALERTE,
 	FICHE_STOCK.STOMA as MAXI,
+	FICHE_STOCK.STFN20 as MINI_FORCE,
 
 	PRIX_REVIENT.PRVT2 as PR2
 from
@@ -421,8 +418,6 @@ EOT;
 	))?>
 	</span>
 
-	<!--<strong><?=$row['FOURNISSEUR_HABITUEL']?> <?=$row['REFERENCE_FOURNISSEUR']?></strong>-->
-	<!--<input type="hidden" name="fournisseur" value="<?=$row['FOURNISSEUR_HABITUEL']?>" />-->
 	<br/>
 	<span class="fiche_stock">Servi sur stock :
 		<select name="STSER">
@@ -437,7 +432,11 @@ EOT;
 	<tr><th colspan="2">Information VL10&nbsp;&nbsp;&nbsp;&nbsp;<span class="fiche_stock">Fiche stock</span>&nbsp;&nbsp;&nbsp;<span class="fiche_fournisseur">Fiche fournisseur</span>&nbsp;&nbsp;&nbsp;<span class="fiche_article">Fiche article</span>&nbsp;&nbsp;&nbsp;<span class="fiche_complement">Complément</span></th></tr>
 	<tr>
 		<td class="libelle fiche_stock">Stock mini</td>
-		<td class="valeur fiche_stock"><?=(int)$row['MINI']?></td></tr>
+		<td class="valeur fiche_stock"><?=(int)$row['MINI']?>
+			<? if ($row['MINI_FORCE'] > 0) { ?>
+				&nbsp&nbsp&nbsp&nbspForc&eacute; : <?=(int)$row['MINI_FORCE']?>
+			<? } ?>
+		</td></tr>
 	<tr>
 		<tr>
 		<td class="libelle fiche_stock">Stock alerte</td>
@@ -512,7 +511,7 @@ EOT;
 							'selected' 	=> trim($row['TABLE_UNITE']),
 							'where'		=> "TYPPR='UNP'"
 	))?>
-	<span class="pr2" style="font-weight:normal;">(prix d'achat PR2=<?=$row['PR2']?>&euro;)</span>
+	<span class="pr2" style="font-weight:normal;">(prix d'achat PR2=<? printf('%0.2f',$row['PR2']) ?>&euro;)</span>
 </h1>
 
 <h1>Achat</h1>
@@ -542,8 +541,13 @@ EOT;
 	<input type="hidden" name="DIAA4" value="1"/>
 	<label for="DIAA4-1"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==1 ? '':' class="moins-visible"'?>>Conditionnement de vente</label>
 	<input type="text" id="CONDI" name="CONDI" value="<?=$row['CONDITIONNEMENT_VENTE']?>" onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
-	= <input type="text" id="ARTD4" name="ARTD4" value="<?=$row['UNITE_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/>
-	(BTE, TOU, COU, SAC, ...)
+	= <?=table2select(array(	'name'		=> 'ARTD4',
+								'table'		=> 'HLTYVLP',
+								'key'		=> 'TVCTVL',
+								'label'		=> 'TVLTVL',
+								'selected' 	=> $row['UNITE_CONDITIONNEMENT'],
+								'where'		=> "TVCNTV='1'"
+		))?>
 	<br/>
 	
 
@@ -551,8 +555,13 @@ EOT;
 	<label for="DIAA4-2"<?=$row['CHOIX_CONDITIONNEMENT_VENTE']==2 ? '':' class="moins-visible"'?>>Sur conditionnement de vente</label>
 	<input type="text" id="SURCO" name="SURCO" value="<?= $row['CONDITIONNEMENT_VENTE'] * $row['SUR_CONDITIONNEMENT_VENTE']?>" onkeyup="update_data(this);"/> <?=$row['TABLE_UNITE']?>
 	= <span id="SUR_CONDITIONNEMENT_VENTE"><?=$row['SUR_CONDITIONNEMENT_VENTE']?></span> <span id="UNITE_CONDITIONNEMENT"><?=$row['UNITE_CONDITIONNEMENT']?></span>
-	= <input type="text" id="ARTD5" name="ARTD5" value="<?=$row['UNITE_SUR_CONDITIONNEMENT']?>" class="unite" onkeyup="update_data(this);"/>
-	(PAL, PQ3, ...)
+	= <?=table2select(array(	'name'		=> 'ARTD5',
+								'table'		=> 'HLTYVLP',
+								'key'		=> 'TVCTVL',
+								'label'		=> 'TVLTVL',
+								'selected' 	=> $row['UNITE_SUR_CONDITIONNEMENT'],
+								'where'		=> "TVCNTV='3'"
+		))?>
 </div>
 
 
@@ -588,8 +597,9 @@ EOT;
 </body>
 </html>
 <?
-
-function getTableReflex($params) {
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function getTable($params) {
 	global $reflex,$REFLEX_BASE,$loginor,$LOGINOR_PREFIX_BASE;
 	//params = {table, where}
 
@@ -616,7 +626,7 @@ function getTableReflex($params) {
 function table2select($params) {
 	//params = {name, rows (array), key, label, selected}
 	echo '<select name="'.$params['name'].'" id="'.$params['name'].'" onchange="update_data(this);">';
-	foreach (getTableReflex(array('table'=>$params['table'],'where'=>$params['where'])) as $r) {
+	foreach (getTable(array('table'=>$params['table'],'where'=>$params['where'])) as $r) {
 		echo 	'<option value="'.$r[$params['key']].
 				'"'.(isset($params['selected']) && trim($r[$params['key']]) == trim($params['selected']) ? ' selected="selected"':'').'>'.
 				$r[$params['key']].str_repeat(' ',3 - strlen($r[$params['key']])).' - '.trim($r[$params['label']])."</option>\n";
