@@ -29,6 +29,7 @@ if (!isset($_SESSION['anomalie_filtre_administratif']))		$_SESSION['anomalie_fil
 if (!isset($_SESSION['anomalie_filtre_informatique']))		$_SESSION['anomalie_filtre_informatique']	= TRUE;
 if (!isset($_SESSION['anomalie_filtre_litige']))			$_SESSION['anomalie_filtre_litige']			= TRUE;
 if (!isset($_SESSION['anomalie_filtre_autre']))				$_SESSION['anomalie_filtre_autre']			= TRUE;
+if (!isset($_SESSION['anomalie_filtre_transport']))			$_SESSION['anomalie_filtre_transport']		= TRUE;
 if (!isset($_SESSION['anomalie_filtre_etat_a_traiter']))	$_SESSION['anomalie_filtre_etat_a_traiter']	= TRUE;
 if (!isset($_SESSION['anomalie_filtre_etat_en_cours']))		$_SESSION['anomalie_filtre_etat_en_cours']	= TRUE;
 if (!isset($_SESSION['anomalie_filtre_etat_cloture']))		$_SESSION['anomalie_filtre_etat_cloture']	= FALSE;
@@ -62,6 +63,7 @@ if (isset($_SERVER['HTTP_REFERER']) && preg_match('/historique_anomalie\.php/i',
 		$_SESSION['anomalie_filtre_informatique']	= isset($_POST['filtre_informatique']);
 		$_SESSION['anomalie_filtre_litige']			= isset($_POST['filtre_litige']);
 		$_SESSION['anomalie_filtre_autre']			= isset($_POST['filtre_autre']);
+		$_SESSION['anomalie_filtre_transport']		= isset($_POST['filtre_transport']);
 		$_SESSION['anomalie_filtre_etat_a_traiter']	= isset($_POST['filtre_etat_a_traiter']);
 		$_SESSION['anomalie_filtre_etat_en_cours']	= isset($_POST['filtre_etat_en_cours']);
 		$_SESSION['anomalie_filtre_etat_cloture']	= isset($_POST['filtre_etat_cloture']);
@@ -424,6 +426,7 @@ function envoi_formulaire(l_action) {
 					<label class="mobile<?=$_SESSION['anomalie_filtre_informatique']	? ' mobile-checked':''?>" for="filtre_informatique"	><input type="checkbox" id="filtre_informatique"	name="filtre_informatique"	<?=$_SESSION['anomalie_filtre_informatique']	? 'checked="on"':''?>/>Informatique</label>
 					<label class="mobile<?=$_SESSION['anomalie_filtre_litige']			? ' mobile-checked':''?>" for="filtre_litige"		><input type="checkbox" id="filtre_litige"			name="filtre_litige"		<?=$_SESSION['anomalie_filtre_litige']			? 'checked="on"':''?>/>Litige</label>
 					<label class="mobile<?=$_SESSION['anomalie_filtre_autre']			? ' mobile-checked':''?>" for="filtre_autre"		><input type="checkbox" id="filtre_autre"			name="filtre_autre"			<?=$_SESSION['anomalie_filtre_autre']			? 'checked="on"':''?>/>Autre</label>
+					<label class="mobile<?=$_SESSION['anomalie_filtre_transport']		? ' mobile-checked':''?>" for="filtre_transport"	><input type="checkbox" id="filtre_transport"		name="filtre_transport"		<?=$_SESSION['anomalie_filtre_transport']		? 'checked="on"':''?>/>Transport</label>
 				</td>
 			<tr>
 				<td colspan="7" style="padding-top:10px;padding-bottom:10px;">
@@ -468,6 +471,7 @@ function envoi_formulaire(l_action) {
 	if ($_SESSION['anomalie_filtre_informatique'])	$pole[] = '(pole & '.POLE_INFORMATIQUE.	'='.POLE_INFORMATIQUE.')';
 	if ($_SESSION['anomalie_filtre_litige'])		$pole[] = '(pole & '.POLE_LITIGE.		'='.POLE_LITIGE.')';
 	if ($_SESSION['anomalie_filtre_autre'])			$pole[] = '(pole & '.POLE_AUTRE.		'='.POLE_AUTRE.')';
+	if ($_SESSION['anomalie_filtre_transport'])		$pole[] = '(pole & '.POLE_TRANSPORT.	'='.POLE_TRANSPORT.')';
 
 	if (sizeof($pole)>0) // au moins un pole de coché
 		$where[] = '('.join(' or ',$pole).')';
@@ -522,6 +526,7 @@ if (DEBUG)
 			if ($row['pole'] & POLE_INFORMATIQUE)	echo "Informatique<br>";
 			if ($row['pole'] & POLE_LITIGE)			echo "Litige<br>";
 			if ($row['pole'] & POLE_AUTRE)			echo "Autre<br>";
+			if ($row['pole'] & POLE_TRANSPORT)		echo "Transport<br>";
 		?></td><!-- pole -->
 		<td class="evolution" style="text-align:left;" nowrap><?
 															switch($row['evolution']) {
