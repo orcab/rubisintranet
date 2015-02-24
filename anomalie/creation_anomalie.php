@@ -25,7 +25,7 @@ if ($id) { // mode modificaiton, on récupere les infos de l'anomalie
 	// verifie s'il l'on est le créateur
 	$is_createur	= e('ip',mysql_fetch_array(mysql_query("SELECT ip FROM employe WHERE prenom='$row_anomalie[createur]'"))) == $_SERVER['REMOTE_ADDR'] ? TRUE:FALSE ;
 
-	// vérifiie s'il l'on est un responsable
+	// vérifie s'il l'on est un responsable
 	$emails_chefs_de_pole = array();
 	foreach ($CHEFS_DE_POLE as $p=>$chef)
 		if ($row_anomalie['pole'] & $p) $emails_chefs_de_pole[] = "email='$chef[email]'";
@@ -62,9 +62,9 @@ if		(isset($_POST['action']) && $_POST['action']=='creation_anomalie') {
 
 	$sql = <<<EOT
 INSERT INTO anomalie
-	(date_creation,createur,artisan,fournisseur,pole,evolution,resp_coop,resp_adh,resp_four,probleme,supprime)
+	(date_creation,createur,artisan,fournisseur,pole,evolution,resp_coop,resp_adh,resp_four,probleme,num_retour,supprime)
 		VALUES
-	('$date_creation','$post_escaped[createur]','$post_escaped[artisan]','$post_escaped[fournisseur]',$pole,$post_escaped[evolution],$resp_coop,$resp_adh,$resp_four,'$post_escaped[probleme]',0)
+	('$date_creation','$post_escaped[createur]','$post_escaped[artisan]','$post_escaped[fournisseur]',$pole,$post_escaped[evolution],$resp_coop,$resp_adh,$resp_four,'$post_escaped[probleme]',UCASE('$post_escaped[num_probleme]'),0)
 EOT;
 
 	// faire un envoi de mail au chef de pole
@@ -151,7 +151,10 @@ EOT;
 	if (isset($_POST['probleme']))
 		$sql .= " ,probleme='$post_escaped[probleme]' ";
 
-	$sql .= " WHERE id=$id" ;
+	if (isset($_POST['num_retour']))
+		$sql .= " ,num_retour=UCASE('$post_escaped[num_retour]') " ;
+
+	$sql .= " WHERE id='".mysql_escape_string($id)."'" ;
 
 
 	// EN CAS DE CLOTURE DE BON OU DE REOUVERTURE
@@ -172,7 +175,7 @@ EOT;
 	}
 
 	//echo '<font color="#ff0000">'.$sql.'</font>';
-	mysql_query($sql) or die("Ne peux pas créer votre nouvelle anomalie. ".mysql_error());
+	mysql_query($sql) or die("Ne peux pas créer votre nouvelle anomalie.<br/>$sql<br/>".mysql_error());
 
 	// faire un redirect sur la liste de toutes les anomalies
 	header('Location: historique_anomalie.php');
@@ -462,13 +465,19 @@ $(document).ready(function(){
 				<?=$row_anomalie['createur']?>
 <?			} else { ?>
 				<select name="createur"><!-- liste des employés -->
-<?					$res  = mysql_query("SELECT ip,prenom FROM employe WHERE printer=0 and nom<>'' ORDER BY prenom ASC");
+<?					$res  = mysql_query("SELECT ip,prenom,UCASE(nom) as nom FROM employe WHERE printer=0 and nom<>'' ORDER BY prenom ASC");
 					while ($row = mysql_fetch_array($res)) {
+						// cherche les initiales du nom de famille
+						$tmp = explode(' ',$row['nom']);
+						$initiale_nom = '';
+						foreach ($tmp as $mot)
+							$initiale_nom .= substr($mot,0,1);
+
 						if ($id) { //modif ?>
-							<option value="<?=$row['prenom']?>"<?= $row_anomalie['createur']==$row['prenom'] ? ' selected':''?>><?=$row['prenom']?></option>
+							<option value="<?=$row['prenom']?>"<?= $row_anomalie['createur']==$row['prenom'] ? ' selected':''?>><?=$row['prenom']?> <?=$initiale_nom?></option>
 <?						} else { // creation ?>
-							<option value="<?=$row['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row['ip'] ? ' selected':''?>><?=$row['prenom']?></option>
-<?						}	
+							<option value="<?=$row['prenom']?>"<?= $_SERVER['REMOTE_ADDR']==$row['ip'] ? ' selected':''?>><?=$row['prenom']?> <?=$initiale_nom?></option>
+<?						}
 					} ?>
 				</select>
 <?			} ?>
@@ -529,6 +538,17 @@ $(document).ready(function(){
 <?			} else { ?>
 				<?=$row_anomalie['fournisseur']?>
 				<input type="hidden" name="fournisseur" value="<?=$row_anomalie['fournisseur']?>" />
+<?			} ?>
+		</td>
+	</tr>
+	<tr>
+		<th>N° de retour (Rubis)</th>
+		<td>
+<?			if (($id && $can_edit) || !$id) { ?>
+				<input type="text" name="num_retour" size="11" maxlength="6" value="<?= $id ? $row_anomalie['num_retour']:'' ?>" onblur="majusculize(this.name);" />
+<?			} else { ?>
+				<?=$row_anomalie['num_retour']?>
+				<input type="hidden" name="num_retour" value="<?=$row_anomalie['num_retour']?>" />
 <?			} ?>
 		</td>
 	</tr>
