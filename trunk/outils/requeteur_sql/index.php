@@ -106,6 +106,7 @@ function verif_form() {
 	} else if 	(		selected_request == 'manquant_a_la_preparation_reflex'
 					||	selected_request == 'remise_zero_gei_reflex'
 					||	selected_request == 'livraison_entre_5h_et_5h30_rubis'
+					||	selected_request == 'livraison_plus_que_prevu_rubis'
 				) {
 		// ask for a date (dd/mm/yyyy)
 		var input_user = '';
@@ -159,8 +160,9 @@ function verif_form() {
 	<!--<input type="radio" id="remise_zero_gei_reflex" 				name="requete" value="remise_zero_gei_reflex"/><label 						for="remise_zero_gei_reflex">Remise à 0 des GEI pour une date (Reflex)</label><br/>-->
 	<input type="radio" id="code_taille_emplacement_article_lie_reflex" name="requete" value="code_taille_emplacement_article_lie_reflex"/><label 	for="code_taille_emplacement_article_lie_reflex">Code taille emplacement et articles liés (Reflex)</label><br/>
 	<input type="radio" id="livraison_entre_5h_et_5h30_rubis" 			name="requete" value="livraison_entre_5h_et_5h30_rubis"/><label 			for="livraison_entre_5h_et_5h30_rubis">Livraison entre 5h et 5h30 via STRACC (Rubis)</label><br/>
-	<input type="radio" id="livraison_en_double_rubis" 					name="requete" value="livraison_en_double_rubis"/><label 					for="livraison_en_double_rubis">Test (Rubis)</label>
-	<br/><br/>
+	<input type="radio" id="livraison_en_double_rubis" 					name="requete" value="livraison_en_double_rubis"/><label 					for="livraison_en_double_rubis">Livraison en double rubis (Rubis)</label><br/>
+	<input type="radio" id="livraison_plus_que_prevu_rubis" 			name="requete" value="livraison_plus_que_prevu_rubis"/><label 					for="livraison_plus_que_prevu_rubis">Livraison plus que prévu (Rubis)</label><br/>
+	<br/>
 	<a class="btn btn-success" onclick="verif_form();"><i class="icon-ok"></i> Afficher les résultats</a><br/>
 </div>
 </form>
@@ -182,7 +184,7 @@ function verif_form() {
 	}
 
 	// lance la requete
-	$res 		= odbc_exec($source,$sql)  or die("Impossible de lancer la modification de ligne : <br/>$sql");
+	$res 		= odbc_exec($source,$sql)  or die("Impossible de lancer la requete : <br/><pre><code>".htmlentities($sql)."</code></pre>");
 	$errormsg 	= '';
 	if (!$res) {
 		$errormsg = odbc_errormsg($source);
@@ -241,17 +243,20 @@ select
 	SUM(MONHT) as MONTANT_CA_HT,
 	TYCDD as TYPE_LIGNE,
 	ACTBO as ACTIVITE
-from AFAGESTCOM.ADETBOP1 DETAIL_CDE
+from
+	AFAGESTCOM.ADETBOP1 DETAIL_CDE
 	left join AFAGESTCOM.ASTOCKP1 STOCK
-	 on STOCK.DEPOT='AFA' and STOCK.NOART=DETAIL_CDE.CODAR
+		on STOCK.DEPOT='AFA' and STOCK.NOART=DETAIL_CDE.CODAR
 where
 	ETSBE='' -- ligne active
 	and PROFI='1' -- pas un commentaire
 	and TRAIT='R' -- encore a livrer
 	and DETAIL_CDE.AGENC='AFA' and DETAIL_CDE.DEPOT='AFA' -- uniquement le depot AFA
 	and STOCK.QTINV>=DETAIL_CDE.QTESA -- le stock en cours est supérieur à la qte commandée
-group by TYCDD, ACTBO
-order by ACTBO asc,TYCDD asc
+group by
+	TYCDD, ACTBO
+order by
+	ACTBO asc,TYCDD asc
 EOT;
 }
 
@@ -259,13 +264,15 @@ function manquant_a_la_preparation_reflex() {
 	$date = extract_days_from_date_ddmmyyyy($_POST['param1']);
 
 	return <<<EOT
-SELECT 	P1CART as CODE_ARTICLE,
-		ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
-		P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA ,
-		OERODP as REFERENCE_OPD,
-		P1CDES as CODE_DEST,
-		DSLDES as DESTINATAIRE
-FROM 	RFXPRODDTA.reflex.HLPRPLP PREPA_DETAIL
+SELECT
+	P1CART as CODE_ARTICLE,
+	ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
+	P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA ,
+	OERODP as REFERENCE_OPD,
+	P1CDES as CODE_DEST,
+	DSLDES as DESTINATAIRE
+FROM 	
+	RFXPRODDTA.reflex.HLPRPLP PREPA_DETAIL
 		left join RFXPRODDTA.reflex.HLARTIP ARTICLE
 			on PREPA_DETAIL.P1CART=ARTICLE.ARCART
 		left join RFXPRODDTA.reflex.HLDESTP DEST
@@ -279,7 +286,8 @@ WHERE
 			OR 
 		 	(P1QPRE<P1QAPR AND P1NNSL=0)	-- quantité préparée inférieur a quantité demandée
 		)
-ORDER BY CODE_ARTICLE ASC
+ORDER BY
+	CODE_ARTICLE ASC
 EOT;
 }
 
@@ -307,8 +315,8 @@ from
 	left join  	RFXPRODDTA.reflex.HLEMPLP EMPLACEMENT
 		on SUPPORT.SUNEMP=EMPLACEMENT.EMNEMP
 where
-VGCTVG='410' -- type inventaire
-and VGRMVS='INV$date[jour]$date[mois]$date[annee]$code_inventaire' -- 'INV230714001'
+		VGCTVG='410' -- type inventaire
+	and VGRMVS='INV$date[jour]$date[mois]$date[annee]$code_inventaire' -- 'INV230714001'
 EOT;
 }
 
@@ -335,7 +343,7 @@ from RFXPRODDTA.reflex.HLMVTGP MVT_GEI
 	left  join RFXPRODDTA.reflex.HLEMPLP EMPLACEMENTS
 		on SUPPORTS.SUNEMP = EMPLACEMENTS.EMNEMP
 where
-	VGSMVG='-'
+		VGSMVG='-'
 	and (VGCTMS='340' or VGCTMS='250') -- inventaire et modif qte/poids
 	and VGCTST='200'
 	and VGQGAM=VGQMVG 
@@ -346,17 +354,18 @@ EOT;
 function code_taille_emplacement_article_lie_reflex() {
 	return <<<EOT
 select
-GECART as CODE_ARTICLE,
-EMC1EM,EMC2EM,EMC3EM,EMC4EM,EMC5EM,
-EMCTAI as CODE_TAILLE_EMPLACEMENT,
-EMTEPI as EMPLACEMENT_PICKING
-from RFXPRODDTA.reflex.HLGEINP GEIS
-      left join RFXPRODDTA.reflex.HLSUPPP SUPPORTS
-         on GEIS.GENSUP=SUPPORTS.SUNSUP
-      left join  RFXPRODDTA.reflex.HLEMPLP EMPLACEMENTS
-         on SUPPORTS.SUNEMP=EMPLACEMENTS.EMNEMP
-
-order by GECART ASC
+	GECART as CODE_ARTICLE,
+	EMC1EM,EMC2EM,EMC3EM,EMC4EM,EMC5EM,
+	EMCTAI as CODE_TAILLE_EMPLACEMENT,
+	EMTEPI as EMPLACEMENT_PICKING
+from
+	RFXPRODDTA.reflex.HLGEINP GEIS
+	left join RFXPRODDTA.reflex.HLSUPPP SUPPORTS
+        on GEIS.GENSUP=SUPPORTS.SUNSUP
+	left join  RFXPRODDTA.reflex.HLEMPLP EMPLACEMENTS
+        on SUPPORTS.SUNEMP=EMPLACEMENTS.EMNEMP
+order by
+	GECART ASC
 EOT;
 }
 
@@ -364,13 +373,15 @@ EOT;
 function livraison_entre_5h_et_5h30_rubis() {
 	$date = extract_days_from_date_ddmmyyyy($_POST['param1']);
 	return <<<EOT
-select 	TCE_K1 as CLIENT, CLIENT.NOMCL as NOM_CLIENT, TCE_K3 as NO_BON, TCE_K4 as NO_LIGNE, TCE_ART as ARTICLE, ARTICLE.DESI1 as DESIGNATION1,ARTICLE.DESI2 as DESIGNATION2,
-		(TCE_DCS || TCE_DCA ||  '-' || TCE_DCM || '-' || TCE_DCJ || ' ' || substr(TCE_DCH,1,2) || 'h' || substr(TCE_DCH,3,2) || 'm' || substr(TCE_DCH,5,2)) as DATE_HEURE
-from 	AFAGESTCOM.ATRACEP1 TRACE1
-		left join AFAGESTCOM.AARTICP1 ARTICLE
-		 	on TRACE1.TCE_ART=ARTICLE.NOART
-		 left join AFAGESTCOM.ACLIENP1 CLIENT
-		 	on TRACE1.TCE_K1=CLIENT.NOCLI
+select
+	TCE_K1 as CLIENT, CLIENT.NOMCL as NOM_CLIENT, TCE_K3 as NO_BON, TCE_K4 as NO_LIGNE, TCE_ART as ARTICLE, ARTICLE.DESI1 as DESIGNATION1,ARTICLE.DESI2 as DESIGNATION2,
+	(TCE_DCS || TCE_DCA ||  '-' || TCE_DCM || '-' || TCE_DCJ || ' ' || substr(TCE_DCH,1,2) || 'h' || substr(TCE_DCH,3,2) || 'm' || substr(TCE_DCH,5,2)) as DATE_HEURE
+from 	
+	AFAGESTCOM.ATRACEP1 TRACE1
+	left join AFAGESTCOM.AARTICP1 ARTICLE
+	 	on TRACE1.TCE_ART=ARTICLE.NOART
+	left join AFAGESTCOM.ACLIENP1 CLIENT
+		on TRACE1.TCE_K1=CLIENT.NOCLI
 where
 		TCE_DCH>50000 and TCE_DCH<53000
 	and TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
@@ -382,29 +393,57 @@ EOT;
 function livraison_en_double_rubis() {
 	$date = extract_year_from_date($_POST['param1']);
 	return <<<EOT
-select 	 count(*) as NB_LIV, TCE_K3 as NUM_CDE,TCE_K1 as CODE_CLIENT, CLIENT.NOMCL as NOM_CLIENT,TCE_K4 as NUM_LIGNE, TCE_ART as CODE_ARTICLE,ARTICLE.DESI1 as DESIGNATION1,ARTICLE.DESI2 as DESIGNATION2,
-
-(
-	select 		max(TCE_DCS || TCE_DCA ||  '-' || TCE_DCM || '-' || TCE_DCJ || ' ' || substr(TCE_DCH,1,2) || 'h' || substr(TCE_DCH,3,2) || 'm' || substr(TCE_DCH,5,2))
-	from 		AFAGESTCOM.ATRACEP1 TRACE2
-	where  		TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
-			and TRACE1.TCE_K3=TRACE2.TCE_K3 and TRACE1.TCE_K1=TRACE2.TCE_K1 and TRACE1.TCE_K4=TRACE2.TCE_K4
-) as DERNIERE_LIV
-
-from 	 AFAGESTCOM.ATRACEP1 TRACE1
-		 left join AFAGESTCOM.AARTICP1 ARTICLE
-		 	on TRACE1.TCE_ART=ARTICLE.NOART
-		 left join AFAGESTCOM.ACLIENP1 CLIENT
-		 	on TRACE1.TCE_K1=CLIENT.NOCLI
+select
+	count(*) as NB_LIV, TCE_K3 as NUM_CDE,TCE_K1 as CODE_CLIENT, CLIENT.NOMCL as NOM_CLIENT,TCE_K4 as NUM_LIGNE, TCE_ART as CODE_ARTICLE,ARTICLE.DESI1 as DESIGNATION1,ARTICLE.DESI2 as DESIGNATION2,
+	(
+		select 		max(TCE_DCS || TCE_DCA ||  '-' || TCE_DCM || '-' || TCE_DCJ || ' ' || substr(TCE_DCH,1,2) || 'h' || substr(TCE_DCH,3,2) || 'm' || substr(TCE_DCH,5,2))
+		from 		AFAGESTCOM.ATRACEP1 TRACE2
+		where  		TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
+				and TRACE1.TCE_K3=TRACE2.TCE_K3 and TRACE1.TCE_K1=TRACE2.TCE_K1 and TRACE1.TCE_K4=TRACE2.TCE_K4
+	) as DERNIERE_LIV
+from 	 
+	AFAGESTCOM.ATRACEP1 TRACE1
+	left join AFAGESTCOM.AARTICP1 ARTICLE
+	 	on TRACE1.TCE_ART=ARTICLE.NOART
+	left join AFAGESTCOM.ACLIENP1 CLIENT
+	 	on TRACE1.TCE_K1=CLIENT.NOCLI
 where
 		 TCE_T1='DBO' and TCE_T2='VTE' and TCE_USR='AFBP' and TCE_TPH='LVC'
 	and  TCE_DCS='$date[siecle]' and TCE_DCA='$date[annee]'
-group by TCE_K3,TCE_K1,TCE_K4, TCE_ART, DESI1, DESI2, NOMCL
-having 	 count(*)>1
-order by DERNIERE_LIV
+group by
+	TCE_K3,TCE_K1,TCE_K4, TCE_ART, DESI1, DESI2, NOMCL
+having
+	count(*)>1
+order by
+	DERNIERE_LIV
 EOT;
 //--TCE_K3='Z4066V' and TCE_K1='056096' and TCE_K4='013'
 }
+
+
+function livraison_plus_que_prevu_rubis() {
+	$date = extract_days_from_date_ddmmyyyy($_POST['param1']);
+	return <<<EOT
+select
+	TCE_K1 as CODE_CLIENT, TCE_K3 as NUM_BON,TCE_K4 as NUM_LIGNE, TCE_ART as ARTICLE, TCE_S60 as FOURNISSEUR, TCE_QTE as QTE, TCE_UNI as UNITE, TCE_PRV as PRIX_VENTE_UN, TCE_MTP as MONTANT_CA
+from
+	AFAGESTCOM.ATRACEP1 TRACE1
+where
+	TCE_TPH='LVC' and TCE_STS='F' and TCE_T2='VTE'
+	and
+	TRACE1.TCE_DCS='$date[siecle]' and TRACE1.TCE_DCA='$date[annee]' and TRACE1.TCE_DCM='$date[mois]' and TRACE1.TCE_DCJ='$date[jour]'
+	and
+	(	select 	TCE_QTE
+		from  	AFAGESTCOM.ATRACEP1 TRACE2
+		where
+				TRACE1.TCE_K1=TRACE2.TCE_K1 and TRACE1.TCE_K3=TRACE2.TCE_K3 and TRACE1.TCE_K4=TRACE2.TCE_K4
+			and TCE_TPH='CDC' and TCE_STS='R'
+		order by TCE_DCS DESC,TCE_DCA DESC,TCE_DCM DESC, TCE_DCJ DESC, TCE_DCH DESC
+		fetch first 1 rows only
+	) < TCE_QTE
+EOT;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 function extract_days_from_date_ddmmyyyy($var) {
