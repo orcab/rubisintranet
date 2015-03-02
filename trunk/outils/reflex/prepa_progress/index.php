@@ -179,7 +179,6 @@ function reload() {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<a class="btn" href="../index.php"><i class="icon-arrow-left"></i> Revenir aux outils Reflex</a>
 	</fieldset>
-</form>
 
 <table id="preparations">
 	<thead>
@@ -333,38 +332,89 @@ EOT;
 	</tbody>	
 </table>
 
-<? if ($_SERVER['REMOTE_ADDR'] == '10.211.14.63') { // meteo si c'est l'écran d'accueil du comptoir ?>
+<? if (1 || $_SERVER['REMOTE_ADDR'] == '10.211.14.63') { // meteo si c'est l'écran d'accueil du comptoir ?>
 
-<h2>Météo à 14 jours</h2>
+<fieldset id="meteo" style="width:48%;float:left;">
+	<legend>Météo Plescop à 5 jours</legend>
+<!--<iframe id="meteo" src="http://www.weather.com/wx/10day?locid=47.70,-2.81&locale=fr_FR"></iframe>-->
+
+<div id="tameteo" style="font-family:Verdana;text-align:center;border:solid 1px #000000; background:#FFF8D4;padding:4px;">
+		<img src="http://www.ta-meteo.fr/widget4/add2d29579b5432d8da1416018d515d0.png?t=time()" border="0" style="width:460px;"/>
+</div>
+<!--
+<div style="width:40%;height:300px;float:right;overflow:hidden;">
+	<img src="http://www.meteo60.fr/radars/radar-nord-ouest-grand-dernier.png" style="width:581px;position:relative;top:-150px;"/>
+</div>
+-->
+</fieldset>
+
+<fieldset id="meteo" style="width:46%;float:right;">
+	<legend>Dernières nouvelles AFP</legend>
+<?
+$rss = simplexml_load_file("https://twitrss.me/twitter_user_to_rss/?user=afpfr");
+//$rss = simplexml_load_file("http://www.queryfeed.net/twitter?q=from%3Aafpfr&geocode=&attach=on");
+$i=0;
+$max_tweet = 5;
+foreach($rss->channel->item as $item) {
+	if ($i++ >= $max_tweet) continue;
+
+	$title = $item->title;
+	$title = str_replace('#AFP','',$title);
+	$title = preg_replace('|http://\S+|','',$title);
+	$title = preg_replace('|pic.twitter.com\S+|','',$title);
+	preg_match('|^\s*(@.+?):|',$title,$regs);
+	$title = preg_replace('|\s*(@.+?):|','',$title);
+	$auteur = $regs[1];
+	$title .= " ($auteur)";
+	echo "$title<br/>\n";
+
+	if ($i <= $max_tweet-1)
+		echo "<hr/>";
+}
+?>
+</fieldset>
+
 <?
 // recuperation de la page meteo
-$html_global = join('',file('http://france.meteoconsult.fr/meteo/plescop/france/prevision_meteo_plescop_france_ville__33052_0.php?vue=simple#ancre_chemin_fer'));
+
+//$html_global = join('',file('http://www.tameteo.com/meteo_Plescop-Europe-France-Morbihan--1-56382.html'));
 
 // on extrait le cadre qui nous interesse
-preg_match('/(<div id="menu_quatorze_jours_ville".*?>.+?)<div class="clear" style="height:0px;">/is', $html_global,$regs);
-$html_meteo = $regs[1];
+//preg_match('/(<div\s+class="loc-dia">.+?<\/div>)/is', $html_global,$regs);
+
+//$html_meteo = $regs[1];
+
+//echo $html_meteo;
 
 // remove publicité pour abonnement et autre fioriture
+/*
 $html_meteo = preg_replace('/<div style="position:absolute; left:181px; top:0;">.+?<\/div>/is','', $html_meteo);
 $html_meteo = preg_replace('/width:9[96]0px/is','', $html_meteo);
 $html_meteo = preg_replace('/position:relative/is','', $html_meteo);
 $html_meteo = preg_replace('/border-right:0px/is','', $html_meteo);
-
+*/
 // affiche le cadre
-echo $html_meteo;
+//echo $html_meteo;
+
 ?>
 
 <style type="text/css">
-#menu_quatorze_jours_ville li {
-	border: 1px solid grey;
-    display: block;
-    float: left;
-    margin: 2px;
+hr {
+	width:50%;
+}
+
+fieldset {
+	margin-top:1em;
+}
+legend {
+	font-weight: bold;
+	font-size:1.2em;
 }
 </style>
 
 <? } ?>
 
+<form>
 </body>
 </html>
 <?
