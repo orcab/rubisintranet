@@ -243,7 +243,8 @@ if (!$noemail) {
 						'jeremy.morice@coopmcs.com'		=>	'Jemery Morice',
 						'pierrick.boillet@coopmcs.com'	=>	'Pierrick Boillet',
 						'emmanuel.lemab@coopmcs.com'	=>	'Emmanuel Le Mab',
-						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot'
+						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot',
+						'stephane.leneveu@coopmcs.com' 	=> 	'Stephane Le Neveu'
 					};
 	} else {		#liste de 16h30
 		$to_list = {	'bernard.taverson@coopmcs.com'	=>	'Bernard Taverson',
@@ -255,7 +256,8 @@ if (!$noemail) {
 						'aymeric.merigot@coopmcs.com' 	=> 	'Aymeric Merigot',
 						'francois.dore@coopmcs.com' 	=> 	'Francois Dore',
 						'emmanuel.cheriaux@coopmcs.com' => 	'Emmanuel Cheriaux',
-						'xavier.ledoussal@coopmcs.com' 	=> 	'Xavier Le Doussal'
+						'xavier.ledoussal@coopmcs.com' 	=> 	'Xavier Le Doussal',
+						'stephane.leneveu@coopmcs.com' 	=> 	'Stephane Le Neveu'
 					};
 	}
 

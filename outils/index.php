@@ -47,7 +47,7 @@ img {
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="ordinateur/index.php"><img src="ordinateur/gfx/computer.png"><br>Ordinateur</a><br></td>
 	<td><a href="plan_de_vente/index.html"><img src="plan_de_vente/gfx/plan_de_vente.png"><br>Plan de vente</a></td>
-	<td style="width:50%;padding-bottom:20px;"><a href="barcode_generator/index.php"><img src="barcode_generator/gfx/icon.jpg"><br>Code barre</a></td>
+	<td style="width:50%;padding-bottom:20px;"><a href="barcode_generator/index.php"><img src="barcode_generator/gfx/icon.jpg"><br>Etiquette emplacement</a></td>
 </tr>
 <tr>
 	<td style="width:50%;padding-bottom:20px;"><a href="edi/index.php"><img src="edi/gfx/edi3.png"><br/>EDI</a><br></td>

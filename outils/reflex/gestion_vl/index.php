@@ -36,7 +36,8 @@ if (	isset($_POST['action']) 		&& $_POST['action']=='validation_vl'
 				"STMMM='$mois',".
 				"STMJJ='$jour',".
 
-				"STSER='$_POST_ESCAPE[STSER]'".
+				"STSER='$_POST_ESCAPE[STSER]',".
+				"STGES='$_POST_ESCAPE[STGES]'".
 			" where NOART='$_POST_ESCAPE[code_article]' and DEPOT='$_POST_ESCAPE[depot]'";
 	$res 	= odbc_exec($loginor,$sql)  or die("Impossible de lancer la requete : <br/>$sql");
 
@@ -368,6 +369,7 @@ select
 	FICHE_STOCK.STALE as ALERTE,
 	FICHE_STOCK.STOMA as MAXI,
 	FICHE_STOCK.STFN20 as MINI_FORCE,
+	FICHE_STOCK.STGES as GESTIONNAIRE,
 
 	PRIX_REVIENT.PRVT2 as PR2
 from
@@ -424,7 +426,17 @@ EOT;
 			<option value="OUI"<?= $row['SERVI']=='OUI' ? ' selected="selected"':'' ?>>OUI</option>
 			<option value="NON"<?= $row['SERVI']=='NON' ? ' selected="selected"':'' ?>>NON</option>
 		</select>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Classe : <?=$row['CLASS']?></span><br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Classe : <?=$row['CLASS']?>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gestionnaire :
+	<?=table2select(array(	'name'		=> 'STGES',
+							'table'		=> 'ATAB15P1',
+							'key'		=> 'COD15',
+							'label'		=> 'LIBPR',
+							'selected' 	=> $row['GESTIONNAIRE'],
+							'where'		=> "TYPPR='GST'"
+	))?>
+	</span>
+	<br/>
 	Date de cr&eacute;ation : <?=$row['CREATION_DATE']?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dernière modification : <?=$row['LAST_MODIFICATION']?> par <?=$row['LAST_USER']?><br/>
 </caption>
 
