@@ -60,6 +60,7 @@ use constant {
 	CODE_RUBRIQUE_FAMILLE_IC							=>	'117',
 	CODE_RUBRIQUE_VALEUR_IC								=>	'118',
 	CODE_RUBRIQUE_ASSOCIATION_FAMILLE					=>	'110',
+	CODE_RUBRIQUE_DISSOCIATION_FAMILLE					=>	'810',
 	CODE_RUBRIQUE_IDENTIFIANT_VL						=>	'110',
 	CODE_RUBRIQUE_CONDITIONNEMENT_ARTICLE_FOURNISSEUR	=>	'110',
 
@@ -638,10 +639,27 @@ while($loginor->FetchRow()) {
 					join('',@data{qw/CODE_ACTIVITE CODE CODE_VL_CONDITIONNEMENT_ARTICLE_FOURNISSEUR CODE_FOURNISSEUR/})."\n";
 
 
-	# association famille article
+	# association famille article CLASSE
 	print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE_ASSOCIATION_FAMILLE,CODE_RUBRIQUE_ASSOCIATION_FAMILLE)).
 					join('',@data{qw/CODE_ACTIVITE CODE/}).
 					CODE_VL_ASSOCIATION_FAMILLE.$data{'CODE_FAMILLE_ARTICLE'}.TOP_DISSOCIATION_PREALBALE_EVENTUELLE."\n";
+
+	# association famille article DECOUPE (si lieu d'etre)
+	if ($data{'CODE_FAMILLE_PREPARATION'} eq 'DEC') {
+		print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE_ASSOCIATION_FAMILLE,CODE_RUBRIQUE_ASSOCIATION_FAMILLE)).
+						join('',@data{qw/CODE_ACTIVITE CODE/}).
+						CODE_VL_ASSOCIATION_FAMILLE.fill_with_blank('DEC',$field_sizes{'CODE_FAMILLE_ARTICLE'}).TOP_DISSOCIATION_PREALBALE_EVENTUELLE."\n";
+	} else { # on supprime une eventuelle association a une famille d'article
+		#vérifie si l'article est associé a la famille DEC
+		if ($reflex->Sql("select count(*) as ASSOC_FAM_DEC from ${prefix_base_reflex}.HLCDFAP where A2CART='$data{CODE}' and A2CFAR='DEC'")) { print "Erreur dans SQL ".$reflex->Error()."\n";}
+		$reflex->FetchRow(); %row = $reflex->DataHash();
+		my $assoc_fam_dec = $row{'ASSOC_FAM_DEC'};
+		if ($assoc_fam_dec >= 1) {
+			print REFLEX	$num_sequence.join('',(CODE_APPLICATION,CODE_INTERFACE_ASSOCIATION_FAMILLE,CODE_RUBRIQUE_DISSOCIATION_FAMILLE)).
+							join('',@data{qw/CODE_ACTIVITE CODE/}).
+							CODE_VL_ASSOCIATION_FAMILLE.fill_with_blank('DEC',$field_sizes{'CODE_FAMILLE_ARTICLE'})."\n";
+		}
+	}
 
 =begin
 	# on laisse tous les articles activé dans Reflex

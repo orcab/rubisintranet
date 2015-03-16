@@ -50,6 +50,9 @@ if (	isset($_POST['action']) 		&& $_POST['action']=='validation_vl'
 				"DAFMM='$mois',".
 				"DAFMJ='$jour',".
 
+				"AFUNI='$_POST_ESCAPE[TAUAR]',".
+				"ARF95='$_POST_ESCAPE[TAUAR]',".
+				"ARF96='$_POST_ESCAPE[TAUAR]',".
 				"AFOG3='$_POST_ESCAPE[AFOG3]',".
 				"AFPCB='$_POST_ESCAPE[AFPCB]',".
 				"ARF01='$_POST_ESCAPE[ARF01]',".
@@ -479,7 +482,7 @@ EOT;
 																	'table'		=> 'HLTYSUP',
 																	'key'		=> 'TUCTSU',
 																	'label'		=> 'TULTSU',
-																	'selected' 	=> $row['TYPE_SUPPORT']
+																	'selected' 	=> $row['TYPE_SUPPORT'] ? $row['TYPE_SUPPORT'] : 'P80'
 											))?>
 		</td>
 	<tr>
@@ -488,7 +491,7 @@ EOT;
 																	'table'		=> 'HLTAILP',
 																	'key'		=> 'TACTAI',
 																	'label'		=> 'TALTAI',
-																	'selected' 	=> $row['TAILLE_EMPLACEMENT']
+																	'selected' 	=> $row['TAILLE_EMPLACEMENT'] ? $row['TAILLE_EMPLACEMENT'] : 'R31'
 											))?>
 		</td>
 	</tr>
@@ -498,7 +501,7 @@ EOT;
 																	'table'		=> 'HLFASTP',
 																	'key'		=> 'FSCFAS',
 																	'label'		=> 'FSLFAS',
-																	'selected' 	=> ($row['FAMILLE_STOCKAGE']=='DEP'?'DEF':$row['FAMILLE_STOCKAGE'])
+																	'selected' 	=> $row['FAMILLE_STOCKAGE'] ? $row['FAMILLE_STOCKAGE'] : 'PAL' 
 											))?>
 		</td>
 	<tr>
@@ -507,7 +510,7 @@ EOT;
 																	'table'		=> 'HLFAPRP',
 																	'key'		=> 'FPCFPR',
 																	'label'		=> 'FPLFPR',
-																	'selected' 	=> $row['FAMILLE_PREPA']
+																	'selected' 	=> $row['FAMILLE_PREPA'] ? $row['FAMILLE_PREPA'] : 'DEP'
 											))?>
 		</td>
 	</tr>
