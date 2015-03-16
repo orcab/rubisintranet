@@ -13,6 +13,7 @@ sub second2hms($) {
 
 sub fill_with_blank($$) {
 	my ($value,$size_to_fill) = @_;
+	$value = uc($value);
 	if (length($value) > $size_to_fill) {
 		return substr($value,0,$size_to_fill);
 	} else {

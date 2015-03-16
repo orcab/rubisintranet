@@ -159,6 +159,7 @@ foreach ($clients as $numero => $values) {
 	$pdf->SetFont('helvetica','B',$font_size_max);
 	$pdf->Cell(PHOTO_WIDTH + HORINZONTAL_SPACE_BETWEEN_PHOTO,0,trim($clients[$numero]['DIRIGEANT_NOM']).' '.trim($clients[$numero]['DIRIGEANT_PRENOM']));
 
+	$font_size_max = min($pdf->redux_font_size(trim($clients[$numero]['CODE_POSTAL']).' '.trim($clients[$numero]['VILLE']),11,PHOTO_WIDTH + HORINZONTAL_SPACE_BETWEEN_PHOTO),11); // on prend la plus petite des deux
 	$pdf->SetXY($x,$y + PHOTO_HEIGHT + 15);
 	$pdf->Cell(PHOTO_WIDTH + HORINZONTAL_SPACE_BETWEEN_PHOTO,0,trim($clients[$numero]['CODE_POSTAL']).' '.trim($clients[$numero]['VILLE']));
 

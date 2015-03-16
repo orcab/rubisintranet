@@ -57,77 +57,6 @@ if (length($date)>0) { # aucune date de spécifié --> on prend le dernier jour 
 
 printf "%s Select des articles pour le $siecle$annee-$mois-$jour\n",get_time();	$old_time=time;
 
-=begin
-# methode qui se base sur les ligne de prépa validé
-# parfois les prépa sont validé apres que le programme soit lancé, du coup les lignes n'apparaissent pas
-my $sql_reflex = <<EOT ;
-SELECT 	P1CART as CODE_ARTICLE,
-		ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
-		P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA ,
-		OERODP as REFERENCE_OPD,
-		P1CDES as CODE_DEST,
-		DSLDES as DESTINATAIRE,
-		COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ
-
-FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
-		left join ${prefix_base_reflex}.HLARTIP ARTICLE
-			on PREPA_DETAIL.P1CART=ARTICLE.ARCART
-		left join ${prefix_base_reflex}.HLDESTP DEST
-			on PREPA_DETAIL.P1CDES=DEST.DSCDES
-		left join ${prefix_base_reflex}.HLODPEP ODP_ENTETE
-			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
-		left join ${prefix_base_reflex}.HLCOMMP COMMENTAIRE
-			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
-
-WHERE 	P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
-	and P1TVLP=1 --prepa validée
-	and (	(P1NNSL>0 and P1RRSO='')	-- avec des manquant au lancement sans réservation
-			OR 
-		 	(P1QPRE<P1QAPR AND P1NNSL=0)	-- quantité préparée inférieur a quantité demandée
-		)
-ORDER BY CODE_ARTICLE ASC
-EOT
-=cut
-
-=begin
-# methode qui se base sur les missions validées
-my $sql_reflex = <<EOT ;
-SELECT 	DISTINCT(P1CART) as CODE_ARTICLE,
-		ARLART as DESIGNATION, ARMDAR as DESIGNATION2, 
-		P1QAPR as QTE_A_PREPARER, P1QPRE as QTE_PREPAREE, P1NANP as ANNEE_PREPA, P1NPRE as NUM_PREPA ,
-		OERODP as REFERENCE_OPD,
-		P1CDES as CODE_DEST,
-		DSLDES as DESTINATAIRE,
-		COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ
-
-FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
-
-		left join ${prefix_base_reflex}.HLPLLPP PRELEVEMENT
- 			on PREPA_DETAIL.P1NANN=PRELEVEMENT.PPNANP and PREPA_DETAIL.P1NLPR=PRELEVEMENT.PPNLPR
-		left join ${prefix_base_reflex}.HLARTIP ARTICLE
-			on PREPA_DETAIL.P1CART=ARTICLE.ARCART
-		left join ${prefix_base_reflex}.HLDESTP DEST
-			on PREPA_DETAIL.P1CDES=DEST.DSCDES
-		left join ${prefix_base_reflex}.HLODPEP ODP_ENTETE
-			on PREPA_DETAIL.P1NANO=ODP_ENTETE.OENANN and PREPA_DETAIL.P1NODP=ODP_ENTETE.OENODP
-		left join ${prefix_base_reflex}.HLCOMMP COMMENTAIRE
-			on COMMENTAIRE.CONCOM=PREPA_DETAIL.P1NCOM and COMMENTAIRE.COCFCO='ZZZ'
-
-where	P1SSCA='$siecle' and P1ANCA='$annee' and P1MOCA='$mois' and P1JOCA='$jour' --prepa du jour
-	and(	
-		(P1NNSL>0 and P1RRSO='')	-- avec des manquant au lancement sans réservation
-		or
-		(
-			P1QPRE<P1QAPR AND P1NNSL=0    	-- quantité préparée inférieur a quantité demandée
-			and
-			PRELEVEMENT.PPTTVM=1 and PRELEVEMENT.PPQPPL<PRELEVEMENT.PPQAPL --mission validé et prevelement inferieur a qte demandée
-		)
-	)
-
-ORDER BY CODE_ARTICLE ASC
-EOT
-=cut
-
 # header du message
 my $heure = strftime('%H:%M:%S', localtime);
 my $message = <<EOT ;
@@ -137,6 +66,9 @@ my $message = <<EOT ;
 <style>
 .qte,.resa,.client,.class { text-align:center; }
 .not-important { color:B5B5B5; }
+.tout-reserve { color:red;}
+.partiellement-reserve { color:green;}
+.pas-reserve { color:black;}
 </style>
 </head>
 <body>
@@ -155,13 +87,22 @@ SELECT  DISTINCT(P1CART) as CODE_ARTICLE,
 		DSLDES as DESTINATAIRE,
 		COMMENTAIRE.COTXTC as COMMENTAIRE_ZZZ,
 		PREPA_DETAIL.P1RRSO as RESERVATION,
+
 		(select SUM(RECEPTION_LIGNE_DETAIL.R1Q1SL) from 
 			${prefix_base_reflex}.HLRECPP RECEPTION_ENTETE			
 			left join ${prefix_base_reflex}.HLRECLP RECEPTION_LIGNE_DETAIL
 				on 	RECEPTION_LIGNE_DETAIL.R1NANN=RECEPTION_ENTETE.RENANN and RECEPTION_LIGNE_DETAIL.R1NREC=RECEPTION_ENTETE.RENREC 
 					and RECEPTION_LIGNE_DETAIL.R1CART=PREPA_DETAIL.P1CART and RECEPTION_LIGNE_DETAIL.R1TVLR=0
 			where RECEPTION_ENTETE.RECTRC = '010' and RECEPTION_ENTETE.RETRVA=0
-		) as QTE_EN_RECEPTION
+		) as QTE_EN_RECEPTION,
+
+		(select SUM(RECEPTION_LIGNE_DETAIL.R1Q1SL) from 
+			${prefix_base_reflex}.HLRECPP RECEPTION_ENTETE			
+			left join ${prefix_base_reflex}.HLRECLP RECEPTION_LIGNE_DETAIL
+				on 	RECEPTION_LIGNE_DETAIL.R1NANN=RECEPTION_ENTETE.RENANN and RECEPTION_LIGNE_DETAIL.R1NREC=RECEPTION_ENTETE.RENREC 
+					and RECEPTION_LIGNE_DETAIL.R1CART=PREPA_DETAIL.P1CART and RECEPTION_LIGNE_DETAIL.R1TVLR=0
+			where RECEPTION_ENTETE.RECTRC = '010' and RECEPTION_ENTETE.RETRVA=0 and RECEPTION_LIGNE_DETAIL.R1RRSO<>''
+		) as QTE_EN_RECEPTION_RESERVEE
 
 FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 
@@ -203,7 +144,15 @@ SELECT 	DISTINCT(P1CART) as CODE_ARTICLE,
 				on 	RECEPTION_LIGNE_DETAIL.R1NANN=RECEPTION_ENTETE.RENANN and RECEPTION_LIGNE_DETAIL.R1NREC=RECEPTION_ENTETE.RENREC 
 					and RECEPTION_LIGNE_DETAIL.R1CART=PREPA_DETAIL.P1CART and RECEPTION_LIGNE_DETAIL.R1TVLR=0
 			where RECEPTION_ENTETE.RECTRC = '010' and RECEPTION_ENTETE.RETRVA=0
-		) as QTE_EN_RECEPTION
+		) as QTE_EN_RECEPTION,
+
+		(select SUM(RECEPTION_LIGNE_DETAIL.R1Q1SL) from 
+			${prefix_base_reflex}.HLRECPP RECEPTION_ENTETE			
+			left join ${prefix_base_reflex}.HLRECLP RECEPTION_LIGNE_DETAIL
+				on 	RECEPTION_LIGNE_DETAIL.R1NANN=RECEPTION_ENTETE.RENANN and RECEPTION_LIGNE_DETAIL.R1NREC=RECEPTION_ENTETE.RENREC 
+					and RECEPTION_LIGNE_DETAIL.R1CART=PREPA_DETAIL.P1CART and RECEPTION_LIGNE_DETAIL.R1TVLR=0
+			where RECEPTION_ENTETE.RECTRC = '010' and RECEPTION_ENTETE.RETRVA=0 and RECEPTION_LIGNE_DETAIL.R1RRSO<>''
+		) as QTE_EN_RECEPTION_RESERVEE
 
 FROM 	${prefix_base_reflex}.HLPRPLP PREPA_DETAIL
 
@@ -330,11 +279,35 @@ EOT
 		if ($row_rubis{'ETAT'} ne '') { next ; }
 		if ($row_rubis{'LIVRAISON'} eq 'F' && $row_reflex{'QTE_PREPAREE'} >= $row_rubis{'QTE_DEMANDEE'}) { next ; }
 
-		#if ($row_rubis{'ETAT'} eq '' && ($row_rubis{'LIVRAISON'} eq 'R')) { # ligne non supprimée et non livrée
 		$row_reflex{'DESIGNATION'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
 		$row_reflex{'DESIGNATION2'} =~ s/[^A-Z0-9 \n\r,\-\+\?_:<>\[\]\{\}\(\)=\.\/\\*%\^\~\#°\'¨³²\$&µÖÜÏËÉÊÈÙÛÄÀÂÎÔÒÇØ¼½öüïëéêèùûäàâîôòç]+/ /ig;
-		$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'><td>$row_reflex{CODE_ARTICLE}</td>\n<td>$row_reflex{DESIGNATION}</td>\n<td>$row_reflex{DESIGNATION2}</td>\n<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n<td>$row_reflex{NUM_PREPA}</td>\n<td>$row_reflex{REFERENCE_OPD}</td>\n<td class='client'>$row_reflex{CODE_DEST}</td>\n<td>$row_reflex{DESTINATAIRE}</td>\n<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td><td>".($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;')."</td>\n<td class='class'>$row_rubis{CLASS}</td></tr>\n";
-		#}
+
+		my $class_qte_en_reception_reserve = 'pas-reserve';
+		$row_reflex{'QTE_EN_RECEPTION'} 			= 0 if length($row_reflex{'QTE_EN_RECEPTION'}) == 0;
+		$row_reflex{'QTE_EN_RECEPTION_RESERVEE'} 	= 0 if length($row_reflex{'QTE_EN_RECEPTION_RESERVEE'}) == 0;
+		if ($row_reflex{'QTE_EN_RECEPTION_RESERVEE'} >= $row_reflex{'QTE_EN_RECEPTION'}) { # totu le stock en recept est réservé
+			$class_qte_en_reception_reserve = 'tout-reserve';
+		} elsif ($row_reflex{'QTE_EN_RECEPTION_RESERVEE'} < $row_reflex{'QTE_EN_RECEPTION'} && $row_reflex{'QTE_EN_RECEPTION_RESERVEE'} > 0) {
+			$class_qte_en_reception_reserve = 'partiellement-reserve-reserve';
+		}
+
+		$message .= "<tr class='".( $row_rubis{'CATGEORIE_CLIENT'} ne '1' ? 'not-important':'')."'>".
+					"<td>$row_reflex{CODE_ARTICLE}</td>\n".
+					"<td>$row_reflex{DESIGNATION}</td>\n".
+					"<td>$row_reflex{DESIGNATION2}</td>\n".
+					"<td class='qte'>$row_reflex{QTE_A_PREPARER}</td>\n".
+					"<td class='qte'>$row_reflex{QTE_PREPAREE}</td>\n".
+					"<td>$row_reflex{NUM_PREPA}</td>\n".
+					"<td>$row_reflex{REFERENCE_OPD}</td>\n".
+					"<td class='client'>$row_reflex{CODE_DEST}</td>\n".
+					"<td>$row_reflex{DESTINATAIRE}</td>\n".
+					"<td class='resa'>".($row_reflex{'RESERVATION'} ? 'OUI':'&nbsp;')."</td>".
+					"<td class='$class_qte_en_reception_reserve'>".
+						($row_reflex{'QTE_EN_RECEPTION'} ? $row_reflex{'QTE_EN_RECEPTION'}:'&nbsp;').
+						($row_reflex{'QTE_EN_RECEPTION_RESERVEE'} ? "<br/>dont ".$row_reflex{'QTE_EN_RECEPTION_RESERVEE'}." r&eacute;serv&eacute;(s)":'&nbsp;').
+					"</td>\n".
+					"<td class='class'>$row_rubis{CLASS}</td>".
+					"</tr>\n";
 	} # fin while reflex
 
 	$message .= "</table>";
