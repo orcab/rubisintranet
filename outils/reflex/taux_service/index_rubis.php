@@ -243,7 +243,7 @@ function verif_form(){
 	<input type="checkbox" name="cession" 					id="cession" 				<?= isset($_POST['cession']) 				? 'checked="checked"':'' ?> /> 	<label for="cession">Inclure les cessions</label><br/>
 	<input type="checkbox" name="all_client" 				id="all_client" 			<?= isset($_POST['all_client']) 			? 'checked="checked"':'' ?> /> 	<label for="all_client">Inclure tous les types de clients (coop, employés, perso, ...)</label><br/>
 	<span style="position:relative;top:-10px;">Class produit : </span><select name="class[]" id="class" data-placeholder="Class" style="width:300px;" multiple="multiple" class="chzn-select">
- 		<? foreach (array('A','B','C','D','E','vide') as $c) { ?>
+ 		<? foreach (array('A','B','C','D','E','F') as $c) { ?>
  			<option value="<?=$c?>"<?=isset($_POST['class']) && is_array($_POST['class']) && in_array($c,$_POST['class']) ? ' selected="selected"':''?>><?=$c?></option>
 		<? } ?>
 	</select>
