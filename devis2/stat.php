@@ -128,7 +128,7 @@ et le <select id="date_cde_end" name="date_cde_end">
 				$i=0;
 				mysql_data_seek($res,0); // reset le curseur
 				while($row = mysql_fetch_array($res)) { ?>
-					<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?> (<?=$row['nb']?>)</option>
+					<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element ? ' selected="selected"':'' ?>><?=$row['date_affichage']?> (<?=$row['nb']?>)</option>
 <?				} ?>
 			</select>
 
@@ -158,7 +158,7 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_visite','graph_visite');"/>
@@ -188,7 +188,7 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_mixte','graph2');"/>
@@ -222,7 +222,7 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_adh','graph_adh');"/>
@@ -253,7 +253,7 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_act','graph_act');"/>
