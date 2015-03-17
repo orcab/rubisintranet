@@ -1,4 +1,8 @@
-<html>
+<?
+
+$now_minus_one_year = date('Y-m',strtotime("-1 year", time()));
+
+?><html>
 <head>
 <title>Stats des devis</title>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
@@ -19,11 +23,16 @@ a:hover { text-decoration:underline; }
     font-family: lucida console;
 }
 
+select {
+    font-family: courier;
+}
+
+
 </style>
 
 <script language="javascript">
 
-function reload_graph_cde() {
+function reload_graph_cde(btn) {
 	var date_start	= $('#date_cde_start').val();
 	var date_end	= $('#date_cde_end').val();
 
@@ -41,7 +50,7 @@ function reload_graph_cde() {
 
 
 
-function reload_graph(champs,element) {
+function reload_graph(btn,champs,element) {
 	var date_start	= $('#'+champs+'_start').val();
 	var date_end	= $('#'+champs+'_end').val();
 
@@ -106,7 +115,9 @@ EOT;
 				$i=0;
 				$res = mysql_query($sql) or die("Ne peux pas trouver les dates de devis ".mysql_error());
 				while($row = mysql_fetch_array($res)) { ?>
-					<option value="<?=$row['date_param']?>"<?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?> (<?=$row['nb']?>)</option>
+					<option value="<?=$row['date_param']?>"<?=
+						($row['date_param'] == $now_minus_one_year) || ($i++ == 0) ? ' selected="selected"':'' ?>
+					><?=$row['date_affichage']?> (<?=$row['nb']?>)</option>
 <?				} ?>
 			</select>
 
@@ -121,9 +132,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 <?				} ?>
 			</select>
 
-			<input type="button" class="valider button" value="OK" onclick="reload_graph_cde();"/>
+			<input type="button" class="valider button" value="OK" onclick="reload_graph_cde(this);"/>
 		</legend>
-		<img id="graph_cde" src="graph_cde.php" style="margin-bottom:20px;" />
+		<img id="graph_cde" src="graph_cde.php?date_start=<?=$now_minus_one_year?>" style="margin-bottom:20px;" />
 	</fieldset>
 <br/>
 
@@ -136,7 +147,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>"<?=
+					($row['date_param'] == $now_minus_one_year) || ($i++ == 0) ? ' selected="selected"':'' ?>
+				><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 
@@ -148,9 +161,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
-		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_visite','graph_visite');"/>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_visite','graph_visite');"/>
 	</legend>
-	<img id="graph_visite" src="graph_visite.php" style="margin-bottom:20px;" />
+	<img id="graph_visite" src="graph_visite.php?date_start=<?=$now_minus_one_year?>" style="margin-bottom:20px;" />
 </fieldset>
 <br/>
 
@@ -164,7 +177,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>"<?=
+					($row['date_param'] == $now_minus_one_year) || ($i++ == 0) ? ' selected="selected"':'' ?>
+				><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 
@@ -176,9 +191,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
-		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_mixte','graph2');"/>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_mixte','graph2');"/>
 	</legend>
-<img id="graph2" src="graph2.php" style="margin-bottom:20px;" />
+<img id="graph2" src="graph2.php?date_start=<?=$now_minus_one_year?>" style="margin-bottom:20px;" />
 </fieldset>
 
 
@@ -196,7 +211,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>"<?=
+					($row['date_param'] == $now_minus_one_year) || ($i++ == 0) ? ' selected="selected"':'' ?>
+				><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 
@@ -208,9 +225,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
-		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_adh','graph_adh');"/>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_adh','graph_adh');"/>
 	</legend>
-<img id="graph_adh" src="graph_adh.php" style="margin-bottom:20px;" />
+<img id="graph_adh" src="graph_adh.php?date_start=<?=$now_minus_one_year?>" style="margin-bottom:20px;" />
 </fieldset>
 
 
@@ -225,7 +242,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 			$i=0;
 			mysql_data_seek($res,0); // reset le curseur
 			while($row = mysql_fetch_array($res)) { ?>
-				<option value="<?=$row['date_param']?>" <?= $i++ == 0 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
+				<option value="<?=$row['date_param']?>"<?=
+					($row['date_param'] == $now_minus_one_year) || ($i++ == 0) ? ' selected="selected"':'' ?>
+				><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
 
@@ -237,9 +256,9 @@ et le <select id="date_cde_end" name="date_cde_end">
 				<option value="<?=$row['date_param']?>" <?= $i++ == $nb_element-1 ? ' selected="selected"':'' ?>><?=$row['date_affichage']?></option>
 <?			} ?>
 			</select>
-		<input type="button" class="valider button" value="OK" onclick="reload_graph('date_act','graph_act');"/>
+		<input type="button" class="valider button" value="OK" onclick="reload_graph(this,'date_act','graph_act');"/>
 	</legend>
-	<img id="graph_act" src="graph_act.php" style="margin-bottom:20px;" />
+	<img id="graph_act" src="graph_act.php?date_start=<?=$now_minus_one_year?>" style="margin-bottom:20px;" />
 </fieldset>
 
 </form>

@@ -1,7 +1,7 @@
 <?
 
 include('../inc/config.php');
-include('google_calendar.php');
+include('get_calendar.php');
 include('../inc/iCalParser/ical-parser-class.php');
 include ('../inc/jpgraph/src/jpgraph.php');
 include ('../inc/jpgraph/src/jpgraph_bar.php');
@@ -27,8 +27,7 @@ while ($row = mysql_fetch_array($res))
 
 $stats = array(); // format $adherent[056089] = 56 rdv ;
 
-if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier chez google
-//if ($stream = join('',file('expo.ics'))) { // telecharge le fichier chez google
+if ($stream = join('',file($calendar_filename))) { // telecharge le fichier
 	
 	$ical = new iCal();
 	$events = $ical->iCalStreamDecoder($stream);
@@ -46,10 +45,10 @@ if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier c
 		
 			$nom_cle_start = '';
 			foreach($e as $key=>$val) {
-					if (substr($key,0,7) == 'DTSTART') {
-						$nom_cle_start = $key;
-						break;
-					}
+				if (substr($key,0,7) == 'DTSTART') {
+					$nom_cle_start = $key;
+					break;
+				}
 			}
 
 			$date_annee = substr($e[$nom_cle_start],0,4) ;
@@ -57,10 +56,11 @@ if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier c
 			
 			$date_event = (int)($date_annee.$date_mois);
 			//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
-			if ($date_start && $date_end && ($date_event < $date_start || $date_event > $date_end)) { // on rejette
-				//echo "Date d'event hors limit --> rejette\n<br>";
+			if ($date_start && ($date_event < $date_start)) // on rejette
 				continue;
-			}
+		
+			if ($date_end && ($date_event > $date_end)) // on rejette
+				continue;
 
 			if (strlen($adh) == 5) $adh = '0'.$adh;
 			//echo $e['SUMMARY']." ".$adh."\n";

@@ -1,7 +1,7 @@
 <?
 
 include('../inc/config.php');
-include('google_calendar.php');
+include('get_calendar.php');
 include('../inc/iCalParser/ical-parser-class.php');
 include('../inc/jpgraph/src/jpgraph.php');
 include('../inc/jpgraph/src/jpgraph_line.php');
@@ -109,8 +109,7 @@ foreach($cmd_rubis as $vals)
 // chargement des données rdv et visite
 $cumul = array('RDV' => array() , 'VISITE' => array() , 'PROSPECT' => array() );
 	
-	if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier chez google
-	//if ($stream = join('',file('basic.ics'))) { // telecharge le fichier chez google
+	if ($stream = join('',file($calendar_filename))) { // telecharge le fichier
 		
 		$ical = new iCal();
 		$events = $ical->iCalStreamDecoder($stream);
@@ -124,10 +123,10 @@ $cumul = array('RDV' => array() , 'VISITE' => array() , 'PROSPECT' => array() );
 
 				$nom_cle_start = '';
 				foreach($e as $key=>$val) {
-						if (substr($key,0,7) == 'DTSTART') {
-							$nom_cle_start = $key;
-							break;
-						}
+					if (substr($key,0,7) == 'DTSTART') {
+						$nom_cle_start = $key;
+						break;
+					}
 				}
 
 				$date_annee = substr($e[$nom_cle_start],0,4) ;
@@ -135,10 +134,11 @@ $cumul = array('RDV' => array() , 'VISITE' => array() , 'PROSPECT' => array() );
 
 				$date_event = (int)($date_annee.$date_mois);
 				//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
-				if ($date_start && $date_end && ($date_event < $date_start || $date_event > $date_end)) { // on rejette
-					//echo "Date d'event hors limit --> rejette\n<br>";
-					continue;
-				}
+				if ($date_start && ($date_event < $date_start)) // on rejette
+				continue;
+		
+				if ($date_end && ($date_event > $date_end)) // on rejette
+				continue;
 
 				$date = $mois[$date_mois - 1].' '.$date_annee ;
 				

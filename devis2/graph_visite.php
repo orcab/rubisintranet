@@ -1,7 +1,7 @@
 <?
 
 include('../inc/config.php');
-include('google_calendar.php');
+include('get_calendar.php');
 include('../inc/iCalParser/ical-parser-class.php');
 include('../inc/jpgraph/src/jpgraph.php');
 include('../inc/jpgraph/src/jpgraph_line.php');
@@ -26,63 +26,63 @@ $date_end	= isset($_GET['date_end'])		? (int)str_replace('-','',$_GET['date_end'
 
 
 // chargement des données rdv et visite
-	//if ($stream = join('',file('basic.ics'))) { // telecharge le fichier chez google
-	if ($stream = join('',file($google_calendar_expo))) { // telecharge le fichier chez google
-		
-		$ical = new iCal();
-		$events = $ical->iCalStreamDecoder($stream);
+if ($stream = join('',file($calendar_filename))) { // telecharge le fichier
+	
+	$ical = new iCal();
+	$events = $ical->iCalStreamDecoder($stream);
 
-		//print_r($events);
+	//print_r($events);
 
-		foreach ($events as $e) {
-			if (array_key_exists('SUMMARY',$e) && preg_match('/^(RDV|VISITE|PROSPECT)/i',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
-				//on traite le rdv ou visite
-				$type = strtoupper($regs[1]);
+	foreach ($events as $e) {
+		if (array_key_exists('SUMMARY',$e) && preg_match('/^(RDV|VISITE|PROSPECT)/i',$e['SUMMARY'],$regs)) { //SUMMARY,DTSTART
+			//on traite le rdv ou visite
+			$type = strtoupper($regs[1]);
 
-				$nom_cle_start = '';
-				foreach($e as $key=>$val) {
-						if (substr($key,0,7) == 'DTSTART') {
-							$nom_cle_start = $key;
-							break;
-						}
-				}
-
-				$date_annee = substr($e[$nom_cle_start],0,4) ;
-				$date_mois = substr($e[$nom_cle_start],4,2) ;
-				
-				$date_event = (int)($date_annee.$date_mois);
-				//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
-				if ($date_start && $date_end && ($date_event < $date_start || $date_event > $date_end)) { // on rejette
-					//echo "Date d'event hors limit --> rejette\n<br>";
-					continue;
-				}
-
-
-				//$date = $mois[$date_mois - 1].' '.$date_annee ;
-				$date = $date_annee.'-'.$date_mois;
-				
-				if ($type == 'RDV') {
-					if (isset($cmd_rubis[$date][RDV]))
-						$cmd_rubis[$date][RDV] += 1;
-					else
-						$cmd_rubis[$date][RDV] = 1;
-				} elseif ($type == 'VISITE') {
-					if (isset($cmd_rubis[$date][VISITE]))
-						$cmd_rubis[$date][VISITE] += 1;
-					else
-						$cmd_rubis[$date][VISITE] = 1;
-				} elseif ($type == 'PROSPECT') {
-					if (isset($cmd_rubis[$date][PROSPECT]))
-						$cmd_rubis[$date][PROSPECT] += 1;
-					else
-						$cmd_rubis[$date][PROSPECT] = 1;
-				}
-
+			$nom_cle_start = '';
+			foreach($e as $key=>$val) {
+					if (substr($key,0,7) == 'DTSTART') {
+						$nom_cle_start = $key;
+						break;
+					}
 			}
+
+			$date_annee = substr($e[$nom_cle_start],0,4) ;
+			$date_mois = substr($e[$nom_cle_start],4,2) ;
+			
+			$date_event = (int)($date_annee.$date_mois);
+			//echo "EVENT date='$date_event' start=($date_start) end=($date_end)\n<br>";
+			if ($date_start && ($date_event < $date_start)) // on rejette
+				continue;
+		
+			if ($date_end && ($date_event > $date_end)) // on rejette
+				continue;
+
+
+			//$date = $mois[$date_mois - 1].' '.$date_annee ;
+			$date = $date_annee.'-'.$date_mois;
+			
+			if ($type == 'RDV') {
+				if (isset($cmd_rubis[$date][RDV]))
+					$cmd_rubis[$date][RDV] += 1;
+				else
+					$cmd_rubis[$date][RDV] = 1;
+			} elseif ($type == 'VISITE') {
+				if (isset($cmd_rubis[$date][VISITE]))
+					$cmd_rubis[$date][VISITE] += 1;
+				else
+					$cmd_rubis[$date][VISITE] = 1;
+			} elseif ($type == 'PROSPECT') {
+				if (isset($cmd_rubis[$date][PROSPECT]))
+					$cmd_rubis[$date][PROSPECT] += 1;
+				else
+					$cmd_rubis[$date][PROSPECT] = 1;
+			}
+
 		}
-	} else {
-		die("Impossible de récupérer le fichier des calendrier");
 	}
+} else {
+	die("Impossible de récupérer le fichier des calendrier");
+}
 
 
 
