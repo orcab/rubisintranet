@@ -15,7 +15,7 @@ use Phpconst2perlconst ;
 use Getopt::Long;
 
 # class d'article autorisé
-my @valid_class = ('A'..'E');
+my @valid_class = ('A'..'F');
 
 # gestion des arguments
 my (@articles,$debug,$all,$stock_only,$class,$test,$days,$help);
