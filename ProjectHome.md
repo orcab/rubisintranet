@@ -1,0 +1,3 @@
+- Edition de document au format PDF provenant du logiciel Rubis.
+- Recherche multi-critère dans le logiciel Rubis
+- Tri des résultats
